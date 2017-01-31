@@ -1,12 +1,57 @@
-cmake_minimum_required (VERSION 3.2)
-
 project(Mechanica)
+
+cmake_minimum_required (VERSION 3.2)
 
 # Add our module finders to cmake
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# Options for
+
+
+set(LLVM_ROOT_DIR "" CACHE PATH "Custom LLVM install location")
+
+
 
 find_package(OpenGL REQUIRED)
+
+find_package(LLVM)
+
+
+if(LLVM_FOUND)
+  message("LLVM_FOUND")
+
+  
+message("LLVM_CXXFLAGS: ${LLVM_CXXFLAGS}")
+message("LLVM_HOST_TARGET: ${LLVM_HOST_TARGET}")
+
+message("LLVM_LDFLAGS: ${LLVM_LDFLAGS}")
+
+message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
+
+
+
+message("LLVM_LIBRARIES: ${LLVM_LIBRARIES}")
+message("LLVM_LIBRARY_DIRS: ${LLVM_LIBRARY_DIRS}")
+message("LLVM_ROOT_DIR: ${LLVM_ROOT_DIR}")
+
+message("LLVM_VERSION_MAJOR: ${LLVM_VERSION_MAJOR}")
+message("LLVM_VERSION_MINOR: ${LLVM_VERSION_MINOR}")
+message("LLVM_VERSION_STRING: ${LLVM_VERSION_STRING}")
+
+endif()
+
+find_package(AssImp)
+
+if(ASSIMP_FOUND)
+  message("ASSIMP_INCLUDE_DIRS: ${ASSIMP_INCLUDE_DIRS}")
+  message("ASSIMP_LIBRARIES: ${ASSIMP_LIBRARIES}")
+else()
+  message("ASSIMP not found")
+endif()
+
+
+
+
 
 # finds: GLFW_FOUND GLFW_INCLUDE_DIR GLFW_LIBRARIES
 # find_package(GLFW 3.2 REQUIRED)
@@ -22,5 +67,12 @@ find_package(OpenGL REQUIRED)
 
 #message("GLFW_LIBRARIES: ${GLFW_LIBRARIES}")
 
+# add  public include dir to include path
+include_directories(include)
+
+
 add_subdirectory(deps)
+add_subdirectory(include)
+add_subdirectory(src)
+add_subdirectory(models)
 add_subdirectory(testing)
