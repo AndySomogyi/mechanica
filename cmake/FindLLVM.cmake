@@ -22,23 +22,29 @@
 # Note: The variable names were chosen in conformance with the offical CMake
 # guidelines, see ${CMAKE_ROOT}/Modules/readme.txt.
 
+
+# set the LLVM_ROOT_DIR so it shows up in the cmake gui
+set(LLVM_ROOT_DIR "" CACHE PATH "Root directory of llvm instalation")
+
 # Try suffixed versions to pick up the newest LLVM install available on Debian
 # derivatives.
 # We also want an user-specified LLVM_ROOT_DIR to take precedence over the
 # system default locations such as /usr/local/bin. Executing find_program()
 # multiples times is the approach recommended in the docs.
 set(llvm_config_names llvm-config-5.0 llvm-config50
-                      llvm-config-4.0 llvm-config40
-                      llvm-config-3.9 llvm-config39
-                      llvm-config-3.8 llvm-config38
-                      llvm-config-3.7 llvm-config37
-                      llvm-config-3.6 llvm-config36
-                      llvm-config-3.5 llvm-config35
-                      llvm-config)
+  llvm-config-4.0 llvm-config40
+  llvm-config-3.9 llvm-config39
+  llvm-config-3.8 llvm-config38
+  llvm-config-3.7 llvm-config37
+  llvm-config-3.6 llvm-config36
+  llvm-config-3.5 llvm-config35
+  llvm-config)
+
+
 find_program(LLVM_CONFIG
-    NAMES ${llvm_config_names}
-    PATHS ${LLVM_ROOT_DIR}/bin NO_DEFAULT_PATH
-    DOC "Path to llvm-config tool.")
+  NAMES ${llvm_config_names}
+  PATHS ${LLVM_ROOT_DIR}/bin NO_DEFAULT_PATH
+  DOC "Path to llvm-config tool.")
 find_program(LLVM_CONFIG NAMES ${llvm_config_names})
 
 
@@ -204,6 +210,10 @@ else()
     llvm_set(HOST_TARGET host-target)
     llvm_set(INCLUDE_DIRS includedir true)
     llvm_set(ROOT_DIR prefix true)
+
+    # set the LLVM_ROOT_DIR in the main config so it shows up in the cmake gui
+    set(LLVM_ROOT_DIR ${LLVM_ROOT_DIR} CACHE PATH "Root directory of llvm instalation" FORCE)
+      
     llvm_set(ENABLE_ASSERTIONS assertion-mode)
 
     if(${LLVM_VERSION_STRING} MATCHES "^3\\.[0-6][\\.0-9A-Za-z]*")

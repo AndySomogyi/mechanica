@@ -8,13 +8,14 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 # Options for
 
 
-set(LLVM_ROOT_DIR "" CACHE PATH "Custom LLVM install location")
-
+set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
 
 
 find_package(OpenGL REQUIRED)
 
 find_package(LLVM)
+
+find_package(OpenMM)
 
 
 if(LLVM_FOUND)

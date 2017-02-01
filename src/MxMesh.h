@@ -8,6 +8,8 @@
 #ifndef _INCLUDE_MXMESH_H_
 #define _INCLUDE_MXMESH_H_
 
+#include "mechanica_private.h"
+
 /**
  * Internal implementation of MxObject
  */

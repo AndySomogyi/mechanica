@@ -1,8 +1,15 @@
+
+# LLVM compile options
+add_definitions(${LLVM_LDFLAGS})
+
 add_compile_options(-DMX_STRICT)
 
 # Make sure the compiler can find include files for our Hello library
 # when other libraries or executables link to Hello
-include_directories (PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${OPENMM_INCLUDE_DIR})
+include_directories(${ASSIMP_INCLUDE_DIRS})
+include_directories(${LLVM_INCLUDE_DIRS})
 
 set(SRC
   moduledef.cpp
@@ -27,20 +34,23 @@ set(SRC
   mx_object.cpp
   mx_stmt.cpp
   mx_tupleobject.cpp
-    )
-
-  if(MECHANICA_USE_LLVM)
-    include_directories (${LLVM_INCLUDE_DIRS})
-    set(SRC
-        ${SRC}
-        )
-endif()
+  MxMesh.cpp
+  MxModule.cpp
+  MxSimulator.cpp
+  MxTestCube.cpp
+  MxTestParticles.cpp
+  )
 
 
 set(HEADERS
   ${MECHANICA_PUBLIC_HEADERS}
   mechanica_llvm.h
   mechanica_private.h
+  MxMesh.h
+  MxModule.h
+  MxSimulator.h
+  MxTestCube.h
+  MxTestParticles.h
   )
 
 
@@ -54,4 +64,7 @@ message("MECHANICA_SRC: ${SRC}")
 
 
 # Link against LLVM libraries
+link_directories(${LLVM_LIBRARY_DIRS})
 target_link_libraries(mechanica ${LLVM_LIBRARIES})
+
+target_link_libraries(mechanica ${OPENMM_LIBRARIES_STATIC})
