@@ -28,6 +28,10 @@
 #include <mx_callable.h>
 #include <mx_function.h>
 #include <mx_eval.h>
+#include <mx_mesh.h>
+#include <mx_particles.h>
+#include <mx_simulator.h>
+
 
 
 

@@ -8,22 +8,29 @@ function(prepend var)
 endfunction(prepend)
 
 set (_PUBLIC_HEADERS
-  mx_abstract.h
-  mx_import.h
-  mx_object.h
-  mx_port.h
-  mx_runtime.h
-  mx_string.h
-  mx_tupleobject.h
-  mx_number.h
-  mx_type.h
-  mx_callable.h
-  mx_callable.h
-  mx_eval.h
-  mx_int.h
-  mx_float.h
-  mx_ast.h
   Mechanica.h
+  mx_callable.h
+  mx_function.h
+  mx_list.h
+  mx_number.h
+  mx_port.h
+  mx_string.h
+  mx_type.h
+  mx_abstract.h
+  mx_eval.h
+  mx_import.h
+  mx_mesh.h
+  mx_object.h
+  mx_runtime.h
+  mx_symbol.h
+  mx_ast.h
+  mx_float.h
+  mx_int.h
+  mx_module.h
+  mx_parser.h
+  mx_simulator.h
+  mx_tupleobject.h
+  mx_particles.h
   )
 
 message("_PUBLIC_HEADERS: ${_PUBLIC_HEADERS}")

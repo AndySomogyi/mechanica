@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "Mechanica.h"
+
 static const struct
 {
     float x, y;
@@ -79,6 +81,8 @@ int main(void)
     GLFWwindow* window;
     GLuint vertex_buffer, vertex_shader, fragment_shader, program;
     GLint mvp_location, vpos_location, vcol_location;
+    
+    TestParticles_Step();
 
     glfwSetErrorCallback(error_callback);
 

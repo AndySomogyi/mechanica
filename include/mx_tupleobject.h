@@ -27,8 +27,8 @@ returned item's reference count.
 
 
 
-MxAPI_DATA(MxType) MxTuple_Type;
-MxAPI_DATA(MxType) MxTupleIter_Type;
+MxAPI_DATA(struct MxType) MxTuple_Type;
+MxAPI_DATA(struct MxType) MxTupleIter_Type;
 
 MxAPI_DATA(int) MxTuple_Check(MxObject*);
 MxAPI_DATA(int) MxTuple_CheckExact(MxObject*);

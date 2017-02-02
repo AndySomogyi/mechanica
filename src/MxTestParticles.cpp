@@ -40,15 +40,15 @@
 // -----------------------------------------------------------------------------
 
 //                     MODELING AND SIMULATION PARAMETERS
-const int    NumWatersAlongEdge  = 10;     // Size of box is NxNxN waters.
+const int    NumWatersAlongEdge  = 5;     // Size of box is NxNxN waters.
 const double Temperature         = 300;    // Kelvins
 const double FrictionInPerPs     = 91.;    // collisions per picosecond
-const double CutoffDistanceInAng = 10.;    // Angstroms
+const double CutoffDistanceInAng = 2.;    // Angstroms
 
 const bool   UseConstraints      = true;   // Should we constrain O-H bonds?
 const double StepSizeInFs        = 2;      // integration step size (fs)
 const double ReportIntervalInFs  = 100;    // how often to generate PDB frame (fs)
-const double SimulationTimeInPs  = 10;     // total simulation time (ps)
+const double SimulationTimeInPs  = 2;     // total simulation time (ps)
 
 //                              FORCE FIELD DATA
 // For this example we're using a tiny subset of the Amber99 force field.
@@ -125,7 +125,7 @@ static void          myTerminateOpenMM(MyOpenMMData*);
 // -----------------------------------------------------------------------------
 //                           WATER BOX MAIN PROGRAM
 // -----------------------------------------------------------------------------
-int particle_main() {
+extern "C" void TestParticles_Step() {
     // ALWAYS enclose all OpenMM calls with a try/catch block to make sure that
     // usage and runtime errors are caught and reported.
     try {
@@ -390,6 +390,10 @@ myStepWithOpenMM(MyOpenMMData* omm, int numSteps) {
 static void
 myTerminateOpenMM(MyOpenMMData* omm) {
     delete omm;
+}
+
+extern "C" MxObject *TestParticles_New() {
+    
 }
 
 

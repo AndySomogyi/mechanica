@@ -20,10 +20,10 @@
 /**
  * Basic opaque Mechanica object type.
  */
-struct MxObject {
+typedef struct MxObject {
 	struct MxType *type;
 	uint32_t refcount;
-};
+} MxObject;
 
 
 #define Mx_REFCNT(ob)           (((MxObject*)(ob))->refcount)

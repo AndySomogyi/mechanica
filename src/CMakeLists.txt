@@ -39,6 +39,7 @@ set(SRC
   MxSimulator.cpp
   MxTestCube.cpp
   MxTestParticles.cpp
+  MxType.cpp
   )
 
 
@@ -51,6 +52,7 @@ set(HEADERS
   MxSimulator.h
   MxTestCube.h
   MxTestParticles.h
+  MxType.h
   )
 
 

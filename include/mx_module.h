@@ -18,12 +18,12 @@ extern "C"
 {
 #endif
 
-struct MxModule;
+typedef struct MxModule MxModule;
 
 /**
  * This instance of MxTypeObject represents the Mechanica module type. 
  */
-MxAPI_DATA(MxType*) MxModule_Type;
+MxAPI_DATA(struct MxType*) MxModule_Type;
 
 /**
  * Return true if p is a module object, or a subtype of a module object.

@@ -20,7 +20,7 @@ extern "C" {
  * Keep type description opaque for now, this is essentially a vtable with
  * additional metadata.
  */
-struct MxType;
+typedef struct MxType MxType;
 
 /**
  * Return true if the object o is a type object, including instances of types

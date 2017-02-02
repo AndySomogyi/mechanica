@@ -8,7 +8,9 @@
 #ifndef SRC_MXTESTPARTICLES_H_
 #define SRC_MXTESTPARTICLES_H_
 
-class MxTestParticles {
+#include "mechanica_private.h"
+
+struct MxTestParticles : MxObject {
 };
 
 #endif /* SRC_MXTESTPARTICLES_H_ */
