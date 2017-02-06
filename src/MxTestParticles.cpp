@@ -157,14 +157,11 @@ extern "C" void TestParticles_Step() {
 
         // Clean up OpenMM data structures.
         myTerminateOpenMM(omm);
-
-        return 0; // Normal return from main.
     }
 
     // Catch and report usage and runtime errors detected by OpenMM and fail.
     catch(const std::exception& e) {
         printf("EXCEPTION: %s\n", e.what());
-        return 1;
     }
 }
 

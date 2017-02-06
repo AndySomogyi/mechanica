@@ -1,0 +1,11 @@
+#!/bin/sh
+
+bison -dv VRML97.y -o VRML97.tab.cpp
+mv VRML97.tab.hpp ../../../include/cybergarage/x3d/VRML97.tab.h
+#mv y.tab.c VRML97.tab.cpp
+#mv y.tab.h VRML97.tab.h
+
+flex -o VRML97.yy.cpp -I VRML97.l
+
+rm VRML97.output
+

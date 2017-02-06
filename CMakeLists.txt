@@ -17,6 +17,10 @@ find_package(LLVM)
 
 find_package(OpenMM)
 
+add_definitions(-DCX3D_SUPPORT_OPENGL)
+
+
+include_directories(${OPENGL_INCLUDE_DIR})
 
 if(LLVM_FOUND)
   message("LLVM_FOUND")

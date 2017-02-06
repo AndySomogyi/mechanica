@@ -7,6 +7,18 @@ function(prepend var)
   set(${var} "${listVar}" PARENT_SCOPE)
 endfunction(prepend)
 
+file(GLOB AST_HEADERS
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  "ast/*.h"
+  )
+
+file(GLOB X3D_HEADERS
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  "x3d/*.h"
+  )
+
+
+
 set (_PUBLIC_HEADERS
   Mechanica.h
   mx_callable.h
@@ -31,6 +43,8 @@ set (_PUBLIC_HEADERS
   mx_simulator.h
   mx_tupleobject.h
   mx_particles.h
+  ${AST_HEADERS}
+  ${X3D_HEADERS}
   )
 
 message("_PUBLIC_HEADERS: ${_PUBLIC_HEADERS}")

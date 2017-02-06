@@ -1,12 +1,12 @@
 /*
- * ca_number.h
+ * mx_number.h
  *
  *  Created on: Jul 8, 2015
  *      Author: andy
  */
 
-#ifndef _INCLUDED_CA_NUMBER_H_
-#define _INCLUDED_CA_NUMBER_H_
+#ifndef _INCLUDED_MX_NUMBER_H_
+#define _INCLUDED_MX_NUMBER_H_
 
 #include "mx_object.h"
 
@@ -331,4 +331,4 @@ MxAPI_FUNC(MxObject *) MxNumber_FromString(const char* str);
 
 
 
-#endif /* _INCLUDED_CA_NUMBER_H_ */
+#endif /* _INCLUDED_MX_NUMBER_H_ */

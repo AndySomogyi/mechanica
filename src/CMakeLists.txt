@@ -11,6 +11,17 @@ include_directories(${OPENMM_INCLUDE_DIR})
 include_directories(${ASSIMP_INCLUDE_DIRS})
 include_directories(${LLVM_INCLUDE_DIRS})
 
+file(GLOB AST_SRC
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  "ast/*.cpp"
+  )
+
+file(GLOB X3D_SRC
+  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+  "x3d/*.cpp"
+  )
+
+
 set(SRC
   moduledef.cpp
   mx_callable.cpp
@@ -40,6 +51,8 @@ set(SRC
   MxTestCube.cpp
   MxTestParticles.cpp
   MxType.cpp
+  ${AST_SRC}
+  ${X3D_SRC}
   )
 
 
