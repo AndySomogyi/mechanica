@@ -1,17 +1,17 @@
 
-link_directories(${LLVM_LIBRARY_DIRS})
 link_libraries(glfw)
-link_libraries(mechanica)
-link_libraries(${LLVM_LIBRARIES})
-link_libraries(${OPENMM_LIBRARIES_STATIC})
+
 link_libraries(${OPENGL_LIBRARIES})
 
 include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
 
-
 if (MATH_LIBRARY)
     link_libraries("${MATH_LIBRARY}")
 endif()
+
+include_directories(${BULLET_INCLUDE_DIRS})
+link_libraries(${BULLET_LIBRARIES})
+
 
 if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -36,11 +36,18 @@ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
 set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
   "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
 
-add_executable(test_particles1 WIN32 MACOSX_BUNDLE test_particles1.c ${ICON} ${GLAD})
-add_executable(test_particles2 WIN32 MACOSX_BUNDLE test_particles2.c ${ICON} ${GLAD})
-add_executable(test_particles3 WIN32 MACOSX_BUNDLE test_particles3.c ${ICON} ${GLAD})
 
-set(WINDOWS_BINARIES test_particles1 test_particles2 test_particles3)
+
+set(BLOB_SRC
+  blob.cpp
+  camera.h
+  camera.cpp
+  vector3d.h
+  vector3d.cpp
+  )
+
+add_executable(blob WIN32 MACOSX_BUNDLE ${BLOB_SRC} ${ICON} ${GLAD})
+
 
 #set_target_properties(${WINDOWS_BINARIES} ${CONSOLE_BINARIES} PROPERTIES
 #                      FOLDER "GLFW3/Examples")
@@ -52,12 +59,10 @@ if (MSVC)
 endif()
 
 if (APPLE)
-  set_target_properties(test_particles1 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 1")
-  set_target_properties(test_particles2 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 2")
-  set_target_properties(test_particles3 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 3")
+  set_target_properties(blob PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Blob")
 
   
-  set_target_properties(${WINDOWS_BINARIES} PROPERTIES
+  set_target_properties(blob PROPERTIES
     RESOURCE glfw.icns
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${GLFW_VERSION}
     MACOSX_BUNDLE_LONG_VERSION_STRING ${GLFW_VERSION_FULL}

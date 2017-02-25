@@ -14,6 +14,11 @@
 extern "C" {
 #endif
 
+/**
+ * A Mechanica mesh currently only supports triangular meshes.
+ *
+ * Consists of postion, velocity,
+ */
 typedef struct MxMeshData {
   void *pData;
 

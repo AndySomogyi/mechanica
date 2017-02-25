@@ -4,10 +4,9 @@ link_libraries(glfw)
 link_libraries(mechanica)
 link_libraries(${LLVM_LIBRARIES})
 link_libraries(${OPENMM_LIBRARIES_STATIC})
-link_libraries(${OPENGL_LIBRARIES})
+#link_libraries(${OPENGL_LIBRARIES})
 
-include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
-
+include_directories(${GLM_INCLUDE_DIRS} ${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
 
 if (MATH_LIBRARY)
     link_libraries("${MATH_LIBRARY}")
@@ -30,17 +29,13 @@ elseif (APPLE)
 endif()
 
 set(GLAD "${GLFW_SOURCE_DIR}/deps/glad/glad.h"
-         "${GLFW_SOURCE_DIR}/deps/glad.c")
-set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
-           "${GLFW_SOURCE_DIR}/deps/getopt.c")
-set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
-  "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+  "${GLFW_SOURCE_DIR}/deps/glad.c")
 
-add_executable(test_particles1 WIN32 MACOSX_BUNDLE test_particles1.c ${ICON} ${GLAD})
-add_executable(test_particles2 WIN32 MACOSX_BUNDLE test_particles2.c ${ICON} ${GLAD})
-add_executable(test_particles3 WIN32 MACOSX_BUNDLE test_particles3.c ${ICON} ${GLAD})
+#add_executable(particles2 WIN32 MACOSX_BUNDLE particles.cpp ${ICON} ${GLAD})
 
-set(WINDOWS_BINARIES test_particles1 test_particles2 test_particles3)
+add_executable(particles2  particles.cpp ${ICON} ${GLAD})
+
+set(WINDOWS_BINARIES particles2)
 
 #set_target_properties(${WINDOWS_BINARIES} ${CONSOLE_BINARIES} PROPERTIES
 #                      FOLDER "GLFW3/Examples")
@@ -51,10 +46,10 @@ if (MSVC)
                           LINK_FLAGS "/ENTRY:mainCRTStartup")
 endif()
 
-if (APPLE)
-  set_target_properties(test_particles1 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 1")
-  set_target_properties(test_particles2 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 2")
-  set_target_properties(test_particles3 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 3")
+
+
+if (0)
+  set_target_properties(particles2 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Particles 2")
 
   
   set_target_properties(${WINDOWS_BINARIES} PROPERTIES

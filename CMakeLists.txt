@@ -6,9 +6,18 @@ cmake_minimum_required (VERSION 3.2)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Options for
+find_package(glm REQUIRED)
+
+message("GLM_VERSION: ${GLM_VERSION}")
+message("GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}")
 
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
+
+
+set(BULLET_ROOT "$ENV{HOME}/local" CACHE PATH "Root directory of Bullet Physics engine")
+
+
 
 
 find_package(OpenGL REQUIRED)
@@ -18,6 +27,16 @@ find_package(LLVM)
 find_package(OpenMM)
 
 add_definitions(-DCX3D_SUPPORT_OPENGL)
+
+
+find_package(Bullet)
+
+if(BULLET_FOUND)
+  message("BULLET_INCLUDE_DIRS: ${BULLET_INCLUDE_DIRS}")
+  message("BULLET_LIBRARIES ${BULLET_LIBRARIES}")
+else()
+  message("BULLET NOT FOUND")
+endif()
 
 
 include_directories(${OPENGL_INCLUDE_DIR})

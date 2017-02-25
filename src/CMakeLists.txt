@@ -51,6 +51,7 @@ set(SRC
   MxTestCube.cpp
   MxTestParticles.cpp
   MxType.cpp
+  MxIntegrator.cpp
   ${AST_SRC}
   ${X3D_SRC}
   )
@@ -66,6 +67,7 @@ set(HEADERS
   MxTestCube.h
   MxTestParticles.h
   MxType.h
+  MxIntegrator.h
   )
 
 

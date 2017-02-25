@@ -24,17 +24,16 @@
 //========================================================================
 //! [code]
 
-#include <OpenGL/gl3.h> //(My code compiles without this line)
-#define GLFW_INCLUDE_GLCOREARB
-
-#include <GLFW/glfw3.h>
-
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <OpenGL/glu.h>
+
 
 #include "linmath.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "camera.h"
 
 static const struct
 {
@@ -67,6 +66,12 @@ static const char* fragment_shader_text =
 "    gl_FragColor = vec4(color, 1.0);\n"
 "}\n";
 
+
+
+static camera *cam;
+
+static GLUquadricObj *quad;
+
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -78,11 +83,23 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
+static void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    cam->Control();
+    cam->UpdateCamera();
+    gluSphere(quad, 1, 30, 30);
+}
+
+
 int main(void)
 {
     GLFWwindow* window;
     GLuint vertex_buffer, vertex_shader, fragment_shader, program;
     GLint mvp_location, vpos_location, vcol_location;
+
+
 
     glfwSetErrorCallback(error_callback);
 
@@ -91,19 +108,6 @@ int main(void)
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    
-    /*
-
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-     
-     */
-    
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
     if (!window)
@@ -111,6 +115,10 @@ int main(void)
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+
+    cam = new camera(window);
+    
+    quad = gluNewQuadric();
 
     glfwSetKeyCallback(window, key_callback);
 
@@ -150,6 +158,7 @@ int main(void)
 
     while (!glfwWindowShouldClose(window))
     {
+        /*
         float ratio;
         int width, height;
         mat4x4 m, p, mvp;
@@ -168,6 +177,10 @@ int main(void)
         glUseProgram(program);
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+         
+         */
+        
+        display();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
