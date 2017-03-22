@@ -1,0 +1,3 @@
+[submodule "deps/mdcore"]
+	path = deps/mdcore
+	url = git@github.com:AndySomogyi/mdcore.git
