@@ -10,6 +10,10 @@
 
 #include "Mechanica.h"
 
+#include "MxObject.h"
+
+struct MxType : _typeobject{};
+
 
 
 /* Object and type object interface */
@@ -137,56 +141,8 @@ NB: the methods for certain type groups are now contained in separate
 method blocks.
 */
 
-typedef MxObject * (*unaryfunc)(MxObject *);
-typedef MxObject * (*binaryfunc)(MxObject *, MxObject *);
-typedef MxObject * (*ternaryfunc)(MxObject *, MxObject *, MxObject *);
-typedef int (*inquiry)(MxObject *);
-typedef Mx_ssize_t (*lenfunc)(MxObject *);
-typedef int (*coercion)(MxObject **, MxObject **);
-//typedef MxObject *(*intargfunc)(MxObject *, int) Mx_DEPRECATED(2.5);
-//typedef MxObject *(*intintargfunc)(MxObject *, int, int) Mx_DEPRECATED(2.5);
-typedef MxObject *(*ssizeargfunc)(MxObject *, Mx_ssize_t);
-typedef MxObject *(*ssizessizeargfunc)(MxObject *, Mx_ssize_t, Mx_ssize_t);
-typedef int(*intobjargproc)(MxObject *, int, MxObject *);
-typedef int(*intintobjargproc)(MxObject *, int, int, MxObject *);
-typedef int(*ssizeobjargproc)(MxObject *, Mx_ssize_t, MxObject *);
-typedef int(*ssizessizeobjargproc)(MxObject *, Mx_ssize_t, Mx_ssize_t, MxObject *);
-typedef int(*objobjargproc)(MxObject *, MxObject *, MxObject *);
 
 
-
-/* int-based buffer interface */
-typedef int (*getreadbufferproc)(MxObject *, int, void **);
-typedef int (*getwritebufferproc)(MxObject *, int, void **);
-typedef int (*getsegcountproc)(MxObject *, int *);
-typedef int (*getcharbufferproc)(MxObject *, int, char **);
-/* ssize_t-based buffer interface */
-typedef Mx_ssize_t (*readbufferproc)(MxObject *, Mx_ssize_t, void **);
-typedef Mx_ssize_t (*writebufferproc)(MxObject *, Mx_ssize_t, void **);
-typedef Mx_ssize_t (*segcountproc)(MxObject *, Mx_ssize_t *);
-typedef Mx_ssize_t (*charbufferproc)(MxObject *, Mx_ssize_t, char **);
-
-
-/* Mx3k buffer interface */
-typedef struct bufferinfo {
-    void *buf;
-    MxObject *obj;        /* owned reference */
-    Mx_ssize_t len;
-    Mx_ssize_t itemsize;  /* This is Mx_ssize_t so it can be
-                             pointed to by strides in simple case.*/
-    int readonly;
-    int ndim;
-    char *format;
-    Mx_ssize_t *shape;
-    Mx_ssize_t *strides;
-    Mx_ssize_t *suboffsets;
-    Mx_ssize_t smalltable[2];  /* static store for shape and strides of
-                                  mono-dimensional buffers. */
-    void *internal;
-} Mx_buffer;
-
-typedef int (*getbufferproc)(MxObject *, Mx_buffer *, int);
-typedef void (*releasebufferproc)(MxObject *, Mx_buffer *);
 
     /* Flags for getting buffers */
 #define MxBUF_SIMPLE 0
@@ -219,221 +175,7 @@ typedef void (*releasebufferproc)(MxObject *, Mx_buffer *);
 #define MxBUF_SHADOW 0x400
 /* end Mx3k buffer interface */
 
-typedef int (*objobjproc)(MxObject *, MxObject *);
-typedef int (*visitproc)(MxObject *, void *);
-typedef int (*traverseproc)(MxObject *, visitproc, void *);
 
-typedef struct {
-    /* For numbers without flag bit Mx_TPFLAGS_CHECKTYPES set, all
-       arguments are guaranteed to be of the object's type (modulo
-       coercion hacks -- i.e. if the type's coercion function
-       returns other types, then these are allowed as well).  Numbers that
-       have the Mx_TPFLAGS_CHECKTYPES flag bit set should check *both*
-       arguments for proper type and implement the necessary conversions
-       in the slot functions themselves. */
-
-    binaryfunc nb_add;
-    binaryfunc nb_subtract;
-    binaryfunc nb_multiply;
-    binaryfunc nb_divide;
-    binaryfunc nb_remainder;
-    binaryfunc nb_divmod;
-    ternaryfunc nb_power;
-    unaryfunc nb_negative;
-    unaryfunc nb_positive;
-    unaryfunc nb_absolute;
-    inquiry nb_nonzero;
-    unaryfunc nb_invert;
-    binaryfunc nb_lshift;
-    binaryfunc nb_rshift;
-    binaryfunc nb_and;
-    binaryfunc nb_xor;
-    binaryfunc nb_or;
-    coercion nb_coerce;
-    unaryfunc nb_int;
-    unaryfunc nb_long;
-    unaryfunc nb_float;
-    unaryfunc nb_oct;
-    unaryfunc nb_hex;
-    /* Added in release 2.0 */
-    binaryfunc nb_inplace_add;
-    binaryfunc nb_inplace_subtract;
-    binaryfunc nb_inplace_multiply;
-    binaryfunc nb_inplace_divide;
-    binaryfunc nb_inplace_remainder;
-    ternaryfunc nb_inplace_power;
-    binaryfunc nb_inplace_lshift;
-    binaryfunc nb_inplace_rshift;
-    binaryfunc nb_inplace_and;
-    binaryfunc nb_inplace_xor;
-    binaryfunc nb_inplace_or;
-
-    /* Added in release 2.2 */
-    /* The following require the Mx_TPFLAGS_HAVE_CLASS flag */
-    binaryfunc nb_floor_divide;
-    binaryfunc nb_true_divide;
-    binaryfunc nb_inplace_floor_divide;
-    binaryfunc nb_inplace_true_divide;
-
-    /* Added in release 2.5 */
-    unaryfunc nb_index;
-} MxNumberMethods;
-
-typedef struct {
-    lenfunc sq_length;
-    binaryfunc sq_concat;
-    ssizeargfunc sq_repeat;
-    ssizeargfunc sq_item;
-    ssizessizeargfunc sq_slice;
-    ssizeobjargproc sq_ass_item;
-    ssizessizeobjargproc sq_ass_slice;
-    objobjproc sq_contains;
-    /* Added in release 2.0 */
-    binaryfunc sq_inplace_concat;
-    ssizeargfunc sq_inplace_repeat;
-} MxSequenceMethods;
-
-typedef struct {
-    lenfunc mp_length;
-    binaryfunc mp_subscript;
-    objobjargproc mp_ass_subscript;
-} MxMappingMethods;
-
-typedef struct {
-    readbufferproc bf_getreadbuffer;
-    writebufferproc bf_getwritebuffer;
-    segcountproc bf_getsegcount;
-    charbufferproc bf_getcharbuffer;
-    getbufferproc bf_getbuffer;
-    releasebufferproc bf_releasebuffer;
-} MxBufferProcs;
-
-
-typedef void (*freefunc)(void *);
-typedef void (*destructor)(MxObject *);
-typedef int (*printfunc)(MxObject *, FILE *, int);
-typedef MxObject *(*getattrfunc)(MxObject *, char *);
-typedef MxObject *(*getattrofunc)(MxObject *, MxObject *);
-typedef int (*setattrfunc)(MxObject *, char *, MxObject *);
-typedef int (*setattrofunc)(MxObject *, MxObject *, MxObject *);
-typedef int (*cmpfunc)(MxObject *, MxObject *);
-typedef MxObject *(*reprfunc)(MxObject *);
-typedef long (*hashfunc)(MxObject *);
-typedef MxObject *(*richcmpfunc) (MxObject *, MxObject *, int);
-typedef MxObject *(*getiterfunc) (MxObject *);
-typedef MxObject *(*iternextfunc) (MxObject *);
-typedef MxObject *(*descrgetfunc) (MxObject *, MxObject *, MxObject *);
-typedef int (*descrsetfunc) (MxObject *, MxObject *, MxObject *);
-typedef int (*initproc)(MxObject *, MxObject *, MxObject *);
-typedef MxObject *(*newfunc)(struct _typeobject *, MxObject *, MxObject *);
-typedef MxObject *(*allocfunc)(struct _typeobject *, Mx_ssize_t);
-
-typedef struct _typeobject {
-    MxObject_VAR_HEAD
-    const char *tp_name; /* For printing, in format "<module>.<name>" */
-    Mx_ssize_t tp_basicsize, tp_itemsize; /* For allocation */
-
-    /* Methods to implement standard operations */
-
-    destructor tp_dealloc;
-    printfunc tp_print;
-    getattrfunc tp_getattr;
-    setattrfunc tp_setattr;
-    cmpfunc tp_compare;
-    reprfunc tp_repr;
-
-    /* Method suites for standard classes */
-
-    MxNumberMethods *tp_as_number;
-    MxSequenceMethods *tp_as_sequence;
-    MxMappingMethods *tp_as_mapping;
-
-    /* More standard operations (here for binary compatibility) */
-
-    hashfunc tp_hash;
-    ternaryfunc tp_call;
-    reprfunc tp_str;
-    getattrofunc tp_getattro;
-    setattrofunc tp_setattro;
-
-    /* Functions to access object as input/output buffer */
-    MxBufferProcs *tp_as_buffer;
-
-    /* Flags to define presence of optional/expanded features */
-    long tp_flags;
-
-    const char *tp_doc; /* Documentation string */
-
-    /* Assigned meaning in release 2.0 */
-    /* call function for all accessible objects */
-    traverseproc tp_traverse;
-
-    /* delete references to contained objects */
-    inquiry tp_clear;
-
-    /* Assigned meaning in release 2.1 */
-    /* rich comparisons */
-    richcmpfunc tp_richcompare;
-
-    /* weak reference enabler */
-    Mx_ssize_t tp_weaklistoffset;
-
-    /* Added in release 2.2 */
-    /* Iterators */
-    getiterfunc tp_iter;
-    iternextfunc tp_iternext;
-
-    /* Attribute descriptor and subclassing stuff */
-    struct MxMethodDef *tp_methods;
-    struct MxMemberDef *tp_members;
-    struct MxGetSetDef *tp_getset;
-    struct _typeobject *tp_base;
-    MxObject *tp_dict;
-    descrgetfunc tp_descr_get;
-    descrsetfunc tp_descr_set;
-    Mx_ssize_t tp_dictoffset;
-    initproc tp_init;
-    allocfunc tp_alloc;
-    newfunc tp_new;
-    freefunc tp_free; /* Low-level free-memory routine */
-    inquiry tp_is_gc; /* For MxObject_IS_GC */
-    MxObject *tp_bases;
-    MxObject *tp_mro; /* method resolution order */
-    MxObject *tp_cache;
-    MxObject *tp_subclasses;
-    MxObject *tp_weaklist;
-    destructor tp_del;
-
-    /* Type attribute cache version tag. Added in version 2.6 */
-    unsigned int tp_version_tag;
-
-#ifdef COUNT_ALLOCS
-    /* these must be last and never explicitly initialized */
-    Mx_ssize_t tp_allocs;
-    Mx_ssize_t tp_frees;
-    Mx_ssize_t tp_maxalloc;
-    struct _typeobject *tp_prev;
-    struct _typeobject *tp_next;
-#endif
-} MxTypeObject;
-
-
-/* The *real* layout of a type object when allocated on the heap */
-typedef struct _heaptypeobject {
-    /* Note: there's a dependency on the order of these members
-       in slotptr() in typeobject.c . */
-    MxTypeObject ht_type;
-    MxNumberMethods as_number;
-    MxMappingMethods as_mapping;
-    MxSequenceMethods as_sequence; /* as_sequence comes after as_mapping,
-                                      so that the mapping wins when both
-                                      the mapping and the sequence define
-                                      a given operator (e.g. __getitem__).
-                                      see add_operators() in typeobject.c . */
-    MxBufferProcs as_buffer;
-    MxObject *ht_name, *ht_slots;
-    /* here are optional user slots, followed by the members. */
-} MxHeapTypeObject;
 
 /* access macro to the members which are floating "behind" the object */
 #define MxHeapType_GET_MEMBERS(etype) \
@@ -441,7 +183,7 @@ typedef struct _heaptypeobject {
 
 
 /* Generic type check */
-MxAPI_FUNC(int) MxType_IsSubtype(MxType *, MxTypeObject *);
+MxAPI_FUNC(int) MxType_IsSubtype(MxType *, MxType *);
 #define MxObject_TypeCheck(ob, tp) \
     (Mx_TYPE(ob) == (tp) || MxType_IsSubtype(Mx_TYPE(ob), (tp)))
 
@@ -457,7 +199,7 @@ MxAPI_FUNC(int) MxType_Ready(MxType *);
 MxAPI_FUNC(MxObject *) MxType_GenericAlloc(MxType *, Mx_ssize_t);
 MxAPI_FUNC(MxObject *) MxType_GenericNew(MxType *,
                                                MxObject *, MxObject *);
-MxAPI_FUNC(MxObject *) _PyType_Lookup(MxType *, MxObject *);
+MxAPI_FUNC(MxObject *) _MxType_Lookup(MxType *, MxObject *);
 MxAPI_FUNC(MxObject *) _MxObject_LookupSpecial(MxObject *, char *, MxObject **);
 MxAPI_FUNC(unsigned int) MxType_ClearCache(void);
 MxAPI_FUNC(void) MxType_Modified(MxType *);
@@ -818,18 +560,18 @@ MxAPI_FUNC(void) _Mx_AddToAllObjects(MxObject *, int force);
  * Mxthon integers aren't currently weakly referencable.  Best practice is
  * to use Mx_CLEAR() even if you can't think of a reason for why you need to.
  */
-#define Mx_CLEAR(op)                            \
-    do {                                        \
-        if (op) {                               \
-            MxObject *_py_tmp = (MxObject *)(op);               \
-            (op) = NULL;                        \
-            Mx_DECREF(_py_tmp);                 \
-        }                                       \
-    } while (0)
-
-/* Macros to use in case the object pointer may be NULL: */
-#define Mx_XINCREF(op) do { if ((op) == NULL) ; else Mx_INCREF(op); } while (0)
-#define Mx_XDECREF(op) do { if ((op) == NULL) ; else Mx_DECREF(op); } while (0)
+//#define Mx_CLEAR(op)                            \
+//    do {                                        \
+//        if (op) {                               \
+//            MxObject *_py_tmp = (MxObject *)(op);               \
+//            (op) = NULL;                        \
+//            Mx_DECREF(_py_tmp);                 \
+//        }                                       \
+//    } while (0)
+//
+///* Macros to use in case the object pointer may be NULL: */
+//#define Mx_XINCREF(op) do { if ((op) == NULL) ; else Mx_INCREF(op); } while (0)
+//#define Mx_XDECREF(op) do { if ((op) == NULL) ; else Mx_DECREF(op); } while (0)
 
 /* Safely decref `op` and set `op` to `op2`.
  *
@@ -1013,16 +755,8 @@ chain of N deallocations is broken into N / MxTrash_UNWIND_LEVEL pieces,
 with the call stack never exceeding a depth of MxTrash_UNWIND_LEVEL.
 */
 
-/* This is the old private API, invoked by the macros before 2.7.4.
-   Kept for binary compatibility of extensions. */
-MxAPI_FUNC(void) _PyTrash_deposit_object(MxObject*);
-MxAPI_FUNC(void) _PyTrash_destroy_chain(void);
-MxAPI_DATA(int) _PyTrash_delete_nesting;
-MxAPI_DATA(MxObject *) _PyTrash_delete_later;
 
-/* The new thread-safe private API, invoked by the macros below. */
-MxAPI_FUNC(void) _PyTrash_thread_deposit_object(MxObject*);
-MxAPI_FUNC(void) _PyTrash_thread_destroy_chain(void);
+
 
 #define MxTrash_UNWIND_LEVEL 50
 
@@ -1046,6 +780,12 @@ MxAPI_FUNC(void) _PyTrash_thread_destroy_chain(void);
         else \
             _PyTrash_thread_deposit_object((MxObject*)op); \
     } while (0);
+
+
+/**
+ * Init and add to python module
+ */
+void MxType_init(PyObject *m);
 
 
 #endif /* SRC_MXTYPE_H_ */

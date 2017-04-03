@@ -31,6 +31,17 @@ add_definitions(-DCX3D_SUPPORT_OPENGL)
 
 find_package(Bullet)
 
+set(PYTHON_LIBRARY "" CACHE PATH "path to custom python library")
+set(PYTHON_INCLUDE_DIR "" CACHE PATH "path to where a custom Python.h")
+find_package(PythonLibs REQUIRED)
+mark_as_advanced(CLEAR FORCE PYTHON_LIBRARY)
+mark_as_advanced(CLEAR FORCE PYTHON_INCLUDE_DIR)
+
+message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")                  
+message("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")                  
+message("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")            
+message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
+
 if(BULLET_FOUND)
   message("BULLET_INCLUDE_DIRS: ${BULLET_INCLUDE_DIRS}")
   message("BULLET_LIBRARIES ${BULLET_LIBRARIES}")
@@ -43,25 +54,26 @@ include_directories(${OPENGL_INCLUDE_DIR})
 
 if(LLVM_FOUND)
   message("LLVM_FOUND")
+  
+  message("LLVM_CXXFLAGS: ${LLVM_CXXFLAGS}")
+  message("LLVM_HOST_TARGET: ${LLVM_HOST_TARGET}")
+  
+  message("LLVM_LDFLAGS: ${LLVM_LDFLAGS}")
+  
+  message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
+  
+  
+  
+  message("LLVM_LIBRARIES: ${LLVM_LIBRARIES}")
+  message("LLVM_LIBRARY_DIRS: ${LLVM_LIBRARY_DIRS}")
+  message("LLVM_ROOT_DIR: ${LLVM_ROOT_DIR}")
+  
+  message("LLVM_VERSION_MAJOR: ${LLVM_VERSION_MAJOR}")
+  message("LLVM_VERSION_MINOR: ${LLVM_VERSION_MINOR}")
+  message("LLVM_VERSION_STRING: ${LLVM_VERSION_STRING}")
+
 
   
-message("LLVM_CXXFLAGS: ${LLVM_CXXFLAGS}")
-message("LLVM_HOST_TARGET: ${LLVM_HOST_TARGET}")
-
-message("LLVM_LDFLAGS: ${LLVM_LDFLAGS}")
-
-message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
-
-
-
-message("LLVM_LIBRARIES: ${LLVM_LIBRARIES}")
-message("LLVM_LIBRARY_DIRS: ${LLVM_LIBRARY_DIRS}")
-message("LLVM_ROOT_DIR: ${LLVM_ROOT_DIR}")
-
-message("LLVM_VERSION_MAJOR: ${LLVM_VERSION_MAJOR}")
-message("LLVM_VERSION_MINOR: ${LLVM_VERSION_MINOR}")
-message("LLVM_VERSION_STRING: ${LLVM_VERSION_STRING}")
-
 endif()
 
 find_package(AssImp)
@@ -91,11 +103,25 @@ endif()
 
 #message("GLFW_LIBRARIES: ${GLFW_LIBRARIES}")
 
+message("before deps include path: ${CMAKE_INCLUDE_PATH}")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message( "dir='${dir}'")
+endforeach()
+
+# process dependencies first
+add_subdirectory(deps)
+
+
+message("getting mdcore interface incude:  ${MDCORE_INCLUDE_DIR}")
+
+
+
+
+
 # add  public include dir to include path
 include_directories(include)
 
-
-add_subdirectory(deps)
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(models)

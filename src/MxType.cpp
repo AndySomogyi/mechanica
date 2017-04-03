@@ -7,3 +7,6 @@
 
 #include <MxType.h>
 
+void MxType_init(PyObject *m) {
+
+}

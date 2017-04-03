@@ -73,8 +73,13 @@ typedef size_t         Mx_ssize_t;
 
 /* If no external linkage macros defined by now, create defaults */
 #ifndef MxAPI_FUNC
-#       define MxAPI_FUNC(RTYPE) RTYPE
+#  ifdef __cplusplus
+#    define MxAPI_FUNC(RTYPE) extern "C" RTYPE
+#  else
+#    define MxAPI_FUNC(RTYPE) extern RTYPE
+#  endif
 #endif
+
 #ifndef MxAPI_DATA
 #       define MxAPI_DATA(RTYPE) extern RTYPE
 #endif

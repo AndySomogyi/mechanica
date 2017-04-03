@@ -13,4 +13,6 @@
 struct MxModule : MxObject {
 };
 
+void MxModule_init(PyObject *m);
+
 #endif /* SRC_MXMODULE_H_ */

@@ -8,7 +8,7 @@
 #ifndef INCLUDE_CA_SYMBOL_H_
 #define INCLUDE_CA_SYMBOL_H_
 
-#include <mx_string.h>
+#include "mx_string.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +28,8 @@ extern "C" {
  *
  * Dotted symbols are automatically parsed and generate a MxDottedSymbol object.
  */
-struct MxSymbol : MxObject {
-};
+struct MxSymbol;
+struct MxType;
 
 /**
  * The type object for a MxSymbol.
@@ -93,10 +93,7 @@ MxAPI_FUNC(MxString*) MxSymbol_GetString(MxSymbol *sym);
  *
  * Dotted symbols are also interned and immutable, like symbols.
  */
-struct MxDottedSymbol : MxSymbol {
-	Mx_ssize_t ob_size;   ///< number of symbols
-	MxSymbol *symbols[1]; ///< vector of symbols
-};
+struct MxDottedSymbol;
 
 /**
  * The type object for a MxDottedSymbol.

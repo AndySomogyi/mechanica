@@ -23,7 +23,12 @@
 #ifndef _INCLUDED_CAYMAN_PRIVATE_H_
 #define _INCLUDED_CAYMAN_PRIVATE_H_
 
+#include <Python.h>
 #include <assert.h>
+
+#include "MxObject.h"
+#include "MxType.h"
+#include "MxSymbol.h"
 
 
 

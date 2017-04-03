@@ -1,4 +1,11 @@
 add_subdirectory(glfw)
+add_subdirectory(soil)
+
+set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
+#option(MDCORE_USE_FFTW3 "use FFTW" YES)
+
+add_subdirectory(mdcore)
+
 
 #set(CMAKE_INSTALL_PREFIX ${HOME}/local/openmm)
 #option(OPENMM_BUILD_AMOEBA_PLUGIN OFF)

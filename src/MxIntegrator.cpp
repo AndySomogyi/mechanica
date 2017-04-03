@@ -7,3 +7,5 @@
 
 #include <MxIntegrator.h>
 
+void MxIntegrator_init(PyObject* m) {
+}

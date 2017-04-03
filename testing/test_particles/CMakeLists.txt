@@ -1,5 +1,3 @@
-
-link_directories(${LLVM_LIBRARY_DIRS})
 link_libraries(glfw)
 link_libraries(mechanica)
 link_libraries(${LLVM_LIBRARIES})

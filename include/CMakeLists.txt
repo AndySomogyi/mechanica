@@ -43,6 +43,7 @@ set (_PUBLIC_HEADERS
   mx_simulator.h
   mx_tupleobject.h
   mx_particles.h
+  mx_integrator.h
   ${AST_HEADERS}
   ${X3D_HEADERS}
   )

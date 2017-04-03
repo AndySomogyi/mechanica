@@ -1,8 +1,10 @@
 
 link_libraries(glfw)
-
+link_libraries(soil)
 link_libraries(${OPENGL_LIBRARIES})
 
+
+include_directories(${GLM_INCLUDE_DIRS})
 include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
 
 if (MATH_LIBRARY)
@@ -31,22 +33,25 @@ endif()
 
 set(GLAD "${GLFW_SOURCE_DIR}/deps/glad/glad.h"
          "${GLFW_SOURCE_DIR}/deps/glad.c")
-set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
-           "${GLFW_SOURCE_DIR}/deps/getopt.c")
-set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
-  "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
+#set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
+#           "${GLFW_SOURCE_DIR}/deps/getopt.c")
+#set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
+#  "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
 
 
 
 set(BLOB_SRC
   blob.cpp
-  camera.h
-  camera.cpp
-  vector3d.h
-  vector3d.cpp
+  Shader.h
+  Camera.h
+  ArcBall.cpp
+  ArcBall.hpp
+  trackball.c
+  trackball.h
   )
 
-add_executable(blob WIN32 MACOSX_BUNDLE ${BLOB_SRC} ${ICON} ${GLAD})
+# add_executable(blob WIN32 MACOSX_BUNDLE ${BLOB_SRC} ${ICON} ${GLAD})
+add_executable(blob ${BLOB_SRC} ${ICON} ${GLAD})
 
 
 #set_target_properties(${WINDOWS_BINARIES} ${CONSOLE_BINARIES} PROPERTIES

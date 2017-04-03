@@ -11,6 +11,8 @@
 
 
 
+
+
 extern "C" {
 
 void Ca_Dealloc(MxObject*)
@@ -67,10 +69,8 @@ long MxObject_HashNotImplemented(MxObject *self)
     return -1;
 }
 
-
-
-
-
 }
 
+void MxObject_init(PyObject *m) {
+};
 

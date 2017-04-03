@@ -6,6 +6,7 @@
  */
 
 #include "mx_symbol.h"
+#include "mechanica_private.h"
 
 extern "C" {
 
@@ -41,6 +42,10 @@ MxString* MxSymbol_GetString(MxSymbol* sym)
 {
 	return 0;
 }
+
+}
+
+void MxSymbol_init(PyObject *m) {
 
 }
 

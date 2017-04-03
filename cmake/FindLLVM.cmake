@@ -185,6 +185,7 @@ else()
             endif()
         endif()
     endmacro()
+
     macro(llvm_set_libs var flag)
        if(LLVM_FIND_QUIETLY)
             set(_quiet_arg ERROR_QUIET)
@@ -249,7 +250,11 @@ else()
         string(REPLACE "\n" " " LLVM_LDFLAGS "${LLVM_LDFLAGS} ${LLVM_SYSTEM_LIBS}")
     endif()
     llvm_set(LIBRARY_DIRS libdir true)
-    llvm_set_libs(LIBRARIES libs)
+
+    # grab the absolute path to the LLVM library files. If you add the llvm dir as a library path,
+    # the linker picks up the llvm libstdc++ instead of the system one, which causes all kinds
+    # of problems. 
+    llvm_set_libs(LIBRARIES libfiles)
     # LLVM bug: llvm-config --libs tablegen returns -lLLVM-3.8.0
     # but code for it is not in shared library
     if("${LLVM_FIND_COMPONENTS}" MATCHES "tablegen")

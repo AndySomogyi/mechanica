@@ -20,19 +20,21 @@
 /**
  * Basic opaque Mechanica object type.
  */
-typedef struct MxObject {
-	struct MxType *type;
-	uint32_t refcount;
-} MxObject;
+
+#ifdef __cplusplus
+struct MxObject;
+#else
+typedef struct MxObject MxObject;
+#endif
 
 
-#define Mx_REFCNT(ob)           (((MxObject*)(ob))->refcount)
-#define Mx_TYPE(ob)             (((MxObject*)(ob))->type)
-#define Mx_SIZE(ob)             (((MxVarObject*)(ob))->ob_size)
-
-#define Mx_INCREF(o) { Mx_IncRef((MxObject*)(o)); }
-
-#define Mx_DECREF(o) { Mx_DecRef((MxObject*)(o)); }
+//#define Mx_REFCNT(ob)           (((MxObject*)(ob))->refcount)
+//#define Mx_TYPE(ob)             (((MxObject*)(ob))->type)
+//#define Mx_SIZE(ob)             (((MxVarObject*)(ob))->ob_size)
+//
+//#define Mx_INCREF(o) { Mx_IncRef((MxObject*)(o)); }
+//
+//#define Mx_DECREF(o) { Mx_DecRef((MxObject*)(o)); }
 
 /* Safely decref `op` and set `op` to NULL, especially useful in tp_clear
  * and tp_dealloc implementations.
