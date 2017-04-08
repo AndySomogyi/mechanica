@@ -16,6 +16,9 @@
 /**
  * Define the Mechanica base MxObject to have the same binary layout as
  * python objects.
+ *
+ * Nothing is actually declared to be a MxObject, but every pointer to
+ * a Mechanica object can be cast to a MxObject* (and hence a PyObject*).
  */
 struct MxObject : _object {};
 

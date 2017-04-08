@@ -9,8 +9,17 @@
 #define SRC_MXSYSTEM_H_
 
 #include "mechanica_private.h"
+#include "MxModel.h"
+#include "MxPropagator.h"
+#include "MxController.h"
+#include "MxView.h"
+
 
 struct MxSystem : MxObject {
+	MxModel *model;
+	MxPropagator *propagator;
+	MxController *controller;
+	MxView *view;
 };
 
 void MxSystem_init(PyObject *m);

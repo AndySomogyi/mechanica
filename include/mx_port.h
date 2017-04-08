@@ -11,6 +11,13 @@
 #include <stdint.h>
 #include <stddef.h>
 
+
+/**
+ * Mechanica is built with single precision in mind. In the future,
+ * maybe there could be a need for double precision
+ */
+typedef float mx_real;
+
 typedef size_t         Mx_ssize_t;
 
 
@@ -89,6 +96,11 @@ typedef size_t         Mx_ssize_t;
 #       else /* __cplusplus */
 #               define MxMODINIT_FUNC MxObject*
 #       endif /* __cplusplus */
+#endif
+
+
+#ifndef WIN32
+typedef int32_t HRESULT;
 #endif
 
 

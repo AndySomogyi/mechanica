@@ -11,6 +11,7 @@
 #include "mechanica_private.h"
 
 struct MxModel : MxObject {
+
 };
 
 void MxModel_init(PyObject *m);

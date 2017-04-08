@@ -12,7 +12,7 @@
 #include "MxModule.h"
 #include "MxModel.h"
 #include "MxSystem.h"
-#include "MxIntegrator.h"
+#include "MxPropagator.h"
 
 PyMethodDef methods = {
     NULL
@@ -75,7 +75,7 @@ static PyObject * moduleinit(void)
     MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);
-    MxIntegrator_init(m);
+    MxPropagator_init(m);
     //MxObject_init(m);
     //MxObject_init(m);
 

@@ -52,13 +52,18 @@ set(SRC
   MxTestCube.cpp
   MxTestParticles.cpp
   MxType.cpp
-  MxIntegrator.cpp
+  MxPropagator.cpp
   MxTestMDCoreParticles.cpp
   MxModule.cpp
   MxModel.cpp
   MxSystem.cpp
   MxSymbol.cpp
-  MxIntegrator.cpp
+  MxPropagator.cpp
+  MxParticle.cpp
+  MxCompositeParticle.cpp
+  MxController.cpp
+  MxView.cpp
+  MxCubicCompositeParticle.cpp
   ${AST_SRC}
   ${X3D_SRC}
   )
@@ -75,13 +80,17 @@ set(HEADERS
   MxTestCube.h
   MxTestParticles.h
   MxType.h
-  MxIntegrator.h
   MxTestMDCoreParticles.h
   MxModule.h
   MxModel.h
   MxSystem.h
   MxSymbol.h
-  MxIntegrator.h
+  MxPropagator.h
+  MxParticle.h
+  MxCompositeParticle.h
+  MxController.h
+  MxView.h
+  MxCubicCompositeParticle.h
   )
 
 
