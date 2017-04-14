@@ -8,7 +8,7 @@
 #ifndef INCLUDE_MX_PARTICLE_H_
 #define INCLUDE_MX_PARTICLE_H_
 
-typedef struct MxParticle MxParticle;
+MxAPI_STRUCT(MxParticle);
 
 
 

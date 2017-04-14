@@ -13,12 +13,14 @@
 
 #include "mx_object.h"
 
+MxAPI_STRUCT(MxModule);
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-typedef struct MxModule MxModule;
+
 
 /**
  * This instance of MxTypeObject represents the Mechanica module type. 

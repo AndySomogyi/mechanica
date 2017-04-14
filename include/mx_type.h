@@ -17,8 +17,10 @@ extern "C" {
 
 
 /**
- * Keep type description opaque for now, this is essentially a vtable with
- * additional metadata.
+ * The Mechanica MxType has the exact same binary layout as a PyTypeObject,
+ * and can be used wherever a PyTypeObject is used.
+ *
+ * The MxType may add additional fields in the future.
  */
 typedef struct MxType MxType;
 

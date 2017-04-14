@@ -24,6 +24,18 @@
 #define _INCLUDED_CAYMAN_PRIVATE_H_
 
 #include <Python.h>
+
+// Games with importing numpy and setting up function pointers.
+// Only the main Mechanica python init module, mechanica.cpp defines
+// MX_IMPORTING_NUMPY_ARRAY and calls import_array()
+#ifndef MX_IMPORTING_NUMPY_ARRAY
+#define NO_IMPORT_ARRAY
+#endif
+#define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
+
 #include <assert.h>
 
 #include "MxObject.h"

@@ -12,6 +12,11 @@
 
 struct MxModel : MxObject {
 
+	/**
+	 * Lattice (optional)
+	 */
+	MxLattice *lattice;
+
 };
 
 void MxModel_init(PyObject *m);

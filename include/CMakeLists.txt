@@ -46,7 +46,7 @@ set (_PUBLIC_HEADERS
   mx_particle.h
   mx_composite_particle.h
   mx_propagator.h
-  mx_cubic_composite_particle.h
+  mx_lattice.h
   ${AST_HEADERS}
   ${X3D_HEADERS}
   )

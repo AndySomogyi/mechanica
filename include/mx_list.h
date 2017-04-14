@@ -8,7 +8,7 @@
 #ifndef INCLUDE_CA_LIST_H_
 #define INCLUDE_CA_LIST_H_
 
-#include "MxObject.h"
+#include "mx_object.h"
 
 
 
@@ -26,33 +26,7 @@ inserted in the list.  Similarly, MxList_GetItem does not increment the
 returned item's reference count.
 */
 
-#ifdef __cplusplus
-
-struct MxList : MxObject {
-
-    /* Vector of pointers to list elements.  list[0] is ob_item[0], etc. */
-	MxObject **ob_item;
-
-    /* ob_item contains space for 'allocated' elements.  The number
-     * currently in use is ob_size.
-     * Invariants:
-     *     0 <= ob_size <= allocated
-     *     len(list) == ob_size
-     *     ob_item == NULL implies ob_size == allocated == 0
-     * list.sort() temporarily sets allocated to -1 to detect mutations.
-     *
-     * Items must normally not be NULL, except during construction when
-     * the list is not yet visible outside the function that builds it.
-     */
-    Mx_ssize_t allocated;
-} ;
-
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+MxAPI_STRUCT(MxList);
 
 
 
@@ -85,15 +59,11 @@ MxAPI_FUNC(void) _MxList_DebugMallocStats(FILE *out);
 
 /* Macro, trading safety for speed */
 
-#define MxList_GET_ITEM(op, i) (((MxListObject *)(op))->ob_item[i])
-#define MxList_SET_ITEM(op, i, v) (((MxListObject *)(op))->ob_item[i] = (v))
+#define MxList_GET_ITEM(op, i) (((MxList *)(op))->ob_item[i])
+#define MxList_SET_ITEM(op, i, v) (((MxList *)(op))->ob_item[i] = (v))
 #define MxList_GET_SIZE(op)    Mx_SIZE(op)
-#define _MxList_ITEMS(op)      (((MxListObject *)(op))->ob_item)
+#define _MxList_ITEMS(op)      (((MxList *)(op))->ob_item)
 
-
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif /* INCLUDE_CA_LIST_H_ */

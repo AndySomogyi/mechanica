@@ -98,6 +98,15 @@ typedef size_t         Mx_ssize_t;
 #       endif /* __cplusplus */
 #endif
 
+/** Macro for pre-defining opaque public data types */
+#ifndef MxAPI_STRUCT
+#    if defined(__cplusplus)
+#        define MxAPI_STRUCT(TYPE) struct TYPE
+#    else
+#        define MxAPI_STRUCT(TYPE) typedef struct TYPE TYPE
+#    endif
+#endif
+
 
 #ifndef WIN32
 typedef int32_t HRESULT;

@@ -13,6 +13,8 @@ include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${GLM_INCLUDE_DIRS})
 include_directories(${MDCORE_INCLUDE_DIR})
 include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${NUMPY_INCLUDE_DIR})
+
 
 file(GLOB AST_SRC
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -42,7 +44,7 @@ set(SRC
   mx_ast.cpp
   mx_expr.cpp
   mx_function.cpp
-  mx_list.cpp
+  MxList.cpp
   MxObject.cpp
   mx_stmt.cpp
   mx_tupleobject.cpp
@@ -63,7 +65,7 @@ set(SRC
   MxCompositeParticle.cpp
   MxController.cpp
   MxView.cpp
-  MxCubicCompositeParticle.cpp
+  MxLattice.cpp
   ${AST_SRC}
   ${X3D_SRC}
   )
@@ -90,7 +92,7 @@ set(HEADERS
   MxCompositeParticle.h
   MxController.h
   MxView.h
-  MxCubicCompositeParticle.h
+  MxLattice.h
   )
 
 

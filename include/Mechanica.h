@@ -28,7 +28,7 @@
 #include <mx_type.h>
 #include <mx_callable.h>
 #include <mx_composite_particle.h>
-#include <mx_cubic_composite_particle.h>
+#include <mx_lattice.h>
 #include <mx_function.h>
 #include <mx_eval.h>
 #include <mx_mesh.h>

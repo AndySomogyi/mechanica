@@ -7,6 +7,9 @@
  *      Author: andy
  */
 
+// only source module that calls import_array()
+#define MX_IMPORTING_NUMPY_ARRAY
+
 #include "mechanica_private.h"
 
 #include "MxModule.h"
@@ -91,6 +94,7 @@ static PyObject * moduleinit(void)
 	 */
     PyMODINIT_FUNC initmechanica(void)
     {
+    	import_array();
         moduleinit();
     }
 #else

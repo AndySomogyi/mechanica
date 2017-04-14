@@ -20,12 +20,7 @@
 /**
  * Basic opaque Mechanica object type.
  */
-
-#ifdef __cplusplus
-struct MxObject;
-#else
-typedef struct MxObject MxObject;
-#endif
+MxAPI_STRUCT(MxObject);
 
 
 //#define Mx_REFCNT(ob)           (((MxObject*)(ob))->refcount)

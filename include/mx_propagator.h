@@ -7,8 +7,9 @@
 
 #ifndef INCLUDE_MX_PROPAGATOR_H_
 #define INCLUDE_MX_PROPAGATOR_H_
+#include "mx_object.h"
 
-typedef struct xMxPropagator xMxPropagator;
+MxAPI_STRUCT(MxPropagator);
 
 
 #endif /* INCLUDE_MX_PROPAGATOR_H_ */
