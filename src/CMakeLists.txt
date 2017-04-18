@@ -66,6 +66,7 @@ set(SRC
   MxController.cpp
   MxView.cpp
   MxLattice.cpp
+  MxLatticeCluster.cpp
   ${AST_SRC}
   ${X3D_SRC}
   )
@@ -93,6 +94,7 @@ set(HEADERS
   MxController.h
   MxView.h
   MxLattice.h
+  MxLatticeCluster.h
   )
 
 

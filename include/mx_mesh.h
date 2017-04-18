@@ -17,6 +17,9 @@ extern "C" {
 /**
  * A Mechanica mesh currently only supports triangular meshes.
  *
+ * Meshes are dynamic, the runtime can deform, or structurally rearange the
+ * mesh.
+ *
  * Consists of postion, velocity,
  */
 typedef struct MxMeshData {
@@ -24,7 +27,8 @@ typedef struct MxMeshData {
 
 } MxMeshData;
 
-typedef struct MxMesh MxMesh;
+MxAPI_STRUCT(MxMesh);
+
 
 /**
  * This instance of MxTypeObject represents the Mechanica module type.
