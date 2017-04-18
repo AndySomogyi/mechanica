@@ -1,3 +1,6 @@
 [submodule "deps/mdcore"]
 	path = deps/mdcore
 	url = git@github.com:AndySomogyi/mdcore.git
+[submodule "docs"]
+	path = docs
+	url = git@github.com:AndySomogyi/mechanica.git
