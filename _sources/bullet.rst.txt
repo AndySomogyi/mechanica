@@ -1,11 +1,11 @@
 .. default-domain:: cpp
 
-============================
+
 Bullet's Collision Algorithm
-============================
+****************************
 
 Overview
---------
+========
 
 The bullet collision detection algorithm proceeds similarly to most rigid body / physics simulation
 engines.  This document will cover the basic Bullet collision algorithm using discrete rigid
@@ -29,78 +29,67 @@ comprise a Bullet simulation.
 * :code:`btCollisionConfiguration`
 
   blah
+  
 
 
 
 
-The btCollisionWorld sets up the basic collision framework, it manages the broadphase and
-dispatcher. 
 
-::
-   
-   class btCollisionWorld {
-      btAlignedObjectArray<btCollisionObject*>       m_collisionObjects;
-      btDispatcher*	                             m_dispatcher1;
-      btDispatcherInfo	                             m_dispatchInfo;
-      btBroadphaseInterface*	                     m_broadphasePairCache;
-      btIDebugDraw*	                             m_debugDrawer;
-      
-      ///m_forceUpdateAllAabbs can be set to false as an optimization to only update active object AABBs
-      ///it is true by default, because it is error-prone (setting the position of static objects wouldn't update their AABB)
-      bool m_forceUpdateAllAabbs;
-   }
-
-The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete,
-parallel, and continuous etc.
-
-::
-
-   class btDynamicsWorld : public btCollisionWorld {
-      btInternalTickCallback                         m_internalTickCallback;
-      btInternalTickCallback                         m_internalPreTickCallback;
-      void*	                                     m_worldUserInfo;
-      btContactSolverInfo                            m_solverInfo;
-   }
-
-The btDiscreteDynamicsWorld is the main way to create discrete rigid body simulations. It inherits
-from btDynamicsWorld, which in turn inherits from the base btCollisionWorld. The
-btDiscreteDynamicsWorld determines the response to the identified collisions.
-
-Concepts:
-
-* Simulation Islands
+Concepts
+========
 
 
-::
-   
-   class btDiscreteDynamicsWorld : public btDynamicsWorld {
-      btAlignedObjectArray<btTypedConstraint*>	     m_sortedConstraints;
-      InplaceSolverIslandCallback* 	             m_solverIslandCallback;
-      btConstraintSolver*	                     m_constraintSolver;
-      btSimulationIslandManager*	             m_islandManager;
-      btAlignedObjectArray<btTypedConstraint*>       m_constraints;
-      btAlignedObjectArray<btRigidBody*>             m_nonStaticRigidBodies;
-      btVector3	                                     m_gravity;
+Collision Objects
+-----------------
 
-      //for variable timesteps
-      btScalar	                                     m_localTime;
-      btScalar	                                     m_fixedTimeStep;
+Collision Shapes
+----------------
 
-      //for variable timesteps
-      bool	                                     m_ownsIslandManager;
-      bool	                                     m_ownsConstraintSolver;
-      bool	                                     m_synchronizeAllMotionStates;
-      bool	                                     m_applySpeculativeContactRestitution;
-      
-      btAlignedObjectArray<btActionInterface*>	     m_actions;
-      int	                                     m_profileTimings;
-      bool	                                     m_latencyMotionStateInterpolation;
-      btAlignedObjectArray<btPersistentManifold*>    m_predictiveManifolds;
-      
-      // used to synchronize threads creating predictive contacts
-      btSpinMutex                                    m_predictiveManifoldsMutex;  
-   }
-      
+Broad Phase Collision
+---------------------
+
+Narrow Phase Collision
+----------------------
+
+AABB Bounding Box Hierarchy
+---------------------------
+
+Collision Pairs
+---------------
+
+Collision Manifold
+------------------
+In collision detection, a *manifold* defines a contact area between two objects. The set of
+intersection points is referred to as the contact set or contact manifold, the latter term
+appropriate when the intersection set is not a finite set but a continuum of points. For example,
+the intersection set of a box sitting on a table is the set of points on a face of the box. When the
+contact set is desired, I refer to this as a find-intersection query. As you would expect, in most
+cases a find intersection query is more expensive than a test intersection query for a given pair of
+objects.
+
+Every actual, verified collision will result in an additional collision manifold. The collision
+algorithms add a collision manifold to the dispatcher if a collision occurs. New contact manifolds
+are always created by the :code:`btCollisionDispatcher::getNewManifold`, which all of the collision
+algorithms call. 
+
+
+btPersistentManifold is a contact point cache, it stays persistent as long as objects are
+overlapping in the broadphase. Those contact points are created by the collision narrow phase. The
+cache can be empty, or hold 1,2,3 or 4 points. Some collision algorithms (GJK) might only add one
+point at a time. updates/refreshes old contact points, and throw them away if necessary (distance
+becomes too large) reduces the cache to 4 points, when more then 4 points are added, using following
+rules:
+
+* the contact point with deepest penetration is always kept, and it tries to maximuze the area
+  covered by the points
+  
+* note that some pairs of objects might have more then one contact manifold.
+
+
+Simulation Islands
+------------------
+
+
       
 
 Collision in general has a number of phases. Project the object forward. Figure out what collided,
@@ -116,24 +105,6 @@ caller. Basically, the :code:`btManifoldResult` objct holds onto a btPersistentM
 collision algoritm usually sets the btManifoldResult's m_manifoldPtr to point to the persistent
 manifold that's owned by the collision algorithm. 
 
-
-::
-   
-   class btCollisionAlgorithm {
-   protected:
-      btDispatcher* m_dispatcher;	
-   public:
-      btCollisionAlgorithm() {};
-      btCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
-      virtual ~btCollisionAlgorithm() {};
-      virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,
-         const btCollisionObjectWrapper* body1Wrap,
-	 const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
-      virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,
-         btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,
-	 btManifoldResult* resultOut) = 0;
-      virtual void getAllContactManifolds(btManifoldArray& manifoldArray) = 0;
-   };
 
 
 
@@ -169,11 +140,6 @@ before the world, and handed to the world in it's ctor.
 All of the collision algorithms call :code:`btDispatcher::releaseManifold` in their destructors to
 tell the dispatcher to remove this manifold.
 
-Each :code:`btBroadphasePair` holds a reference to a collision algorithm. The collision algorithm
-lifetime is the same as the broadphase pair. The collision pair's algorithm is created in the
-dispatcher's :code:`findAlgorithm` method. The basic idea is that the collision algorithm exists as
-long as a broadphase collision pair exists, the collision algorithm exists as long as a pair of
-objects remain in AABB contact.
 
 The AABB tree gets updated in the :code:`btCollisionWorld::computeOverlappingPairs` method. This
 method in turn calls :code:`btDbvtBroadphase::calculateOverlappingPairs`, which in turn calls
@@ -279,8 +245,27 @@ time step consists of the following phases:
 
 .. _coldet:
 
-Collistion Detection
---------------------
+Tracing Through the Collision Detection Phase
+---------------------------------------------
+Bullet makes extensive use of callback function, so it can be rather dificult to manually trace
+through an execution pass. This section follows a discrete collision that occured between a pair of
+rigid boxes. This section follows a call starting at
+:code:`btDiscreteDynamicsWorld::internalSingleStepSimulation` and proceeding through the following
+steps.
+::
+
+   btDiscreteDynamicsWorld::internalSingleStepSimulation
+   btCollisionWorld::performDiscreteCollisionDetection
+   btCollisionDispatcher::dispatchAllCollisionPairs
+   btHashedOverlappingPairCache::processAllOverlappingPairs
+   btCollisionPairCallback::processOverlap
+   btCollisionDispatcher::defaultNearCallback
+   btBoxBoxCollisionAlgorithm::processCollision
+
+The collision detection phase occurs after the unconstrained motion has been calculated. The
+:code:`btCollisionWorld::performDiscreteCollisionDetection` first updates the dynamic AABB bounding
+volume tree, computes the overlapping collision pairs, then performs the dispatch collision pairs
+step. 
 
 ::
    
@@ -408,23 +393,6 @@ them to this persistant manifold.
 
 btCollisionAlgorithm is an collision interface that is compatible with the Broadphase and btDispatcher.
 It is persistent over frames
-::
-   
-   class btCollisionAlgorithm {
-      btDispatcher*	m_dispatcher;
-
-      virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,
-         const btCollisionObjectWrapper* body1Wrap,
-	 const btDispatcherInfo& dispatchInfo,
-	 btManifoldResult* resultOut) = 0;
-
-      virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,
-	 btCollisionObject* body1,
-	 const btDispatcherInfo& dispatchInfo,
-	 btManifoldResult* resultOut) = 0;
-
-      virtual void getAllContactManifolds(btManifoldArray& manifoldArray) = 0;
-   };
 
 
 The collision algorithm shares a pointer to a persistent manifold, which is created by the collision
@@ -434,101 +402,6 @@ collision algorithms call this method to get a pointer to a new shared manifold.
    
    btPersistentManifold* btCollisionDispatcher::getNewManifold(const btCollisionObject*
       body0,const btCollisionObject* body1);
-
-Collision Manifold
-------------------
-In collision detection, a *manifold* defines a contact area between two objects. The set of
-intersection points is referred to as the contact set or contact manifold, the latter term
-appropriate when the intersection set is not a finite set but a continuum of points. For example,
-the intersection set of a box sitting on a table is the set of points on a face of the box. When the
-contact set is desired, I refer to this as a find-intersection query. As you would expect, in most
-cases a find intersection query is more expensive than a test intersection query for a given pair of
-objects.
-
-Every actual, verified collision will result in an additional collision manifold. The collision
-algorithms add a collision manifold to the dispatcher if a collision occurs. New contact manifolds
-are always created by the :code:`btCollisionDispatcher::getNewManifold`, which all of the collision
-algorithms call. 
-
-
-btPersistentManifold is a contact point cache, it stays persistent as long as objects are
-overlapping in the broadphase. Those contact points are created by the collision narrow phase. The
-cache can be empty, or hold 1,2,3 or 4 points. Some collision algorithms (GJK) might only add one
-point at a time. updates/refreshes old contact points, and throw them away if necessary (distance
-becomes too large) reduces the cache to 4 points, when more then 4 points are added, using following
-rules:
-
-* the contact point with deepest penetration is always kept, and it tries to maximuze the area
-  covered by the points
-  
-* note that some pairs of objects might have more then one contact manifold.
-
-::
-   
-   class btPersistentManifold : public btTypedObject {
-      btManifoldPoint m_pointCache[MANIFOLD_CACHE_SIZE];
-
-      /// this two body pointers can point to the physics rigidbody class.
-      const btCollisionObject* m_body0;
-      const btCollisionObject* m_body1;
-
-      int	m_cachedPoints;
-
-      btScalar	m_contactBreakingThreshold;
-      btScalar	m_contactProcessingThreshold;
-
-      public:
-         int	m_companionIdA;
-	 int	m_companionIdB;
-
-	 int m_index1a;
-
-	 btPersistentManifold();
-
-	 btPersistentManifold(const btCollisionObject* body0, const btCollisionObject*
-	    body1,int , btScalar contactBreakingThreshold,
-	    btScalar contactProcessingThreshold);
-
-	const btCollisionObject* getBody0() const { return m_body0;}
-	const btCollisionObject* getBody1() const { return m_body1;}
-
-	void	setBodies(const btCollisionObject* body0,const btCollisionObject* body1);
-
-	void clearUserCache(btManifoldPoint& pt);
-
-	int	getNumContacts();
-	
-	/// the setNumContacts API is usually not used, except when you gather/fill all contacts manually
-	void setNumContacts(int cachedPoints);
-
-	const btManifoldPoint& getContactPoint(int index) const;
-
-	btManifoldPoint& getContactPoint(int index);
-
-	///@todo: get this margin from the current physics / collision environment
-	btScalar	getContactBreakingThreshold() const;
-
-	btScalar	getContactProcessingThreshold() const;
-	
-	void setContactBreakingThreshold(btScalar contactBreakingThreshold);
-
-	void setContactProcessingThreshold(btScalar	contactProcessingThreshold);
-
-	int getCacheEntry(const btManifoldPoint& newPoint) const;
-
-	int addManifoldPoint( const btManifoldPoint& newPoint, bool isPredictive=false);
-
-	void removeContactPoint (int index);
-	
-	void replaceContactPoint(const btManifoldPoint& newPoint,int insertIndex);
-
-	bool validContactDistance(const btManifoldPoint& pt) const;
-	
-	/// calculated new worldspace coordinates and depth, and reject points that exceed the collision margin
-	void	refreshContactPoints(  const btTransform& trA,const btTransform& trB);
-
-	void	clearManifold();
-   }
 
 
 
@@ -811,6 +684,223 @@ And add this IF to the beginning of '''btKinematicClosestNotMeConvexResultCallba
    if (!convexResult.m_hitCollisionObject->hasContactResponse())
       return btScalar(1.0);
 
+
+Classes
+=======
+
+This section describes the key classes involved with Bullet collision detection.
+
+.. _btBroadphasePair:
+
+:code:`btBroadphasePair` 
+------------------------
+https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h
+
+The ``btBroadphasePair`` object represents a pair of pair of AABB-overlapping collision objects. The
+``btBroadphasePair`` exists as long as this pair of collision objects have operlappng AABB volumes. 
+A ``btDispatcher`` can search a ``btCollisionAlgorithm`` that performs exact/narrowphase collision
+detection on the actual collision shapes.
+
+
+The ``btBroadphasePair`` holds a reference to a collision algorithm. The collision algorithm
+lifetime is the same as the broadphase pair. The :code:`btBroadphasePair`
+
+When the AABB's of a pair of collision objects overlap, the :code:`btHashedOverlappingPairCache::addOverlappingPair`, in a call to
+:code:`btHashedOverlappingPairCache::internalAddPair` creates a new :code:`btBroadphasePair`. This
+new object is added to, and managed by a ``btOverlappingPairCache``. The ``btBroadphasePair``'s ``m_algorithm`` pointer is initially NULL.  
+
+
+The collision pair's algorithm is created in the
+dispatcher's ``findAlgorithm`` method. The basic idea is that the collision algorithm exists as
+long as a broadphase collision pair exists, the collision algorithm exists as long as a pair of
+objects remain in AABB contact.
+
+
+A simplified ``btBroadphasePair`` ::
+   
+   struct btBroadphasePair {
+      btBroadphaseProxy* m_pProxy0;
+      btBroadphaseProxy* m_pProxy1;
+      mutable btCollisionAlgorithm* m_algorithm;
+      //don't use this data, it will be removed in future version.
+      union { void* m_internalInfo1; int m_internalTmpValue;};
+   }
+
+some more stuff
+
+.. _btCollisionAlgorithm:
+
+``btCollisionAlgorithm``
+------------------------
+
+https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h
+
+::
+   
+   class btCollisionAlgorithm {
+   protected:
+      btDispatcher* m_dispatcher;	
+   public:
+      btCollisionAlgorithm() {};
+      btCollisionAlgorithm(const btCollisionAlgorithmConstructionInfo& ci);
+      virtual ~btCollisionAlgorithm() {};
+      virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,
+         const btCollisionObjectWrapper* body1Wrap,
+	 const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut) = 0;
+      virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,
+         btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,
+	 btManifoldResult* resultOut) = 0;
+      virtual void getAllContactManifolds(btManifoldArray& manifoldArray) = 0;
+   };
+
       
+.. _btPersistentManifold:
+
+``btPersistentManifold``
+------------------------
+
+https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/NarrowPhaseCollision/btPersistentManifold.h#L63
+
+::
+   
+   class btPersistentManifold : public btTypedObject {
+      btManifoldPoint m_pointCache[MANIFOLD_CACHE_SIZE];
+
+      /// this two body pointers can point to the physics rigidbody class.
+      const btCollisionObject* m_body0;
+      const btCollisionObject* m_body1;
+
+      int	m_cachedPoints;
+
+      btScalar	m_contactBreakingThreshold;
+      btScalar	m_contactProcessingThreshold;
+
+      public:
+         int	m_companionIdA;
+	 int	m_companionIdB;
+
+	 int m_index1a;
+
+	 btPersistentManifold();
+
+	 btPersistentManifold(const btCollisionObject* body0, const btCollisionObject*
+	    body1,int , btScalar contactBreakingThreshold,
+	    btScalar contactProcessingThreshold);
+
+	const btCollisionObject* getBody0() const { return m_body0;}
+	const btCollisionObject* getBody1() const { return m_body1;}
+
+	void	setBodies(const btCollisionObject* body0,const btCollisionObject* body1);
+
+	void clearUserCache(btManifoldPoint& pt);
+
+	int	getNumContacts();
+	
+	/// the setNumContacts API is usually not used, except when you gather/fill all contacts manually
+	void setNumContacts(int cachedPoints);
+
+	const btManifoldPoint& getContactPoint(int index) const;
+
+	btManifoldPoint& getContactPoint(int index);
+
+	///@todo: get this margin from the current physics / collision environment
+	btScalar	getContactBreakingThreshold() const;
+
+	btScalar	getContactProcessingThreshold() const;
+	
+	void setContactBreakingThreshold(btScalar contactBreakingThreshold);
+
+	void setContactProcessingThreshold(btScalar	contactProcessingThreshold);
+
+	int getCacheEntry(const btManifoldPoint& newPoint) const;
+
+	int addManifoldPoint( const btManifoldPoint& newPoint, bool isPredictive=false);
+
+	void removeContactPoint (int index);
+	
+	void replaceContactPoint(const btManifoldPoint& newPoint,int insertIndex);
+
+	bool validContactDistance(const btManifoldPoint& pt) const;
+	
+	/// calculated new worldspace coordinates and depth, and reject points that exceed the collision margin
+	void	refreshContactPoints(  const btTransform& trA,const btTransform& trB);
+
+	void	clearManifold();
+   }
+
+``btDiscreteDynamicsWorld``
+---------------------------
+
+https://github.com/bulletphysics/bullet3/blob/master/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h
+
+The ``btDiscreteDynamicsWorld`` is the main way to create discrete rigid body simulations. It inherits
+from ``btDynamicsWorld``, which in turn inherits from the base ``btCollisionWorld``. The
+btDiscreteDynamicsWorld determines the response to the identified collisions.
 
 
+::
+   
+   class btDiscreteDynamicsWorld : public btDynamicsWorld {
+      btAlignedObjectArray<btTypedConstraint*>	     m_sortedConstraints;
+      InplaceSolverIslandCallback* 	             m_solverIslandCallback;
+      btConstraintSolver*	                     m_constraintSolver;
+      btSimulationIslandManager*	             m_islandManager;
+      btAlignedObjectArray<btTypedConstraint*>       m_constraints;
+      btAlignedObjectArray<btRigidBody*>             m_nonStaticRigidBodies;
+      btVector3	                                     m_gravity;
+
+      //for variable timesteps
+      btScalar	                                     m_localTime;
+      btScalar	                                     m_fixedTimeStep;
+
+      //for variable timesteps
+      bool	                                     m_ownsIslandManager;
+      bool	                                     m_ownsConstraintSolver;
+      bool	                                     m_synchronizeAllMotionStates;
+      bool	                                     m_applySpeculativeContactRestitution;
+      
+      btAlignedObjectArray<btActionInterface*>	     m_actions;
+      int	                                     m_profileTimings;
+      bool	                                     m_latencyMotionStateInterpolation;
+      btAlignedObjectArray<btPersistentManifold*>    m_predictiveManifolds;
+      
+      // used to synchronize threads creating predictive contacts
+      btSpinMutex                                    m_predictiveManifoldsMutex;  
+   }
+
+
+``btDynamicsWorld``
+-------------------
+
+The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete,
+parallel, and continuous etc.
+
+::
+
+   class btDynamicsWorld : public btCollisionWorld {
+      btInternalTickCallback                         m_internalTickCallback;
+      btInternalTickCallback                         m_internalPreTickCallback;
+      void*	                                     m_worldUserInfo;
+      btContactSolverInfo                            m_solverInfo;
+   }
+
+
+``btCollisionWorld``
+--------------------
+
+The btCollisionWorld sets up the basic collision framework, it manages the broadphase and
+dispatcher. 
+
+::
+   
+   class btCollisionWorld {
+      btAlignedObjectArray<btCollisionObject*>       m_collisionObjects;
+      btDispatcher*	                             m_dispatcher1;
+      btDispatcherInfo	                             m_dispatchInfo;
+      btBroadphaseInterface*	                     m_broadphasePairCache;
+      btIDebugDraw*	                             m_debugDrawer;
+      
+      ///m_forceUpdateAllAabbs can be set to false as an optimization to only update active object AABBs
+      ///it is true by default, because it is error-prone (setting the position of static objects wouldn't update their AABB)
+      bool m_forceUpdateAllAabbs;
+   }

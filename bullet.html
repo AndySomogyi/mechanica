@@ -30,6 +30,7 @@
     <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
     <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Lattice Structure" href="lattice.html" />
@@ -70,6 +71,7 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test.html">Hello</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Bullet&#8217;s Collision Algorithm</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lattice.html">Lattice Structure</a></li>
@@ -88,10 +90,29 @@
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Bullet&#8217;s Collision Algorithm</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#time-stepping">Time Stepping</a></li>
-<li><a class="reference internal" href="#collistion-detection">Collistion Detection</a></li>
+<li><a class="reference internal" href="#concepts">Concepts</a><ul>
+<li><a class="reference internal" href="#collision-objects">Collision Objects</a></li>
+<li><a class="reference internal" href="#collision-shapes">Collision Shapes</a></li>
+<li><a class="reference internal" href="#broad-phase-collision">Broad Phase Collision</a></li>
+<li><a class="reference internal" href="#narrow-phase-collision">Narrow Phase Collision</a></li>
+<li><a class="reference internal" href="#aabb-bounding-box-hierarchy">AABB Bounding Box Hierarchy</a></li>
+<li><a class="reference internal" href="#collision-pairs">Collision Pairs</a></li>
 <li><a class="reference internal" href="#collision-manifold">Collision Manifold</a></li>
+<li><a class="reference internal" href="#simulation-islands">Simulation Islands</a></li>
+<li><a class="reference internal" href="#time-stepping">Time Stepping</a></li>
+<li><a class="reference internal" href="#tracing-through-the-collision-detection-phase">Tracing Through the Collision Detection Phase</a></li>
 <li><a class="reference internal" href="#bullet-callbacks-and-triggers">Bullet Callbacks and Triggers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classes">Classes</a><ul>
+<li><a class="reference internal" href="#btbroadphasepair"><code class="code docutils literal"><span class="pre">btBroadphasePair</span></code></a></li>
+<li><a class="reference internal" href="#btcollisionalgorithm"><code class="docutils literal"><span class="pre">btCollisionAlgorithm</span></code></a></li>
+<li><a class="reference internal" href="#btpersistentmanifold"><code class="docutils literal"><span class="pre">btPersistentManifold</span></code></a></li>
+<li><a class="reference internal" href="#btdiscretedynamicsworld"><code class="docutils literal"><span class="pre">btDiscreteDynamicsWorld</span></code></a></li>
+<li><a class="reference internal" href="#btdynamicsworld"><code class="docutils literal"><span class="pre">btDynamicsWorld</span></code></a></li>
+<li><a class="reference internal" href="#btcollisionworld"><code class="docutils literal"><span class="pre">btCollisionWorld</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -167,67 +188,54 @@ blas blah</p>
 <p>blah</p>
 </li>
 </ul>
-<p>The btCollisionWorld sets up the basic collision framework, it manages the broadphase and
-dispatcher.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btCollisionWorld</span> <span class="p">{</span>
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btCollisionObject</span><span class="o">*&gt;</span>       <span class="n">m_collisionObjects</span><span class="p">;</span>
-   <span class="n">btDispatcher</span><span class="o">*</span>                                  <span class="n">m_dispatcher1</span><span class="p">;</span>
-   <span class="n">btDispatcherInfo</span>                               <span class="n">m_dispatchInfo</span><span class="p">;</span>
-   <span class="n">btBroadphaseInterface</span><span class="o">*</span>                         <span class="n">m_broadphasePairCache</span><span class="p">;</span>
-   <span class="n">btIDebugDraw</span><span class="o">*</span>                                  <span class="n">m_debugDrawer</span><span class="p">;</span>
-
-   <span class="o">///</span><span class="n">m_forceUpdateAllAabbs</span> <span class="n">can</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">false</span> <span class="k">as</span> <span class="n">an</span> <span class="n">optimization</span> <span class="n">to</span> <span class="n">only</span> <span class="n">update</span> <span class="n">active</span> <span class="nb">object</span> <span class="n">AABBs</span>
-   <span class="o">///</span><span class="n">it</span> <span class="ow">is</span> <span class="n">true</span> <span class="n">by</span> <span class="n">default</span><span class="p">,</span> <span class="n">because</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">error</span><span class="o">-</span><span class="n">prone</span> <span class="p">(</span><span class="n">setting</span> <span class="n">the</span> <span class="n">position</span> <span class="n">of</span> <span class="n">static</span> <span class="n">objects</span> <span class="n">wouldn</span><span class="s1">&#39;t update their AABB)</span>
-   <span class="nb">bool</span> <span class="n">m_forceUpdateAllAabbs</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
 </div>
-<p>The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete,
-parallel, and continuous etc.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btDynamicsWorld</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btCollisionWorld</span> <span class="p">{</span>
-   <span class="n">btInternalTickCallback</span>                         <span class="n">m_internalTickCallback</span><span class="p">;</span>
-   <span class="n">btInternalTickCallback</span>                         <span class="n">m_internalPreTickCallback</span><span class="p">;</span>
-   <span class="n">void</span><span class="o">*</span>                                          <span class="n">m_worldUserInfo</span><span class="p">;</span>
-   <span class="n">btContactSolverInfo</span>                            <span class="n">m_solverInfo</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
+<div class="section" id="concepts">
+<h2>Concepts</h2>
+<div class="section" id="collision-objects">
+<h3>Collision Objects</h3>
 </div>
-<p>The btDiscreteDynamicsWorld is the main way to create discrete rigid body simulations. It inherits
-from btDynamicsWorld, which in turn inherits from the base btCollisionWorld. The
-btDiscreteDynamicsWorld determines the response to the identified collisions.</p>
-<p>Concepts:</p>
+<div class="section" id="collision-shapes">
+<h3>Collision Shapes</h3>
+</div>
+<div class="section" id="broad-phase-collision">
+<h3>Broad Phase Collision</h3>
+</div>
+<div class="section" id="narrow-phase-collision">
+<h3>Narrow Phase Collision</h3>
+</div>
+<div class="section" id="aabb-bounding-box-hierarchy">
+<h3>AABB Bounding Box Hierarchy</h3>
+</div>
+<div class="section" id="collision-pairs">
+<h3>Collision Pairs</h3>
+</div>
+<div class="section" id="collision-manifold">
+<h3>Collision Manifold</h3>
+<p>In collision detection, a <em>manifold</em> defines a contact area between two objects. The set of
+intersection points is referred to as the contact set or contact manifold, the latter term
+appropriate when the intersection set is not a finite set but a continuum of points. For example,
+the intersection set of a box sitting on a table is the set of points on a face of the box. When the
+contact set is desired, I refer to this as a find-intersection query. As you would expect, in most
+cases a find intersection query is more expensive than a test intersection query for a given pair of
+objects.</p>
+<p>Every actual, verified collision will result in an additional collision manifold. The collision
+algorithms add a collision manifold to the dispatcher if a collision occurs. New contact manifolds
+are always created by the <code class="code docutils literal"><span class="pre">btCollisionDispatcher::getNewManifold</span></code>, which all of the collision
+algorithms call.</p>
+<p>btPersistentManifold is a contact point cache, it stays persistent as long as objects are
+overlapping in the broadphase. Those contact points are created by the collision narrow phase. The
+cache can be empty, or hold 1,2,3 or 4 points. Some collision algorithms (GJK) might only add one
+point at a time. updates/refreshes old contact points, and throw them away if necessary (distance
+becomes too large) reduces the cache to 4 points, when more then 4 points are added, using following
+rules:</p>
 <ul class="simple">
-<li>Simulation Islands</li>
+<li>the contact point with deepest penetration is always kept, and it tries to maximuze the area
+covered by the points</li>
+<li>note that some pairs of objects might have more then one contact manifold.</li>
 </ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btDiscreteDynamicsWorld</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btDynamicsWorld</span> <span class="p">{</span>
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btTypedConstraint</span><span class="o">*&gt;</span>       <span class="n">m_sortedConstraints</span><span class="p">;</span>
-   <span class="n">InplaceSolverIslandCallback</span><span class="o">*</span>                   <span class="n">m_solverIslandCallback</span><span class="p">;</span>
-   <span class="n">btConstraintSolver</span><span class="o">*</span>                            <span class="n">m_constraintSolver</span><span class="p">;</span>
-   <span class="n">btSimulationIslandManager</span><span class="o">*</span>                     <span class="n">m_islandManager</span><span class="p">;</span>
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btTypedConstraint</span><span class="o">*&gt;</span>       <span class="n">m_constraints</span><span class="p">;</span>
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btRigidBody</span><span class="o">*&gt;</span>             <span class="n">m_nonStaticRigidBodies</span><span class="p">;</span>
-   <span class="n">btVector3</span>                                      <span class="n">m_gravity</span><span class="p">;</span>
-
-   <span class="o">//</span><span class="k">for</span> <span class="n">variable</span> <span class="n">timesteps</span>
-   <span class="n">btScalar</span>                                       <span class="n">m_localTime</span><span class="p">;</span>
-   <span class="n">btScalar</span>                                       <span class="n">m_fixedTimeStep</span><span class="p">;</span>
-
-   <span class="o">//</span><span class="k">for</span> <span class="n">variable</span> <span class="n">timesteps</span>
-   <span class="nb">bool</span>                                           <span class="n">m_ownsIslandManager</span><span class="p">;</span>
-   <span class="nb">bool</span>                                           <span class="n">m_ownsConstraintSolver</span><span class="p">;</span>
-   <span class="nb">bool</span>                                           <span class="n">m_synchronizeAllMotionStates</span><span class="p">;</span>
-   <span class="nb">bool</span>                                           <span class="n">m_applySpeculativeContactRestitution</span><span class="p">;</span>
-
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btActionInterface</span><span class="o">*&gt;</span>       <span class="n">m_actions</span><span class="p">;</span>
-   <span class="nb">int</span>                                            <span class="n">m_profileTimings</span><span class="p">;</span>
-   <span class="nb">bool</span>                                           <span class="n">m_latencyMotionStateInterpolation</span><span class="p">;</span>
-   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btPersistentManifold</span><span class="o">*&gt;</span>    <span class="n">m_predictiveManifolds</span><span class="p">;</span>
-
-   <span class="o">//</span> <span class="n">used</span> <span class="n">to</span> <span class="n">synchronize</span> <span class="n">threads</span> <span class="n">creating</span> <span class="n">predictive</span> <span class="n">contacts</span>
-   <span class="n">btSpinMutex</span>                                    <span class="n">m_predictiveManifoldsMutex</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
 </div>
+<div class="section" id="simulation-islands">
+<h3>Simulation Islands</h3>
 <p>Collision in general has a number of phases. Project the object forward. Figure out what collided,
 then adjust and compensate for the collision.</p>
 <p>The btCollisionObjectWrapper class &#8216;wraps&#8217; a btCollisionShape, btCollisionObject, along with a
@@ -237,23 +245,6 @@ collision. The <code class="code docutils literal"><span class="pre">resoutOut</
 caller. Basically, the <code class="code docutils literal"><span class="pre">btManifoldResult</span></code> objct holds onto a btPersistentManifold object. The
 collision algoritm usually sets the btManifoldResult&#8217;s m_manifoldPtr to point to the persistent
 manifold that&#8217;s owned by the collision algorithm.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btCollisionAlgorithm</span> <span class="p">{</span>
-<span class="n">protected</span><span class="p">:</span>
-   <span class="n">btDispatcher</span><span class="o">*</span> <span class="n">m_dispatcher</span><span class="p">;</span>
-<span class="n">public</span><span class="p">:</span>
-   <span class="n">btCollisionAlgorithm</span><span class="p">()</span> <span class="p">{};</span>
-   <span class="n">btCollisionAlgorithm</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionAlgorithmConstructionInfo</span><span class="o">&amp;</span> <span class="n">ci</span><span class="p">);</span>
-   <span class="n">virtual</span> <span class="o">~</span><span class="n">btCollisionAlgorithm</span><span class="p">()</span> <span class="p">{};</span>
-   <span class="n">virtual</span> <span class="n">void</span> <span class="n">processCollision</span> <span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body0Wrap</span><span class="p">,</span>
-      <span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body1Wrap</span><span class="p">,</span>
-      <span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span><span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-   <span class="n">virtual</span> <span class="n">btScalar</span> <span class="n">calculateTimeOfImpact</span><span class="p">(</span><span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span>
-      <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body1</span><span class="p">,</span><span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span>
-      <span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-   <span class="n">virtual</span> <span class="n">void</span> <span class="n">getAllContactManifolds</span><span class="p">(</span><span class="n">btManifoldArray</span><span class="o">&amp;</span> <span class="n">manifoldArray</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">};</span>
-</pre></div>
-</div>
 <p>The dispatcher, btCollisionDispatcher maintains a matrix of collision algoriths,
 m_doubleDispatchContactPoints. The collision shape type is used to index this matrix and get the
 collision algorithm for the appropriate pair in the <code class="code docutils literal"><span class="pre">btCollisionDispatcher::findAlgorithm</span></code>
@@ -276,11 +267,6 @@ fixedTimeStep)</p>
 before the world, and handed to the world in it&#8217;s ctor.</p>
 <p>All of the collision algorithms call <code class="code docutils literal"><span class="pre">btDispatcher::releaseManifold</span></code> in their destructors to
 tell the dispatcher to remove this manifold.</p>
-<p>Each <code class="code docutils literal"><span class="pre">btBroadphasePair</span></code> holds a reference to a collision algorithm. The collision algorithm
-lifetime is the same as the broadphase pair. The collision pair&#8217;s algorithm is created in the
-dispatcher&#8217;s <code class="code docutils literal"><span class="pre">findAlgorithm</span></code> method. The basic idea is that the collision algorithm exists as
-long as a broadphase collision pair exists, the collision algorithm exists as long as a pair of
-objects remain in AABB contact.</p>
 <p>The AABB tree gets updated in the <code class="code docutils literal"><span class="pre">btCollisionWorld::computeOverlappingPairs</span></code> method. This
 method in turn calls <code class="code docutils literal"><span class="pre">btDbvtBroadphase::calculateOverlappingPairs</span></code>, which in turn calls
 <code class="code docutils literal"><span class="pre">btDbvtBroadphase::collide</span></code>.</p>
@@ -301,7 +287,7 @@ attached to the collision pair.</p>
 </div>
 </div>
 <div class="section" id="time-stepping">
-<h2>Time Stepping</h2>
+<h3>Time Stepping</h3>
 <p>The <code class="code docutils literal"><span class="pre">btDiscreteDynamicsWorld::internalSingleStepSimulation</span></code> is the main time step method. Each
 time step consists of the following phases:</p>
 <ul class="simple">
@@ -368,8 +354,26 @@ time step consists of the following phases:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="collistion-detection">
-<span id="coldet"></span><h2>Collistion Detection</h2>
+<div class="section" id="tracing-through-the-collision-detection-phase">
+<span id="coldet"></span><h3>Tracing Through the Collision Detection Phase</h3>
+<p>Bullet makes extensive use of callback function, so it can be rather dificult to manually trace
+through an execution pass. This section follows a discrete collision that occured between a pair of
+rigid boxes. This section follows a call starting at
+<code class="code docutils literal"><span class="pre">btDiscreteDynamicsWorld::internalSingleStepSimulation</span></code> and proceeding through the following
+steps.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">btDiscreteDynamicsWorld</span><span class="p">::</span><span class="n">internalSingleStepSimulation</span>
+<span class="n">btCollisionWorld</span><span class="p">::</span><span class="n">performDiscreteCollisionDetection</span>
+<span class="n">btCollisionDispatcher</span><span class="p">::</span><span class="n">dispatchAllCollisionPairs</span>
+<span class="n">btHashedOverlappingPairCache</span><span class="p">::</span><span class="n">processAllOverlappingPairs</span>
+<span class="n">btCollisionPairCallback</span><span class="p">::</span><span class="n">processOverlap</span>
+<span class="n">btCollisionDispatcher</span><span class="p">::</span><span class="n">defaultNearCallback</span>
+<span class="n">btBoxBoxCollisionAlgorithm</span><span class="p">::</span><span class="n">processCollision</span>
+</pre></div>
+</div>
+<p>The collision detection phase occurs after the unconstrained motion has been calculated. The
+<code class="code docutils literal"><span class="pre">btCollisionWorld::performDiscreteCollisionDetection</span></code> first updates the dynamic AABB bounding
+volume tree, computes the overlapping collision pairs, then performs the dispatch collision pairs
+step.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">void</span> <span class="n">btCollisionWorld</span><span class="p">::</span><span class="n">performDiscreteCollisionDetection</span><span class="p">()</span>
 <span class="p">{</span>
      <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span> <span class="o">=</span> <span class="n">getDispatchInfo</span><span class="p">();</span>
@@ -480,23 +484,6 @@ dispatcher. The algorithm&#8217;s job is to process collisions, determine the  c
 them to this persistant manifold.</p>
 <p>btCollisionAlgorithm is an collision interface that is compatible with the Broadphase and btDispatcher.
 It is persistent over frames</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btCollisionAlgorithm</span> <span class="p">{</span>
-   <span class="n">btDispatcher</span><span class="o">*</span>     <span class="n">m_dispatcher</span><span class="p">;</span>
-
-   <span class="n">virtual</span> <span class="n">void</span> <span class="n">processCollision</span> <span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body0Wrap</span><span class="p">,</span>
-      <span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body1Wrap</span><span class="p">,</span>
-      <span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span>
-      <span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-   <span class="n">virtual</span> <span class="n">btScalar</span> <span class="n">calculateTimeOfImpact</span><span class="p">(</span><span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span>
-      <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body1</span><span class="p">,</span>
-      <span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span>
-      <span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-   <span class="n">virtual</span> <span class="n">void</span> <span class="n">getAllContactManifolds</span><span class="p">(</span><span class="n">btManifoldArray</span><span class="o">&amp;</span> <span class="n">manifoldArray</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">};</span>
-</pre></div>
-</div>
 <p>The collision algorithm shares a pointer to a persistent manifold, which is created by the collision
 dispatcher&#8217;s getNewManifold method. The dispatcher retains a pointer to this manifold. All of the
 collision algorithms call this method to get a pointer to a new shared manifold.</p>
@@ -505,99 +492,8 @@ collision algorithms call this method to get a pointer to a new shared manifold.
 </pre></div>
 </div>
 </div>
-<div class="section" id="collision-manifold">
-<h2>Collision Manifold</h2>
-<p>In collision detection, a <em>manifold</em> defines a contact area between two objects. The set of
-intersection points is referred to as the contact set or contact manifold, the latter term
-appropriate when the intersection set is not a finite set but a continuum of points. For example,
-the intersection set of a box sitting on a table is the set of points on a face of the box. When the
-contact set is desired, I refer to this as a find-intersection query. As you would expect, in most
-cases a find intersection query is more expensive than a test intersection query for a given pair of
-objects.</p>
-<p>Every actual, verified collision will result in an additional collision manifold. The collision
-algorithms add a collision manifold to the dispatcher if a collision occurs. New contact manifolds
-are always created by the <code class="code docutils literal"><span class="pre">btCollisionDispatcher::getNewManifold</span></code>, which all of the collision
-algorithms call.</p>
-<p>btPersistentManifold is a contact point cache, it stays persistent as long as objects are
-overlapping in the broadphase. Those contact points are created by the collision narrow phase. The
-cache can be empty, or hold 1,2,3 or 4 points. Some collision algorithms (GJK) might only add one
-point at a time. updates/refreshes old contact points, and throw them away if necessary (distance
-becomes too large) reduces the cache to 4 points, when more then 4 points are added, using following
-rules:</p>
-<ul class="simple">
-<li>the contact point with deepest penetration is always kept, and it tries to maximuze the area
-covered by the points</li>
-<li>note that some pairs of objects might have more then one contact manifold.</li>
-</ul>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btPersistentManifold</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btTypedObject</span> <span class="p">{</span>
-   <span class="n">btManifoldPoint</span> <span class="n">m_pointCache</span><span class="p">[</span><span class="n">MANIFOLD_CACHE_SIZE</span><span class="p">];</span>
-
-   <span class="o">///</span> <span class="n">this</span> <span class="n">two</span> <span class="n">body</span> <span class="n">pointers</span> <span class="n">can</span> <span class="n">point</span> <span class="n">to</span> <span class="n">the</span> <span class="n">physics</span> <span class="n">rigidbody</span> <span class="n">class</span><span class="o">.</span>
-   <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">m_body0</span><span class="p">;</span>
-   <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">m_body1</span><span class="p">;</span>
-
-   <span class="nb">int</span>       <span class="n">m_cachedPoints</span><span class="p">;</span>
-
-   <span class="n">btScalar</span>  <span class="n">m_contactBreakingThreshold</span><span class="p">;</span>
-   <span class="n">btScalar</span>  <span class="n">m_contactProcessingThreshold</span><span class="p">;</span>
-
-   <span class="n">public</span><span class="p">:</span>
-      <span class="nb">int</span>    <span class="n">m_companionIdA</span><span class="p">;</span>
-      <span class="nb">int</span>    <span class="n">m_companionIdB</span><span class="p">;</span>
-
-      <span class="nb">int</span> <span class="n">m_index1a</span><span class="p">;</span>
-
-      <span class="n">btPersistentManifold</span><span class="p">();</span>
-
-      <span class="n">btPersistentManifold</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span> <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span>
-         <span class="n">body1</span><span class="p">,</span><span class="nb">int</span> <span class="p">,</span> <span class="n">btScalar</span> <span class="n">contactBreakingThreshold</span><span class="p">,</span>
-         <span class="n">btScalar</span> <span class="n">contactProcessingThreshold</span><span class="p">);</span>
-
-     <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">getBody0</span><span class="p">()</span> <span class="n">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">m_body0</span><span class="p">;}</span>
-     <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">getBody1</span><span class="p">()</span> <span class="n">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">m_body1</span><span class="p">;}</span>
-
-     <span class="n">void</span>    <span class="n">setBodies</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body1</span><span class="p">);</span>
-
-     <span class="n">void</span> <span class="n">clearUserCache</span><span class="p">(</span><span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">pt</span><span class="p">);</span>
-
-     <span class="nb">int</span>     <span class="n">getNumContacts</span><span class="p">();</span>
-
-     <span class="o">///</span> <span class="n">the</span> <span class="n">setNumContacts</span> <span class="n">API</span> <span class="ow">is</span> <span class="n">usually</span> <span class="ow">not</span> <span class="n">used</span><span class="p">,</span> <span class="k">except</span> <span class="n">when</span> <span class="n">you</span> <span class="n">gather</span><span class="o">/</span><span class="n">fill</span> <span class="nb">all</span> <span class="n">contacts</span> <span class="n">manually</span>
-     <span class="n">void</span> <span class="n">setNumContacts</span><span class="p">(</span><span class="nb">int</span> <span class="n">cachedPoints</span><span class="p">);</span>
-
-     <span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">getContactPoint</span><span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
-
-     <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">getContactPoint</span><span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">);</span>
-
-     <span class="o">///</span><span class="nd">@todo</span><span class="p">:</span> <span class="n">get</span> <span class="n">this</span> <span class="n">margin</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">current</span> <span class="n">physics</span> <span class="o">/</span> <span class="n">collision</span> <span class="n">environment</span>
-     <span class="n">btScalar</span>        <span class="n">getContactBreakingThreshold</span><span class="p">()</span> <span class="n">const</span><span class="p">;</span>
-
-     <span class="n">btScalar</span>        <span class="n">getContactProcessingThreshold</span><span class="p">()</span> <span class="n">const</span><span class="p">;</span>
-
-     <span class="n">void</span> <span class="n">setContactBreakingThreshold</span><span class="p">(</span><span class="n">btScalar</span> <span class="n">contactBreakingThreshold</span><span class="p">);</span>
-
-     <span class="n">void</span> <span class="n">setContactProcessingThreshold</span><span class="p">(</span><span class="n">btScalar</span>     <span class="n">contactProcessingThreshold</span><span class="p">);</span>
-
-     <span class="nb">int</span> <span class="n">getCacheEntry</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
-
-     <span class="nb">int</span> <span class="n">addManifoldPoint</span><span class="p">(</span> <span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">,</span> <span class="nb">bool</span> <span class="n">isPredictive</span><span class="o">=</span><span class="n">false</span><span class="p">);</span>
-
-     <span class="n">void</span> <span class="n">removeContactPoint</span> <span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">);</span>
-
-     <span class="n">void</span> <span class="n">replaceContactPoint</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">,</span><span class="nb">int</span> <span class="n">insertIndex</span><span class="p">);</span>
-
-     <span class="nb">bool</span> <span class="n">validContactDistance</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">pt</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
-
-     <span class="o">///</span> <span class="n">calculated</span> <span class="n">new</span> <span class="n">worldspace</span> <span class="n">coordinates</span> <span class="ow">and</span> <span class="n">depth</span><span class="p">,</span> <span class="ow">and</span> <span class="n">reject</span> <span class="n">points</span> <span class="n">that</span> <span class="n">exceed</span> <span class="n">the</span> <span class="n">collision</span> <span class="n">margin</span>
-     <span class="n">void</span>    <span class="n">refreshContactPoints</span><span class="p">(</span>  <span class="n">const</span> <span class="n">btTransform</span><span class="o">&amp;</span> <span class="n">trA</span><span class="p">,</span><span class="n">const</span> <span class="n">btTransform</span><span class="o">&amp;</span> <span class="n">trB</span><span class="p">);</span>
-
-     <span class="n">void</span>    <span class="n">clearManifold</span><span class="p">();</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="bullet-callbacks-and-triggers">
-<h2>Bullet Callbacks and Triggers</h2>
+<h3>Bullet Callbacks and Triggers</h3>
 <p>The best way to determine if collisions happened between existing objects in the world, is to
 iterate over all contact manifolds. This should be done during a
 [<a class="reference external" href="http://www.bulletphysics.com/mediawiki-1.5.8/index.php?title=Stepping_The_World">http://www.bulletphysics.com/mediawiki-1.5.8/index.php?title=Stepping_The_World</a> simulation tick
@@ -831,6 +727,197 @@ if (!static_cast&lt;btCollisionObject*&gt;(collisionPair-&gt;m_pProxy0-&gt;m_cli
 if (!convexResult.m_hitCollisionObject-&gt;hasContactResponse())
    return btScalar(1.0);
 </pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="classes">
+<h2>Classes</h2>
+<p>This section describes the key classes involved with Bullet collision detection.</p>
+<div class="section" id="btbroadphasepair">
+<span id="id1"></span><h3><code class="code docutils literal"><span class="pre">btBroadphasePair</span></code></h3>
+<p><a class="reference external" href="https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h">https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h</a></p>
+<p>The <code class="docutils literal"><span class="pre">btBroadphasePair</span></code> object represents a pair of pair of AABB-overlapping collision objects. The
+<code class="docutils literal"><span class="pre">btBroadphasePair</span></code> exists as long as this pair of collision objects have operlappng AABB volumes.
+A <code class="docutils literal"><span class="pre">btDispatcher</span></code> can search a <code class="docutils literal"><span class="pre">btCollisionAlgorithm</span></code> that performs exact/narrowphase collision
+detection on the actual collision shapes.</p>
+<p>The <code class="docutils literal"><span class="pre">btBroadphasePair</span></code> holds a reference to a collision algorithm. The collision algorithm
+lifetime is the same as the broadphase pair. The <code class="code docutils literal"><span class="pre">btBroadphasePair</span></code></p>
+<p>When the AABB&#8217;s of a pair of collision objects overlap, the <code class="code docutils literal"><span class="pre">btHashedOverlappingPairCache::addOverlappingPair</span></code>, in a call to
+<code class="code docutils literal"><span class="pre">btHashedOverlappingPairCache::internalAddPair</span></code> creates a new <code class="code docutils literal"><span class="pre">btBroadphasePair</span></code>. This
+new object is added to, and managed by a <code class="docutils literal"><span class="pre">btOverlappingPairCache</span></code>. The <code class="docutils literal"><span class="pre">btBroadphasePair</span></code>&#8216;s <code class="docutils literal"><span class="pre">m_algorithm</span></code> pointer is initially NULL.</p>
+<p>The collision pair&#8217;s algorithm is created in the
+dispatcher&#8217;s <code class="docutils literal"><span class="pre">findAlgorithm</span></code> method. The basic idea is that the collision algorithm exists as
+long as a broadphase collision pair exists, the collision algorithm exists as long as a pair of
+objects remain in AABB contact.</p>
+<p>A simplified <code class="docutils literal"><span class="pre">btBroadphasePair</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">struct</span> <span class="n">btBroadphasePair</span> <span class="p">{</span>
+   <span class="n">btBroadphaseProxy</span><span class="o">*</span> <span class="n">m_pProxy0</span><span class="p">;</span>
+   <span class="n">btBroadphaseProxy</span><span class="o">*</span> <span class="n">m_pProxy1</span><span class="p">;</span>
+   <span class="n">mutable</span> <span class="n">btCollisionAlgorithm</span><span class="o">*</span> <span class="n">m_algorithm</span><span class="p">;</span>
+   <span class="o">//</span><span class="n">don</span><span class="s1">&#39;t use this data, it will be removed in future version.</span>
+   <span class="n">union</span> <span class="p">{</span> <span class="n">void</span><span class="o">*</span> <span class="n">m_internalInfo1</span><span class="p">;</span> <span class="nb">int</span> <span class="n">m_internalTmpValue</span><span class="p">;};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>some more stuff</p>
+</div>
+<div class="section" id="btcollisionalgorithm">
+<span id="id2"></span><h3><code class="docutils literal"><span class="pre">btCollisionAlgorithm</span></code></h3>
+<p><a class="reference external" href="https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h">https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h</a></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btCollisionAlgorithm</span> <span class="p">{</span>
+<span class="n">protected</span><span class="p">:</span>
+   <span class="n">btDispatcher</span><span class="o">*</span> <span class="n">m_dispatcher</span><span class="p">;</span>
+<span class="n">public</span><span class="p">:</span>
+   <span class="n">btCollisionAlgorithm</span><span class="p">()</span> <span class="p">{};</span>
+   <span class="n">btCollisionAlgorithm</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionAlgorithmConstructionInfo</span><span class="o">&amp;</span> <span class="n">ci</span><span class="p">);</span>
+   <span class="n">virtual</span> <span class="o">~</span><span class="n">btCollisionAlgorithm</span><span class="p">()</span> <span class="p">{};</span>
+   <span class="n">virtual</span> <span class="n">void</span> <span class="n">processCollision</span> <span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body0Wrap</span><span class="p">,</span>
+      <span class="n">const</span> <span class="n">btCollisionObjectWrapper</span><span class="o">*</span> <span class="n">body1Wrap</span><span class="p">,</span>
+      <span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span><span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+   <span class="n">virtual</span> <span class="n">btScalar</span> <span class="n">calculateTimeOfImpact</span><span class="p">(</span><span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span>
+      <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body1</span><span class="p">,</span><span class="n">const</span> <span class="n">btDispatcherInfo</span><span class="o">&amp;</span> <span class="n">dispatchInfo</span><span class="p">,</span>
+      <span class="n">btManifoldResult</span><span class="o">*</span> <span class="n">resultOut</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+   <span class="n">virtual</span> <span class="n">void</span> <span class="n">getAllContactManifolds</span><span class="p">(</span><span class="n">btManifoldArray</span><span class="o">&amp;</span> <span class="n">manifoldArray</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="btpersistentmanifold">
+<span id="id3"></span><h3><code class="docutils literal"><span class="pre">btPersistentManifold</span></code></h3>
+<p><a class="reference external" href="https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/NarrowPhaseCollision/btPersistentManifold.h#L63">https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/NarrowPhaseCollision/btPersistentManifold.h#L63</a></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btPersistentManifold</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btTypedObject</span> <span class="p">{</span>
+   <span class="n">btManifoldPoint</span> <span class="n">m_pointCache</span><span class="p">[</span><span class="n">MANIFOLD_CACHE_SIZE</span><span class="p">];</span>
+
+   <span class="o">///</span> <span class="n">this</span> <span class="n">two</span> <span class="n">body</span> <span class="n">pointers</span> <span class="n">can</span> <span class="n">point</span> <span class="n">to</span> <span class="n">the</span> <span class="n">physics</span> <span class="n">rigidbody</span> <span class="n">class</span><span class="o">.</span>
+   <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">m_body0</span><span class="p">;</span>
+   <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">m_body1</span><span class="p">;</span>
+
+   <span class="nb">int</span>       <span class="n">m_cachedPoints</span><span class="p">;</span>
+
+   <span class="n">btScalar</span>  <span class="n">m_contactBreakingThreshold</span><span class="p">;</span>
+   <span class="n">btScalar</span>  <span class="n">m_contactProcessingThreshold</span><span class="p">;</span>
+
+   <span class="n">public</span><span class="p">:</span>
+      <span class="nb">int</span>    <span class="n">m_companionIdA</span><span class="p">;</span>
+      <span class="nb">int</span>    <span class="n">m_companionIdB</span><span class="p">;</span>
+
+      <span class="nb">int</span> <span class="n">m_index1a</span><span class="p">;</span>
+
+      <span class="n">btPersistentManifold</span><span class="p">();</span>
+
+      <span class="n">btPersistentManifold</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span> <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span>
+         <span class="n">body1</span><span class="p">,</span><span class="nb">int</span> <span class="p">,</span> <span class="n">btScalar</span> <span class="n">contactBreakingThreshold</span><span class="p">,</span>
+         <span class="n">btScalar</span> <span class="n">contactProcessingThreshold</span><span class="p">);</span>
+
+     <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">getBody0</span><span class="p">()</span> <span class="n">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">m_body0</span><span class="p">;}</span>
+     <span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">getBody1</span><span class="p">()</span> <span class="n">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">m_body1</span><span class="p">;}</span>
+
+     <span class="n">void</span>    <span class="n">setBodies</span><span class="p">(</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body0</span><span class="p">,</span><span class="n">const</span> <span class="n">btCollisionObject</span><span class="o">*</span> <span class="n">body1</span><span class="p">);</span>
+
+     <span class="n">void</span> <span class="n">clearUserCache</span><span class="p">(</span><span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">pt</span><span class="p">);</span>
+
+     <span class="nb">int</span>     <span class="n">getNumContacts</span><span class="p">();</span>
+
+     <span class="o">///</span> <span class="n">the</span> <span class="n">setNumContacts</span> <span class="n">API</span> <span class="ow">is</span> <span class="n">usually</span> <span class="ow">not</span> <span class="n">used</span><span class="p">,</span> <span class="k">except</span> <span class="n">when</span> <span class="n">you</span> <span class="n">gather</span><span class="o">/</span><span class="n">fill</span> <span class="nb">all</span> <span class="n">contacts</span> <span class="n">manually</span>
+     <span class="n">void</span> <span class="n">setNumContacts</span><span class="p">(</span><span class="nb">int</span> <span class="n">cachedPoints</span><span class="p">);</span>
+
+     <span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">getContactPoint</span><span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
+
+     <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">getContactPoint</span><span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">);</span>
+
+     <span class="o">///</span><span class="nd">@todo</span><span class="p">:</span> <span class="n">get</span> <span class="n">this</span> <span class="n">margin</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">current</span> <span class="n">physics</span> <span class="o">/</span> <span class="n">collision</span> <span class="n">environment</span>
+     <span class="n">btScalar</span>        <span class="n">getContactBreakingThreshold</span><span class="p">()</span> <span class="n">const</span><span class="p">;</span>
+
+     <span class="n">btScalar</span>        <span class="n">getContactProcessingThreshold</span><span class="p">()</span> <span class="n">const</span><span class="p">;</span>
+
+     <span class="n">void</span> <span class="n">setContactBreakingThreshold</span><span class="p">(</span><span class="n">btScalar</span> <span class="n">contactBreakingThreshold</span><span class="p">);</span>
+
+     <span class="n">void</span> <span class="n">setContactProcessingThreshold</span><span class="p">(</span><span class="n">btScalar</span>     <span class="n">contactProcessingThreshold</span><span class="p">);</span>
+
+     <span class="nb">int</span> <span class="n">getCacheEntry</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
+
+     <span class="nb">int</span> <span class="n">addManifoldPoint</span><span class="p">(</span> <span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">,</span> <span class="nb">bool</span> <span class="n">isPredictive</span><span class="o">=</span><span class="n">false</span><span class="p">);</span>
+
+     <span class="n">void</span> <span class="n">removeContactPoint</span> <span class="p">(</span><span class="nb">int</span> <span class="n">index</span><span class="p">);</span>
+
+     <span class="n">void</span> <span class="n">replaceContactPoint</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">newPoint</span><span class="p">,</span><span class="nb">int</span> <span class="n">insertIndex</span><span class="p">);</span>
+
+     <span class="nb">bool</span> <span class="n">validContactDistance</span><span class="p">(</span><span class="n">const</span> <span class="n">btManifoldPoint</span><span class="o">&amp;</span> <span class="n">pt</span><span class="p">)</span> <span class="n">const</span><span class="p">;</span>
+
+     <span class="o">///</span> <span class="n">calculated</span> <span class="n">new</span> <span class="n">worldspace</span> <span class="n">coordinates</span> <span class="ow">and</span> <span class="n">depth</span><span class="p">,</span> <span class="ow">and</span> <span class="n">reject</span> <span class="n">points</span> <span class="n">that</span> <span class="n">exceed</span> <span class="n">the</span> <span class="n">collision</span> <span class="n">margin</span>
+     <span class="n">void</span>    <span class="n">refreshContactPoints</span><span class="p">(</span>  <span class="n">const</span> <span class="n">btTransform</span><span class="o">&amp;</span> <span class="n">trA</span><span class="p">,</span><span class="n">const</span> <span class="n">btTransform</span><span class="o">&amp;</span> <span class="n">trB</span><span class="p">);</span>
+
+     <span class="n">void</span>    <span class="n">clearManifold</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="btdiscretedynamicsworld">
+<h3><code class="docutils literal"><span class="pre">btDiscreteDynamicsWorld</span></code></h3>
+<p><a class="reference external" href="https://github.com/bulletphysics/bullet3/blob/master/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h">https://github.com/bulletphysics/bullet3/blob/master/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h</a></p>
+<p>The <code class="docutils literal"><span class="pre">btDiscreteDynamicsWorld</span></code> is the main way to create discrete rigid body simulations. It inherits
+from <code class="docutils literal"><span class="pre">btDynamicsWorld</span></code>, which in turn inherits from the base <code class="docutils literal"><span class="pre">btCollisionWorld</span></code>. The
+btDiscreteDynamicsWorld determines the response to the identified collisions.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btDiscreteDynamicsWorld</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btDynamicsWorld</span> <span class="p">{</span>
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btTypedConstraint</span><span class="o">*&gt;</span>       <span class="n">m_sortedConstraints</span><span class="p">;</span>
+   <span class="n">InplaceSolverIslandCallback</span><span class="o">*</span>                   <span class="n">m_solverIslandCallback</span><span class="p">;</span>
+   <span class="n">btConstraintSolver</span><span class="o">*</span>                            <span class="n">m_constraintSolver</span><span class="p">;</span>
+   <span class="n">btSimulationIslandManager</span><span class="o">*</span>                     <span class="n">m_islandManager</span><span class="p">;</span>
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btTypedConstraint</span><span class="o">*&gt;</span>       <span class="n">m_constraints</span><span class="p">;</span>
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btRigidBody</span><span class="o">*&gt;</span>             <span class="n">m_nonStaticRigidBodies</span><span class="p">;</span>
+   <span class="n">btVector3</span>                                      <span class="n">m_gravity</span><span class="p">;</span>
+
+   <span class="o">//</span><span class="k">for</span> <span class="n">variable</span> <span class="n">timesteps</span>
+   <span class="n">btScalar</span>                                       <span class="n">m_localTime</span><span class="p">;</span>
+   <span class="n">btScalar</span>                                       <span class="n">m_fixedTimeStep</span><span class="p">;</span>
+
+   <span class="o">//</span><span class="k">for</span> <span class="n">variable</span> <span class="n">timesteps</span>
+   <span class="nb">bool</span>                                           <span class="n">m_ownsIslandManager</span><span class="p">;</span>
+   <span class="nb">bool</span>                                           <span class="n">m_ownsConstraintSolver</span><span class="p">;</span>
+   <span class="nb">bool</span>                                           <span class="n">m_synchronizeAllMotionStates</span><span class="p">;</span>
+   <span class="nb">bool</span>                                           <span class="n">m_applySpeculativeContactRestitution</span><span class="p">;</span>
+
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btActionInterface</span><span class="o">*&gt;</span>       <span class="n">m_actions</span><span class="p">;</span>
+   <span class="nb">int</span>                                            <span class="n">m_profileTimings</span><span class="p">;</span>
+   <span class="nb">bool</span>                                           <span class="n">m_latencyMotionStateInterpolation</span><span class="p">;</span>
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btPersistentManifold</span><span class="o">*&gt;</span>    <span class="n">m_predictiveManifolds</span><span class="p">;</span>
+
+   <span class="o">//</span> <span class="n">used</span> <span class="n">to</span> <span class="n">synchronize</span> <span class="n">threads</span> <span class="n">creating</span> <span class="n">predictive</span> <span class="n">contacts</span>
+   <span class="n">btSpinMutex</span>                                    <span class="n">m_predictiveManifoldsMutex</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="btdynamicsworld">
+<h3><code class="docutils literal"><span class="pre">btDynamicsWorld</span></code></h3>
+<p>The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete,
+parallel, and continuous etc.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btDynamicsWorld</span> <span class="p">:</span> <span class="n">public</span> <span class="n">btCollisionWorld</span> <span class="p">{</span>
+   <span class="n">btInternalTickCallback</span>                         <span class="n">m_internalTickCallback</span><span class="p">;</span>
+   <span class="n">btInternalTickCallback</span>                         <span class="n">m_internalPreTickCallback</span><span class="p">;</span>
+   <span class="n">void</span><span class="o">*</span>                                          <span class="n">m_worldUserInfo</span><span class="p">;</span>
+   <span class="n">btContactSolverInfo</span>                            <span class="n">m_solverInfo</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="btcollisionworld">
+<h3><code class="docutils literal"><span class="pre">btCollisionWorld</span></code></h3>
+<p>The btCollisionWorld sets up the basic collision framework, it manages the broadphase and
+dispatcher.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">btCollisionWorld</span> <span class="p">{</span>
+   <span class="n">btAlignedObjectArray</span><span class="o">&lt;</span><span class="n">btCollisionObject</span><span class="o">*&gt;</span>       <span class="n">m_collisionObjects</span><span class="p">;</span>
+   <span class="n">btDispatcher</span><span class="o">*</span>                                  <span class="n">m_dispatcher1</span><span class="p">;</span>
+   <span class="n">btDispatcherInfo</span>                               <span class="n">m_dispatchInfo</span><span class="p">;</span>
+   <span class="n">btBroadphaseInterface</span><span class="o">*</span>                         <span class="n">m_broadphasePairCache</span><span class="p">;</span>
+   <span class="n">btIDebugDraw</span><span class="o">*</span>                                  <span class="n">m_debugDrawer</span><span class="p">;</span>
+
+   <span class="o">///</span><span class="n">m_forceUpdateAllAabbs</span> <span class="n">can</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">false</span> <span class="k">as</span> <span class="n">an</span> <span class="n">optimization</span> <span class="n">to</span> <span class="n">only</span> <span class="n">update</span> <span class="n">active</span> <span class="nb">object</span> <span class="n">AABBs</span>
+   <span class="o">///</span><span class="n">it</span> <span class="ow">is</span> <span class="n">true</span> <span class="n">by</span> <span class="n">default</span><span class="p">,</span> <span class="n">because</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">error</span><span class="o">-</span><span class="n">prone</span> <span class="p">(</span><span class="n">setting</span> <span class="n">the</span> <span class="n">position</span> <span class="n">of</span> <span class="n">static</span> <span class="n">objects</span> <span class="n">wouldn</span><span class="s1">&#39;t update their AABB)</span>
+   <span class="nb">bool</span> <span class="n">m_forceUpdateAllAabbs</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
