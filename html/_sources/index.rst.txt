@@ -9,6 +9,10 @@ Welcome to Mechanica's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+	     
+   test
+   bullet
+   lattice
 
 
 
