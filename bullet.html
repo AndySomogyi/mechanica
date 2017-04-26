@@ -99,9 +99,17 @@
 <li><a class="reference internal" href="#collision-pairs">Collision Pairs</a></li>
 <li><a class="reference internal" href="#collision-manifold">Collision Manifold</a></li>
 <li><a class="reference internal" href="#simulation-islands">Simulation Islands</a></li>
+<li><a class="reference internal" href="#single-step">Single Step</a></li>
 <li><a class="reference internal" href="#time-stepping">Time Stepping</a></li>
 <li><a class="reference internal" href="#tracing-through-the-collision-detection-phase">Tracing Through the Collision Detection Phase</a></li>
-<li><a class="reference internal" href="#bullet-callbacks-and-triggers">Bullet Callbacks and Triggers</a></li>
+<li><a class="reference internal" href="#bullet-callbacks-and-triggers">Bullet Callbacks and Triggers</a><ul>
+<li><a class="reference internal" href="#contact-text">Contact Text</a></li>
+<li><a class="reference internal" href="#contact-pair-test">Contact Pair Test</a></li>
+<li><a class="reference internal" href="#contact-callbacks">Contact Callbacks</a></li>
+<li><a class="reference internal" href="#triggers">Triggers</a></li>
+<li><a class="reference internal" href="#triggers-and-the-btkinematiccharactercontroller">Triggers and the <code class="docutils literal"><span class="pre">btKinematicCharacterController</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#classes">Classes</a><ul>
@@ -166,6 +174,8 @@
 <h1>Bullet&#8217;s Collision Algorithm</h1>
 <div class="section" id="overview">
 <h2>Overview</h2>
+<p>This document attempts to better document the Bullet physics library, much of it based direclty on
+the <a class="reference external" href="http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Tutorial_Articles/">Bullet Wiki</a></p>
 <p>The bullet collision detection algorithm proceeds similarly to most rigid body / physics simulation
 engines.  This document will cover the basic Bullet collision algorithm using discrete rigid
 objects. Deformable (soft body) straight-forward extension. There are a number of key objects that
@@ -199,12 +209,19 @@ blas blah</p>
 </div>
 <div class="section" id="broad-phase-collision">
 <h3>Broad Phase Collision</h3>
+<p>Most collision detection frameworks break up collision detection into two phases, <em>broadphase</em> and
+<em>narrowphase</em></p>
 </div>
 <div class="section" id="narrow-phase-collision">
 <h3>Narrow Phase Collision</h3>
 </div>
 <div class="section" id="aabb-bounding-box-hierarchy">
 <h3>AABB Bounding Box Hierarchy</h3>
+<p>This is implemented by the btDbvtBroadphase in Bullet.
+As the name suggests, this is a dynamic AABB tree. One useful feature of this broadphase is that the
+structure adapts dynamically to the dimensions of the world and its contents. It is very well
+optimized and a very good general purpose broadphase. It handles dynamic worlds where many objects
+are in motion, and object addition and removal is faster than SAP.</p>
 </div>
 <div class="section" id="collision-pairs">
 <h3>Collision Pairs</h3>
@@ -251,7 +268,9 @@ collision algorithm for the appropriate pair in the <code class="code docutils l
 method. This method creates a new collision algorithm for each potential collision. Each new
 algorithm typically creates a new collision manifold from the dispatcher in the algorithm&#8217;s
 constructor.</p>
-<p>Single Step:</p>
+</div>
+<div class="section" id="single-step">
+<h3>Single Step</h3>
 <p>m_dynamicsWorld-&gt;stepSimulation(deltaTime);</p>
 <p>int     btDiscreteDynamicsWorld::stepSimulation( btScalar timeStep,int maxSubSteps, btScalar
 fixedTimeStep)</p>
@@ -383,7 +402,8 @@ step.</p>
      <span class="n">computeOverlappingPairs</span><span class="p">();</span>
 
      <span class="n">btDispatcher</span><span class="o">*</span> <span class="n">dispatcher</span> <span class="o">=</span> <span class="n">getDispatcher</span><span class="p">();</span>
-     <span class="n">dispatcher</span><span class="o">-&gt;</span><span class="n">dispatchAllCollisionPairs</span><span class="p">(</span><span class="n">m_broadphasePairCache</span><span class="o">-&gt;</span><span class="n">getOverlappingPairCache</span><span class="p">(),</span><span class="n">dispatchInfo</span><span class="p">,</span><span class="n">m_dispatcher1</span><span class="p">);</span>
+     <span class="n">dispatcher</span><span class="o">-&gt;</span><span class="n">dispatchAllCollisionPairs</span><span class="p">(</span>
+        <span class="n">m_broadphasePairCache</span><span class="o">-&gt;</span><span class="n">getOverlappingPairCache</span><span class="p">(),</span><span class="n">dispatchInfo</span><span class="p">,</span><span class="n">m_dispatcher1</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -578,7 +598,8 @@ for (int i = 0; i &lt; numPairs; ++i) { manifoldArray.clear();
 </div>
 <p>Implementations of this concept can be found in the &#8216;BulletDemosCharacterDemo&#8217; and the
 btKinematicCharacterController (in the recoverFromPenetration method).</p>
-<p>=contactTest=</p>
+<div class="section" id="contact-text">
+<h4>Contact Text</h4>
 <p>Bullet 2.76 onwards let you perform an instant query on the world (btCollisionWorld or
 btDiscreteDynamicsWorld) using the contactTest query. The contactTest query will peform a collision
 test against all overlapping objects in the world, and produces the results using a callback. The
@@ -636,22 +657,22 @@ ContactSensorCallback callback(*tgtBody, foo);
 world-&gt;contactTest(tgtBody,callback);
 </pre></div>
 </div>
-<ul class="simple">
-<li>contactPairTest</li>
-</ul>
+</div>
+<div class="section" id="contact-pair-test">
+<h4>Contact Pair Test</h4>
 <p>Bullet 2.76 onwards provides the contactPairTest to perform collision detection between two specific
 collision objects only. Contact results are passed on using the provided callback. They don&#8217;t need
 to be inserted in the world. See btCollisionWorld::contactPairTest in
 Bullet/src/BulletCollision/CollisionDispatch/btCollisionWorld.h for implementation details.</p>
-<ul class="simple">
-<li>Contact Callbacks=</li>
-</ul>
+</div>
+<div class="section" id="contact-callbacks">
+<h4>Contact Callbacks</h4>
 <p>Be careful when using contact callbacks: They may be called too frequently for your purposes. Bullet
 supports custom callbacks at various points in the collision system. The callbacks themselves are
 very simply implemented as global variables that you set to point at appropriate functions. Before
 you can expect them to be called you must set an appropriate flag in your rigid body:</p>
 <dl class="docutils">
-<dt>:::</dt>
+<dt>::</dt>
 <dd><dl class="first last docutils">
 <dt>mBody-&gt;setCollisionFlags(mBody-&gt;getCollisionFlags()</dt>
 <dd><div class="first last line-block">
@@ -662,7 +683,7 @@ you can expect them to be called you must set an appropriate flag in your rigid 
 </dd>
 </dl>
 <p>There are three collision callbacks:</p>
-<p>==gContactAddedCallback==</p>
+<p>gContactAddedCallback</p>
 <p>This is called whenever a contact is added (note that the same contact may be added multiple times
 before it is processed). From here, you can modify some properties (e.g. friction) of the contact
 point.  &#8216;&#8217;&#8216;Note:&#8217;&#8216;&#8217; gContactAddedCallback does not appear to work when using multithreaded solvers.</p>
@@ -688,26 +709,30 @@ point.  &#8216;&#8217;&#8216;Note:&#8217;&#8216;&#8217; gContactAddedCallback do
 &#8216;&#8217;colObj1&#8217;&#8217; in the &#8216;&#8217;gContactAddedCallback&#8217;&#8217; (exactly why this function prototype is declared
 differently is unclear).</p>
 <p>As of the current implementation of Bullet (2.82), the return value of this function is ignored.</p>
-<p>==gContactDestroyedCallback==</p>
+<p><code class="docutils literal"><span class="pre">gContactDestroyedCallback</span></code></p>
 <p>This is called immediately after the contact point is destroyed.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="nb">bool</span> <span class="p">(</span><span class="o">*</span><span class="n">ContactDestroyedCallback</span><span class="p">)(</span>
    <span class="n">void</span><span class="o">*</span> <span class="n">userPersistentData</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>The passed &#8216;&#8217;userPersistentData&#8217;&#8217; argument is the value of the &#8216;&#8217;m_userPersistentData&#8217;&#8217; member of
-the &#8216;&#8217;btManifoldPoint&#8217;&#8217; which has been destroyed (this can be set in &#8216;&#8217;gContactAddedCallback&#8217;&#8217; or
+<p>The passed <code class="docutils literal"><span class="pre">userPersistentData</span></code> argument is the value of the &#8216;&#8217;m_userPersistentData&#8217;&#8217; member of
+the <code class="docutils literal"><span class="pre">btManifoldPoint</span></code> which has been destroyed (this can be set in &#8216;&#8217;gContactAddedCallback&#8217;&#8217; or
 &#8216;&#8217;gContactProcessedCallback&#8217;&#8216;).</p>
 <p>&#8216;&#8217;&#8216;Note that gContactDestroyedCallback will not be called for any contact point unless
 &#8216;&#8217;cp.m_userPersistentData&#8217;&#8217; is set!&#8217;&#8216;&#8217;  You must set this (to some value other than NULL) in a prior
 contact added/processed callback in order to receive a destroyed callback.</p>
-<p>=Triggers=</p>
+</div>
+<div class="section" id="triggers">
+<h4>Triggers</h4>
 <p>Collision objects with a callback still have collision response with dynamic rigid bodies. In order
 to use collision objects as trigger, you have to disable the collision response.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mBody</span><span class="o">-&gt;</span><span class="n">setCollisionFlags</span><span class="p">(</span><span class="n">mBody</span><span class="o">-&gt;</span><span class="n">getCollisionFlags</span><span class="p">()</span> <span class="o">|</span>
    <span class="n">btCollisionObject</span><span class="p">::</span><span class="n">CF_NO_CONTACT_RESPONSE</span><span class="p">));</span>
 </pre></div>
 </div>
-<p>= Triggers and the btKinematicCharacterController =</p>
+</div>
+<div class="section" id="triggers-and-the-btkinematiccharactercontroller">
+<h4>Triggers and the <code class="docutils literal"><span class="pre">btKinematicCharacterController</span></code></h4>
 <p>The stock <code class="code docutils literal"><span class="pre">btKinematicCharacterController</span></code> doesn&#8217;t appear to properly behave with ghost
 objects that have <code class="code docutils literal"><span class="pre">CF_NO_CONTACT_RESPONSE</span></code> set. It seems to ignore that flag and act as
 if the objects don&#8217;t have that flag set.</p>
@@ -727,6 +752,7 @@ if (!static_cast&lt;btCollisionObject*&gt;(collisionPair-&gt;m_pProxy0-&gt;m_cli
 if (!convexResult.m_hitCollisionObject-&gt;hasContactResponse())
    return btScalar(1.0);
 </pre></div>
+</div>
 </div>
 </div>
 </div>
