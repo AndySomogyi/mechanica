@@ -1,21 +1,23 @@
-=================
+.. default-domain:: cpp
+
+
 Lattice Structure
-=================
+*****************
 
 Overview
---------
+========
 
 Lattice Concepts
-----------------
+================
 
 Lattice Geometry
-
+----------------
 
 Voxels
-
+------
 
 Clusters
-
+--------
 
 Lattice Representation
 ----------------------
@@ -27,13 +29,14 @@ Bullet Collision Structures
 ---------------------------
 
       
-
+Compucell3D Integration
+=======================
 
 
 
 
 Lattice-Particle Interaction
-----------------------------
+============================
 Mechanica enables lattice-based and particle-based objects and processes to seemlessly
 exist in the same model
 
@@ -42,7 +45,5 @@ Kinds of Interactions:
 
 
 
-Lattice-Particle Collision
---------------------------
 
 
