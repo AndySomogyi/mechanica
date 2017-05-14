@@ -4,3 +4,6 @@
 [submodule "docs"]
 	path = docs
 	url = git@github.com:AndySomogyi/mechanica.git
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = git@github.com:AndySomogyi/glfw.git
