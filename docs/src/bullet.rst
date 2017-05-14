@@ -7,6 +7,9 @@ Bullet's Collision Algorithm
 Overview
 ========
 
+This document attempts to better document the Bullet physics library, much of it based direclty on
+the `Bullet Wiki <http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Tutorial_Articles/>`_
+
 The bullet collision detection algorithm proceeds similarly to most rigid body / physics simulation
 engines.  This document will cover the basic Bullet collision algorithm using discrete rigid
 objects. Deformable (soft body) straight-forward extension. There are a number of key objects that
@@ -47,12 +50,20 @@ Collision Shapes
 
 Broad Phase Collision
 ---------------------
+Most collision detection frameworks break up collision detection into two phases, *broadphase* and
+*narrowphase* 
 
 Narrow Phase Collision
 ----------------------
 
 AABB Bounding Box Hierarchy
 ---------------------------
+This is implemented by the btDbvtBroadphase in Bullet.
+As the name suggests, this is a dynamic AABB tree. One useful feature of this broadphase is that the
+structure adapts dynamically to the dimensions of the world and its contents. It is very well
+optimized and a very good general purpose broadphase. It handles dynamic worlds where many objects
+are in motion, and object addition and removal is faster than SAP.
+
 
 Collision Pairs
 ---------------
@@ -115,8 +126,8 @@ method. This method creates a new collision algorithm for each potential collisi
 algorithm typically creates a new collision manifold from the dispatcher in the algorithm's
 constructor. 
 
-
-Single Step:
+Single Step
+-----------
 
 m_dynamicsWorld->stepSimulation(deltaTime);
 
@@ -278,8 +289,10 @@ step.
 	computeOverlappingPairs();
 
 	btDispatcher* dispatcher = getDispatcher();
-	dispatcher->dispatchAllCollisionPairs(m_broadphasePairCache->getOverlappingPairCache(),dispatchInfo,m_dispatcher1);	
+	dispatcher->dispatchAllCollisionPairs(
+	   m_broadphasePairCache->getOverlappingPairCache(),dispatchInfo,m_dispatcher1);	
    }
+
 
 
 ::
@@ -288,7 +301,6 @@ step.
       const btDispatcherInfo& dispatchInfo,btDispatcher* dispatcher) 
    {
 	btCollisionPairCallback	collisionCallback(dispatchInfo,this);
-
 	pairCache->processAllOverlappingPairs(&collisionCallback,dispatcher);
    }
 
@@ -444,8 +456,9 @@ good way is to iterate over all pairs of objects in the entire collision/dynamic
 See Bullet/Demos/CollisionInterfaceDemo for a sample implementation.
 
 
-* btGhostObject
-  
+btGhostObject
+^^^^^^^^^^^^^
+
 This type of collision object will keep track of its own overlapping pairs. This is much more
 efficient than iterating through everything. For this example, we'll use a btPairCachingGhostObject
 since we want easy access to the pair cache of the ghost object. A regular btGhostObject can be used
@@ -504,7 +517,9 @@ Implementations of this concept can be found in the 'Bullet\Demos\CharacterDemo'
 btKinematicCharacterController (in the recoverFromPenetration method).
 
 
-=contactTest=
+Contact Test
+^^^^^^^^^^^^
+
 
 Bullet 2.76 onwards let you perform an instant query on the world (btCollisionWorld or
 btDiscreteDynamicsWorld) using the contactTest query. The contactTest query will peform a collision
@@ -567,8 +582,9 @@ efficient than iterating over previously generated collision pairs.
    ContactSensorCallback callback(*tgtBody, foo);
    world->contactTest(tgtBody,callback);
 
+Contact Pair Test
+^^^^^^^^^^^^^^^^^
 
-* contactPairTest
 
 Bullet 2.76 onwards provides the contactPairTest to perform collision detection between two specific
 collision objects only. Contact results are passed on using the provided callback. They don't need
@@ -576,20 +592,22 @@ to be inserted in the world. See btCollisionWorld::contactPairTest in
 Bullet/src/BulletCollision/CollisionDispatch/btCollisionWorld.h for implementation details.
 
 
-* Contact Callbacks=
+Contact Callbacks
+^^^^^^^^^^^^^^^^^
 
 Be careful when using contact callbacks: They may be called too frequently for your purposes. Bullet
 supports custom callbacks at various points in the collision system. The callbacks themselves are
 very simply implemented as global variables that you set to point at appropriate functions. Before
 you can expect them to be called you must set an appropriate flag in your rigid body:
 
-:::
+::
    mBody->setCollisionFlags(mBody->getCollisionFlags()
       | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
 There are three collision callbacks:
 
-==gContactAddedCallback==
+gContactAddedCallback
+
 
 This is called whenever a contact is added (note that the same contact may be added multiple times
 before it is processed). From here, you can modify some properties (e.g. friction) of the contact
@@ -625,7 +643,7 @@ differently is unclear).
 
 As of the current implementation of Bullet (2.82), the return value of this function is ignored.
 
-==gContactDestroyedCallback==
+``gContactDestroyedCallback``
 
 This is called immediately after the contact point is destroyed.
 ::
@@ -633,8 +651,8 @@ This is called immediately after the contact point is destroyed.
    typedef bool (*ContactDestroyedCallback)(
       void* userPersistentData);
 
-The passed ''userPersistentData'' argument is the value of the ''m_userPersistentData'' member of
-the ''btManifoldPoint'' which has been destroyed (this can be set in ''gContactAddedCallback'' or
+The passed ``userPersistentData`` argument is the value of the ''m_userPersistentData'' member of
+the ``btManifoldPoint`` which has been destroyed (this can be set in ''gContactAddedCallback'' or
 ''gContactProcessedCallback'').
 
 
@@ -643,7 +661,8 @@ the ''btManifoldPoint'' which has been destroyed (this can be set in ''gContactA
 contact added/processed callback in order to receive a destroyed callback.
 
 
-=Triggers=
+Triggers
+^^^^^^^^
 
 Collision objects with a callback still have collision response with dynamic rigid bodies. In order
 to use collision objects as trigger, you have to disable the collision response.
@@ -654,7 +673,8 @@ to use collision objects as trigger, you have to disable the collision response.
    mBody->setCollisionFlags(mBody->getCollisionFlags() |
       btCollisionObject::CF_NO_CONTACT_RESPONSE));
 
-= Triggers and the btKinematicCharacterController =
+Triggers and the ``btKinematicCharacterController``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The stock :code:`btKinematicCharacterController` doesn't appear to properly behave with ghost
 objects that have :code:`CF_NO_CONTACT_RESPONSE` set. It seems to ignore that flag and act as
@@ -692,8 +712,8 @@ This section describes the key classes involved with Bullet collision detection.
 
 .. _btBroadphasePair:
 
-:code:`btBroadphasePair` 
-------------------------
+.. class::btBroadphasePair
+
 https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.h
 
 The ``btBroadphasePair`` object represents a pair of pair of AABB-overlapping collision objects. The
@@ -728,10 +748,7 @@ A simplified ``btBroadphasePair`` ::
 
 some more stuff
 
-.. _btCollisionAlgorithm:
-
-``btCollisionAlgorithm``
-------------------------
+.. class:: btCollisionAlgorithm
 
 https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h
 
@@ -754,10 +771,9 @@ https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/Broadph
    };
 
       
-.. _btPersistentManifold:
 
-``btPersistentManifold``
-------------------------
+.. class:: btPersistentManifold
+
 
 https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/NarrowPhaseCollision/btPersistentManifold.h#L63
 
@@ -828,12 +844,11 @@ https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/NarrowP
 	void	clearManifold();
    }
 
-``btDiscreteDynamicsWorld``
----------------------------
+.. class:: btDiscreteDynamicsWorld
 
 https://github.com/bulletphysics/bullet3/blob/master/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h
 
-The ``btDiscreteDynamicsWorld`` is the main way to create discrete rigid body simulations. It inherits
+The :class:`btDiscreteDynamicsWorld` is the main way to create discrete rigid body simulations. It inherits
 from ``btDynamicsWorld``, which in turn inherits from the base ``btCollisionWorld``. The
 btDiscreteDynamicsWorld determines the response to the identified collisions.
 
@@ -869,8 +884,7 @@ btDiscreteDynamicsWorld determines the response to the identified collisions.
    }
 
 
-``btDynamicsWorld``
--------------------
+.. class:: btDynamicsWorld
 
 The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete,
 parallel, and continuous etc.
@@ -885,10 +899,9 @@ parallel, and continuous etc.
    }
 
 
-``btCollisionWorld``
---------------------
+.. class:: btCollisionWorld
 
-The btCollisionWorld sets up the basic collision framework, it manages the broadphase and
+The ``btCollisionWorld`` sets up the basic collision framework, it manages the broadphase and
 dispatcher. 
 
 ::
@@ -904,3 +917,14 @@ dispatcher.
       ///it is true by default, because it is error-prone (setting the position of static objects wouldn't update their AABB)
       bool m_forceUpdateAllAabbs;
    }
+
+
+
+
+.. class:: btOverlappingPairCache : public btOverlappingPairCallback
+
+   The ``btOverlappingPairCache`` provides an interface for overlapping pair management (add,
+   remove, storage), used by the ``btBroadphaseInterface`` broadphases. Pair caches manage pairs of
+   collision objects who's AABB volumes overlap. The
+   ``btHashedOverlappingPairCache`` and ``btSortedOverlappingPairCache classes`` are two
+   implementations. 
