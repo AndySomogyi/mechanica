@@ -1,5 +1,5 @@
 [submodule "deps/mdcore"]
-	path = deps/mdcore
+	path = extern/mdcore
 	url = git@github.com:AndySomogyi/mdcore.git
 [submodule "docs"]
 	path = docs
