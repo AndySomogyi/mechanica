@@ -130,14 +130,14 @@ endif()
 
 #message("GLFW_LIBRARIES: ${GLFW_LIBRARIES}")
 
-message("before deps include path: ${CMAKE_INCLUDE_PATH}")
+message("before extern include path: ${CMAKE_INCLUDE_PATH}")
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message( "dir='${dir}'")
 endforeach()
 
 # process dependencies first
-add_subdirectory(deps)
+add_subdirectory(extern)
 
 
 message("getting mdcore interface incude:  ${MDCORE_INCLUDE_DIR}")
