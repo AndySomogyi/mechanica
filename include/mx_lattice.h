@@ -83,8 +83,8 @@ MxAPI_FUNC(MxList*) MxLattice_Clusters(MxLattice *p);
  * and the specified voxel will then belong to that cluster. If a cluster holds
  * only a single voxel, and the voxel changes type, then the cluster is deleted.
  */
-MxAPI_FUNC(HRESULT) MxLattice_SetVoxelClusterType(MxLattice *lattice,
-		uint x, uint y, uint z,  MxType *type);
+//MxAPI_FUNC(HRESULT) MxLattice_SetVoxelClusterType(MxLattice *lattice,
+//		uint x, uint y, uint z,  MxType *type);
 
 
 

@@ -28,7 +28,6 @@ file(GLOB X3D_SRC
 
 
 set(SRC
-  mechanica.cpp
   moduledef.cpp
   mx_callable.cpp
   mx_float.cpp
@@ -97,14 +96,35 @@ set(HEADERS
   MxLatticeCluster.h
   )
 
+# build all the source as a CMake 'OBJECT' lib, this gets
+# linked into the real libraries below. 
+add_library(mechanica_OBJECTS OBJECT ${SRC} ${HEADERS})
 
-add_library(mechanica ${SRC} ${HEADERS})
+# need at least one src file in a project for xcode to build it, xcode
+# won't work if any product *only* has an object src
+add_library(mechanica
+  mechanica.cpp
+  $<TARGET_OBJECTS:mechanica_OBJECTS>
+  )
 
-add_library(py_mechanica SHARED ${SRC} ${HEADERS})
+add_dependencies(mechanica mechanica_OBJECTS)
+
+target_link_libraries(mechanica glfw)
+target_link_libraries(mechanica ${OPENGL_LIBRARIES})
+
+add_library(py_mechanica SHARED
+  mechanica.cpp
+  $<TARGET_OBJECTS:mechanica_OBJECTS>
+  )
+
+add_dependencies(py_mechanica mechanica_OBJECTS)
+
 target_link_libraries(py_mechanica glfw)
-target_link_libraries(py_mechanica ${OPENMM_LIBRARIES_STATIC})
 target_link_libraries(py_mechanica ${OPENGL_LIBRARIES})
 target_link_libraries(py_mechanica ${PYTHON_LIBRARIES})
+
+
+
 #target_link_libraries(py_mechanica ${LLVM_LIBRARIES})
 set_target_properties(py_mechanica PROPERTIES OUTPUT_NAME "mechanica.so")
 set_target_properties(py_mechanica PROPERTIES PREFIX "")

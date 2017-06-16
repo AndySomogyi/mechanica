@@ -60,7 +60,7 @@ find_package(OpenGL REQUIRED)
 
 find_package(LLVM)
 
-find_package(OpenMM)
+#find_package(OpenMM)
 
 add_definitions(-DCX3D_SUPPORT_OPENGL)
 

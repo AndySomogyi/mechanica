@@ -20,7 +20,14 @@ set(SRC
 
 
 
-add_library(soil ${SRC})
+add_library(soil STATIC ${SRC})
+
+target_include_directories(soil PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  )
+
+target_link_libraries(soil PUBLIC ${OPENGL_LIBRARIES})
+
 
 message("SOIL_SRC: ${SRC}")
 

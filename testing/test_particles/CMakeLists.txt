@@ -1,7 +1,6 @@
 link_libraries(glfw)
 link_libraries(mechanica)
 link_libraries(${LLVM_LIBRARIES})
-link_libraries(${OPENMM_LIBRARIES_STATIC})
 link_libraries(${OPENGL_LIBRARIES})
 
 include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
@@ -54,7 +53,7 @@ if (APPLE)
   set_target_properties(test_particles2 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 2")
   set_target_properties(test_particles3 PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "Test 3")
 
-  
+
   set_target_properties(${WINDOWS_BINARIES} PROPERTIES
     RESOURCE glfw.icns
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${GLFW_VERSION}

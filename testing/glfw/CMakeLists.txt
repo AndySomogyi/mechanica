@@ -3,6 +3,9 @@ link_libraries(glfw)
 
 include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
 
+
+message("testing glfw, include: ${glfw_INCLUDE_DIRS},  ${GLFW_SOURCE_DIR}/deps")
+
 if (MATH_LIBRARY)
     link_libraries("${MATH_LIBRARY}")
 endif()
