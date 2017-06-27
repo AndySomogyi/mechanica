@@ -10,9 +10,36 @@
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shaders/VertexColor.h>
+#include <Magnum/Primitives/Cube.h>
+
+#include <iostream>
+#include "AssimpImporter.h"
+
+#include <Magnum/Trade/MeshData3D.h>
 
 
+using namespace std;
 using namespace Magnum;
+using namespace Magnum::Trade;
+using namespace Magnum::Primitives;
+
+std::optional<MeshData3D>  read_points(int argc, char** argv);
+
+std::optional<MeshData3D>  read_points(int argc, char** argv) {
+
+    std::ignore = argc;
+
+    AssimpImporter assimp;
+
+    if (assimp.openFile(argv[1])) {
+        cout << "opened file \"" << argv[1] << "\" OK" << endl;
+        cout << "mesh 3d count: " << assimp.mesh3DCount() << std::endl;
+    } else {
+        cout << "failed to open " <<  argv[1] << endl;
+    }
+
+    return  Cube::solid();
+}
 
 class VoronoiTest: public Platform::Application {
     public:
@@ -29,6 +56,8 @@ class VoronoiTest: public Platform::Application {
 VoronoiTest::VoronoiTest(const Arguments& arguments):
     Platform::Application{arguments, Configuration{}.setTitle("Magnum Triangle Example")} {
     using namespace Math::Literals;
+
+    read_points(arguments.argc, arguments.argv);
 
     struct TriangleVertex {
         Vector2 position;
@@ -56,5 +85,9 @@ void VoronoiTest::drawEvent() {
     swapBuffers();
 }
 
+int main(int argc, char** argv) {
+    VoronoiTest app({argc, argv});
+    return app.exec();
+}
 
-MAGNUM_APPLICATION_MAIN(VoronoiTest)
+

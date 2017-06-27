@@ -7,6 +7,11 @@
 #  Assimp_FOUND           - True if Assimp library is found
 #  Assimp                 - Assimp imported target
 #
+#  The Assimp include directory is the directory that contains an 'assimp'
+#  subdirectory, so to include an assimp file, one must use the 'assimp'
+#  prefix, i.e.
+#  #include "assimp/Importer.hpp"
+#
 # Additionally these variables are defined for internal usage:
 #
 #  ASSIMP_LIBRARY         - Assimp library
@@ -75,13 +80,10 @@ if(WIN32)
 else(WIN32)
 
 
-  message(STATUS "Looking for ASSIMP...")
-  
   find_path(
     Assimp_INCLUDE_DIRS
-    NAMES postprocess.h scene.h version.h config.h cimport.h
+    NAMES assimp/postprocess.h assimp/scene.h assimp/version.h assimp/config.h assimp/cimport.h
     PATHS /usr/local/include/
-    PATH_SUFFIXES assimp
     )
   
   find_library(
@@ -117,7 +119,9 @@ if(Assimp_FOUND AND NOT TARGET Assimp)
 #    else()
   set_target_properties(Assimp PROPERTIES
     IMPORTED_LOCATION ${Assimp_LIBRARIES})
-#    endif()
+  #    endif()
+
+  message(STATUS "ASSIMP_INCLUDE_DIRS: ${Assimp_INCLUDE_DIRS}")
 
   set_target_properties(Assimp PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES ${Assimp_INCLUDE_DIRS})
