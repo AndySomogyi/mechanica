@@ -23,10 +23,10 @@ file(GLOB AST_SRC
   "ast/*.cpp"
   )
 
-file(GLOB X3D_SRC
-  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-  "x3d/*.cpp"
-  )
+#file(GLOB X3D_SRC
+#  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+#  "x3d/*.cpp"
+#  )
 
 
 set(SRC
@@ -69,7 +69,7 @@ set(SRC
   MxLattice.cpp
   MxLatticeCluster.cpp
   ${AST_SRC}
-  ${X3D_SRC}
+#  ${X3D_SRC}
   )
 
 
@@ -111,6 +111,7 @@ add_library(mechanica
 
 add_dependencies(mechanica mechanica_OBJECTS)
 
+target_link_libraries(mechanica voro++)
 target_link_libraries(mechanica glfw)
 target_link_libraries(mechanica ${OPENGL_LIBRARIES})
 

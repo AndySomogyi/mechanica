@@ -1,6 +1,9 @@
 project(Mechanica)
 cmake_minimum_required (VERSION 3.2)
 
+# using magnum, so whole project needs C++11
+set(CMAKE_CXX_STANDARD 11)
+
 # Use Magnum's modules to find things, these set up cmake names / aliases using a
 # magnum friendly naming scheme, add our module finders to cmake, these find
 # stuff mechanica, needs, but magnum does not. Make sure to put Mechanica's

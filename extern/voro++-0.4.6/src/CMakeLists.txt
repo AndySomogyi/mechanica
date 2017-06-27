@@ -36,3 +36,10 @@ set(voro++_HEADERS
 add_library(voro++ STATIC
   ${voro++_SOURCE}
   ${voro++_HEADERS})
+
+
+# TODO: fix this, voro++ as downloaded dumps everything into the same directory
+target_include_directories(voro++ PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+#  $<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+)

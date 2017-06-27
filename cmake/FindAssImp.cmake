@@ -5,7 +5,7 @@
 # Finds the Assimp library. This module defines:
 #
 #  Assimp_FOUND           - True if Assimp library is found
-#  Assimp::Assimp         - Assimp imported target
+#  Assimp                 - Assimp imported target
 #
 # Additionally these variables are defined for internal usage:
 #
@@ -47,12 +47,17 @@ if(WIN32)
       ${ASSIMP_ROOT_DIR}/lib${ASSIMP_ARCHITECTURE}
       )
     
-    find_library(ASSIMP_LIBRARY_RELEASE				Assimp-${ASSIMP_MSVC_VERSION}-mt.lib 			PATHS ${ASSIMP_LIBRARY_DIR})
-    find_library(ASSIMP_LIBRARY_DEBUG				Assimp-${ASSIMP_MSVC_VERSION}-mtd.lib			PATHS ${ASSIMP_LIBRARY_DIR})
+    find_library(ASSIMP_LIBRARY_RELEASE
+      Assimp-${ASSIMP_MSVC_VERSION}-mt.lib
+      PATHS ${ASSIMP_LIBRARY_DIR})
+    
+    find_library(ASSIMP_LIBRARY_DEBUG
+      Assimp-${ASSIMP_MSVC_VERSION}-mtd.lib
+      PATHS ${ASSIMP_LIBRARY_DIR})
 		
     set(ASSIMP_LIBRARY 
       optimized 	${ASSIMP_LIBRARY_RELEASE}
-      debug		${ASSIMP_LIBRARY_DEBUG}
+      debug	${ASSIMP_LIBRARY_DEBUG}
       )
     
     set(ASSIMP_LIBRARIES "ASSIMP_LIBRARY_RELEASE" "ASSIMP_LIBRARY_DEBUG")
