@@ -1,11 +1,23 @@
 project(Mechanica)
-
 cmake_minimum_required (VERSION 3.2)
 
-# Add our module finders to cmake
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Use Magnum's modules to find things, these set up cmake names / aliases using a
+# magnum friendly naming scheme, add our module finders to cmake, these find
+# stuff mechanica, needs, but magnum does not. Make sure to put Mechanica's
+# dir before Magnums, so our versions get picked up *BEFORE* Magnum's.
+set(CMAKE_MODULE_PATH
+  ${PROJECT_SOURCE_DIR}/cmake
+  ${PROJECT_SOURCE_DIR}/extern/magnum/modules)
 
 
+set(BUILD_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_PLUGINS_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_TESTS ON CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_GL_TESTS ON CACHE BOOL "build as static libraries for now..." FORCE)
+
+
+find_package(GLFW REQUIRED)
 
 find_package(PythonLibs REQUIRED)
 message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")                  
@@ -58,56 +70,58 @@ set(BULLET_ROOT "$ENV{HOME}/local" CACHE PATH "Root directory of Bullet Physics 
 
 find_package(OpenGL REQUIRED)
 
-find_package(LLVM)
+#find_package(LLVM)
 
 #find_package(OpenMM)
 
 add_definitions(-DCX3D_SUPPORT_OPENGL)
 
 
-find_package(Bullet)
+#find_package(Bullet)
 
 
 
-if(BULLET_FOUND)
-  message("BULLET_INCLUDE_DIRS: ${BULLET_INCLUDE_DIRS}")
-  message("BULLET_LIBRARIES ${BULLET_LIBRARIES}")
-else()
-  message("BULLET NOT FOUND")
-endif()
+#if(BULLET_FOUND)
+#  message("BULLET_INCLUDE_DIRS: ${BULLET_INCLUDE_DIRS}")
+#  message("BULLET_LIBRARIES ${BULLET_LIBRARIES}")
+#else()
+#  message("BULLET NOT FOUND")
+#endif()
 
 
 include_directories(${OPENGL_INCLUDE_DIR})
 
-if(LLVM_FOUND)
-  message("LLVM_FOUND")
-  
-  message("LLVM_CXXFLAGS: ${LLVM_CXXFLAGS}")
-  message("LLVM_HOST_TARGET: ${LLVM_HOST_TARGET}")
-  
-  message("LLVM_LDFLAGS: ${LLVM_LDFLAGS}")
-  
-  message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
-  
-  
-  
-  message("LLVM_LIBRARIES: ${LLVM_LIBRARIES}")
-  message("LLVM_LIBRARY_DIRS: ${LLVM_LIBRARY_DIRS}")
-  message("LLVM_ROOT_DIR: ${LLVM_ROOT_DIR}")
-  
-  message("LLVM_VERSION_MAJOR: ${LLVM_VERSION_MAJOR}")
-  message("LLVM_VERSION_MINOR: ${LLVM_VERSION_MINOR}")
-  message("LLVM_VERSION_STRING: ${LLVM_VERSION_STRING}")
+#if(LLVM_FOUND)
+#  message("LLVM_FOUND")
+#  
+#  message("LLVM_CXXFLAGS: ${LLVM_CXXFLAGS}")
+#  message("LLVM_HOST_TARGET: ${LLVM_HOST_TARGET}")
+#  
+#  message("LLVM_LDFLAGS: ${LLVM_LDFLAGS}")
+#  
+#  message("LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
+#  
+#  
+#  
+#  message("LLVM_LIBRARIES: ${LLVM_LIBRARIES}")
+#  message("LLVM_LIBRARY_DIRS: ${LLVM_LIBRARY_DIRS}")
+#  message("LLVM_ROOT_DIR: ${LLVM_ROOT_DIR}")
+#  
+#  message("LLVM_VERSION_MAJOR: ${LLVM_VERSION_MAJOR}")
+#  message("LLVM_VERSION_MINOR: ${LLVM_VERSION_MINOR}")
+#  message("LLVM_VERSION_STRING: ${LLVM_VERSION_STRING}")
+#
+#endif()
 
+find_package(Assimp)
 
-  
-endif()
+if(Assimp_FOUND)
 
-find_package(AssImp)
+  get_target_property(TMP Assimp IMPORTED_LOCATION)
+  message("ASSIMP_LIBRARIES: ${TMP}")
 
-if(ASSIMP_FOUND)
-  message("ASSIMP_INCLUDE_DIRS: ${ASSIMP_INCLUDE_DIRS}")
-  message("ASSIMP_LIBRARIES: ${ASSIMP_LIBRARIES}")
+  get_target_property(TMP Assimp INTERFACE_INCLUDE_DIRECTORIES)
+  message("ASSIMP_INCLUDE_DIRS: ${TMP}")
 else()
   message("ASSIMP not found")
 endif()

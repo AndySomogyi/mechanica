@@ -94,7 +94,7 @@ static PyObject * moduleinit(void)
 	 */
     PyMODINIT_FUNC initmechanica(void)
     {
-    	import_array();
+    	//import_array();
         moduleinit();
     }
 #else

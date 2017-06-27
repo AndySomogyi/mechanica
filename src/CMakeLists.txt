@@ -15,6 +15,8 @@ include_directories(${MDCORE_INCLUDE_DIR})
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${NUMPY_INCLUDE_DIR})
 
+message(STATUS "numpy: ${NUMPY_INCLUDE_DIR}")
+
 
 file(GLOB AST_SRC
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

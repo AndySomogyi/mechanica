@@ -10,3 +10,9 @@
 [submodule "extern/nanogui"]
 	path = extern/nanogui
 	url = git@github.com:AndySomogyi/nanogui.git
+[submodule "extern/magnum"]
+	path = extern/magnum
+	url = git@github.com:AndySomogyi/magnum.git
+[submodule "extern/corrade"]
+	path = extern/corrade
+	url = git@github.com:AndySomogyi/corrade.git

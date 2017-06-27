@@ -1,10 +1,10 @@
 
-link_libraries(glfw)
-
-include_directories(${glfw_INCLUDE_DIRS} "${GLFW_SOURCE_DIR}/deps")
+link_libraries(GLFW::GLFW)
 
 
-message("testing glfw, include: ${glfw_INCLUDE_DIRS},  ${GLFW_SOURCE_DIR}/deps")
+
+
+#message("testing glfw, include: ${glfw_INCLUDE_DIRS},  ${GLFW_SOURCE_DIR}/deps")
 
 if (MATH_LIBRARY)
     link_libraries("${MATH_LIBRARY}")
@@ -70,8 +70,6 @@ if (APPLE)
   
   set_target_properties(${WINDOWS_BINARIES} PROPERTIES
     RESOURCE glfw.icns
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${GLFW_VERSION}
-    MACOSX_BUNDLE_LONG_VERSION_STRING ${GLFW_VERSION_FULL}
     MACOSX_BUNDLE_ICON_FILE glfw.icns
     MACOSX_BUNDLE_INFO_PLIST "${GLFW_SOURCE_DIR}/CMake/MacOSXBundleInfo.plist.in")
 endif()
