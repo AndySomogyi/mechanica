@@ -17,16 +17,14 @@ set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_executable(voronoi
   VoronoiTest.cpp
-  AssimpImporter.cpp
-  AssimpImporter.h
-  visibility.h)
+  )
 
 target_link_libraries(voronoi
   Magnum::GlfwApplication
   Magnum::Magnum
   Magnum::Shaders
   Magnum::Primitives
-  Assimp
+  AssimpImporter
   voro++)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/points.obj

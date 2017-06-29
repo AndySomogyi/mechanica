@@ -11,9 +11,9 @@
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>
-
+#include <MagnumPlugins/AssimpImporter/AssimpImporter.h>
 #include <iostream>
-#include "AssimpImporter.h"
+
 
 #include <Magnum/Trade/MeshData3D.h>
 

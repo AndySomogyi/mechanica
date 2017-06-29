@@ -10,14 +10,9 @@ set(CMAKE_CXX_STANDARD 11)
 # dir before Magnums, so our versions get picked up *BEFORE* Magnum's.
 set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/cmake
-  ${PROJECT_SOURCE_DIR}/extern/magnum/modules)
+  ${PROJECT_SOURCE_DIR}/extern/magnum/modules
+  ${PROJECT_SOURCE_DIR}/extern/magnum-plugins/modules)
 
-
-set(BUILD_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as static libraries for now..." FORCE)
-set(BUILD_PLUGINS_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
-set(BUILD_TESTS ON CACHE BOOL "build as static libraries for now..." FORCE)
-set(BUILD_GL_TESTS ON CACHE BOOL "build as static libraries for now..." FORCE)
 
 
 find_package(GLFW REQUIRED)
@@ -120,11 +115,14 @@ find_package(Assimp)
 
 if(Assimp_FOUND)
 
-  get_target_property(TMP Assimp IMPORTED_LOCATION)
+  get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
   message("ASSIMP_LIBRARIES: ${TMP}")
 
-  get_target_property(TMP Assimp INTERFACE_INCLUDE_DIRECTORIES)
+  get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
   message("ASSIMP_INCLUDE_DIRS: ${TMP}")
+
+  message("RAW ASSIMP_LIBRARIES ${ASSIMP_LIBRARIES}")
+  message("RAW ASSIMP_LIBRARY: ${ASSIMP_LIBRARY}")
 else()
   message("ASSIMP not found")
 endif()

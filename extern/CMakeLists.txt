@@ -50,9 +50,17 @@ add_subdirectory(voro++-0.4.6)
 
 #add_subdirectory(assimp)
 
-# set magnum options 
-set(WITH_GLFWAPPLICATION ON CACHE BOOL "build magnum with glfw" FORCE)
-
+# set magnum options
 add_subdirectory(corrade)
 
+set(WITH_GLFWAPPLICATION ON CACHE BOOL "build magnum with glfw" FORCE)
+set(BUILD_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_PLUGINS_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "build as static libraries for now..." FORCE)
+set(BUILD_GL_TESTS OFF CACHE BOOL "build as static libraries for now..." FORCE)
+set(WITH_ASSIMPIMPORTER ON CACHE BOOL "build Assimp importer" FORCE)
+
 add_subdirectory(magnum)
+
+add_subdirectory(magnum-plugins)

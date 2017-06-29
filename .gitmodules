@@ -16,3 +16,7 @@
 [submodule "extern/corrade"]
 	path = extern/corrade
 	url = git@github.com:AndySomogyi/corrade.git
+[submodule "extern/magnum-plugins"]
+	path = extern/magnum-plugins
+	url = git@github.com:AndySomogyi/magnum-plugins.git
+	branch = assimp-importer
