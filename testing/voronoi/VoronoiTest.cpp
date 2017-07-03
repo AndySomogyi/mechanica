@@ -1,7 +1,7 @@
 /**
- * Testing of voronoi tesselation, hook up Voro++ with Magnum and Assimp to read points into a 
+ * Testing of voronoi tesselation, hook up Voro++ with Magnum and Assimp to read points into a
  * MeshData3D struct, perform a voronoi tesselation to genenerate a mesh, and use Magnum
- * to display that mesh. 
+ * to display that mesh.
  */
 
 #include <Magnum/Buffer.h>
@@ -23,20 +23,30 @@ using namespace Magnum;
 using namespace Magnum::Trade;
 using namespace Magnum::Primitives;
 
-std::optional<MeshData3D>  read_points(int argc, char** argv);
+typedef std::optional<MeshData3D> OptMeshData3D;
 
-std::optional<MeshData3D>  read_points(int argc, char** argv) {
+OptMeshData3D  read_points(int argc, char** argv);
+
+OptMeshData3D  read_points(int argc, char** argv) {
+
+    /* Load scene importer plugin */
+    PluginManager::Manager<Trade::AbstractImporter> manager{};
+    std::unique_ptr<Trade::AbstractImporter> importer = manager.loadAndInstantiate("ObjImporter");
 
     std::ignore = argc;
 
-    AssimpImporter assimp;
-
-    if (assimp.openFile(argv[1])) {
+    if (importer->openFile(argv[1])) {
         cout << "opened file \"" << argv[1] << "\" OK" << endl;
-        cout << "mesh 3d count: " << assimp.mesh3DCount() << std::endl;
+        cout << "mesh 3d count: " << importer->mesh3DCount() << std::endl;
     } else {
         cout << "failed to open " <<  argv[1] << endl;
+        return OptMeshData3D{};
     }
+
+    int defScene = importer->defaultScene();
+    cout << "default scene: " << defScene;
+
+    auto mesh = importer->mesh3D(defScene);
 
     return  Cube::solid();
 }
@@ -86,6 +96,13 @@ void VoronoiTest::drawEvent() {
 }
 
 int main(int argc, char** argv) {
+
+    CORRADE_PLUGIN_IMPORT(AnyImageImporter);
+    CORRADE_PLUGIN_IMPORT(ObjImporter);
+    CORRADE_PLUGIN_IMPORT(AssimpImporter);
+    CORRADE_PLUGIN_IMPORT(OpenGexImporter);
+    CORRADE_PLUGIN_IMPORT(AnySceneImporter);
+
     VoronoiTest app({argc, argv});
     return app.exec();
 }

@@ -62,11 +62,12 @@ set(BUILD_GL_TESTS OFF CACHE BOOL "build as static libraries for now..." FORCE)
 
 # magnum plugins for mesh import testing
 set(WITH_ASSIMPIMPORTER    ON CACHE BOOL "build Assimp importer" FORCE)
-set(WITH_OBJIMPORTER       ON CACHE BOOL "build Assimp importer" FORCE)          
+set(WITH_OBJIMPORTER       ON CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_OPENGEXIMPORTER   ON CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_ANYIMAGECONVERTER ON CACHE BOOL "build Assimp importer" FORCE)
-set(WITH_AUDIO           ON CACHE BOOL "build Assimp importer" FORCE)
-set(WITH_ANYSCENEIMPORTER   ON CACHE BOOL "build Assimp importer" FORCE)
+set(WITH_AUDIO             ON CACHE BOOL "build Assimp importer" FORCE)
+set(WITH_ANYSCENEIMPORTER  ON CACHE BOOL "build Assimp importer" FORCE)
+set(WITH_PNGIMPORTER       ON CACHE BOOL "build PNG importer"    FORCE)
 
 add_subdirectory(magnum)
 
