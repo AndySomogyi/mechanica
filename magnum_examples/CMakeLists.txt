@@ -1,2 +1,2 @@
 add_subdirectory(polygons)
-add_subdirectory(textures)
+add_subdirectory(multi-texture)
