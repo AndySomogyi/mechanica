@@ -50,13 +50,13 @@ class PrimitivesExample: public Platform::GlfwApplication {
         void mouseReleaseEvent(MouseEvent& event) override;
         void mouseMoveEvent(MouseMoveEvent& event) override;
 
-        Buffer indexBuffer, positionBuffer, normalBuffer;
-        Mesh mesh;
-        Shaders::Phong shader;
+        Buffer _indexBuffer, _vertexBuffer;
+        Mesh _mesh;
+        Shaders::Phong _shader;
 
-        Matrix4 transformation, projection;
-        Vector2i previousMousePosition;
-        Color3 color;
+        Matrix4 _transformation, _projection;
+        Vector2i _previousMousePosition;
+        Color3 _color;
 };
 
 PrimitivesExample::PrimitivesExample(const Arguments& arguments):
@@ -67,39 +67,38 @@ PrimitivesExample::PrimitivesExample(const Arguments& arguments):
 
     const Trade::MeshData3D cube = Primitives::Cube::solid();
 
-    positionBuffer.setData(cube.positions(0), BufferUsage::StaticDraw);
+    _vertexBuffer.setData(MeshTools::interleave(cube.positions(0), cube.normals(0)), BufferUsage::StaticDraw);
 
-    normalBuffer.setData(cube.normals(0), BufferUsage::StaticDraw);
+    Containers::Array<char> indexData;
+    Mesh::IndexType indexType;
+    UnsignedInt indexStart, indexEnd;
+    std::tie(indexData, indexType, indexStart, indexEnd) = MeshTools::compressIndices(cube.indices());
+    _indexBuffer.setData(indexData, BufferUsage::StaticDraw);
 
-    indexBuffer.setData(cube.indices(), BufferUsage::StaticDraw);
-
-    mesh.setPrimitive(cube.primitive())
+    _mesh.setPrimitive(cube.primitive())
         .setCount(cube.indices().size())
-        .addVertexBuffer(positionBuffer, 0, Shaders::Phong::Position{})
-        .addVertexBuffer(normalBuffer, 0, Shaders::Phong::Normal{})
-        .setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+        .addVertexBuffer(_vertexBuffer, 0, Shaders::Phong::Position{}, Shaders::Phong::Normal{})
+        .setIndexBuffer(_indexBuffer, 0, indexType, indexStart, indexEnd);
 
-    transformation = Matrix4::rotationX(30.0_degf)
-                     * Matrix4::rotationY(40.0_degf);
+    _transformation = Matrix4::rotationX(30.0_degf)*
+                      Matrix4::rotationY(40.0_degf);
+    _color = Color3::fromHsv(35.0_degf, 1.0f, 1.0f);
 
-    color = Color3::fromHsv(35.0_degf, 1.0f, 1.0f);
-
-    projection = Matrix4::perspectiveProjection(35.0_degf,
-            Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f)
-            * Matrix4::translation(Vector3::zAxis(-10.0f));
+    _projection = Matrix4::perspectiveProjection(35.0_degf, Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f)*
+                  Matrix4::translation(Vector3::zAxis(-10.0f));
 }
 
 void PrimitivesExample::drawEvent() {
     defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
 
-    shader.setLightPosition({7.0f, 5.0f, 2.5f})
+    _shader.setLightPosition({7.0f, 5.0f, 2.5f})
         .setLightColor(Color3{1.0f})
-        .setDiffuseColor(color)
-        .setAmbientColor(Color3::fromHsv(color.hue(), 1.0f, 0.3f))
-        .setTransformationMatrix(transformation)
-        .setNormalMatrix(transformation.rotationScaling())
-        .setProjectionMatrix(projection);
-    mesh.draw(shader);
+        .setDiffuseColor(_color)
+        .setAmbientColor(Color3::fromHsv(_color.hue(), 1.0f, 0.3f))
+        .setTransformationMatrix(_transformation)
+        .setNormalMatrix(_transformation.rotationScaling())
+        .setProjectionMatrix(_projection);
+    _mesh.draw(_shader);
 
     swapBuffers();
 }
@@ -107,12 +106,12 @@ void PrimitivesExample::drawEvent() {
 void PrimitivesExample::mousePressEvent(MouseEvent& event) {
     if(event.button() != MouseEvent::Button::Left) return;
 
-    previousMousePosition = event.position();
+    _previousMousePosition = event.position();
     event.setAccepted();
 }
 
 void PrimitivesExample::mouseReleaseEvent(MouseEvent& event) {
-    color = Color3::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
+    _color = Color3::fromHsv(_color.hue() + 50.0_degf, 1.0f, 1.0f);
 
     event.setAccepted();
     redraw();
@@ -123,18 +122,22 @@ void PrimitivesExample::mouseMoveEvent(MouseMoveEvent& event) {
     if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) return;
 
     const Vector2 delta = 3.0f*
-        Vector2{event.position() - previousMousePosition}/
+        Vector2{event.position() - _previousMousePosition}/
         Vector2{defaultFramebuffer.viewport().size()};
 
-    transformation =
+    _transformation =
         Matrix4::rotationX(Rad{delta.y()})*
-        transformation*
+        _transformation*
         Matrix4::rotationY(Rad{delta.x()});
 
-    previousMousePosition = event.position();
+    _previousMousePosition = event.position();
     event.setAccepted();
     redraw();
 }
+
+
+
+
 
 
 int main(int argc, char** argv) {

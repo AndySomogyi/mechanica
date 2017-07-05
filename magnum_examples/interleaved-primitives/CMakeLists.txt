@@ -40,8 +40,8 @@ endif()
 
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
-add_executable(magnum-primitives PrimitivesExample.cpp)
-target_link_libraries(magnum-primitives
+add_executable(magnum-interleaved-primitives InterleavedPrimitivesExample.cpp)
+target_link_libraries(magnum-interleaved-primitives
     Magnum::GlfwApplication
     Magnum::Magnum
     Magnum::MeshTools
