@@ -27,4 +27,5 @@ brew install glfw
 brew install assimp
 brew install llvm
 brew install fftw
+brew install libpng
 ```
