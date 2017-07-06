@@ -17,32 +17,40 @@ using namespace Magnum::Shaders;
 
 // Shader sources
 const GLchar* vertSrc = R"(
-    layout(location=0) in vec2 position;
-    layout(location=1) in vec3 color;
-    out vec3 Color;
-    void main()
-    {
-        Color = color;
-        gl_Position = vec4(position, 0.0, 1.0);
-    }
+layout (location = 0) in vec2 pos;
+layout (location = 1) in vec3 color;
+layout (location = 2) in vec2 offset;
+
+out vec3 fColor;
+
+void main()
+{
+    gl_Position = vec4(pos * (gl_InstanceID / 100.0) + offset, 0.0, 1.0);
+    fColor = color;
+} 
 )";
 
 const GLchar* fragSrc = R"(
-    in vec3 Color;
-    out vec4 outColor;
-    void main()
-    {
-        outColor = vec4(Color, 1.0);
-    }
+out vec4 FragColor;
+  
+in vec3 fColor;
+
+void main()
+{
+    FragColor = vec4(fColor, 1.0);
+}
 )";
 
+// Triangle vertex is standard vertex type, i.e. per vertex,
+// we don't put the instanced attributes here.
 struct TriangleVertex {
-    Vector2 position;
+    Vector2 pos;
     Color3 color;
 };
 
-typedef Attribute<0, Vector2> PositionAttr;
+typedef Attribute<0, Vector2> PosAttr;
 typedef Attribute<1, Color3> ColorAttr;
+typedef Attribute<2, Vector2> OffsetAttr;
 
 class ShaderProgram : public AbstractShaderProgram {
 public:
@@ -65,51 +73,65 @@ public:
 };
 
 
-class Polygons: public Platform::GlfwApplication {
+class InstancedQuads: public Platform::GlfwApplication {
     public:
-        explicit Polygons(const Arguments& arguments);
+        explicit InstancedQuads(const Arguments& arguments);
 
     private:
         void drawEvent() override;
 
         Buffer vertexBuffer;
-        Buffer indexBuffer;
+        Buffer offsetBuffer;
         Mesh mesh;
         ShaderProgram shaderProgram;
 };
 
-Polygons::Polygons(const Arguments& arguments) :
+InstancedQuads::InstancedQuads(const Arguments& arguments) :
         Platform::GlfwApplication{arguments, Configuration{}.
             setVersion(Version::GL410).
-            setTitle("Polygon Example")} {
+            setTitle("Instanced Drawing Example")} {
 
-   static const TriangleVertex vertices[] = {
-   //  position         color
-       {{-0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}}, // Top-left
-       {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}}, // Top-right
-       {{ 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}}, // Bottom-right
-       {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}}  // Bottom-left
-   };
+    static const TriangleVertex vertices[] = {
+        // positions     // colors
+        {{-0.05f,  0.05f},  {1.0f, 0.0f, 0.0f}},
+        {{ 0.05f, -0.05f},  {0.0f, 1.0f, 0.0f}},
+        {{-0.05f, -0.05f},  {0.0f, 0.0f, 1.0f}},
 
-   static const GLuint elements[] = {
-       0, 1, 2,
-       2, 3, 0
-   };
+        {{-0.05f,  0.05f},  {1.0f, 0.0f, 0.0f}},
+        {{ 0.05f, -0.05f},  {0.0f, 1.0f, 0.0f}},
+        {{ 0.05f,  0.05f},  {0.0f, 1.0f, 1.0f}}
+    };
 
    vertexBuffer.setData(vertices, BufferUsage::StaticDraw);
 
-   indexBuffer.setData(elements, BufferUsage::StaticDraw);
+   Vector2 translations[100];
+
+    int index = 0;
+    float offset = 0.1f;
+    for (int y = -10; y < 10; y += 2)
+    {
+        for (int x = -10; x < 10; x += 2)
+        {
+            Vector2 translation;
+            translation[0] = float(x) / 10.0f + offset;
+            translation[1] = float(y) / 10.0f + offset;
+            translations[index++] = translation;
+        }
+    }
+
+   offsetBuffer.setData(translations, BufferUsage::StaticDraw);
 
    mesh.setPrimitive(MeshPrimitive::Triangles)
        .setCount(6)
-       .addVertexBuffer(vertexBuffer, 0,
-           PositionAttr{},
-           ColorAttr{});
+       .setInstanceCount(100);
 
-   mesh.setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+   mesh.addVertexBuffer(vertexBuffer, 0, PosAttr{}, ColorAttr{});
+
+   // the '1' divisor tells OpenGL this is an instanced vertex attribute.
+   mesh.addVertexBufferInstanced(offsetBuffer, 1 /* divisor */, 0 /* offset */, OffsetAttr{});
 }
 
-void Polygons::drawEvent() {
+void InstancedQuads::drawEvent() {
     defaultFramebuffer.clear(FramebufferClear::Color);
 
     mesh.draw(shaderProgram);
@@ -118,6 +140,6 @@ void Polygons::drawEvent() {
 }
 
 int main(int argc, char** argv) {
-    Polygons app({argc, argv});
+    InstancedQuads app({argc, argv});
     return app.exec();
 }
