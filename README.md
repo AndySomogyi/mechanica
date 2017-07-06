@@ -26,4 +26,5 @@ Mechanica relies on a few external depencencies that are very standard and easy 
 brew install glfw
 brew install assimp
 brew install llvm
+brew install fftw
 ```
