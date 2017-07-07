@@ -1,22 +1,22 @@
 [submodule "deps/mdcore"]
 	path = extern/mdcore
-	url = git@github.com:AndySomogyi/mdcore.git
+	url = https://github.com/AndySomogyi/mdcore.git
 [submodule "docs"]
 	path = docs
-	url = git@github.com:AndySomogyi/mechanica.git
+	url = https://github.com/AndySomogyi/mechanica.git
 [submodule "extern/glfw"]
 	path = extern/glfw
-	url = git@github.com:AndySomogyi/glfw.git
+	url = https://github.com/AndySomogyi/glfw.git
 [submodule "extern/nanogui"]
 	path = extern/nanogui
-	url = git@github.com:AndySomogyi/nanogui.git
+	url = https://github.com/AndySomogyi/nanogui.git
 [submodule "extern/magnum"]
 	path = extern/magnum
-	url = git@github.com:AndySomogyi/magnum.git
+	url = https://github.com/AndySomogyi/magnum.git
 [submodule "extern/corrade"]
 	path = extern/corrade
-	url = git@github.com:AndySomogyi/corrade.git
+	url = https://github.com/AndySomogyi/corrade.git
 [submodule "extern/magnum-plugins"]
 	path = extern/magnum-plugins
-	url = git@github.com:AndySomogyi/magnum-plugins.git
+	url = https://github.com/AndySomogyi/magnum-plugins.git
 	branch = assimp-importer
