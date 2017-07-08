@@ -121,7 +121,10 @@ class container_periodic_base : public unitcell, public voro_base {
 		 * \return False if the plane cuts applied by walls completely
 		 * removed the cell, true otherwise. */
 		template<class v_cell>
-		inline bool initialize_voronoicell(v_cell &c,int ijk,int q,int ci,int cj,int ck,int &i,int &j,int &k,double &x,double &y,double &z,int &disp) {
+		inline bool initialize_voronoicell(v_cell &c,int ijk,int q,int ci,
+		        int cj,int ck,int &i,int &j,int &k,double &x,double &y,
+		        double &z,int &disp) {
+		    ignore(ci); ignore(cj); ignore(ck); ignore(disp);
 			c=unit_voro;
 			double *pp=p[ijk]+ps*q;
 			x=*(pp++);y=*(pp++);z=*pp;
@@ -140,6 +143,11 @@ class container_periodic_base : public unitcell, public voro_base {
 		 *		    find_voronoi_cell routine (but not needed
 		 *		    in this instance.) */
 		inline void initialize_search(int ci,int cj,int ck,int ijk,int &i,int &j,int &k,int &disp) {
+		    ignore(ci);
+		    ignore(cj);
+		    ignore(ck);
+		    ignore(ijk);
+		    ignore(disp);
 			i=nx;j=ey;k=ez;
 		}
 		/** Returns the position of a particle currently being computed
@@ -169,6 +177,10 @@ class container_periodic_base : public unitcell, public voro_base {
 		 * 		    (but not needed in this instance.)
 		 * \return The block index. */
 		inline int region_index(int ci,int cj,int ck,int ei,int ej,int ek,double &qx,double &qy,double &qz,int &disp) {
+		    ignore(qx);
+		    ignore(qy);
+		    ignore(qz);
+		    ignore(disp);
 			int qi=ci+(ei-nx),qj=cj+(ej-ey),qk=ck+(ek-ez);
 			int iv(step_div(qi,nx));if(iv!=0) {qx=iv*bx;qi-=nx*iv;} else qx=0;
 			create_periodic_image(qi,qj,qk);
@@ -418,7 +430,7 @@ class container_periodic : public container_periodic_base, public radius_mono {
 			bool q=compute_cell(c,ijk,co[ijk]-1);
 			co[ijk]--;
 			return q;
-		}		
+		}
 	private:
 		voro_compute<container_periodic> vc;
 		friend class voro_compute<container_periodic>;
