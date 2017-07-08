@@ -1,6 +1,11 @@
-Voro++, a 3D cell-based Voronoi library (http://math.lbl.gov/voro++/)
+Voro++, a 3D cell-based Voronoi library 
+=======================================
+
+(http://math.lbl.gov/voro++/)
+
 By Chris H. Rycroft (UC Berkeley / Lawrence Berkeley Laboratory)
-================================================================
+
+
 Voro++ is a software library for carrying out three-dimensional computations
 of the Voronoi tessellation. A distinguishing feature of the Voro++ library
 is that it carries out cell-based calculations, computing the Voronoi cell
