@@ -46,9 +46,9 @@ int main() {
 	       "Voronoi volume   : %g\n"
 	       "Difference       : %g\n",cvol,vvol,vvol-cvol);
 
-	// Output the particle positions in gnuplot format
-	con.draw_particles("random_points_p.gnu");
+	// Output the particle positions in povray format
+	con.draw_particles_pov("random_points_p.pov");
 
-	// Output the Voronoi cells in gnuplot format
-	con.draw_cells_gnuplot("random_points_v.gnu");
+	// Output the Voronoi cells in povray format
+	con.draw_cells_pov("random_points_v.pov");
 }

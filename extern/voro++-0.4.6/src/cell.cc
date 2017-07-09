@@ -13,6 +13,7 @@
 #include "config.hh"
 #include "common.hh"
 #include "cell.hh"
+#include <cassert>
 
 namespace voro {
 
@@ -1561,6 +1562,52 @@ void voronoicell_base::draw_pov_mesh(double x,double y,double z,FILE *fp) {
 	}
 	fputs("}\ninside_vector <0,0,1>\n}\n",fp);
 	reset_edges();
+}
+
+
+/**
+ * Writes the vertices and triangular face indices of this cell to
+ * the given vertices and indices buffers.
+ *
+ * \param[in] (x,y,z) a displacement vector to be added to the cell's position.
+ * \param[out] vertices
+ * \param[out] indices
+ */
+void voronoicell_base::indexed_triangular_faces(double x,double y,double z,
+        std::vector<double> &vertices, std::vector<int> &indices) {
+    int i,j,k,l,m,n;
+    double *ptsp=pts;
+
+    vertices.resize(3*p);
+
+    for(i=0;i<p;i++,ptsp+=3) {
+        vertices[3*i+0] = x+ptsp[0]*0.5;
+        vertices[3*i+1] = y+ptsp[1]*0.5;
+        vertices[3*i+2] = z+ptsp[2]*0.5;
+    }
+
+    // 3 index per triangular face, 2*(p-2) faces.
+    indices.resize(3*(p-2)*2);
+    int ii = 0;
+    for(i=1;i<p;i++) {
+        for(j=0;j<nu[i];j++) {
+            k=ed[i][j];
+            if(k>=0) {
+                ed[i][j]=-1-k;
+                l=cycle_up(ed[i][nu[i]+j],k);
+                m=ed[k][l];ed[k][l]=-1-m;
+                while(m!=i) {
+                    n=cycle_up(ed[k][nu[k]+l],m);
+                    assert(i < indices.size()); indices[ii++] = i;
+                    assert(i < indices.size()); indices[ii++] = k;
+                    assert(i < indices.size()); indices[ii++] = m;
+                    k=m;l=n;
+                    m=ed[k][l];ed[k][l]=-1-m;
+                }
+            }
+        }
+    }
+    reset_edges();
 }
 
 /** Several routines in the class that gather cell-based statistics internally

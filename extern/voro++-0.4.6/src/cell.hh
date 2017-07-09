@@ -80,11 +80,21 @@ class voronoicell_base {
 		 * cell. This array is dynamically allocated, with its current
 		 * size held by current_vertices. */
 		int *nu;
-		/** This in an array with size 3*current_vertices for holding
-		 * the positions of the vertices. */
+
+		/**
+		 * This in an array with size 3*current_vertices for holding
+		 * the positions of the vertices.
+		 *
+		 * IMPORTANT: These vertices are in local coordinate space, relative
+		 * to the origin of this Voronoi cell. For some reason, all coordinates
+		 * are doubled, i.e they are twice what the actual coordinate values
+		 * should be.
+		 */
 		double *pts;
+
+
 		voronoicell_base();
-		~voronoicell_base();
+		virtual ~voronoicell_base();
 		void init_base(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax);
 		void init_octahedron_base(double l);
 		void init_tetrahedron_base(double x0,double y0,double z0,double x1,double y1,double z1,double x2,double y2,double z2,double x3,double y3,double z3);
@@ -100,7 +110,9 @@ class voronoicell_base {
 			draw_pov(x,y,z,fp);
 			fclose(fp);
 		};
+
 		void draw_pov_mesh(double x,double y,double z,FILE *fp=stdout);
+
 		/** Outputs the cell in POV-Ray format as a mesh2 object to a
 		 * given file.
 		 * \param[in] (x,y,z) a displacement to add to the cell's
@@ -111,6 +123,7 @@ class voronoicell_base {
 			draw_pov_mesh(x,y,z,fp);
 			fclose(fp);
 		}
+
 		void draw_gnuplot(double x,double y,double z,FILE *fp=stdout);
 		/** Outputs the cell in Gnuplot format a given file.
 		 * \param[in] (x,y,z) a displacement to add to the cell's
@@ -131,6 +144,18 @@ class voronoicell_base {
 		void vertex_orders(std::vector<int> &v);
 		void output_vertex_orders(FILE *fp=stdout);
 		void vertices(std::vector<double> &v);
+
+		/**
+		 * Writes the vertices and triangular face indices of this cell to
+		 * the given vertices and indices buffers.
+		 *
+		 * \param[in] (x,y,z) a displacement vector to be added to the cell's position.
+		 * \param[out] vertices
+		 * \param[out] indices
+		 */
+		void indexed_triangular_faces(double x,double y,double z,
+		        std::vector<double> &vertices, std::vector<int> &indices);
+
 		void output_vertices(FILE *fp=stdout);
 		void vertices(double x,double y,double z,std::vector<double> &v);
 		void output_vertices(double x,double y,double z,FILE *fp=stdout);
