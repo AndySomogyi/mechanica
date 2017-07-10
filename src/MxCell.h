@@ -42,6 +42,17 @@ struct MxMeshVertex {
     Vector3 acceleration;
 };
 
+
+/**
+ * A partial face data structure, represents 1/2 of a triangular face. This represents the
+ * side of the face that belongs to a cell struct. Partial faces share geomory (the vertex
+ * indices at each apex), but have local attributes. 
+ *
+ * The vertex index ordering is different in in each side of the partial face pair. We construct
+ * the index ordering on each half such that the vertex winding causes the face normal to 
+ * point outwards from the cell. So, in each partial face half, the face normal points towards
+ * the other cell. 
+ */
 struct MxPartialFace {
 
     /**
@@ -108,6 +119,12 @@ struct MxPartialFace {
  * the index winding so that the normal points the correct way.
  */
 struct MxCell {
+    /**
+     * The MxMesh that this cell belongs to. Lots of method on this
+     * cell require access to vertex info, simpler to add an ivar instead
+     * of passing in a mesh pointer each time. 
+     */
+    MxMesh *mesh;
 
     /**
      * the closed set of faces that define the boundary of this cell
@@ -127,6 +144,31 @@ struct MxCell {
      * boundary in non-manifold.
      */
     bool connectBoundary();
+
+    enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
+
+    /**
+     * Calculate the volume of this cell. 
+     */
+    float volume(VolumeMethod vm = ConvexTrapezoidSum);
+
+    /**
+     * calculate the total area
+     */
+    float area();
+
+
+    inline uint faceCount() { return boundary.size(); }
+
+    /**
+     * Even though we share position for vertices, each face has
+     * different color, normal, etc... so need separate vertices
+     * for each face. Not a problem because we compute these, don't
+     * waste memory.
+     */
+    inline uint vertexCount() {return 3 * boundary.size(); };
+
+    void writeBufferData();
 };
 
 #endif /* SRC_MXCELL_H_ */

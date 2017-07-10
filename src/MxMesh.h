@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <Magnum/Magnum.h>
+#include <Magnum/Mesh.h>
 #include "mechanica_private.h"
 #include "mdcore_single.h"
 
@@ -228,6 +229,11 @@ struct MxMesh  {
      * one first, and returns that one.
      */
     uint appendVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
+
+
+
+
+    static const Magnum::Mesh::IndexType IndexType = Magnum::Mesh::IndexType::UnsignedInt;
 
 
 
