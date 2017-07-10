@@ -46,7 +46,7 @@ set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 
 
 
-add_subdirectory(voro++-0.4.6)
+add_subdirectory(Voroxx)
 
 #add_subdirectory(assimp)
 

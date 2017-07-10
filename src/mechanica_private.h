@@ -42,6 +42,11 @@
 #include "MxType.h"
 #include "MxSymbol.h"
 
+#include <cstdint>
+
+
+typedef uint32_t uint;
+typedef uint16_t ushort;
 
 
 

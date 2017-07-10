@@ -13,6 +13,9 @@
 #include <Magnum/Primitives/Cube.h>
 #include <MagnumPlugins/AssimpImporter/AssimpImporter.h>
 #include <iostream>
+#include "VoronoiTesselator.h"
+
+#include <MxMeshVoronoiImporter.h>
 
 
 #include <Magnum/Trade/MeshData3D.h>
@@ -46,12 +49,10 @@ OptMeshData3D  read_points(int argc, char** argv) {
     int defScene = importer->defaultScene();
     cout << "default scene: " << defScene;
 
-    auto mesh = importer->mesh3D(defScene);
-
-    return  Cube::solid();
+    return importer->mesh3D(defScene);
 }
 
-class VoronoiTest: public Platform::Application {
+class VoronoiTest: public Platform::GlfwApplication {
     public:
         explicit VoronoiTest(const Arguments& arguments);
 
@@ -64,10 +65,19 @@ class VoronoiTest: public Platform::Application {
 };
 
 VoronoiTest::VoronoiTest(const Arguments& arguments):
-    Platform::Application{arguments, Configuration{}.setTitle("Magnum Triangle Example")} {
+    Platform::GlfwApplication{arguments, Configuration{}.setTitle("Voronoi Example")} {
     using namespace Math::Literals;
 
-    read_points(arguments.argc, arguments.argv);
+    //OptMeshData3D points = read_points(arguments.argc, arguments.argv);
+
+    //auto result = VoronoiTesselator::tesselate(points->positions(0),
+    //            {0,0,0}, {1,1,1}, {1,1,1});
+
+    MxMesh mesh;
+
+    MxMeshVoronoiImporter::readFile("/Users/andy/src/mechanica/testing/voronoi/points.obj",
+            {0,0,0}, {10,10,10}, {10,10,10}, {{false, false, false}}, mesh);
+
 
     struct TriangleVertex {
         Vector2 position;

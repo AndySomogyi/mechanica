@@ -17,9 +17,14 @@ set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_executable(voronoi
   VoronoiTest.cpp
+  SphereShader.cpp
+  SphereShader.h
+  VoronoiTesselator.cpp
+  VoronoiTesselator.h
   )
 
 target_link_libraries(voronoi
+  mechanica
   Magnum::GlfwApplication
   Magnum::Magnum
   Magnum::MeshTools

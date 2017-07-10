@@ -115,14 +115,16 @@ find_package(Assimp)
 
 if(Assimp_FOUND)
 
-  get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
-  message("ASSIMP_LIBRARIES: ${TMP}")
+#  get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
+#  message("ASSIMP_LIBRARIES: ${TMP}")
 
-  get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
-  message("ASSIMP_INCLUDE_DIRS: ${TMP}")
+#  get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
 
-  message("RAW ASSIMP_LIBRARIES ${ASSIMP_LIBRARIES}")
-  message("RAW ASSIMP_LIBRARY: ${ASSIMP_LIBRARY}")
+  
+ # message("Assimp_INTERFACE_INCLUDE_DIRECTORIES: $<TARGET_PROPERTY:Assimp::Assimp,INTERFACE_INCLUDE_DIRECTORIES>")
+
+  #message("RAW ASSIMP_LIBRARIES ${ASSIMP_LIBRARIES}")
+ # message("RAW ASSIMP_LIBRARY: ${ASSIMP_LIBRARY}")
 else()
   message("ASSIMP not found")
 endif()
