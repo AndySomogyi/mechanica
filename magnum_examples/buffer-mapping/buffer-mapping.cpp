@@ -2,8 +2,7 @@
  *
  * This example uses the geometry shader again for particle drawing.
  * The particles are animated on the cpu and uploaded every frame by
- * mapping vbos. Multiple vbos are used to triple buffer the particle
- * data.
+ * writing into a mapped vertex buffer object.  
  *
  * Original Autor: Jakob Progsch
  * Ported to Magnum: Andy Somogyi
