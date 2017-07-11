@@ -78,61 +78,59 @@ const GLchar* fragSrc = R"(
 
 class ShaderProgram : public AbstractShaderProgram {
 public:
-
+    
     explicit ShaderProgram() {
         MAGNUM_ASSERT_VERSION_SUPPORTED(Version::GL330);
-
+        
         Shader vert{Version::GL330, Shader::Type::Vertex};
         Shader frag{Version::GL330, Shader::Type::Fragment};
         Shader geom{Version::GL330, Shader::Type::Geometry};
-
+        
         vert.addSource(vertSrc);
         geom.addSource(geomSrc);
         frag.addSource(fragSrc);
-
-
+        
+        
         CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, geom, frag}));
-
+        
         attachShaders({vert, geom, frag});
-
+        
         CORRADE_INTERNAL_ASSERT_OUTPUT(link());
-
+        
         viewLoc = uniformLocation("View");
         projLoc = uniformLocation("Projection");
     };
-
+    
     void setViewMatrix(const Matrix4& mat) {
         setUniform(viewLoc, mat);
     }
-
+    
     void setProjMatrix(const Matrix4& mat) {
         setUniform(projLoc, mat);
     }
-
+    
 private:
     int viewLoc, projLoc;
 };
 
 
 class BufferMapping: public Platform::GlfwApplication {
-    public:
-        explicit BufferMapping(const Arguments& arguments);
-
-    private:
-        void drawEvent() override;
-
-        Buffer vertexBuffer;
-        Mesh mesh;
-        ShaderProgram shaderProgram;
-
-
-        static const int particles = 128*1024;
-
-        // randomly place particles in a cube
-        std::vector<Vector3> vertexData;
-        std::vector<Vector3> velocity;
-
-
+public:
+    explicit BufferMapping(const Arguments& arguments);
+    
+private:
+    void drawEvent() override;
+    
+    Buffer vertexBuffer;
+    Mesh mesh;
+    ShaderProgram shaderProgram;
+    
+    
+    static const int particles = 128*1024;
+    
+    // randomly place particles in a cube
+    std::vector<Vector3> vertexData;
+    std::vector<Vector3> velocity;
 };
 
 BufferMapping::BufferMapping(const Arguments& arguments) :
@@ -220,24 +218,17 @@ void BufferMapping::drawEvent() {
     // calculate ViewProjection matrix
     Matrix4 projection = Matrix4::perspectiveProjection(Rad{90.0f}, 4.0f / 3.0f, 0.1f, 100.f);
 
-    //View = glm::rotate(View, -22.5f*t, glm::vec3(0.0f, 1.0f, 0.0f));
-    //std::cout<<"view\n" << glm::to_string(View)<<std::endl;
-
-    // translate the world/view position
+    
+    // translate the world/view position,
+    // note order of matrix multiply
     Matrix4 view = Matrix4::translation({0.0f, 0.0f, -30.0f}) *
-
-        Matrix4::rotation(Deg{30.0f}, {1.0f, 0.0f, 0.0f}) *
+    Matrix4::rotation(Deg{30.0f}, {1.0f, 0.0f, 0.0f}) *
     Matrix4::rotation(Deg{-22.5f*t}, {0.0f, 1.0f, 0.0f});
-
-    //Matrix4::translation({0.0f, 0.0f, -20.0f});
-
 
     shaderProgram.setProjMatrix(projection);
     shaderProgram.setViewMatrix(view);
 
-
     defaultFramebuffer.clear(FramebufferClear::Color | FramebufferClear::Depth);
-
 
     mesh.draw(shaderProgram);
 
