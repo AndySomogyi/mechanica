@@ -16,9 +16,17 @@ find_package(Magnum REQUIRED
 
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
+add_executable(buffer-mapping-simple buffer-mapping-simple.cpp)
+
+target_link_libraries(buffer-mapping-simple
+  Magnum::Application
+  Magnum::Magnum
+  Magnum::Shaders)
+
 add_executable(buffer-mapping buffer-mapping.cpp)
 
 target_link_libraries(buffer-mapping
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders)
+

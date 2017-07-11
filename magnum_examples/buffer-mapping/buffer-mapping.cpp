@@ -1,8 +1,20 @@
+/* OpenGL example code - buffer mapping
+ *
+ * This example uses the geometry shader again for particle drawing.
+ * The particles are animated on the cpu and uploaded every frame by
+ * mapping vbos. Multiple vbos are used to triple buffer the particle
+ * data.
+ *
+ * Original Autor: Jakob Progsch
+ * Ported to Magnum: Andy Somogyi
+ */
+
 #include <Magnum/Magnum.h>
 #include <Magnum/Buffer.h>
 #include <Magnum/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Matrix4.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shader.h>
 #include <Magnum/Shaders/Shaders.h>
@@ -10,37 +22,26 @@
 #include <Magnum/Context.h>
 #include <Magnum/Version.h>
 #include <Magnum/AbstractShaderProgram.h>
+#include <Magnum/Renderer.h>
 
 #include <random>
-
+#include <iostream>
 
 using namespace Magnum;
 using namespace Magnum::Shaders;
 
+
 // Shader sources
-
-
-const GLchar* fragSrc = R"(
-    in vec3 Color;
-    out vec4 outColor;
-    void main()
-    {
-        outColor = vec4(Color, 1.0);
-    }
-)";
-
 // the vertex shader simply passes through data
 const GLchar* vertSrc = R"(
-    #version 330
-    layout(location = 0) in vec4 vposition;
+    layout(location = 0) in vec3 vposition;
     void main() {
-       gl_Position = vposition;
+       gl_Position = vec4(vposition, 1.0);
     }
 )";
 
 // the geometry shader creates the billboard quads
-const GLchar *geomSrc = R"("
-    #version 330
+const GLchar *geomSrc = R"(
     uniform mat4 View;
     uniform mat4 Projection;
     layout (points) in;
@@ -65,7 +66,6 @@ const GLchar *geomSrc = R"("
 
 // the fragment shader creates a bell like radial color distribution
 const GLchar* fragSrc = R"(
-    #version 330
     in vec2 txcoord;
     layout(location = 0) out vec4 FragColor;
     void main() {
@@ -75,13 +75,6 @@ const GLchar* fragSrc = R"(
 )";
 
 
-struct TriangleVertex {
-    Vector2 position;
-    Color3 color;
-};
-
-typedef Attribute<0, Vector2> PositionAttr;
-typedef Attribute<1, Color3> ColorAttr;
 
 class ShaderProgram : public AbstractShaderProgram {
 public:
@@ -121,15 +114,14 @@ private:
 };
 
 
-class Polygons: public Platform::GlfwApplication {
+class BufferMapping: public Platform::GlfwApplication {
     public:
-        explicit Polygons(const Arguments& arguments);
+        explicit BufferMapping(const Arguments& arguments);
 
     private:
         void drawEvent() override;
 
         Buffer vertexBuffer;
-        Buffer indexBuffer;
         Mesh mesh;
         ShaderProgram shaderProgram;
 
@@ -139,56 +131,122 @@ class Polygons: public Platform::GlfwApplication {
         // randomly place particles in a cube
         std::vector<Vector3> vertexData;
         std::vector<Vector3> velocity;
+
+
 };
 
-Polygons::Polygons(const Arguments& arguments) :
+BufferMapping::BufferMapping(const Arguments& arguments) :
         Platform::GlfwApplication{arguments, Configuration{}.
             setVersion(Version::GL410).
-            setTitle("Polygon Example")} {
+            setTitle("Buffer Mapping Example")},
+            vertexData{particles},
+            velocity{particles} {
 
-    // Seed with a real random value, if available
-    std::random_device r;
+    // we are blending so no depth testing
+    Renderer::disable(Renderer::Feature::DepthTest);
 
-    // Choose a random mean between 1 and 6
-    std::default_random_engine e1(r());
-    std::uniform_real_distribution<float> uniform_dist(-5, 5);
+    // enable blending
+    Renderer::enable(Renderer::Feature::Blending);
+
+    //  and set the blend function to result = 1*source + 1*destination
+    Renderer::setBlendFunction(Renderer::BlendFunction::One, Renderer::BlendFunction::One);
+
+    for(int i = 0;i<particles;++i) {
+        vertexData[i] = Vector3{0.5f-float(std::rand())/RAND_MAX,
+                                0.5f-float(std::rand())/RAND_MAX,
+                                0.5f-float(std::rand())/RAND_MAX};
+        vertexData[i] = Vector3{0.0f,20.0f,0.0f} + 5.0f*vertexData[i];
+    }
+
+    // set the vertex buffer size / initial data. Note, have to use Containers::arrayView
+    // function to make an ArrayView obj.
+   vertexBuffer.setData(Containers::arrayView(vertexData.data(), vertexData.size()), BufferUsage::DynamicDraw);
+
+   mesh.setPrimitive(MeshPrimitive::Points)
+       .setCount(vertexData.size())
+       .addVertexBuffer(vertexBuffer, 0, Attribute<0,Vector3>{});
+}
+
+void BufferMapping::drawEvent() {
+
+    // get the time in seconds
+    float t = glfwGetTime();
+
+    // update physics
+    // define spheres for the particles to bounce off
+    static const int spheres = 3;
+    static const Vector3 center[] = {{0,12,1}, {-3,0,0}, {5,-10,0}};
+    static const float radius[] = {3, 7, 12};
 
 
-
+    // physical parameters
+    static const float dt = 1.0f/60.0f;
+    static const Vector3 g = {0.0f, -9.81f, 0.0f};
+    static const float bounce = 1.2f; // inelastic: 1.0f, elastic: 2.0f
 
 
     for(int i = 0;i<particles;++i) {
-        vertexData[i] = {uniform_dist(), 20+uniform_dist(), uniform_dist()};
+        // resolve sphere collisions
+        for(int j = 0;j<spheres;++j) {
+            Vector3 diff = vertexData[i]-center[j];
+            float dist = diff.length();
+            if(dist<radius[j] && Math::dot(diff, velocity[i])<0.0f)
+                velocity[i] -= bounce*diff/(dist*dist)*Math::dot(diff, velocity[i]);
+        }
+        // euler iteration
+        velocity[i] += dt*g;
+        vertexData[i] += dt*velocity[i];
+        // reset particles that fall out to a starting position
+        if(vertexData[i][1]<-30.0) {
+            vertexData[i] = Vector3{
+                0.5f-float(std::rand())/RAND_MAX,
+                0.5f-float(std::rand())/RAND_MAX,
+                0.5f-float(std::rand())/RAND_MAX
+            };
+            vertexData[i] = Vector3{0.0f,20.0f,0.0f} + 5.0f*vertexData[i];
+            velocity[i] = Vector3{0,0,0};
+        }
     }
 
+    // map the buffer
+    Vector3* mapped = vertexBuffer.map<Vector3>(0,  particles * sizeof(Vector3),
+        Buffer::MapFlag::Write|Buffer::MapFlag::InvalidateBuffer);
+
+    // copy data into the mapped memory
+    std::copy(vertexData.begin(), vertexData.end(), mapped);
+
+    vertexBuffer.unmap();
+
+    // calculate ViewProjection matrix
+    Matrix4 projection = Matrix4::perspectiveProjection(Rad{90.0f}, 4.0f / 3.0f, 0.1f, 100.f);
+
+    //View = glm::rotate(View, -22.5f*t, glm::vec3(0.0f, 1.0f, 0.0f));
+    //std::cout<<"view\n" << glm::to_string(View)<<std::endl;
+
+    // translate the world/view position
+    Matrix4 view = Matrix4::translation({0.0f, 0.0f, -30.0f}) *
+
+        Matrix4::rotation(Deg{30.0f}, {1.0f, 0.0f, 0.0f}) *
+    Matrix4::rotation(Deg{-22.5f*t}, {0.0f, 1.0f, 0.0f});
+
+    //Matrix4::translation({0.0f, 0.0f, -20.0f});
 
 
+    shaderProgram.setProjMatrix(projection);
+    shaderProgram.setViewMatrix(view);
 
 
+    defaultFramebuffer.clear(FramebufferClear::Color | FramebufferClear::Depth);
 
-
-   //vertexBuffer.setData(vertexData. BufferUsage::DynamicDraw);
-
-   //indexBuffer.setData(elements, BufferUsage::StaticDraw);
-
-   //mesh.setPrimitive(MeshPrimitive::Triangles)
-   //    .setCount(6)
-   //    .addVertexBuffer(vertexBuffer, 0,
-   //        PositionAttr{},
-   //        ColorAttr{});
-
-   //mesh.setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
-}
-
-void Polygons::drawEvent() {
-    defaultFramebuffer.clear(FramebufferClear::Color);
 
     mesh.draw(shaderProgram);
 
     swapBuffers();
+
+    redraw();
 }
 
 int main(int argc, char** argv) {
-    Polygons app({argc, argv});
+    BufferMapping app({argc, argv});
     return app.exec();
 }
