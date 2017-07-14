@@ -65,7 +65,7 @@ private:
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;
     void mouseMoveEvent(MouseMoveEvent& event) override;
-    
+
     Matrix4 transformation, projection;
     Vector2i previousMousePosition;
     Color4 color;
@@ -82,7 +82,7 @@ VoronoiTest::VoronoiTest(const Arguments& arguments):
         Configuration{}.setVersion(Version::GL410).
             setTitle("Voronoi Example")},
 renderer{MxMeshRenderer::Flag::Wireframe} {
-                
+
 
     //OptMeshData3D points = read_points(arguments.argc, arguments.argv);
 
@@ -91,13 +91,16 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
 
 
 
-    MxMeshVoronoiImporter::readFile("/Users/andy/src/mechanica/testing/voronoi/points.obj",
-            {0,0,0}, {10,10,10}, {10,10,10}, {{false, false, false}}, mesh);
+   // MxMeshVoronoiImporter::readFile("/Users/andy/src/mechanica/testing/voronoi/points.obj",
+   //         {0,0,0}, {10,10,10}, {10,10,10}, {{false, false, false}}, mesh);
+
+    MxMeshVoronoiImporter::random(80,
+                {0,0,0}, {10,10,2}, {20,20,10}, {{false, false, false}}, mesh);
 
     renderer.setMesh(mesh);
-                
+
     //renderer.setModelMatrix(Matrix4::translation({0.0f, 0.0f, 1.0f}));
-                
+
     //glDisable(GL_CULL_FACE​);
 
 
@@ -107,61 +110,66 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
 
 void VoronoiTest::drawEvent() {
     defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
-    
-    
-    
+
+
+
     renderer.setViewportSize(Vector2{defaultFramebuffer.viewport().size()});
-    
+
     projection = Matrix4::perspectiveProjection(35.0_degf,
                                                 Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f);
     //* Matrix4::translation(Vector3::zAxis(-10.0f));
 
-    
+
     renderer.setProjectionMatrix(projection);
-    
-    Matrix4 mat =   Matrix4::translation({-1.0f, 0.5f, -40.0f}) * transformation  * Matrix4::translation({-2.0f, -5.f, -5.f});
-    
+
+    Matrix4 mat =   Matrix4::translation({-1.0f, 0.5f, -40.0f}) * transformation  * Matrix4::translation({-5.0f, -5.f, -5.f});
+
     renderer.setViewMatrix(mat);
-    
+
     renderer.setColor(Color4::blue());
-    
+
     renderer.setWireframeColor(Color4{0., 0., 0.});
-    
+
     renderer.setWireframeWidth(0.5);
-    
+
+    mesh.jiggle();
+
     renderer.draw();
-    
+
     swapBuffers();
+
+    redraw();
+
 }
 
 void VoronoiTest::mousePressEvent(MouseEvent& event) {
     if(event.button() != MouseEvent::Button::Left) return;
-    
+
     previousMousePosition = event.position();
     event.setAccepted();
 }
 
 void VoronoiTest::mouseReleaseEvent(MouseEvent& event) {
     color = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
-    
+
     event.setAccepted();
     redraw();
 }
 
 void VoronoiTest::mouseMoveEvent(MouseMoveEvent& event) {
-    
+
     if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) return;
-    
+
     const Vector2 delta = 3.0f*
     Vector2{event.position() - previousMousePosition}/
     Vector2{defaultFramebuffer.viewport().size()};
-    
+
     transformation =
-    
+
     Matrix4::rotationX(Rad{delta.y()})*
     transformation*
     Matrix4::rotationY(Rad{delta.x()});
-    
+
     previousMousePosition = event.position();
     event.setAccepted();
     redraw();

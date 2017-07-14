@@ -56,7 +56,7 @@ void dumpVertex(void* vertex, uint vertexCount) {
         std::cout << "{" << p[i][0] << "," << p[i][1] << "," << p[i][2] << "}" << std::endl;
         if ((i+1) % 3 == 0) {
             std::cout << "---------" << std::endl;
-            
+
         }
     }
 }
@@ -81,7 +81,7 @@ void MxMeshRenderer::draw() {
         CellGPUObjects &obj = gpuObjects[i];
         MxCell& cell = mesh->cells[i];
 
-        cell.dump();
+        //cell.dump();
 
         //uint* indexPtr = obj.indexBuffer.map<uint>(0,  cell.faceCount() * 3 * sizeof(uint),
         //    Buffer::MapFlag::Write|Buffer::MapFlag::Read);
@@ -96,7 +96,7 @@ void MxMeshRenderer::draw() {
                 Buffer::MapFlag::Write|Buffer::MapFlag::Read);
         cell.vertexAtributeData({}, cell.vertexCount(), sizeof(Vector3), vertexPtr);
 
-        dumpVertex(vertexPtr, cell.vertexCount());
+        //dumpVertex(vertexPtr, cell.vertexCount());
 
         obj.vertexBuffers[0].unmap();
 
@@ -145,7 +145,10 @@ MxMeshRenderer::~MxMeshRenderer() {
 MxMeshRenderer& MxMeshRenderer::setMesh(MxMesh& _mesh) {
     mesh = &_mesh;
 
-    addCellGPUObjects(mesh->cells[0]);
+    for(auto& cell : mesh->cells) {
+        addCellGPUObjects(cell);
+    }
+
     return *this;
 }
 

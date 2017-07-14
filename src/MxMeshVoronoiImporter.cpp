@@ -200,7 +200,7 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
 
     for (int i = 0; i < positions.size(); ++i)  {
         const Vector3& vec = positions[i];
-        container.put(i++, vec[0], vec[1], vec[2]);
+        container.put(i++, vec[0], vec[1], (max[2] - min[2]) / 2);
     }
 
     std::vector<double> vertices;
@@ -242,8 +242,91 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
             assert(connected);
         }
     } while(vl.inc());
-    
-    
+
+    mesh.initPos.resize(mesh.vertices.size());
+
+    for(int i = 0; i < mesh.vertices.size(); ++i) {
+        mesh.initPos[i] = mesh.vertices[i].position;
+    }
+
+
+    mesh.dump(0);
+
+    return true;
+}
+
+#include <random>
+
+
+
+bool MxMeshVoronoiImporter::random(uint numPts, const Magnum::Vector3& min,
+        const Magnum::Vector3& max, const Magnum::Vector3i& n,
+        const std::array<bool, 3> periodic, MxMesh& mesh) {
+
+
+    //container::container(double ax_,double bx_,double ay_,double by_,double az_,double bz_,
+    //    int nx_,int ny_,int nz_,bool xperiodic_,bool yperiodic_,bool zperiodic_,int init_mem)
+    voro::container container(min[0], max[0], min[1], max[1], min[2], max[2],
+        n[0], n[1], n[2], periodic[0], periodic[1], periodic[2], 50);
+
+    std::default_random_engine eng;
+
+    std::uniform_real_distribution<double> xRand(min[0] + 0.1, max[0] - 0.1);
+    std::uniform_real_distribution<double> yRand(min[1] + 0.1, max[1] - 0.1);
+    std::uniform_real_distribution<double> zRand(min[2] + 0.1, max[1] - 0.1);
+
+
+    for (int i = 0; i < numPts; ++i)  {
+        container.put(i++, xRand(eng), yRand(eng), zRand(eng));
+    }
+
+    std::vector<double> vertices;
+    std::vector<int> indices;
+    std::vector<int> newInd;
+
+    voro::c_loop_all vl(container);
+    double *cellOrigin;
+    voro::voronoicell c;
+    if(vl.start()) do {
+        if(container.compute_cell(c,vl)) {
+            // the center of the voronoi cell, should be same as the
+            // inserted particle location.
+            cellOrigin = container.p[vl.ijk] + container.ps * vl.q;
+
+            // grab the indexed vertices from the cell
+            c.indexed_triangular_faces(cellOrigin[0], cellOrigin[1], cellOrigin[2], vertices, indices);
+
+            // do these in-place once bugs are worked out
+            newInd.resize(indices.size());
+
+            for (int j = 0; j < indices.size(); ++j) {
+                int k = indices[j];
+                newInd[j] = mesh.appendVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
+            }
+
+            // allocate first in the cells vector, then we write directly to that memory block,
+            // avoid copy
+            MxCell &cell = mesh.createCell();
+
+            // add the faces to the cell, then sort out the connectivity
+            for(int i = 0; i < newInd.size(); i+=3) {
+                MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
+                cell.boundary.push_back(pf);
+            }
+
+            // boundary had better be connected from a voronoi cell
+            bool connected = cell.connectBoundary();
+            assert(connected);
+        }
+    } while(vl.inc());
+
+    mesh.initPos.resize(mesh.vertices.size());
+
+    for(int i = 0; i < mesh.vertices.size(); ++i) {
+        mesh.initPos[i] = mesh.vertices[i].position;
+    }
+
+
     mesh.dump(0);
 
     return true;

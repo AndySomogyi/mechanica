@@ -91,6 +91,8 @@ struct MxMesh  {
 
 
     std::vector<MxMeshVertex> vertices;
+    
+    std::vector<Magnum::Vector3> initPos;
 
 
     std::vector<MxCell> cells;
@@ -231,6 +233,8 @@ struct MxMesh  {
     
     
     void dump(uint what);
+    
+    void jiggle();
 
 
 

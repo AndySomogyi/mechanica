@@ -54,5 +54,30 @@ void MxMesh::dump(uint what) {
     }
 }
 
+#include <random>
+
+std::default_random_engine eng;
+
+void MxMesh::jiggle() {
+    
+    
+    //std::uniform_real_distribution<double> distribution(-0.1,0.1);
+    
+    std::normal_distribution<float> distribution(0.0,0.1);
+    
+    for (int i = 0; i < vertices.size(); ++i) {
+        
+        Vector3 test = vertices[i].position + Vector3{distribution(eng), distribution(eng), distribution(eng)};
+        
+   
+        if((test - initPos[i]).length() < 2) {
+            vertices[i].position  = test;
+        }
+        
+    }
+    
+ 
+}
+
 
 

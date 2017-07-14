@@ -36,6 +36,10 @@ public:
                 const Magnum::Vector3 &max, const Magnum::Vector3i &n,
                 const std::array<bool, 3> periodic, MxMesh& mesh);
 
+    static bool random(uint numPts, const Magnum::Vector3 &min,
+                const Magnum::Vector3 &max, const Magnum::Vector3i &n,
+                const std::array<bool, 3> periodic, MxMesh& mesh);
+
 
 };
 
