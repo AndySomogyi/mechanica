@@ -2,7 +2,7 @@
  *
  * This example uses the geometry shader again for particle drawing.
  * The particles are animated on the cpu and uploaded every frame by
- * writing into a mapped vertex buffer object.  
+ * writing into a mapped vertex buffer object.
  *
  * Original Autor: Jakob Progsch
  * Ported to Magnum: Andy Somogyi
@@ -77,37 +77,37 @@ const GLchar* fragSrc = R"(
 
 class ShaderProgram : public AbstractShaderProgram {
 public:
-    
+
     explicit ShaderProgram() {
         MAGNUM_ASSERT_VERSION_SUPPORTED(Version::GL330);
-        
+
         Shader vert{Version::GL330, Shader::Type::Vertex};
         Shader frag{Version::GL330, Shader::Type::Fragment};
         Shader geom{Version::GL330, Shader::Type::Geometry};
-        
+
         vert.addSource(vertSrc);
         geom.addSource(geomSrc);
         frag.addSource(fragSrc);
-        
-        
+
+
         CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, geom, frag}));
-        
+
         attachShaders({vert, geom, frag});
-        
+
         CORRADE_INTERNAL_ASSERT_OUTPUT(link());
-        
+
         viewLoc = uniformLocation("View");
         projLoc = uniformLocation("Projection");
     };
-    
+
     void setViewMatrix(const Matrix4& mat) {
         setUniform(viewLoc, mat);
     }
-    
+
     void setProjMatrix(const Matrix4& mat) {
         setUniform(projLoc, mat);
     }
-    
+
 private:
     int viewLoc, projLoc;
 };
@@ -116,17 +116,17 @@ private:
 class BufferMapping: public Platform::GlfwApplication {
 public:
     explicit BufferMapping(const Arguments& arguments);
-    
+
 private:
     void drawEvent() override;
-    
+
     Buffer vertexBuffer;
     Mesh mesh;
     ShaderProgram shaderProgram;
-    
-    
+
+
     static const int particles = 128*1024;
-    
+
     // randomly place particles in a cube
     std::vector<Vector3> vertexData;
     std::vector<Vector3> velocity;
@@ -154,14 +154,27 @@ BufferMapping::BufferMapping(const Arguments& arguments) :
                                 0.5f-float(std::rand())/RAND_MAX};
         vertexData[i] = Vector3{0.0f,20.0f,0.0f} + 5.0f*vertexData[i];
     }
-
+                
     // set the vertex buffer size / initial data. Note, have to use Containers::arrayView
     // function to make an ArrayView obj.
-   vertexBuffer.setData(Containers::arrayView(vertexData.data(), vertexData.size()), BufferUsage::DynamicDraw);
+    // Pass a nullptr and the size to Buffer::setData which tells OpenGl to
+    // allocate it's own buffer, but not copy anything yet.
 
-   mesh.setPrimitive(MeshPrimitive::Points)
-       .setCount(vertexData.size())
-       .addVertexBuffer(vertexBuffer, 0, Attribute<0,Vector3>{});
+    vertexBuffer.setData({nullptr, vertexData.size() * sizeof(Vector3)}, BufferUsage::DynamicDraw);
+    
+    // map the buffer
+    Vector3* mapped = vertexBuffer.map<Vector3>(0,  particles * sizeof(Vector3),
+                                                Buffer::MapFlag::Write|Buffer::MapFlag::InvalidateBuffer);
+    
+    // copy data into the mapped memory
+    std::copy(vertexData.begin(), vertexData.end(), mapped);
+    
+    // done with it, umpap it.
+    vertexBuffer.unmap();
+                
+    mesh.setPrimitive(MeshPrimitive::Points)
+        .setCount(vertexData.size())
+        .addVertexBuffer(vertexBuffer, 0, Attribute<0,Vector3>{});
 }
 
 void BufferMapping::drawEvent() {
@@ -217,7 +230,7 @@ void BufferMapping::drawEvent() {
     // calculate ViewProjection matrix
     Matrix4 projection = Matrix4::perspectiveProjection(Rad{90.0f}, 4.0f / 3.0f, 0.1f, 100.f);
 
-    
+
     // translate the world/view position,
     // note order of matrix multiply
     Matrix4 view = Matrix4::translation({0.0f, 0.0f, -30.0f}) *

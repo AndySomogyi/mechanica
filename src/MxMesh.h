@@ -132,19 +132,7 @@ struct MxMesh  {
     bool readPSF(const std::string& psfPath, const std::string& pdbPath);
 
 
-    struct MxVertexAttribute {
-        // the offset in the given vertex buffer memory block of where to write
-        // the attribute
-        ushort bufferOffset;
 
-        // the id of this attribute. The id is simply an identifier that means something
-        // to the MxMesh. This id does not have anything to do with the shader location id.
-        // we keep separate ids because the MxMesh will often have many more attributes than
-        // a renderer will want to display at any one time. Renderers typically display only
-        // a subset of the available attributes. Attributes are things like scalar fields
-        // attached to vertices, vertex position, normal, velocity, acceleration, etc...
-        ushort id;
-    };
 
     /**
      * Write vertex attributes into a given buffer.
@@ -220,7 +208,7 @@ struct MxMesh  {
      * all the neighboring faces force vectors.
      *
      */
-    uint vertexAtributes(const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
+    void vertexAtributes(const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
 
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
@@ -234,6 +222,15 @@ struct MxMesh  {
 
 
     static const Magnum::Mesh::IndexType IndexType = Magnum::Mesh::IndexType::UnsignedInt;
+
+
+
+
+
+    MxCell &createCell();
+    
+    
+    void dump(uint what);
 
 
 

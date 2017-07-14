@@ -24,6 +24,9 @@ file(GLOB AST_SRC
 #  )
 
 
+# Resources for the MxMeshShaderProgram
+corrade_add_resource(MxMeshShaderProgramRes MxMeshShaderProgram.res)
+
 set(SRC
   moduledef.cpp
   mx_callable.cpp
@@ -65,6 +68,10 @@ set(SRC
   MxLatticeCluster.cpp
   MxCell.cpp
   MxMeshVoronoiImporter.cpp
+  MxMeshRenderer.cpp
+  MxMeshShaderProgram.cpp
+  MxMeshLangevinPropagator.cpp
+  MxMeshBrownianPropagator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -72,6 +79,7 @@ set(SRC
 
 set(HEADERS
   ${MECHANICA_PUBLIC_HEADERS}
+  MxDebug.h
   mechanica_llvm.h
   mechanica_private.h
   MxObject.h
@@ -95,28 +103,47 @@ set(HEADERS
   MxLatticeCluster.h
   MxCell.h
   MxMeshVoronoiImporter.h
+  MxMeshRenderer.h
+  MxMeshShaderProgram.h
+  MxMeshPropagator.h
+  MxMeshLangevinPropagator.h
+  MxMeshBrownianPropagator.h
   )
+
+
+
+
+# For development, for the time being, we won't build the object library
+# because it takes longer to build if we're only building one library,
+# and won't build the py version for a while. 
 
 # build all the source as a CMake 'OBJECT' lib, this gets
 # linked into the real libraries below.
-add_library(mechanica_OBJECTS OBJECT ${SRC} ${HEADERS})
+#add_library(mechanica_OBJECTS OBJECT ${SRC} ${HEADERS})
 
 # get the include directories of the dependencies that the mechanica objects use
 # really goofy design decision in design of CMake OBJECT libraries -- no transitive includes
-target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:mdcore_single,INTERFACE_INCLUDE_DIRECTORIES>)
-target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:voro++,INTERFACE_INCLUDE_DIRECTORIES> )
-target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:Magnum::Magnum,INTERFACE_INCLUDE_DIRECTORIES>)
-target_include_directories(mechanica_OBJECTS PRIVATE "${PROJECT_SOURCE_DIR}/include")
-target_include_directories(mechanica_OBJECTS PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_include_directories(mechanica_OBJECTS PRIVATE ${NUMPY_INCLUDE_DIR})
+#target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:mdcore_single,INTERFACE_INCLUDE_DIRECTORIES>)
+#target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:voro++,INTERFACE_INCLUDE_DIRECTORIES> )
+#target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:Magnum::Magnum,INTERFACE_INCLUDE_DIRECTORIES>)
+#target_include_directories(mechanica_OBJECTS PRIVATE "${PROJECT_SOURCE_DIR}/include")
+#target_include_directories(mechanica_OBJECTS PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_include_directories(mechanica_OBJECTS PRIVATE ${NUMPY_INCLUDE_DIR})
 
 
 # need at least one src file in a project for xcode to build it, xcode
 # won't work if any product *only* has an object src
 add_library(mechanica
+  #$<TARGET_OBJECTS:mechanica_OBJECTS>
+  ${SRC}
+  ${HEADERS}
+  ${MxMeshShaderProgramRes}
   mechanica.cpp
-  $<TARGET_OBJECTS:mechanica_OBJECTS>
   )
+
+message("Shader Program Res: ${MxMeshShaderProgramRes}")
+
+set_target_properties(mechanica PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # temporarily add add these includes until we get a stable public API
 target_include_directories(mechanica PUBLIC
@@ -127,7 +154,7 @@ target_include_directories(mechanica PUBLIC
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
-add_dependencies(mechanica mechanica_OBJECTS)
+# add_dependencies(mechanica mechanica_OBJECTS)
 
 
 
@@ -140,7 +167,8 @@ target_link_libraries(mechanica
   Magnum::Magnum
   Magnum::Shaders
   ObjImporter
-  voro++)
+  voro++
+  sundials_cvode_static)
 
 
 
@@ -170,9 +198,9 @@ target_link_libraries(mechanica
 
 source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
 
-message("MECHANICA_PUBLIC_HEADERS: ${MECHANICA_PUBLIC_HEADERS}")
+#message("MECHANICA_PUBLIC_HEADERS: ${MECHANICA_PUBLIC_HEADERS}")
 
-message("MECHANICA_SRC: ${SRC}")
+#message("MECHANICA_SRC: ${SRC}")
 
 
 # Link against LLVM libraries

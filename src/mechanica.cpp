@@ -17,6 +17,12 @@
 #include "MxSystem.h"
 #include "MxPropagator.h"
 
+struct X {
+    X() {printf("foo");};
+};
+    
+    X x;
+
 PyMethodDef methods = {
     NULL
 };

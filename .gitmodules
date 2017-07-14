@@ -23,3 +23,6 @@
 [submodule "extern/Voroxx"]
 	path = extern/Voroxx
 	url = https://github.com/AndySomogyi/Voroxx.git
+[submodule "extern/sundials"]
+	path = extern/sundials
+	url = https://github.com/AndySomogyi/sundials.git

@@ -13,12 +13,16 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 
+
 namespace Magnum {
 /** @brief Three-component unsigned integer vector */
 typedef Math::Vector3<UnsignedShort> Vector3us;
 }
 
 using namespace Magnum;
+
+
+
 
 struct MxMesh;
 
@@ -42,16 +46,33 @@ struct MxMeshVertex {
     Vector3 acceleration;
 };
 
+struct MxVertexAttribute {
+
+    enum Id : ushort {Position, Normal};
+
+    // the offset in the given vertex buffer memory block of where to write
+    // the attribute
+    ushort offset;
+
+    // the id of this attribute. The id is simply an identifier that means something
+    // to the MxMesh. This id does not have anything to do with the shader location id.
+    // we keep separate ids because the MxMesh will often have many more attributes than
+    // a renderer will want to display at any one time. Renderers typically display only
+    // a subset of the available attributes. Attributes are things like scalar fields
+    // attached to vertices, vertex position, normal, velocity, acceleration, etc...
+    Id id;
+};
+
 
 /**
  * A partial face data structure, represents 1/2 of a triangular face. This represents the
  * side of the face that belongs to a cell struct. Partial faces share geomory (the vertex
- * indices at each apex), but have local attributes. 
+ * indices at each apex), but have local attributes.
  *
  * The vertex index ordering is different in in each side of the partial face pair. We construct
- * the index ordering on each half such that the vertex winding causes the face normal to 
+ * the index ordering on each half such that the vertex winding causes the face normal to
  * point outwards from the cell. So, in each partial face half, the face normal points towards
- * the other cell. 
+ * the other cell.
  */
 struct MxPartialFace {
 
@@ -122,9 +143,9 @@ struct MxCell {
     /**
      * The MxMesh that this cell belongs to. Lots of method on this
      * cell require access to vertex info, simpler to add an ivar instead
-     * of passing in a mesh pointer each time. 
+     * of passing in a mesh pointer each time.
      */
-    MxMesh *mesh;
+    MxMesh &mesh;
 
     /**
      * the closed set of faces that define the boundary of this cell
@@ -148,7 +169,7 @@ struct MxCell {
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
     /**
-     * Calculate the volume of this cell. 
+     * Calculate the volume of this cell.
      */
     float volume(VolumeMethod vm = ConvexTrapezoidSum);
 
@@ -158,6 +179,13 @@ struct MxCell {
     float area();
 
 
+    /**
+     * Sometimes a mesh may have separate vertices for each triangle corner, even
+     * though triangles may be neighboring and sharing a vertex. This occurs when
+     * the triangle has it's own vertex attributes (values, normal, etc...), other times
+     * a mesh may completely share a vertex between neighboring triangles and have
+     * per-vertex normals ant attributes.
+     */
     inline uint faceCount() { return boundary.size(); }
 
     /**
@@ -168,7 +196,18 @@ struct MxCell {
      */
     inline uint vertexCount() {return 3 * boundary.size(); };
 
-    void writeBufferData();
+    /**
+     * Write vertex attributes to a supplied buffer. The given pointer is typically
+     * returned from OpenGl, and points to a block of write-through memory, the pointer
+     * is *write only*.
+     *
+     * @param stride: size in bytes of each element in the vertex buffer.
+     */
+    void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
+
+    void indexData(uint indexCount, uint* buffer);
+    
+    void dump();
 };
 
 #endif /* SRC_MXCELL_H_ */

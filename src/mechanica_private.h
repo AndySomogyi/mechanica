@@ -45,8 +45,11 @@
 #include <cstdint>
 
 
+
+
 typedef uint32_t uint;
 typedef uint16_t ushort;
+typedef uint8_t uchar;
 
 
 

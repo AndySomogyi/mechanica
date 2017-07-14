@@ -79,7 +79,7 @@ bool MxMeshVoronoiImporter::testing(const std::string& path,
 
 
     // The voro++ void voronoicell_base::draw_pov(double x,double y,double z,FILE* fp)
-    // code, looks like the domain is doubled weird...
+    // code, looks like the domain is doubled,  weird...
     //    int i,j,k;double *ptsp=pts,*pt2;
     //    char posbuf1[128],posbuf2[128];
     //    for(i=0;i<p;i++,ptsp+=3) {
@@ -229,8 +229,7 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
 
             // allocate first in the cells vector, then we write directly to that memory block,
             // avoid copy
-            mesh.cells.push_back({});
-            MxCell &cell = mesh.cells[mesh.cells.size()-1];
+            MxCell &cell = mesh.createCell();
 
             // add the faces to the cell, then sort out the connectivity
             for(int i = 0; i < newInd.size(); i+=3) {
@@ -243,6 +242,9 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
             assert(connected);
         }
     } while(vl.inc());
+    
+    
+    mesh.dump(0);
 
     return true;
 }

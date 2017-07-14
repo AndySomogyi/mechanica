@@ -12,10 +12,13 @@
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>
 #include <MagnumPlugins/AssimpImporter/AssimpImporter.h>
+#include <Magnum/Version.h>
 #include <iostream>
+
 #include "VoronoiTesselator.h"
 
 #include <MxMeshVoronoiImporter.h>
+#include <MxMeshRenderer.h>
 
 
 #include <Magnum/Trade/MeshData3D.h>
@@ -56,54 +59,114 @@ class VoronoiTest: public Platform::GlfwApplication {
     public:
         explicit VoronoiTest(const Arguments& arguments);
 
-    private:
-        void drawEvent() override;
 
-        Buffer _buffer;
-        Mesh _mesh;
-        Shaders::VertexColor2D _shader;
+private:
+    void drawEvent() override;
+    void mousePressEvent(MouseEvent& event) override;
+    void mouseReleaseEvent(MouseEvent& event) override;
+    void mouseMoveEvent(MouseMoveEvent& event) override;
+    
+    Matrix4 transformation, projection;
+    Vector2i previousMousePosition;
+    Color4 color;
+
+
+
+
+        MxMesh mesh;
+        MxMeshRenderer renderer;
 };
 
 VoronoiTest::VoronoiTest(const Arguments& arguments):
-    Platform::GlfwApplication{arguments, Configuration{}.setTitle("Voronoi Example")} {
-    using namespace Math::Literals;
+    Platform::GlfwApplication{arguments,
+        Configuration{}.setVersion(Version::GL410).
+            setTitle("Voronoi Example")},
+renderer{MxMeshRenderer::Flag::Wireframe} {
+                
 
     //OptMeshData3D points = read_points(arguments.argc, arguments.argv);
 
     //auto result = VoronoiTesselator::tesselate(points->positions(0),
     //            {0,0,0}, {1,1,1}, {1,1,1});
 
-    MxMesh mesh;
+
 
     MxMeshVoronoiImporter::readFile("/Users/andy/src/mechanica/testing/voronoi/points.obj",
             {0,0,0}, {10,10,10}, {10,10,10}, {{false, false, false}}, mesh);
 
+    renderer.setMesh(mesh);
+                
+    //renderer.setModelMatrix(Matrix4::translation({0.0f, 0.0f, 1.0f}));
+                
+    //glDisable(GL_CULL_FACE​);
 
-    struct TriangleVertex {
-        Vector2 position;
-        Color3 color;
-    };
-    static const TriangleVertex data[]{
-        {{-0.5f, -0.5f}, 0xff0000_srgbf},   /* Left vertex, red color */
-        {{ 0.5f, -0.5f}, 0x00ff00_srgbf},   /* Right vertex, green color */
-        {{ 0.0f,  0.5f}, 0x0000ff_srgbf}    /* Top vertex, blue color */
-    };
 
-    _buffer.setData(data, BufferUsage::StaticDraw);
-    _mesh.setPrimitive(MeshPrimitive::Triangles)
-        .setCount(3)
-        .addVertexBuffer(_buffer, 0,
-            Shaders::VertexColor2D::Position{},
-            Shaders::VertexColor2D::Color{Shaders::VertexColor2D::Color::Components::Three});
 }
+
+
 
 void VoronoiTest::drawEvent() {
-    defaultFramebuffer.clear(FramebufferClear::Color);
+    defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
+    
+    
+    
+    renderer.setViewportSize(Vector2{defaultFramebuffer.viewport().size()});
+    
+    projection = Matrix4::perspectiveProjection(35.0_degf,
+                                                Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f);
+    //* Matrix4::translation(Vector3::zAxis(-10.0f));
 
-    _mesh.draw(_shader);
-
+    
+    renderer.setProjectionMatrix(projection);
+    
+    Matrix4 mat =   Matrix4::translation({-1.0f, 0.5f, -40.0f}) * transformation  * Matrix4::translation({-2.0f, -5.f, -5.f});
+    
+    renderer.setViewMatrix(mat);
+    
+    renderer.setColor(Color4::blue());
+    
+    renderer.setWireframeColor(Color4{0., 0., 0.});
+    
+    renderer.setWireframeWidth(0.5);
+    
+    renderer.draw();
+    
     swapBuffers();
 }
+
+void VoronoiTest::mousePressEvent(MouseEvent& event) {
+    if(event.button() != MouseEvent::Button::Left) return;
+    
+    previousMousePosition = event.position();
+    event.setAccepted();
+}
+
+void VoronoiTest::mouseReleaseEvent(MouseEvent& event) {
+    color = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
+    
+    event.setAccepted();
+    redraw();
+}
+
+void VoronoiTest::mouseMoveEvent(MouseMoveEvent& event) {
+    
+    if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) return;
+    
+    const Vector2 delta = 3.0f*
+    Vector2{event.position() - previousMousePosition}/
+    Vector2{defaultFramebuffer.viewport().size()};
+    
+    transformation =
+    
+    Matrix4::rotationX(Rad{delta.y()})*
+    transformation*
+    Matrix4::rotationY(Rad{delta.x()});
+    
+    previousMousePosition = event.position();
+    event.setAccepted();
+    redraw();
+}
+
 
 int main(int argc, char** argv) {
 

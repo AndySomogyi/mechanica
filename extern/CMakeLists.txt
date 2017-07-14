@@ -72,3 +72,14 @@ set(WITH_PNGIMPORTER       ON CACHE BOOL "build PNG importer"    FORCE)
 add_subdirectory(magnum)
 
 add_subdirectory(magnum-plugins)
+
+
+# SUNDIALS options
+set(BUILD_ARKODE         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
+set(BUILD_CVODE          ON  CACHE BOOL "Build this SUNDIALS feature" FORCE)
+set(BUILD_CVODES         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
+set(BUILD_IDA            OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
+set(BUILD_IDAS           OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
+set(BUILD_KINSOL         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
+
+add_subdirectory(sundials)
