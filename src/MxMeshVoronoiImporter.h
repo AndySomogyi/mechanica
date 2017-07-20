@@ -41,6 +41,11 @@ public:
                 const std::array<bool, 3> periodic, MxMesh& mesh);
 
 
+    static bool monodisperse(MxMesh& mesh);
+
+    static bool irregular(MxMesh& mesh);
+
+
 };
 
 #endif /* SRC_MXMESHVORONOIIMPORTER_H_ */

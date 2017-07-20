@@ -26,6 +26,90 @@ typedef std::optional<MeshData3D> OptMeshData3D;
 
 using namespace Magnum;
 
+const int Keep = 10000;
+
+/**
+ * Big problem with Voro++ is that it often generates many degenerate triangles.
+ * How to deal with degenerate triangles is tricky.
+ */
+
+template<typename T>
+static bool pack(T& container, MxMesh& mesh) {
+
+
+    std::vector<double> vertices;
+    std::vector<int> indices;
+    std::vector<int> newInd;
+
+    voro::c_loop_all vl(container);
+    double *cellOrigin;
+    voro::voronoicell c;
+    int i = 0;
+    if(vl.start()) do {
+        if(container.compute_cell(c,vl)) {
+
+            if (i != 3) continue;
+
+            // the center of the voronoi cell, should be same as the
+            // inserted particle location.
+            cellOrigin = container.p[vl.ijk] + container.ps * vl.q;
+
+            cout << "Voro++ Cell [" << i << "]" << std::endl;
+            c.draw_pov_mesh(cellOrigin[0], cellOrigin[1], cellOrigin[2], stdout);
+            cout << std::endl;
+
+            // grab the indexed vertices from the cell
+            c.indexed_triangular_faces(cellOrigin[0], cellOrigin[1], cellOrigin[2], vertices, indices);
+
+            // do these in-place once bugs are worked out
+            newInd.resize(indices.size());
+
+            for (int j = 0; j < indices.size(); ++j) {
+                int k = indices[j];
+                newInd[j] = mesh.addVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
+            }
+
+            // allocate first in the cells vector, then we write directly to that memory block,
+            // avoid copy
+            MxCell &cell = mesh.createCell();
+
+            // add the faces to the cell, then sort out the connectivity
+            for(int i = 0; i < newInd.size(); i+=3) {
+                MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
+                cell.boundary.push_back(pf);
+            }
+
+            std::cout << "The cell...\n";
+            cell.writePOV(std::cout);
+
+            std::cout << "connecting...\n";
+
+
+            // boundary had better be connected from a voronoi cell
+            bool connected = cell.connectBoundary(mesh);
+
+            cout << "MxCell["<< i << "]" << std::endl;
+            cell.writePOV(std::cout);
+            cout << std::endl;
+
+
+            assert(connected);
+        }
+    } while(vl.inc() && ++i < Keep);
+
+    mesh.initPos.resize(mesh.vertices.size());
+
+    for(int i = 0; i < mesh.vertices.size(); ++i) {
+        mesh.initPos[i] = mesh.vertices[i].position;
+    }
+
+
+    //mesh.dump(0);
+
+    return true;
+
+}
+
 static OptMeshData3D  readPoints(const std::string& path) {
 
     ObjImporter importer{};
@@ -198,61 +282,7 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
         n[0], n[1], n[2], periodic[0], periodic[1], periodic[2], 50);
 
 
-    for (int i = 0; i < positions.size(); ++i)  {
-        const Vector3& vec = positions[i];
-        container.put(i++, vec[0], vec[1], (max[2] - min[2]) / 2);
-    }
-
-    std::vector<double> vertices;
-    std::vector<int> indices;
-    std::vector<int> newInd;
-
-    voro::c_loop_all vl(container);
-    double *cellOrigin;
-    voro::voronoicell c;
-    if(vl.start()) do {
-        if(container.compute_cell(c,vl)) {
-            // the center of the voronoi cell, should be same as the
-            // inserted particle location.
-            cellOrigin = container.p[vl.ijk] + container.ps * vl.q;
-
-            // grab the indexed vertices from the cell
-            c.indexed_triangular_faces(cellOrigin[0], cellOrigin[1], cellOrigin[2], vertices, indices);
-
-            // do these in-place once bugs are worked out
-            newInd.resize(indices.size());
-
-            for (int j = 0; j < indices.size(); ++j) {
-                int k = indices[j];
-                newInd[j] = mesh.appendVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
-            }
-
-            // allocate first in the cells vector, then we write directly to that memory block,
-            // avoid copy
-            MxCell &cell = mesh.createCell();
-
-            // add the faces to the cell, then sort out the connectivity
-            for(int i = 0; i < newInd.size(); i+=3) {
-                MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
-                cell.boundary.push_back(pf);
-            }
-
-            // boundary had better be connected from a voronoi cell
-            bool connected = cell.connectBoundary();
-            assert(connected);
-        }
-    } while(vl.inc());
-
-    mesh.initPos.resize(mesh.vertices.size());
-
-    for(int i = 0; i < mesh.vertices.size(); ++i) {
-        mesh.initPos[i] = mesh.vertices[i].position;
-    }
-
-
-    mesh.dump(0);
-
-    return true;
+    return pack(container, mesh);
 }
 
 #include <random>
@@ -280,54 +310,105 @@ bool MxMeshVoronoiImporter::random(uint numPts, const Magnum::Vector3& min,
         container.put(i++, xRand(eng), yRand(eng), zRand(eng));
     }
 
+    return pack(container, mesh);
+}
+
+bool MxMeshVoronoiImporter::monodisperse(MxMesh& mesh) {
+    // Set up constants for the container geometry
+    const double x_min=-3,x_max=3;
+    const double y_min=-3,y_max=3;
+    const double z_min=0,z_max=6;
+
+    // Set up the number of blocks that the container is divided
+    // into.
+    const int n_x=3,n_y=3,n_z=3;
+
+
+    // Create a container with the geometry given above, and make it
+    // non-periodic in each of the three coordinates. Allocate space for
+    // eight particles within each computational block. Import
+    // the monodisperse test packing and output the Voronoi
+    // tessellation in gnuplot and POV-Ray formats.
+    voro::container_poly container(x_min,x_max,y_min,y_max,z_min,z_max,n_x,n_y,n_z,
+            false,false,false,8);
+    container.import("/Users/andy/src/mechanica/extern/Voroxx/examples/custom/pack_six_cube_poly");
+
+
+
     std::vector<double> vertices;
     std::vector<int> indices;
     std::vector<int> newInd;
 
-    voro::c_loop_all vl(container);
-    double *cellOrigin;
-    voro::voronoicell c;
-    if(vl.start()) do {
-        if(container.compute_cell(c,vl)) {
-            // the center of the voronoi cell, should be same as the
-            // inserted particle location.
-            cellOrigin = container.p[vl.ijk] + container.ps * vl.q;
+    return pack(container, mesh);
 
-            // grab the indexed vertices from the cell
-            c.indexed_triangular_faces(cellOrigin[0], cellOrigin[1], cellOrigin[2], vertices, indices);
-
-            // do these in-place once bugs are worked out
-            newInd.resize(indices.size());
-
-            for (int j = 0; j < indices.size(); ++j) {
-                int k = indices[j];
-                newInd[j] = mesh.appendVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
-            }
-
-            // allocate first in the cells vector, then we write directly to that memory block,
-            // avoid copy
-            MxCell &cell = mesh.createCell();
-
-            // add the faces to the cell, then sort out the connectivity
-            for(int i = 0; i < newInd.size(); i+=3) {
-                MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
-                cell.boundary.push_back(pf);
-            }
-
-            // boundary had better be connected from a voronoi cell
-            bool connected = cell.connectBoundary();
-            assert(connected);
-        }
-    } while(vl.inc());
-
-    mesh.initPos.resize(mesh.vertices.size());
-
-    for(int i = 0; i < mesh.vertices.size(); ++i) {
-        mesh.initPos[i] = mesh.vertices[i].position;
-    }
-
-
-    mesh.dump(0);
-
-    return true;
 }
+
+using namespace voro;
+
+// Golden ratio constants
+const double Phi=0.5*(1+sqrt(5.0));
+const double phi=0.5*(1-sqrt(5.0));
+
+
+// Set up the number of blocks that the container is divided
+// into.
+const int n_x=5,n_y=5,n_z=5;
+
+
+// Create a wall class that, whenever called, will replace the Voronoi cell
+// with a prescribed shape, in this case a dodecahedron
+class wall_initial_shape : public wall {
+    public:
+        wall_initial_shape() {
+
+            // Create a dodecahedron
+            v.init(-2,2,-2,2,-2,2);
+            v.plane(0,Phi,1);v.plane(0,-Phi,1);v.plane(0,Phi,-1);
+            v.plane(0,-Phi,-1);v.plane(1,0,Phi);v.plane(-1,0,Phi);
+            v.plane(1,0,-Phi);v.plane(-1,0,-Phi);v.plane(Phi,1,0);
+            v.plane(-Phi,1,0);v.plane(Phi,-1,0);v.plane(-Phi,-1,0);
+        };
+        bool point_inside(double x,double y,double z) {return true;}
+        bool cut_cell(voronoicell &c,double x,double y,double z) {
+
+            // Set the cell to be equal to the dodecahedron
+            c=v;
+            return true;
+        }
+        bool cut_cell(voronoicell_neighbor &c,double x,double y,double z) {
+
+            // Set the cell to be equal to the dodecahedron
+            c=v;
+            return true;
+        }
+    private:
+        voronoicell v;
+};
+
+bool MxMeshVoronoiImporter::irregular(MxMesh& mesh) {
+
+    // Set up constants for the container geometry
+    const double x_min=-6,x_max=6;
+    const double y_min=-6,y_max=6;
+    const double z_min=-3,z_max=9;
+
+    // Create a container with the geometry given above. This is bigger
+    // than the particle packing itself.
+    container con(x_min,x_max,y_min,y_max,z_min,z_max,n_x,n_y,n_z,
+            false,false,false,8);
+
+    // Create the "initial shape" wall class and add it to the container
+    wall_initial_shape(wis);
+    con.add_wall(wis);
+
+    // Import the irregular particle packing
+    con.import("/Users/andy/src/mechanica/extern/Voroxx/examples/extra/pack_irregular");
+
+    // Save the particles and Voronoi cells in POV-Ray format
+    con.draw_particles_pov("irregular_p.pov");
+    con.draw_cells_pov("irregular_v.pov");
+
+    return pack(con, mesh);
+}
+
+

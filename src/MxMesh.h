@@ -91,7 +91,7 @@ struct MxMesh  {
 
 
     std::vector<MxMeshVertex> vertices;
-    
+
     std::vector<Magnum::Vector3> initPos;
 
 
@@ -215,10 +215,10 @@ struct MxMesh  {
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
     /**
-     * Adds a new vertex to this mesh, but first looks to see it it finds a matching
-     * one first, and returns that one.
+     * Adds a new vertex to this mesh, just pushes it to the end of the
+     * list of verticies.
      */
-    uint appendVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
+    uint addVertex(const Magnum::Vector3 &pos);
 
 
 
@@ -230,11 +230,13 @@ struct MxMesh  {
 
 
     MxCell &createCell();
-    
-    
+
+
     void dump(uint what);
-    
+
     void jiggle();
+
+    std::tuple<Magnum::Vector3, Magnum::Vector3> extents();
 
 
 

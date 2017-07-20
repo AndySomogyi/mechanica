@@ -6,6 +6,7 @@ add_subdirectory(test_particles)
 #add_subdirectory(scenegraph)
 
 add_subdirectory(voronoi)
+add_subdirectory(gmsh1)
 #add_subdirectory(blob1)
 #add_subdirectory(particles2)
 add_subdirectory(test_magnum)

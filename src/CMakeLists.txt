@@ -72,6 +72,9 @@ set(SRC
   MxMeshShaderProgram.cpp
   MxMeshLangevinPropagator.cpp
   MxMeshBrownianPropagator.cpp
+  MxMeshPottsPropagator.cpp
+  GmshIO.cpp
+  MxMeshGmshImporter.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -108,6 +111,9 @@ set(HEADERS
   MxMeshPropagator.h
   MxMeshLangevinPropagator.h
   MxMeshBrownianPropagator.h
+  MxMeshPottsPropagator.h
+  GmshIO.h
+  MxMeshGmshImporter.h
   )
 
 

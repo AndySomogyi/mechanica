@@ -120,13 +120,22 @@ struct MxPartialFace {
     std::vector<double> fields;
 
     MxPartialFace(Vector3ui const& vert):
-        vertices(vert),
+        vertices{vert},
         neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
         neighborCell{invalid<uint>()},
         mirrorFace{invalid<ushort>()},
         mass{0}
     {
     }
+
+    MxPartialFace():
+          vertices{invalid<uint>(), invalid<uint>(), invalid<uint>()},
+          neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
+          neighborCell{invalid<uint>()},
+          mirrorFace{invalid<ushort>()},
+          mass{0}
+      {
+      }
 };
 
 /**
@@ -140,12 +149,6 @@ struct MxPartialFace {
  * the index winding so that the normal points the correct way.
  */
 struct MxCell {
-    /**
-     * The MxMesh that this cell belongs to. Lots of method on this
-     * cell require access to vertex info, simpler to add an ivar instead
-     * of passing in a mesh pointer each time.
-     */
-    MxMesh &mesh;
 
     /**
      * the closed set of faces that define the boundary of this cell
@@ -164,7 +167,7 @@ struct MxCell {
      * Returns true if the boundary connected successfully, false if the
      * boundary in non-manifold.
      */
-    bool connectBoundary();
+    bool connectBoundary(MxMesh& mesh);
 
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
@@ -203,11 +206,13 @@ struct MxCell {
      *
      * @param stride: size in bytes of each element in the vertex buffer.
      */
-    void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
+    void vertexAtributeData(MxMesh& mesh, const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
 
     void indexData(uint indexCount, uint* buffer);
-    
+
     void dump();
+
+    void writePOV(std::ostream &out);
 };
 
 #endif /* SRC_MXCELL_H_ */

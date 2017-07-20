@@ -37,7 +37,7 @@ static void connectPartialFaces(MxPartialFace &pf1, MxPartialFace &pf2, ushort i
     }
 }
 
-bool MxCell::connectBoundary() {
+bool MxCell::connectBoundary(MxMesh& mesh) {
     // clear all of the boundarys before we connect them.
     for(MxPartialFace &pf : boundary) {
         pf.neighbors = invalid<Vector3us>();
@@ -65,6 +65,23 @@ bool MxCell::connectBoundary() {
                          pfi.vertices[0] == pfj.vertices[k+2%3] ||
                          pfi.vertices[1] == pfj.vertices[k+1%3] ||
                          pfi.vertices[1] == pfj.vertices[k+2%3]))) {
+
+
+
+                            std::cout << "face 1" << std::endl;
+                            std::cout << "pf[" << i << "] " << pfi.vertices << " {" << std::endl;
+                            std::cout << mesh.vertices[pfi.vertices[0]].position << std::endl;
+                            std::cout << mesh.vertices[pfi.vertices[1]].position << std::endl;
+                            std::cout << mesh.vertices[pfi.vertices[1]].position << std::endl;
+                            std::cout << "}" << std::endl;
+
+                            std::cout << "face 2" << std::endl;
+                            std::cout << "pf[" << j << "] " << pfj.vertices << " {" << std::endl;
+                            std::cout << mesh.vertices[pfj.vertices[0]].position << std::endl;
+                            std::cout << mesh.vertices[pfj.vertices[1]].position << std::endl;
+                            std::cout << mesh.vertices[pfj.vertices[1]].position << std::endl;
+                            std::cout << "}" << std::endl;
+
                     connectPartialFaces(pfi, pfj, i, j);
                     break;
                 }
@@ -88,7 +105,7 @@ float MxCell::volume(VolumeMethod vm) {
 float MxCell::area() {
 }
 
-void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes,
+void MxCell::vertexAtributeData(MxMesh& mesh, const std::vector<MxVertexAttribute>& attributes,
         uint vertexCount, uint stride, void* buffer) {
     uchar *ptr = (uchar*)buffer;
     for(uint i = 0; i < boundary.size() && ptr < vertexCount * stride + (uchar*)buffer; ++i, ptr += 3 * stride) {
@@ -127,4 +144,44 @@ void MxCell::dump() {
         std::cout << "}" << std::endl;
     }
 
+}
+
+/* POV mesh format:
+mesh2 {
+vertex_vectors {
+22
+,<-1.52898,-1.23515,-0.497254>
+,<-2.41157,-0.870689,0.048214>
+,<-3.10255,-0.606757,-0.378837>
+     ...
+,<-2.22371,-1.5823,-2.07175>
+,<-2.41157,-1.30442,-2.18785>
+}
+face_indices {
+40
+,<1,4,17>
+,<1,17,18>
+,<1,18,2>
+  ...
+,<8,21,20>
+,<8,20,9>
+}
+inside_vector <0,0,1>
+}
+ */
+
+void MxCell::writePOV(std::ostream& out) {
+    out << "mesh2 {" << std::endl;
+    out << "face_indices {" << std::endl;
+    out << boundary.size()  << std::endl;
+    for (int i = 0; i < boundary.size(); ++i) {
+        out << boundary[i].vertices << std::endl;
+        //auto &pf = boundary[i];
+        //for (int j = 0; j < 3; ++j) {
+            //Vector3& vert = mesh.vertices[pf.vertices[j]].position;
+        //        out << ",<" << vert[0] << "," << vert[1] << "," << vert[2] << ">" << std::endl;
+        //}
+    }
+    out << "}" << std::endl;
+    out << "}" << std::endl;
 }

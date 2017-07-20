@@ -11,13 +11,11 @@
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>
-#include <MagnumPlugins/AssimpImporter/AssimpImporter.h>
 #include <Magnum/Version.h>
 #include <iostream>
 
-#include "VoronoiTesselator.h"
 
-#include <MxMeshVoronoiImporter.h>
+#include <MxMeshGmshImporter.h>
 #include <MxMeshRenderer.h>
 
 
@@ -29,35 +27,10 @@ using namespace Magnum;
 using namespace Magnum::Trade;
 using namespace Magnum::Primitives;
 
-typedef std::optional<MeshData3D> OptMeshData3D;
 
-OptMeshData3D  read_points(int argc, char** argv);
-
-OptMeshData3D  read_points(int argc, char** argv) {
-
-    /* Load scene importer plugin */
-    PluginManager::Manager<Trade::AbstractImporter> manager{};
-    std::unique_ptr<Trade::AbstractImporter> importer = manager.loadAndInstantiate("ObjImporter");
-
-    std::ignore = argc;
-
-    if (importer->openFile(argv[1])) {
-        cout << "opened file \"" << argv[1] << "\" OK" << endl;
-        cout << "mesh 3d count: " << importer->mesh3DCount() << std::endl;
-    } else {
-        cout << "failed to open " <<  argv[1] << endl;
-        return OptMeshData3D{};
-    }
-
-    int defScene = importer->defaultScene();
-    cout << "default scene: " << defScene;
-
-    return importer->mesh3D(defScene);
-}
-
-class VoronoiTest: public Platform::GlfwApplication {
+class GmshTest1: public Platform::GlfwApplication {
     public:
-        explicit VoronoiTest(const Arguments& arguments);
+        explicit GmshTest1(const Arguments& arguments);
 
 
 private:
@@ -78,29 +51,15 @@ private:
         MxMeshRenderer renderer;
 };
 
-VoronoiTest::VoronoiTest(const Arguments& arguments):
+GmshTest1::GmshTest1(const Arguments& arguments):
     Platform::GlfwApplication{arguments,
         Configuration{}.setVersion(Version::GL410).
             setTitle("Voronoi Example")},
 renderer{MxMeshRenderer::Flag::Wireframe} {
 
+    MxMeshGmshImporter importer;
 
-    //OptMeshData3D points = read_points(arguments.argc, arguments.argv);
-
-    //auto result = VoronoiTesselator::tesselate(points->positions(0),
-    //            {0,0,0}, {1,1,1}, {1,1,1});
-
-
-
-   // MxMeshVoronoiImporter::readFile("/Users/andy/src/mechanica/testing/voronoi/points.obj",
-   //         {0,0,0}, {10,10,10}, {10,10,10}, {{false, false, false}}, mesh);
-
-    //MxMeshVoronoiImporter::random(50,
-    //            {0,0,0}, {10,10,10}, {5,5,4}, {{false, false, false}}, mesh);
-
-    //MxMeshVoronoiImporter::monodisperse(mesh);
-
-    MxMeshVoronoiImporter::irregular(mesh);
+    mesh = importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
     Vector3 min, max;
     std::tie(min, max) = mesh.extents();
@@ -118,10 +77,8 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
 
 
 
-void VoronoiTest::drawEvent() {
+void GmshTest1::drawEvent() {
     defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
-
-
 
     renderer.setViewportSize(Vector2{defaultFramebuffer.viewport().size()});
 
@@ -132,7 +89,7 @@ void VoronoiTest::drawEvent() {
 
     renderer.setProjectionMatrix(projection);
 
-    Matrix4 mat =   Matrix4::translation({-1.0f, 0.5f, -40.0f}) * transformation  * Matrix4::translation(-center);
+    Matrix4 mat =   Matrix4::translation({0.0f, 0.0f, -5.0f}) * transformation  * Matrix4::translation(-center);
 
     renderer.setViewMatrix(mat);
 
@@ -152,21 +109,21 @@ void VoronoiTest::drawEvent() {
 
 }
 
-void VoronoiTest::mousePressEvent(MouseEvent& event) {
+void GmshTest1::mousePressEvent(MouseEvent& event) {
     if(event.button() != MouseEvent::Button::Left) return;
 
     previousMousePosition = event.position();
     event.setAccepted();
 }
 
-void VoronoiTest::mouseReleaseEvent(MouseEvent& event) {
+void GmshTest1::mouseReleaseEvent(MouseEvent& event) {
     color = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
 
     event.setAccepted();
     redraw();
 }
 
-void VoronoiTest::mouseMoveEvent(MouseMoveEvent& event) {
+void GmshTest1::mouseMoveEvent(MouseMoveEvent& event) {
 
     if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) return;
 
@@ -188,13 +145,9 @@ void VoronoiTest::mouseMoveEvent(MouseMoveEvent& event) {
 
 int main(int argc, char** argv) {
 
-    CORRADE_PLUGIN_IMPORT(AnyImageImporter);
-    CORRADE_PLUGIN_IMPORT(ObjImporter);
-    CORRADE_PLUGIN_IMPORT(AssimpImporter);
-    CORRADE_PLUGIN_IMPORT(OpenGexImporter);
-    CORRADE_PLUGIN_IMPORT(AnySceneImporter);
 
-    VoronoiTest app({argc, argv});
+
+    GmshTest1 app({argc, argv});
     return app.exec();
 }
 
