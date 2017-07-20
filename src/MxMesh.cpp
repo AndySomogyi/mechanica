@@ -55,29 +55,19 @@ std::default_random_engine eng;
 
 void MxMesh::jiggle() {
 
-
-    //std::uniform_real_distribution<double> distribution(-0.1,0.1);
-
-    std::normal_distribution<float> distribution(0.0,0.1);
+    std::uniform_real_distribution<float> distribution(-0.002,0.002);
 
     for (int i = 0; i < vertices.size(); ++i) {
 
         Vector3 test = vertices[i].position + Vector3{distribution(eng), distribution(eng), distribution(eng)};
 
-
-        if((test - initPos[i]).length() < 2) {
+        if((test - initPos[i]).length() < 0.7) {
             vertices[i].position  = test;
         }
-
     }
-
-
-
 }
 
 std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
-    //static const float Min = std::numeric_limits<float>::min();
-    //static const float Max = std::numeric_limits<float>::max();
 
     auto min = Vector3{std::numeric_limits<float>::max()};
     auto max = Vector3{std::numeric_limits<float>::min()};

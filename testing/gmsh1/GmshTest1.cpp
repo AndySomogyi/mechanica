@@ -12,6 +12,7 @@
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>
 #include <Magnum/Version.h>
+#include <Magnum/Renderer.h>
 #include <iostream>
 
 
@@ -54,8 +55,17 @@ private:
 GmshTest1::GmshTest1(const Arguments& arguments):
     Platform::GlfwApplication{arguments,
         Configuration{}.setVersion(Version::GL410).
-            setTitle("Voronoi Example")},
+            setTitle("Gmsh Test 1")},
 renderer{MxMeshRenderer::Flag::Wireframe} {
+
+    // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
+    // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
+    // don't cover up front ones.
+    Renderer::enable(Renderer::Feature::DepthTest);
+
+    // don't draw facets that face away from us. We have A LOT of these INSIDE cells, no need to
+    // draw them.
+    Renderer::enable(Renderer::Feature::FaceCulling);
 
     MxMeshGmshImporter importer;
 
@@ -67,11 +77,6 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
     center = (max + min)/2;
 
     renderer.setMesh(mesh);
-
-    //renderer.setModelMatrix(Matrix4::translation({0.0f, 0.0f, 1.0f}));
-
-    //glDisable(GL_CULL_FACE​);
-
 
 }
 
@@ -99,7 +104,7 @@ void GmshTest1::drawEvent() {
 
     renderer.setWireframeWidth(0.5);
 
-   // mesh.jiggle();
+    mesh.jiggle();
 
     renderer.draw();
 

@@ -32,7 +32,4 @@ target_link_libraries(gmsh1
   )
 
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/points.obj
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
 

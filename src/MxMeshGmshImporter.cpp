@@ -31,6 +31,13 @@ MxMesh MxMeshGmshImporter::read(const std::string& path) {
         default: continue;
         }
     }
+    
+    mesh.initPos.resize(mesh.vertices.size());
+    
+    for(int i = 0; i < mesh.vertices.size(); ++i) {
+        mesh.initPos[i] = mesh.vertices[i].position;
+    }
+
 
     return mesh;
 }
