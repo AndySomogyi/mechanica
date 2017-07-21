@@ -18,6 +18,8 @@
 
 
 
+
+
 /**
  * Internal implementation of MxObject
  *
@@ -79,6 +81,14 @@
  * CPU instructions are SIGNIFICANTLY faster that the memory access time.
  */
 struct MxMesh  {
+    
+    /**
+     * each facet has a set of attriubtes associated with it. 
+     */
+    enum class FacetAttribute : int {
+        
+        
+    };
 
     MxMesh() {};
 

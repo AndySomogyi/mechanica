@@ -147,6 +147,60 @@ void GmshTest1::mouseMoveEvent(MouseMoveEvent& event) {
     redraw();
 }
 
+enum  ScalarTypes { S1, S2, S3 };
+
+enum  VectorTypes {V1, V2, V3 };
+
+
+int _type(ScalarTypes);
+std::string _type(VectorTypes);
+
+/*
+
+template<typename T>
+auto get(T val) -> decltype(_type(val));
+
+
+template<>
+auto get<ScalarTypes>(ScalarTypes val) -> decltype(_type(val)) { return 0;};
+ 
+ */
+
+
+struct foo {
+    template<ScalarTypes s> static int get();
+    
+    template<VectorTypes s> static std::string get();
+};
+
+template<> int foo::get<ScalarTypes::S1>() {return 0; };
+
+
+template<> std::string foo::get<VectorTypes::V1>() {return "V1"; };
+
+//using VectorTypes;
+
+namespace Stuff {
+    enum Foo {F1, F2, F3};
+}
+
+void test();
+
+
+
+
+
+
+void test() {
+    int i = foo::get<ScalarTypes::S1>();
+    
+    std::string s = foo::get<V1>();
+    
+    //int z = foo::get<5>();
+    
+    int j = Stuff::F1;
+}
+
 
 int main(int argc, char** argv) {
 
