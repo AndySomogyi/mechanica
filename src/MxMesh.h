@@ -18,7 +18,15 @@
 
 
 
+/**
+ * The type object for a universe cell.
+ */
+MxAPI_DATA(MxCellType) *MxUniverseCell_Type;
 
+/**
+ * The type object for a universe partial triangle.
+ */
+MxAPI_DATA(MxPartialTriangleType) *MxUniversePartialTriangle_Type;
 
 /**
  * Internal implementation of MxObject
@@ -79,6 +87,18 @@
  * consequently, access time for memory. An index is just an offset in an array, which should
  * generate essentially the same code as a pointer dereference, just adds an offset to it.
  * CPU instructions are SIGNIFICANTLY faster that the memory access time.
+ *
+ * The mesh contains a hierarchy of elements. The most basic element is the vertex, this
+ * is a single point that defines a position, velocity, and accumulates force. Three vertices
+ * combine to form a triangle. Cells define a finite region of space that is bounded by
+ * triangles.
+ *
+ * The mesh defines a special 'universe' cell, this is the first cell that is always created,
+ * has an id of 0. The mesh also defines a special partial triangle, again with index 0 that
+ * connects all of the exposed faces of non-universe cells to the universe. Every time a new
+ * triangle or cell is created, it is automatically connected to the universe cell through the
+ * special universe partial triangle. The universe partial triangle is connected to itself
+ * through it's neighbors.
  */
 struct MxMesh  {
 
@@ -90,7 +110,7 @@ struct MxMesh  {
 
     };
 
-    MxMesh() {};
+    MxMesh();
 
     /**
      * The set of triangle faces that define boundary of this cell. Each
@@ -273,7 +293,7 @@ struct MxMesh  {
 
 
 
-    MxCell &createCell();
+    MxCell &createCell(MxCellType *type = nullptr);
 
 
     void dump(uint what);

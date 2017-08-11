@@ -10,16 +10,8 @@
 #include <Magnum/Math/Math.h>
 
 
-struct Foo {
-    Foo() {
-        printf("foo");
-    }
-};
-
-Foo xfoo;
-
 int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
-    for (int i = 0; i < vertices.size(); ++i) {
+    for (int i = 1; i < vertices.size(); ++i) {
         float dist = (vertices[i].position - pos).dot();
         if (dist <= tolerance) {
             return i;
@@ -33,8 +25,8 @@ uint MxMesh::addVertex(const Magnum::Vector3& pos) {
     return vertices.size() - 1;
 }
 
-MxCell& MxMesh::createCell() {
-    cells.push_back(MxCell{nullptr, this, nullptr});
+MxCell& MxMesh::createCell(MxCellType *type) {
+    cells.push_back(MxCell{type, this, nullptr});
     return cells[cells.size() - 1];
 }
 
@@ -92,19 +84,13 @@ TriangleIndx MxMesh::createTriangle(const std::array<VertexIndx, 3> &vertInd) {
     return triangles.size() - 1;
 }
 
-struct Base {
-    int a;
-    char b;
-};
-
-
 
 MxPartialTriangle& MxMesh::createPartialTriangle(
         MxPartialTriangleType* type, MxCell& cell,
         TriangleIndx triIndx, const PTriangleIndices& neighbors)
 {
     MxTriangle &t = triangle(triIndx);
-    if(!is_valid(t.cells[0]) && !is_valid(t.partialTriangles[0]))
+    if(t.cells[0] == 0 && t.partialTriangles[0] == 0)
     {
         t.cells[0] = cellId(cell);
         partialTriangles.push_back(MxPartialTriangle{type, triIndx, neighbors, 0.0, nullptr});
@@ -112,7 +98,7 @@ MxPartialTriangle& MxMesh::createPartialTriangle(
         cell.boundary.push_back(t.partialTriangles[0]);
         return partialTriangles.back();
     }
-    else if(!is_valid(t.cells[1]) && !is_valid(t.partialTriangles[1]))
+    else if(t.cells[1] == 0 && t.partialTriangles[1] == 0)
     {
         t.cells[1] = cellId(cell);
         partialTriangles.push_back(MxPartialTriangle{type, triIndx, neighbors, 0.0, nullptr});
@@ -132,4 +118,21 @@ MxPartialTriangle& MxMesh::createPartialTriangle(
 {
     TriangleIndx ti = createTriangle(vertIndices);
     return createPartialTriangle(type, cell, ti, neighbors);
+}
+
+MxCellType universeCellType = {};
+
+MxCellType *MxUniverseCell_Type = &universeCellType;
+
+MxPartialTriangleType universePartialTriangleType = {};
+
+MxPartialTriangleType *MxUniversePartialTriangle_Type =
+        &universePartialTriangleType;
+
+MxMesh::MxMesh()
+{
+    createCell(MxUniverseCell_Type);
+    vertices.push_back(MxMeshVertex{});
+    triangles.push_back(MxTriangle{{{0,0,0}}});
+    partialTriangles.push_back(MxPartialTriangle{MxUniversePartialTriangle_Type, 0, {{0,0,0}}, 0.0, nullptr});
 }

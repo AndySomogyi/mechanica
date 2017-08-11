@@ -250,14 +250,18 @@ struct MxTriangle : MxObject {
     int matchVertexIndices(const std::array<VertexIndx, 3> &vertInd);
 
     MxTriangle() :
-        vertices{{invalid<uint>()}},
-        cells{{invalid<uint>()}},
-        partialTriangles{{invalid<uint>()}}
+        vertices{{invalid<uint>(), invalid<uint>(), invalid<uint>()}},
+        cells{{0,0}},
+        partialTriangles{{0,0}}
     {}
 
+    /**
+     * New triangles default to connecting to the universe cell and
+     * universe partial triangles.
+     */
     MxTriangle(const VertexIndices& vertInd,
-            const std::array<CellIndx, 2> &cells = {{invalid<uint>(), invalid<uint>()}},
-            const std::array<PTriangleIndx, 2> &ptris = {{invalid<uint>(), invalid<uint>()}}) :
+            const std::array<CellIndx, 2> &cells = {{0, 0}},
+            const std::array<PTriangleIndx, 2> &ptris = {{0, 0}}) :
                 vertices{vertInd}, cells{cells}, partialTriangles{ptris}
                 {}
 };
@@ -304,10 +308,10 @@ struct MxCellType : MxType {
  * vtables in the main vtable to do containment correctly.
  */
 struct MxCell : MxObject {
-    
+
     MxCell(MxType *type, MxMesh *mesh, MxReal *stateVector) :
         MxObject{type}, mesh{mesh}, stateVector{stateVector} {};
-    
+
     /**
      * the mesh that this cell belongs to.
      */
@@ -319,7 +323,7 @@ struct MxCell : MxObject {
     std::vector<PTriangleIndx> boundary;
 
 
-    
+
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state
