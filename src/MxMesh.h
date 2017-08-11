@@ -81,13 +81,13 @@
  * CPU instructions are SIGNIFICANTLY faster that the memory access time.
  */
 struct MxMesh  {
-    
+
     /**
-     * each facet has a set of attriubtes associated with it. 
+     * each facet has a set of attriubtes associated with it.
      */
     enum class FacetAttribute : int {
-        
-        
+
+
     };
 
     MxMesh() {};
@@ -110,9 +110,6 @@ struct MxMesh  {
 
     // mdcore engine (where geometry lives)
     engine mdEngine;
-
-
-    Vector3 vertex(uint);
 
     /**
      * @brief Initialize an #engine with the given data.
@@ -231,6 +228,41 @@ struct MxMesh  {
     uint addVertex(const Magnum::Vector3 &pos);
 
 
+    /**
+     * Searches for a triangle that's attached to the given triple
+     * of vertex indices. If no triangle exists, a new one is created.
+     *
+     * Note, only one single triangle can be attached to a triple of
+     * vertices.
+     */
+    TriangleIndx createTriangle(const std::array<VertexIndx, 3> &vertexInd);
+
+    /**
+     * Creates a new partial triangle, and connects it to the given
+     * triangle. The existing triangle MUST have at least one side free,
+     * otherwise an error is raised. Attaches the given cell's id to the
+     * triangle, basically connects everything related to this new
+     * partial triangle. Appends the new partial triangle to the given
+     * cell's surface.
+     */
+    MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
+        MxCell &cell, TriangleIndx triIndx, const PTriangleIndices &neighbors);
+
+    /**
+     * Searches for a triangle matching the given vertices to get a triangle, then
+     * Creates a new partial triangle, and connects it to this
+     * triangle. The existing triangle MUST have at least one side free,
+     * otherwise an error is raised. Attaches the given cell's id to the
+     * triangle, basically connects everything related to this new
+     * partial triangle. Appends the new partial triangle to the given
+     * cell's surface.
+     */
+    MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
+        MxCell &cell, const VertexIndices &vertIndices, const PTriangleIndices &neighbors);
+
+
+
+
 
 
     static const Magnum::Mesh::IndexType IndexType = Magnum::Mesh::IndexType::UnsignedInt;
@@ -249,12 +281,48 @@ struct MxMesh  {
     std::tuple<Magnum::Vector3, Magnum::Vector3> extents();
 
 
+    /**
+     *
+     */
+    std::array<Magnum::Vector3, 3> triangleVertices(TriangleIndx);
+
+    /**
+     * Get the i'th vertex for a given triangle
+     */
+    Magnum::Vector3 triangleVertex(TriangleIndx, int vertex);
+
+    std::vector<MxPartialTriangle> partialTriangles;
+
+    std::vector<MxTriangle> triangles;
 
 
 
+    inline MxPartialTriangle& partialTriangle(PTriangleIndx indx) {
+        return partialTriangles[indx];
+    }
 
+    inline MxTriangle& triangle(TriangleIndx indx) {
+        return triangles[indx];
+    }
 
+    inline MxTriangle& triangle(const MxPartialTriangle& pt ) {
+        return triangles[pt.triangle];
+    }
 
+    inline MxTriangle& partialTriTri(PTriangleIndx ptIndx) {
+        return triangles[partialTriangles[ptIndx].triangle];
+    }
+
+    inline MxMeshVertex& vertex(VertexIndx indx) {
+        return vertices[indx];
+    }
+
+    /**
+     * Get the id of the given cell.
+     */
+    inline CellIndx cellId(const MxCell& cell) {
+        return &cell - &cells[0];
+    }
 };
 
 #endif /* _INCLUDE_MXMESH_H_ */

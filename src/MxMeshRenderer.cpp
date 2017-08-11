@@ -94,7 +94,7 @@ void MxMeshRenderer::draw() {
 
         void* vertexPtr = obj.vertexBuffers[0].map<void>(0,  cell.vertexCount() * sizeof(Vector3),
             Buffer::MapFlag::Write|Buffer::MapFlag::InvalidateBuffer);
-        cell.vertexAtributeData(*mesh, {}, cell.vertexCount(), sizeof(Vector3), vertexPtr);
+        cell.vertexAtributeData({}, cell.vertexCount(), sizeof(Vector3), vertexPtr);
 
         //dumpVertex(vertexPtr, cell.vertexCount());
 

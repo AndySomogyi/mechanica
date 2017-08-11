@@ -67,9 +67,9 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
     // draw them.
     Renderer::enable(Renderer::Feature::FaceCulling);
 
-    MxMeshGmshImporter importer;
+    MxMeshGmshImporter importer{mesh};
 
-    mesh = importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
     Vector3 min, max;
     std::tie(min, max) = mesh.extents();
@@ -104,7 +104,7 @@ void GmshTest1::drawEvent() {
 
     renderer.setWireframeWidth(0.5);
 
-    mesh.jiggle();
+   // mesh.jiggle();
 
     renderer.draw();
 
@@ -163,13 +163,13 @@ auto get(T val) -> decltype(_type(val));
 
 template<>
 auto get<ScalarTypes>(ScalarTypes val) -> decltype(_type(val)) { return 0;};
- 
+
  */
 
 
 struct foo {
     template<ScalarTypes s> static int get();
-    
+
     template<VectorTypes s> static std::string get();
 };
 
@@ -193,11 +193,11 @@ void test();
 
 void test() {
     int i = foo::get<ScalarTypes::S1>();
-    
+
     std::string s = foo::get<V1>();
-    
+
     //int z = foo::get<5>();
-    
+
     int j = Stuff::F1;
 }
 

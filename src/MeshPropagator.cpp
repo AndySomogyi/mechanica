@@ -1,18 +1,18 @@
-/*
- * MxMeshPropagator.cpp
+/**
+ * MeshPropagator.cpp
  *
  *  Created on: Jul 11, 2017
  *      Author: andy
  */
 
-#include <MxMeshPropagator.h>
+#include <MeshPropagator.h>
 
-MxMeshPropagator::MxMeshPropagator() {
+MeshPropagator::MeshPropagator() {
     // TODO Auto-generated constructor stub
 
 }
 
-MxMeshPropagator::~MxMeshPropagator() {
+MeshPropagator::~MeshPropagator() {
     // TODO Auto-generated destructor stub
 }
 

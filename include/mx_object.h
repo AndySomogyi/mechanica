@@ -22,6 +22,85 @@
  */
 MxAPI_STRUCT(MxObject);
 
+/**
+ * Become
+ * ======
+ *
+ *
+ * The Miracle of become:
+ *
+ * From https://gbracha.blogspot.com/2009/07/miracle-of-become.html
+ *
+ * Mechanica objects support a type-save version of 'become', a object of one
+ * type can 'become' another type provided the types are consistent, that is,
+ * is a subtype, or structurally compatible (see structural vs. nomanative).
+ *
+ * One of Smalltalk’s most unique and powerful features is also one of the least known
+ * outside the Smalltalk community. It’s a little method called become: .
+ *
+ * What become: does is swap the identities of its receiver and its argument.
+ * That is, after
+ *
+ * a become: b
+ *
+ * all references to the object denoted by a before the call point refer to the
+ * object that was denoted by b, and vice versa. Take a minute to internalize this;
+ * you might misunderstand it as something trivial. This is not about swapping
+ * two variables - it is literally about one object becoming another. I am not
+ * aware of any other language that has this feature. It is a feature of
+ * enormous power - and danger.
+ *
+ * Consider the task of extending your language to support persistent objects.
+ * Say you want to load an object from disk, but don’t want to load all the objects
+ * it refers to transitively (otherwise, it’s just plain object deserialization).
+ * So you load the object itself, but instead of loading its direct references,
+ * you replace them with husk objects.
+ *
+ * The husks stand in for the real data on secondary storage. That data is loaded
+ * lazily. When you actually need to invoke a method on a husk, its doesNotUnderstand:
+ * method loads the corresponding data object from disk (but again, not transitively).
+ * Then, it does a become:, replacing all references to the husk with references to
+ * the newly loaded object, and retries the call.
+ *
+ * Some persistence engines have done this sort of thing for decades - but they
+ * usually relied on low level access to the representation. Become: lets you do
+ * this at the source code level. Now go do this in Java. Or even in another dynamic
+ * language. You will recognize that you can do a general form of futures this way,
+ * and hence laziness. All without privileged access to the workings of the
+ * implementation. It’s also useful for schema evolution - when you add an instance
+ * variable to a class, for example. You can “reshape” all the instances as needed.
+ *
+ * Of course, you shouldn’t use become: casually. It comes at a cost, which may
+ * be prohibitive in many implementations. In early Smalltalks, become: was cheap,
+ * because all objects were referenced indirectly by means of an object table. In the
+ * absence of an object table, become: traverses the heap in a manner similar to a
+ * garbage collector. The more memory you have, the more expensive become: becomes.
+ *
+ * Having an object table takes up storage and slows down access; but it does buy
+ * you a great deal of flexibility. Hardware support could ease the performance
+ * penalty. The advantage is that many hard problems become quite tractable if you
+ * are willing to pay the cost of indirection via an object table up front. Remember:
+ * every problem in computer science can be solved with extra levels of indirection.
+ *
+ * Alex Warth has some very interesting work that fits in this category, for example.
+ * Become: has several variations - one way become: changes the identity of an
+ * object A to that of another object B, so that references to A now point at B;
+ * references to B remain unchanged. It is often useful to do become: in bulk -
+ * transmuting the identities of all objects in an array (either unidirectionally
+ * or bidirectionally). A group become: which does it magic atomically is great
+ * for implementing reflective updates to a system, for example. You can change a
+ * whole set of classes and their instances in one go.
+ *
+ * You can even conceive of type safe become: . Two way become: is only type safe
+ * if the type of A is identical to that of B, but one way become: only requires
+ * that the new object be a subtype of the old one.
+ *
+ * It may be time to reconsider whether having an object table is actually a good thing.
+ *
+ * Posted by Gilad Bracha at 7:34 PM
+ * Labels: Reflection
+ */
+
 
 //#define Mx_REFCNT(ob)           (((MxObject*)(ob))->refcount)
 //#define Mx_TYPE(ob)             (((MxObject*)(ob))->type)

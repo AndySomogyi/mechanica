@@ -70,11 +70,14 @@ set(SRC
   MxMeshVoronoiImporter.cpp
   MxMeshRenderer.cpp
   MxMeshShaderProgram.cpp
-  MxMeshLangevinPropagator.cpp
-  MxMeshBrownianPropagator.cpp
+  MeshPropagator.cpp
   MxMeshPottsPropagator.cpp
   GmshIO.cpp
   MxMeshGmshImporter.cpp
+  MxExecutionContext.cpp
+  MxForceFunction.cpp
+  MeshLangevinPropagator.cpp
+  MeshDampedLangevinPropagator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -108,12 +111,14 @@ set(HEADERS
   MxMeshVoronoiImporter.h
   MxMeshRenderer.h
   MxMeshShaderProgram.h
-  MxMeshPropagator.h
-  MxMeshLangevinPropagator.h
-  MxMeshBrownianPropagator.h
+  MeshPropagator.h
   MxMeshPottsPropagator.h
   GmshIO.h
   MxMeshGmshImporter.h
+  MxExecutionContext.h
+  MxForceFunction.h
+  MeshLangevinPropagator.h
+  MeshDampedLangevinPropagator.h
   )
 
 

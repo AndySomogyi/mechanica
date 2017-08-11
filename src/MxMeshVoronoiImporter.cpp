@@ -75,8 +75,8 @@ static bool pack(T& container, MxMesh& mesh) {
 
             // add the faces to the cell, then sort out the connectivity
             for(int i = 0; i < newInd.size(); i+=3) {
-                MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
-                cell.boundary.push_back(pf);
+                //MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
+                //cell.boundary.push_back(pf);
             }
 
             std::cout << "The cell...\n";
@@ -86,7 +86,7 @@ static bool pack(T& container, MxMesh& mesh) {
 
 
             // boundary had better be connected from a voronoi cell
-            bool connected = cell.connectBoundary(mesh);
+            bool connected = cell.connectBoundary();
 
             cout << "MxCell["<< i << "]" << std::endl;
             cell.writePOV(std::cout);

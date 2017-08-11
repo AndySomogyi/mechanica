@@ -10,6 +10,7 @@
 
 #include "mechanica_private.h"
 #include <vector>
+#include <array>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 
@@ -20,8 +21,6 @@ typedef Math::Vector3<UnsignedShort> Vector3us;
 }
 
 using namespace Magnum;
-
-
 
 
 struct MxMesh;
@@ -43,7 +42,8 @@ inline Vector3us invalid<Vector3us>() {return {invalid<ushort>(), invalid<ushort
 struct MxMeshVertex {
     Vector3 position;
     Vector3 velocity;
-    Vector3 acceleration;
+
+    Vector3 acceleration[2];
 };
 
 struct MxVertexAttribute {
@@ -63,6 +63,34 @@ struct MxVertexAttribute {
     Id id;
 };
 
+
+
+
+/**
+ * define types to give an indicator what kind of index we're using.
+ * Not exactly type safe, but at least gives a good hint as what to do.
+ */
+typedef uint32_t VertexIndx;
+
+typedef std::array<VertexIndx, 3> VertexIndices;
+
+typedef uint32_t TriangleIndx;
+
+typedef uint32_t PTriangleIndx;
+
+typedef std::array<PTriangleIndx, 3> PTriangleIndices;
+
+typedef uint32_t CellIndx;
+
+
+struct MxPartialTriangleType : MxType {
+
+
+    /**
+     * Store the stoichiometry matrix in the type, initially Mechanica will
+     * not support time-dependent stochiometries.
+     */
+};
 
 /**
  * A partial face data structure, represents 1/2 of a triangular face. This represents the
@@ -112,71 +140,138 @@ struct MxVertexAttribute {
  * by the abs value of the normal integer index.
  *
  * The centroid
- *
  */
-struct MxPartialFace {
+struct MxPartialTriangle : MxObject {
+
+    MxPartialTriangle(MxPartialTriangleType *type, TriangleIndx ti,
+            const PTriangleIndices& neighbors, float mass, MxReal *scalars) :
+                MxObject{type}, triangle{ti}, neighbors{neighbors},
+                mass{mass}, scalarFields{scalars} {};
+
+    /**
+     * index of the triangle that this partial triangle references.
+     */
+    TriangleIndx triangle;
+
+    /**
+     * indices of the three neighboring partial triangles.
+     */
+    std::array<PTriangleIndx, 3> neighbors;
+
+
+    float mass;
+
+    /**
+     * A contiguous sequence of scalar attributes, who's time evolution is
+     * defined by reactions and odes.
+     */
+    MxReal *scalarFields;
+};
+
+
+struct MxTriangleType : MxType {
+
+};
+
+
+/**
+ * Represents a triangle, connected to two partial triangles.
+ *
+ * One of the primary tasks of the Mechanica simulation environment
+ * is to calculate trans-cell fluxes. Hence, the MxTriangle provides a
+ * direct way to get at the cells on either side.
+ *
+ * The MxPartialTriangles represent a section of material surface, so,
+ * only partial triangles have attached attributes. The triangle (here)
+ * only connects partial triangles.
+ *
+ * Tasks:
+ *     * provide connection between adjacent cells so that we can calculate
+ *       fluxes
+ *     * represent the geometry of a triangle.
+ *     *
+ */
+struct MxTriangle : MxObject {
 
     /**
      * indices of the 3 vertices in the MxMesh that make up this partial face,
-     * in the correct winding order
+     * in the correct winding order. The winding of these vertices correspond to the
+     * normal vector.
      */
-    Vector3ui vertices;
+    std::array<VertexIndx, 3> vertices;
 
 
     /**
-     * index of the three neighbors of this face, these
-     * neighbors are indices in the faces of the MxCell
+     * Need to associate this triangle with the cells on both sides. Trans-cell flux
+     * is very frequently calculated, so optimize structure layout for both
+     * trans-cell and trans-partial-triangle fluxes.
+     */
+    std::array<CellIndx, 2> cells;
+    /**
+     * The center of geometry of this triangle, the position vector.
+     */
+    //Vector3 position;
+
+    /**
+     * indices of the two partial triangles that are attached to this triangle.
+     * The mesh contains a set of partial triangles.
+     */
+    std::array<PTriangleIndx, 2> partialTriangles;
+
+    /**
+     * Non-normalized normal vector (magnitude is triangle area), oriented away from
+     * cellIds[0].
      *
-     * Don't expect ever to be more than 65,000 faces in a cell
+     * If a cell has cellIds[0], then the normal points in the correct direction, but
+     * if the cell has cellIds[1], then the normal needs to be multiplied by -1 to point
+     * point in the correct direction.
      */
-    Vector3us neighbors;
+    Vector3 normal;
 
     /**
-     * index of the neighboring cell that this partial face shares
-     * a face with. We keep track of the neighboring cell here, this
-     * lets the containing cell enumerate all neighboring cells via
-     * connectivity through the partial faces.
-     */
-    uint neighborCell;
-
-    /**
-     * index in the neighboring cell's boundary array of the mirroring
-     * partial face that matches this face.
-     */
-    ushort mirrorFace;
-
-    double mass;
-
-
-    /**
-     * Last field in this struct, create a struct where the number of fields
-     * are determined at runtime, and lets us allocate the entire struct in
-     * a single contiguous memory block.
+     * does this triangle match the given set of vertex
+     * indices.
      *
-     * But to get things working quickly, we'll just use a std::vector here
-     * for now, lets us get the rest of the system up an running quickly
-     * with just std::vector.
+     * There are 3 possible forward combinations of 3 vertices,
+     * {1,2,3}, {2,3,1}, {3,1,2}, if any of these combinations
+     * match, then this returns a 1. Similarly, there are 3 possible
+     * reversed combinations, {3,2,1}, {2,1,3}, {1,3,2}, if any of these
+     * match, then method returns a -1, otherwise, 0.
+     *
+     * @returns -1 if the vertices match in reverse order, or a
+     *             reversed permutation.
+     *
+     * @returns 0 if the is no match
+     * @returns 1 if the vertices match in the same order
      */
-    std::vector<double> fields;
+    int matchVertexIndices(const std::array<VertexIndx, 3> &vertInd);
 
-    MxPartialFace(Vector3ui const& vert):
-        vertices{vert},
-        neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
-        neighborCell{invalid<uint>()},
-        mirrorFace{invalid<ushort>()},
-        mass{0}
-    {
-    }
+    MxTriangle() :
+        vertices{{invalid<uint>()}},
+        cells{{invalid<uint>()}},
+        partialTriangles{{invalid<uint>()}}
+    {}
 
-    MxPartialFace():
-          vertices{invalid<uint>(), invalid<uint>(), invalid<uint>()},
-          neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
-          neighborCell{invalid<uint>()},
-          mirrorFace{invalid<ushort>()},
-          mass{0}
-      {
-      }
+    MxTriangle(const VertexIndices& vertInd,
+            const std::array<CellIndx, 2> &cells = {{invalid<uint>(), invalid<uint>()}},
+            const std::array<PTriangleIndx, 2> &ptris = {{invalid<uint>(), invalid<uint>()}}) :
+                vertices{vertInd}, cells{cells}, partialTriangles{ptris}
+                {}
 };
+
+
+struct MxCellType : MxType {
+
+
+    /**
+     * Store the stoichiometry matrix in the type, initially Mechanica will
+     * not support time-dependent stochiometries.
+     */
+};
+
+
+
+
 
 /**
  * Represents a closed region of space. This corresponds spatially closely to the
@@ -187,18 +282,48 @@ struct MxPartialFace {
  * The MxCell maintains a set of local partial faces to represent the boundary surface
  * triangles. This cell knows what's inside and outside, hence it knows which way to order
  * the index winding so that the normal points the correct way.
+ *
+ * Nomenclature:
+ *    *neighboring* partial faces are those that are in this cell's local surface
+ *    manifold. There is a direct path from any partial face to any other partial face
+ *    in each cell's surface.
+ *
+ *    An *adjacent* partial triangle is the located on the neighboring cell that is
+ *    in direct contact with a partial face on this cell.
+ *
+ * A cell also references a set of state variables, typically chemical concentrations.
+ * The state variables (state vector) block is owned by the top level mesh (later block
+ * for multi-threaded), and the cell has a pointer to this memory. The cell's type object
+ * has descriptors for the memory layout of the state vector. Derived types need to
+ * calculate rate of change of the state vector.
+ *
+ * The way we do vtables, derived types can contain objects, and stuff thier
+ * vtables in the main vtable to do containment correctly.
  */
-struct MxCell {
+struct MxCell : MxObject {
+    
+    MxCell(MxType *type, MxMesh *mesh, MxReal *stateVector) :
+        MxObject{type}, mesh{mesh}, stateVector{stateVector} {};
+    
+    /**
+     * the mesh that this cell belongs to.
+     */
+    struct MxMesh *mesh;
 
     /**
      * the closed set of faces that define the boundary of this cell
      */
-    std::vector<MxPartialFace> boundary;
+    std::vector<PTriangleIndx> boundary;
+
+
+    
 
     /**
-     * fields that belong to this cell.
+     * Pointer to the vector of state variables that belong to this cell. The state
+     * vector memory is owned by the mesh, and this is an offset into the main
+     * memory block.
      */
-    std::vector<double> fields;
+     MxReal *stateVector;
 
     /**
      * iterate over the boundary partial faces and connect them all together.
@@ -207,7 +332,7 @@ struct MxCell {
      * Returns true if the boundary connected successfully, false if the
      * boundary in non-manifold.
      */
-    bool connectBoundary(MxMesh& mesh);
+    bool connectBoundary();
 
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
@@ -246,13 +371,96 @@ struct MxCell {
      *
      * @param stride: size in bytes of each element in the vertex buffer.
      */
-    void vertexAtributeData(MxMesh& mesh, const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
+    void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes,
+            uint vertexCount, uint stride, void* buffer);
 
     void indexData(uint indexCount, uint* buffer);
 
     void dump();
 
     void writePOV(std::ostream &out);
+
+    //void
+
+
+
+
+    /**
+     * A contiguous sequence of scalar attributes, who's time evolution is
+     * defined by reactions and odes.
+     */
+    MxReal *scalarFields;
+
+    void addPartialTriangle(const PTriangleIndices &neighbors, const VertexIndices &vertexIndices);
 };
 
 #endif /* SRC_MXCELL_H_ */
+
+
+/**
+
+ *
+ */
+//struct MxPartialFace {
+
+    /**
+     * indices of the 3 vertices in the MxMesh that make up this partial face,
+     * in the correct winding order
+     */
+   // Vector3ui vertices;
+
+
+    /**
+     * index of the three neighbors of this face, these
+     * neighbors are indices in the faces of the MxCell
+     *
+     * Don't expect ever to be more than 65,000 faces in a cell
+     */
+ //   Vector3us neighbors;
+
+    /**
+     * index of the neighboring cell that this partial face shares
+     * a face with. We keep track of the neighboring cell here, this
+     * lets the containing cell enumerate all neighboring cells via
+     * connectivity through the partial faces.
+     */
+ //   uint neighborCell;
+
+    /**
+     * index in the neighboring cell's boundary array of the mirroring
+     * partial face that matches this face.
+     */
+  //  ushort mirrorFace;
+
+ //   double mass;
+
+
+    /**
+     * Last field in this struct, create a struct where the number of fields
+     * are determined at runtime, and lets us allocate the entire struct in
+     * a single contiguous memory block.
+     *
+     * But to get things working quickly, we'll just use a std::vector here
+     * for now, lets us get the rest of the system up an running quickly
+     * with just std::vector.
+     */
+   // std::vector<double> fields;
+
+  //  MxPartialFace(Vector3ui const& vert):
+//        vertices{vert},
+//        neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
+//        neighborCell{invalid<uint>()},
+//        mirrorFace{invalid<ushort>()},
+//        mass{0}
+//    {
+//    }
+//
+//    MxPartialFace():
+//          vertices{invalid<uint>(), invalid<uint>(), invalid<uint>()},
+//          neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
+//          neighborCell{invalid<uint>()},
+//          mirrorFace{invalid<ushort>()},
+//          mass{0}
+//      {
+//      }
+//};

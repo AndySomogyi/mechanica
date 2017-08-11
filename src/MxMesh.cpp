@@ -34,7 +34,7 @@ uint MxMesh::addVertex(const Magnum::Vector3& pos) {
 }
 
 MxCell& MxMesh::createCell() {
-    cells.push_back(MxCell{});
+    cells.push_back(MxCell{nullptr, this, nullptr});
     return cells[cells.size() - 1];
 }
 
@@ -79,4 +79,57 @@ std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
     }
 
     return std::make_tuple(min, max);
+}
+
+TriangleIndx MxMesh::createTriangle(const std::array<VertexIndx, 3> &vertInd) {
+    for (MxTriangle& tri : triangles) {
+        if (tri.matchVertexIndices(vertInd) != 0) {
+            return &tri - &triangles[0];
+        }
+    }
+
+    triangles.push_back(MxTriangle{vertInd});
+    return triangles.size() - 1;
+}
+
+struct Base {
+    int a;
+    char b;
+};
+
+
+
+MxPartialTriangle& MxMesh::createPartialTriangle(
+        MxPartialTriangleType* type, MxCell& cell,
+        TriangleIndx triIndx, const PTriangleIndices& neighbors)
+{
+    MxTriangle &t = triangle(triIndx);
+    if(!is_valid(t.cells[0]) && !is_valid(t.partialTriangles[0]))
+    {
+        t.cells[0] = cellId(cell);
+        partialTriangles.push_back(MxPartialTriangle{type, triIndx, neighbors, 0.0, nullptr});
+        t.partialTriangles[0] = partialTriangles.size() - 1;
+        cell.boundary.push_back(t.partialTriangles[0]);
+        return partialTriangles.back();
+    }
+    else if(!is_valid(t.cells[1]) && !is_valid(t.partialTriangles[1]))
+    {
+        t.cells[1] = cellId(cell);
+        partialTriangles.push_back(MxPartialTriangle{type, triIndx, neighbors, 0.0, nullptr});
+        t.partialTriangles[1] = partialTriangles.size() - 1;
+        cell.boundary.push_back(t.partialTriangles[1]);
+        return partialTriangles.back();
+    }
+    else {
+        assert(0 && "invalid triangle");
+        throw(0);
+    }
+}
+
+MxPartialTriangle& MxMesh::createPartialTriangle(
+        MxPartialTriangleType* type, MxCell& cell,
+        const VertexIndices& vertIndices, const PTriangleIndices& neighbors)
+{
+    TriangleIndx ti = createTriangle(vertIndices);
+    return createPartialTriangle(type, cell, ti, neighbors);
 }

@@ -20,7 +20,18 @@
  * Nothing is actually declared to be a MxObject, but every pointer to
  * a Mechanica object can be cast to a MxObject* (and hence a PyObject*).
  */
-struct MxObject : _object {};
+struct MxObject : _object
+{
+    MxObject(MxType *type) {
+        this->ob_type = (_typeobject*)type;
+        this->ob_refcnt = 1;
+    }
+
+    MxObject() {
+        this->ob_type = nullptr;
+        this->ob_refcnt = 1;
+    }
+};
 
 
 

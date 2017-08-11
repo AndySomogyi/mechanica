@@ -1,12 +1,12 @@
 /*
- * MxMeshPropagator.h
+ * MeshPropagator.h
  *
  *  Created on: Jul 11, 2017
  *      Author: andy
  */
 
-#ifndef SRC_MXMESHPROPAGATOR_H_
-#define SRC_MXMESHPROPAGATOR_H_
+#ifndef SRC_MESHPROPAGATOR_H_
+#define SRC_MESHPROPAGATOR_H_
 
 /**
  * Defines and calculates the time evolution of a mesh. The MxMesh defines the
@@ -19,10 +19,10 @@
  * The propagator also computes the time evolution of the scalar fields that are
  * attached to each vertex/facet of the mesh.
  */
-class MxMeshPropagator {
+class MeshPropagator {
 public:
-    MxMeshPropagator();
-    virtual ~MxMeshPropagator();
+    MeshPropagator();
+    virtual ~MeshPropagator();
 };
 
-#endif /* SRC_MXMESHPROPAGATOR_H_ */
+#endif /* SRC_MESHPROPAGATOR_H_ */

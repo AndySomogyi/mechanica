@@ -20,29 +20,32 @@ static inline Magnum::Vector3 makeVertex(const double pos[]) {
 
 
 
-MxMesh MxMeshGmshImporter::read(const std::string& path) {
+bool MxMeshGmshImporter::read(const std::string& path) {
 
-    mesh = MxMesh{};
     gmsh = Gmsh::Mesh::read(path);
 
     for(auto& element : gmsh.elements) {
         switch(element.type) {
-        case ElementType::Hexahedron: addCell(element.get<Gmsh::Hexahedron>()); break;
+        case ElementType::Hexahedron: {
+            const Gmsh::Hexahedron &h = element.get<Gmsh::Hexahedron>();
+            addCell(h);
+            break;
+        }
         default: continue;
         }
     }
-    
+
     mesh.initPos.resize(mesh.vertices.size());
-    
+
     for(int i = 0; i < mesh.vertices.size(); ++i) {
         mesh.initPos[i] = mesh.vertices[i].position;
     }
 
 
-    return mesh;
+    return true;
 }
 
-uint MxMeshGmshImporter::addNode(const Gmsh::Node& node) {
+uint MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
     auto iter = vertexMap.find(node.id);
 
     if (iter != vertexMap.end()) {
@@ -100,11 +103,9 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     //std::cout << "adding cell " << val.id << std::endl;
 
     // node indices mapping in the MxMesh vertices.
-    uint nodes[8];
+    uint vertexIds[8];
     MxCell &cell = mesh.createCell();
 
-    cell.boundary.resize(12);
-    
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
     //    std::cout << " {" << i.second.id << " {" << i.second.pos[0] << ", " << i.second.pos[1] << ", " << i.second.pos[2] << "}}" << std::endl;
@@ -113,43 +114,34 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     // grab the node positions out of the gmsh and add them to our mesh
     for(int i = 0; i < 8; ++i) {
         const Gmsh::Node &node = gmsh.nodes[val.nodes[i]];
-        nodes[i] = addNode(node);
+        vertexIds[i] = addGmshVertex(node);
     }
 
+    typedef VertexIndices VI;
+    typedef PTriangleIndices PI;
+
     // make the boundary partial faces
-    cell.boundary[0].vertices = Vector3ui{nodes[7], nodes[2], nodes[3]};
-    cell.boundary[0].neighbors = Vector3us{1,2,8};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[7], vertexIds[2], vertexIds[3]}}, PI{{1,2,8}});
 
-    cell.boundary[1].vertices = Vector3ui{nodes[7], nodes[6], nodes[2]};
-    cell.boundary[1].neighbors = Vector3us{0,4,6};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[7], vertexIds[6], vertexIds[2]}}, PI{{0,4,6}});
 
-    cell.boundary[2].vertices = Vector3ui{nodes[0], nodes[7], nodes[3]};
-    cell.boundary[2].neighbors = Vector3us{3,9,0};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[7], vertexIds[3]}}, PI{{3,9,0}});
 
-    cell.boundary[3].vertices = Vector3ui{nodes[0], nodes[4], nodes[7]};
-    cell.boundary[3].neighbors = Vector3us{2,4,10};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[4], vertexIds[7]}}, PI{{2,4,10}});
 
-    cell.boundary[4].vertices = Vector3ui{nodes[4], nodes[6], nodes[7]};
-    cell.boundary[4].neighbors = Vector3us{3,5,1};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[4], vertexIds[6], vertexIds[7]}}, PI{{3,5,1}});
 
-    cell.boundary[5].vertices = Vector3ui{nodes[4], nodes[5], nodes[6]};
-    cell.boundary[5].neighbors = Vector3us{4,6,10};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[4], vertexIds[5], vertexIds[6]}}, PI{{4,6,10}});
 
-    cell.boundary[6].vertices = Vector3ui{nodes[5], nodes[2], nodes[6]};
-    cell.boundary[6].neighbors = Vector3us{5,7,1};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[5], vertexIds[2], vertexIds[6]}}, PI{{5,7,1}});
 
-    cell.boundary[7].vertices = Vector3ui{nodes[5], nodes[1], nodes[2]};
-    cell.boundary[7].neighbors = Vector3us{6,8,11};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[5], vertexIds[1], vertexIds[2]}}, PI{{6,8,11}});
 
-    cell.boundary[8].vertices = Vector3ui{nodes[1], nodes[3], nodes[2]};
-    cell.boundary[8].neighbors = Vector3us{9,0,7};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[1], vertexIds[3], vertexIds[2]}}, PI{{9,0,7}});
 
-    cell.boundary[9].vertices = Vector3ui{nodes[1], nodes[0], nodes[3]};
-    cell.boundary[9].neighbors = Vector3us{8,11,2};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[1], vertexIds[0], vertexIds[3]}}, PI{{8,11,2}});
 
-    cell.boundary[10].vertices = Vector3ui{nodes[0], nodes[5], nodes[4]};
-    cell.boundary[10].neighbors = Vector3us{11,5,3};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[5], vertexIds[4]}}, PI{{11,5,3}});
 
-    cell.boundary[11].vertices = Vector3ui{nodes[0], nodes[1], nodes[5]};
-    cell.boundary[11].neighbors = Vector3us{7,10,9};
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[1], vertexIds[5]}}, PI{{7,10,9}});
 }

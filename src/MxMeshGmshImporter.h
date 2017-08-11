@@ -28,18 +28,23 @@
 class MxMeshGmshImporter {
 public:
 
-    MxMesh read(const std::string &path);
+    MxMeshGmshImporter(MxMesh& mesh) : mesh{mesh} {};
+
+    bool read(const std::string &path);
 
 private:
     // keep track of original Gmsh vertex indices, and the new indices in
     // the MxMesh
     std::unordered_map<int, int> vertexMap;
 
-    uint addNode(const Gmsh::Node &node);
+    /**
+     * A Gmsh node corresponds to a vertex (position, index)
+     */
+    uint addGmshVertex(const Gmsh::Node &node);
 
     void addCell(const Gmsh::Hexahedron &val);
 
-    MxMesh mesh;
+    MxMesh &mesh;
     Gmsh::Mesh gmsh;
 };
 

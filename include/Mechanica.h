@@ -12,7 +12,7 @@
 #ifndef _INCLUDED_MECHANICA_H_
 #define _INCLUDED_MECHANICA_H_
 
-
+typedef double MxReal;
 
 #include <mx_object.h>
 #include <mx_particle.h>
