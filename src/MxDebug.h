@@ -31,6 +31,30 @@ inline std::ostream& operator<<(std::ostream& os, const Magnum::Vector3ui& vec)
 //}
 
 
+template <typename ArrayType, size_t Length>
+std::ostream& operator << (std::ostream& stream, const std::array<ArrayType, Length>);
+
+
+template <typename ArrayType>
+std::ostream& operator << (std::ostream& stream, const std::array<ArrayType, 2> a) {
+    stream << "{"  << a[0] << ", " << a[1] << "}";
+    return stream;
+}
+
+template <typename ArrayType>
+std::ostream& operator << (std::ostream& stream, const std::array<ArrayType, 3> a) {
+    stream << "{"  << a[0] << ", " << a[1] << ", " << a[2] << "}";
+    return stream;
+}
+
+template <typename ArrayType>
+std::ostream& operator << (std::ostream& stream, const std::array<ArrayType, 4> a) {
+    stream << "{"  << a[0] << ", " << a[1] << ", " << a[2] << ", " << a[3] <<"}";
+    return stream;
+}
+
+
+
 
 
 

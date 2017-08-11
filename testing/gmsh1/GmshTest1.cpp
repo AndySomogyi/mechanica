@@ -69,7 +69,9 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
 
     MxMeshGmshImporter importer{mesh};
 
-    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sphere1.msh");
 
     Vector3 min, max;
     std::tie(min, max) = mesh.extents();

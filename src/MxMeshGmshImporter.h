@@ -44,6 +44,14 @@ private:
 
     void addCell(const Gmsh::Hexahedron &val);
 
+
+    void addCell(const Gmsh::Prism &val);
+
+    /**
+     * Add a square face with the given vertices in CCW order.
+     */
+    void addSquareFace(MxCell &cell, const std::array<uint, 4> &verts);
+
     MxMesh &mesh;
     Gmsh::Mesh gmsh;
 };

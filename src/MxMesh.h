@@ -258,7 +258,9 @@ struct MxMesh  {
      * cell's surface.
      */
     MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
-        MxCell &cell, const VertexIndices &vertIndices, const PTriangleIndices &neighbors);
+        MxCell &cell, const VertexIndices &vertIndices,
+        const PTriangleIndices &neighbors =
+            {{invalid<uint>(), invalid<uint>(), invalid<uint>()}});
 
 
 

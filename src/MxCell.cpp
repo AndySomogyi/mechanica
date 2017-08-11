@@ -42,51 +42,63 @@ bool MxCell::connectBoundary() {
     // clear all of the boundaries before we connect them.
     for(PTriangleIndx indx : boundary) {
         MxPartialTriangle &pt = mesh->partialTriangle(indx);
-        pt.neighbors[0] = -1;
-        pt.neighbors[1] = -1;
-        pt.neighbors[2] = -1;
+        pt.neighbors[0] = invalid<PTriangleIndx>();
+        pt.neighbors[1] = invalid<PTriangleIndx>();
+        pt.neighbors[2] = invalid<PTriangleIndx>();
+        
+        std::cout << "{ptri_indx: " << indx
+                  << ", tri_ind: " << pt.triangle
+                  << ", vertices: " << mesh->partialTriTri(pt.triangle).vertices  << "}" << std::endl;
     }
 
     for (PTriangleIndx i = 0; i < boundary.size(); ++i) {
-        MxPartialTriangle &pti = mesh->partialTriangle(i);
+        MxPartialTriangle &pti = mesh->partialTriangle(boundary[i]);
         MxTriangle &ti = mesh->triangle(pti);
 
         for(PTriangleIndx j = i+1; j < boundary.size(); ++j) {
-            MxPartialTriangle &ptj = mesh->partialTriangle(j);
+            MxPartialTriangle &ptj = mesh->partialTriangle(boundary[j]);
             MxTriangle &tj = mesh->triangle(ptj);
+            
 
             for(int k = 0; k < 3; ++k) {
                 if ((ti.vertices[0] == tj.vertices[k] &&
-                        (ti.vertices[1] == tj.vertices[k+1%3] ||
-                         ti.vertices[1] == tj.vertices[k+2%3] ||
-                         ti.vertices[2] == tj.vertices[k+1%3] ||
-                         ti.vertices[2] == tj.vertices[k+2%3])) ||
+                        (ti.vertices[1] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[1] == tj.vertices[(k+2)%3] ||
+                         ti.vertices[2] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[2] == tj.vertices[(k+2)%3])) ||
                     (ti.vertices[1] == tj.vertices[k] &&
-                        (ti.vertices[0] == tj.vertices[k+1%3] ||
-                         ti.vertices[0] == tj.vertices[k+2%3] ||
-                         ti.vertices[2] == tj.vertices[k+1%3] ||
-                         ti.vertices[2] == tj.vertices[k+2%3])) ||
+                        (ti.vertices[0] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[0] == tj.vertices[(k+2)%3] ||
+                         ti.vertices[2] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[2] == tj.vertices[(k+2)%3])) ||
                     (ti.vertices[2] == tj.vertices[k] &&
-                        (ti.vertices[0] == tj.vertices[k+1%3] ||
-                         ti.vertices[0] == tj.vertices[k+2%3] ||
-                         ti.vertices[1] == tj.vertices[k+1%3] ||
-                         ti.vertices[1] == tj.vertices[k+2%3]))) {
-
-
+                        (ti.vertices[0] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[0] == tj.vertices[(k+2)%3] ||
+                         ti.vertices[1] == tj.vertices[(k+1)%3] ||
+                         ti.vertices[1] == tj.vertices[(k+2)%3]))) {
+                            
+                            
+                            /*
+                            std::cout << "k: " << k
+                                      << ", (k+1)%3 : " << (k+1)%3
+                                      << ", (k+2)%3 : " << (k+2)%3
+                                      << ", (k+1)%3 : " << (k+1)%3
+                                      << ", (k+2)%3 : " << (k+2)%3 << std::endl;
 
                             std::cout << "face 1" << std::endl;
-                            //std::cout << "pf[" << i << "] " << ti.vertices << " {" << std::endl;
+                            std::cout << "pf[" << i << "] " << ti.vertices << " {" << std::endl;
                             std::cout << mesh->vertices[ti.vertices[0]].position << std::endl;
                             std::cout << mesh->vertices[ti.vertices[1]].position << std::endl;
-                            std::cout << mesh->vertices[ti.vertices[1]].position << std::endl;
+                            std::cout << mesh->vertices[ti.vertices[2]].position << std::endl;
                             std::cout << "}" << std::endl;
 
                             std::cout << "face 2" << std::endl;
-                            //std::cout << "pf[" << j << "] " << tj.vertices << " {" << std::endl;
+                            std::cout << "pf[" << j << "] " << tj.vertices << " {" << std::endl;
                             std::cout << mesh->vertices[tj.vertices[0]].position << std::endl;
                             std::cout << mesh->vertices[tj.vertices[1]].position << std::endl;
-                            std::cout << mesh->vertices[tj.vertices[1]].position << std::endl;
+                            std::cout << mesh->vertices[tj.vertices[2]].position << std::endl;
                             std::cout << "}" << std::endl;
+                             */
 
                             connectPartialTriangles(pti, ptj, i, j);
                     break;

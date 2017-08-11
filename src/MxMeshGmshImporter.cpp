@@ -14,6 +14,8 @@
 
 using Gmsh::ElementType;
 
+typedef VertexIndices VI;
+
 static inline Magnum::Vector3 makeVertex(const double pos[]) {
     return Vector3{float(pos[0]), float(pos[1]), float(pos[2])};
 }
@@ -27,8 +29,11 @@ bool MxMeshGmshImporter::read(const std::string& path) {
     for(auto& element : gmsh.elements) {
         switch(element.type) {
         case ElementType::Hexahedron: {
-            const Gmsh::Hexahedron &h = element.get<Gmsh::Hexahedron>();
-            addCell(h);
+            addCell(element.get<Gmsh::Hexahedron>());
+            break;
+        }
+        case ElementType::Prism: {
+            addCell(element.get<Gmsh::Prism>());
             break;
         }
         default: continue;
@@ -74,7 +79,8 @@ uint MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
  *                       4----------5
  * This means that we have to triangulate each face, and generate 12 partial
  * faces. Looking at the Gmsh hexahedron head-on, and unfolding, we get the
- * following arrangement. We order the partial faces with the following scheme.
+ * following arrangement. A problem with uniformly spiting each side into triangles
+ * along the same axis (i.e. always from vert 7 to vert 8 as in below).
  *                   3----------2
  *                   |         /|
  *                   |   0   /  |
@@ -94,6 +100,17 @@ uint MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
  *                   |   /  11  |
  *                   | /        |
  *                   0----------1
+ * is that the side may be squashed, and we get low-quality triangles (long and
+ * skinny), so search for the shortest diagonal, and split there. Sometimes
+ * we may get the top face split like above, other times we may get:
+ *                   3----------2
+ *                   |\         |
+ *                   |  \   0   |
+ *                   |    \     |
+ *                   |  1   \   |
+ *                   |        \ |
+ *                   7----------6
+ *
  * Important to pay attention to the triangle winding, we use CCW so each partial
  * face must be ordered accordingly. To get the normals to face correctly, they
  * need to point outwards. So, e.g. with pf[0], we have {7,2,3}, pf[1]={7,6,2},
@@ -117,31 +134,85 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
         vertexIds[i] = addGmshVertex(node);
     }
 
-    typedef VertexIndices VI;
-    typedef PTriangleIndices PI;
+    // top face, vertices {2,3,7,6}
+    addSquareFace(cell, {{vertexIds[2], vertexIds[3], vertexIds[7], vertexIds[6]}});
 
-    // make the boundary partial faces
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[7], vertexIds[2], vertexIds[3]}}, PI{{1,2,8}});
+    addSquareFace(cell, {{vertexIds[7], vertexIds[3], vertexIds[0], vertexIds[4]}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[7], vertexIds[6], vertexIds[2]}}, PI{{0,4,6}});
+    addSquareFace(cell, {{vertexIds[6], vertexIds[7], vertexIds[4], vertexIds[5]}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[7], vertexIds[3]}}, PI{{3,9,0}});
+    addSquareFace(cell, {{vertexIds[2], vertexIds[6], vertexIds[5], vertexIds[1]}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[4], vertexIds[7]}}, PI{{2,4,10}});
+    addSquareFace(cell, {{vertexIds[3], vertexIds[2], vertexIds[1], vertexIds[0]}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[4], vertexIds[6], vertexIds[7]}}, PI{{3,5,1}});
+    addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[4], vertexIds[5], vertexIds[6]}}, PI{{4,6,10}});
+    cell.connectBoundary();
+}
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[5], vertexIds[2], vertexIds[6]}}, PI{{5,7,1}});
+void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<uint, 4>& verts) {
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[5], vertexIds[1], vertexIds[2]}}, PI{{6,8,11}});
+    float ne = (mesh.vertex(verts[0]).position - mesh.vertex(verts[2]).position).length();
+    float nw = (mesh.vertex(verts[1]).position - mesh.vertex(verts[3]).position).length();
+    if (nw > ne) {
+        // nw is longer, split along ne axis
+        //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
+        mesh.createPartialTriangle(nullptr, cell, VI{{verts[0], verts[1], verts[2]}});
+        mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[3], verts[0]}});
+    } else {
+        mesh.createPartialTriangle(nullptr, cell, VI{{verts[1], verts[2], verts[3]}});
+        mesh.createPartialTriangle(nullptr, cell, VI{{verts[3], verts[0], verts[1]}});
+    }
+}
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[1], vertexIds[3], vertexIds[2]}}, PI{{9,0,7}});
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[1], vertexIds[0], vertexIds[3]}}, PI{{8,11,2}});
+/**
+ * Add a 'Prism' element
+ *
+ *                 w
+ *               ^
+ *               |
+ *               3
+ *             ,/|`\
+ *           ,/  |  `\
+ *         ,/    |    `\
+ *        4------+------5
+ *        |      |      |
+ *        |    ,/|`\    |
+ *        |  ,/  |  `\  |
+ *        |,/    |    `\|
+ *       ,|      |      |\
+ *     ,/ |      0      | `\
+ *    u   |    ,/ `\    |    v
+ *        |  ,/     `\  |
+ *        |,/         `\|
+ *        1-------------2
+ *
+ *
+ *
+ */
+void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
+    // node indices mapping in the MxMesh vertices.
+    uint vertexIds[6];
+    MxCell &cell = mesh.createCell();
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[5], vertexIds[4]}}, PI{{11,5,3}});
+    //for (auto i : gmsh.nodes) {
+    //    std::cout << "node id: " << i.first;
+    //    std::cout << " {" << i.second.id << " {" << i.second.pos[0] << ", " << i.second.pos[1] << ", " << i.second.pos[2] << "}}" << std::endl;
+    //}
 
-    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[1], vertexIds[5]}}, PI{{7,10,9}});
+    // grab the node positions out of the gmsh and add them to our mesh
+    for(int i = 0; i < 6; ++i) {
+        const Gmsh::Node &node = gmsh.nodes[val.nodes[i]];
+        vertexIds[i] = addGmshVertex(node);
+    }
+
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[0], vertexIds[2], vertexIds[1]}});
+    mesh.createPartialTriangle(nullptr, cell, VI{{vertexIds[3], vertexIds[4], vertexIds[5]}});
+
+    addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
+    addSquareFace(cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
+    addSquareFace(cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
+    
+    cell.connectBoundary();
 }

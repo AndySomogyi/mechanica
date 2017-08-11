@@ -15,6 +15,7 @@
 #include <Magnum/Math/Vector3.h>
 
 
+
 namespace Magnum {
 /** @brief Three-component unsigned integer vector */
 typedef Math::Vector3<UnsignedShort> Vector3us;
@@ -81,6 +82,8 @@ typedef uint32_t PTriangleIndx;
 typedef std::array<PTriangleIndx, 3> PTriangleIndices;
 
 typedef uint32_t CellIndx;
+
+
 
 
 struct MxPartialTriangleType : MxType {
