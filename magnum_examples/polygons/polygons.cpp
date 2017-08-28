@@ -117,7 +117,4 @@ void Polygons::drawEvent() {
     swapBuffers();
 }
 
-int main(int argc, char** argv) {
-    Polygons app({argc, argv});
-    return app.exec();
-}
+MAGNUM_APPLICATION_MAIN(Polygons)

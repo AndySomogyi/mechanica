@@ -2,6 +2,7 @@
 #include <Magnum/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Matrix4.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <MagnumPlugins/PngImporter/PngImporter.h>
 #include <Magnum/Trade/ImageData.h>
@@ -13,6 +14,8 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/Version.h>
 #include <Magnum/AbstractShaderProgram.h>
+#include <chrono>
+
 #include <iostream>
 
 
@@ -32,31 +35,35 @@ struct TriangleVertex {
 
 // Shader sources
 const GLchar* vertSrc = R"(
-    layout(location=0) in vec2 position;
-    layout(location=1) in vec3 color;
-    layout(location=2) in vec2 texcoord;
-    out vec3 Color;
-    out vec2 Texcoord;
-    void main()
-    {
-        Color = color;
-        Texcoord = texcoord;
-        gl_Position = vec4(position, 0.0, 1.0);
-    }
+layout(location=0) in vec2 position;
+layout(location=1) in vec3 color;
+layout(location=2) in vec2 texcoord;
+out vec3 Color;
+out vec2 Texcoord;
+
+uniform mat4 trans;
+uniform mat4 model;
+
+void main()
+{
+    Color = color;
+    Texcoord = texcoord;
+    gl_Position = model * trans * vec4(position, 0.0, 1.0);
+}
 )";
 
 const GLchar* fragSrc = R"(
-    in vec3 Color;
-    in vec2 Texcoord;
-    out vec4 outColor;
-    uniform sampler2D texKitten;
-    uniform sampler2D texPuppy;
-    void main()
-    {
-        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
-    }
-)";
+in vec3 Color;
+in vec2 Texcoord;
+out vec4 outColor;
+uniform sampler2D texKitten;
+uniform sampler2D texPuppy;
 
+void main()
+{
+    outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
+}
+)";
 
 class TexturedShader: public AbstractShaderProgram {
 public:
@@ -101,26 +108,42 @@ public:
         auto puppyImg = importer.image2D(0);
 
         kittenTexture.setWrapping(Sampler::Wrapping::ClampToEdge)
-                                   .setMagnificationFilter(Sampler::Filter::Linear)
-                                   .setMinificationFilter(Sampler::Filter::Linear)
-                                   .setStorage(1, TextureFormat::RGB8, kittenImg->size())
-                                   .setSubImage(0, {}, *kittenImg)
-                                   .bind(0);
+        .setMagnificationFilter(Sampler::Filter::Linear)
+        .setMinificationFilter(Sampler::Filter::Linear)
+        .setStorage(1, TextureFormat::RGB8, kittenImg->size())
+        .setSubImage(0, {}, *kittenImg)
+        .bind(0);
         setUniform(uniformLocation("texKitten"), 0);
 
         puppyTexture.setWrapping(Sampler::Wrapping::ClampToEdge)
-                                      .setMagnificationFilter(Sampler::Filter::Linear)
-                                      .setMinificationFilter(Sampler::Filter::Linear)
-                                      .setStorage(1, TextureFormat::RGB8, puppyImg->size())
-                                      .setSubImage(0, {}, *puppyImg)
-                                      .bind(1);
+        .setMagnificationFilter(Sampler::Filter::Linear)
+        .setMinificationFilter(Sampler::Filter::Linear)
+        .setStorage(1, TextureFormat::RGB8, puppyImg->size())
+        .setSubImage(0, {}, *puppyImg)
+        .bind(1);
         setUniform(uniformLocation("texPuppy"), 1);
+
+        transLoc = uniformLocation("trans");
+
+        modelLoc = uniformLocation("model");
     }
+
+    void setTrans(const Matrix4& mat) {
+        setUniform(transLoc, mat);
+    }
+
+    void setModel(const Matrix4& mat) {
+        setUniform(modelLoc, mat);
+    }
+
+private:
+    int transLoc;
+    int modelLoc;
 };
 
-class MultiTexture: public Platform::GlfwApplication {
+class transformation2: public Platform::GlfwApplication {
 public:
-    explicit MultiTexture(const Arguments& arguments);
+    explicit transformation2(const Arguments& arguments);
 
 private:
     void drawEvent() override;
@@ -130,54 +153,69 @@ private:
     Mesh mesh;
     TexturedShader shader;
 
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
 };
 
-MultiTexture::MultiTexture(const Arguments& arguments) :
-    Platform::GlfwApplication{
-        arguments,
-        Configuration{}
-            .setVersion(Version::GL410)
-            .setTitle("Polygon Example")} {
+transformation2::transformation2(const Arguments& arguments) :
+Platform::GlfwApplication{
+    arguments,
+    Configuration{}
+    .setVersion(Version::GL410)
+    .setTitle("Polygon Example")} {
 
-    static const TriangleVertex vertices[]{
+        static const TriangleVertex vertices[]{
             //  Position      Color             Texcoords
             {{-0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}}, // Top-left
             {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}}, // Top-right
             {{ 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // Bottom-right
             {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}  // Bottom-left
-    };
+        };
 
-    static const GLuint elements[] = {
+        static const GLuint elements[] = {
             0, 1, 2,
             2, 3, 0
-    };
+        };
 
-    vertexBuffer.setData(vertices, BufferUsage::StaticDraw);
+        Matrix4 trans = Matrix4::rotationZ(Rad{3.141592f});
+        shader.setTrans(trans);
 
-    indexBuffer.setData(elements, BufferUsage::StaticDraw);
+        Matrix4 model = Math::IdentityInit;
+        shader.setModel(model);
 
-    mesh.setPrimitive(MeshPrimitive::Triangles)
-                           .setCount(6)
-                           .addVertexBuffer(vertexBuffer, 0,
-                                   PositionAttr{},
-                                   ColorAttr{},
-                                   TextureAttr{});
+        vertexBuffer.setData(vertices, BufferUsage::StaticDraw);
 
-    mesh.setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
-}
+        indexBuffer.setData(elements, BufferUsage::StaticDraw);
 
-void MultiTexture::drawEvent() {
+        mesh.setPrimitive(MeshPrimitive::Triangles)
+        .setCount(6)
+        .addVertexBuffer(vertexBuffer, 0,
+                         PositionAttr{},
+                         ColorAttr{},
+                         TextureAttr{});
+
+        mesh.setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+
+
+        start = std::chrono::high_resolution_clock::now();
+    }
+
+void transformation2::drawEvent() {
     defaultFramebuffer.clear(FramebufferClear::Color);
 
+    // Calculate transformation
+    auto now = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration_cast<std::chrono::duration<float>>(now - start).count();
+
+    auto model = Matrix4::rotation(Rad{3.141592f * time}, Vector3{0.0f, 0.0f, 1.0f});
+
+    shader.setModel(model);
+
     mesh.draw(shader);
+
+    redraw();
 
     swapBuffers();
 }
 
 
-int main(int argc, char** argv) {
-    MultiTexture app({argc, argv});
-    return app.exec();
-}
-
-
+MAGNUM_APPLICATION_MAIN(transformation2)

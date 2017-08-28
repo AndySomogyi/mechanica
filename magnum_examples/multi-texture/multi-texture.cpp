@@ -174,10 +174,4 @@ void MultiTexture::drawEvent() {
     swapBuffers();
 }
 
-
-int main(int argc, char** argv) {
-    MultiTexture app({argc, argv});
-    return app.exec();
-}
-
-
+MAGNUM_APPLICATION_MAIN(MultiTexture)
