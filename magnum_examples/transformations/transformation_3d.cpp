@@ -190,7 +190,7 @@ Platform::GlfwApplication{
                                        Vector3{0.0f, 0.0f, 1.0f});
         shader.setView(view);
 
-        Matrix4 proj = Matrix4::rotationZ(Rad{3.141592f});
+        Matrix4 proj = Matrix4::perspectiveProjection(Rad{45.0f}, 800.0f / 600.0f, 1.0f, 10.0f);
         shader.setProj(proj);
 
         Matrix4 model = Math::IdentityInit;
