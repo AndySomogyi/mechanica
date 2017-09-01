@@ -37,6 +37,9 @@ const GLchar* vertSrc = R"(
     layout(location=2) in vec2 texcoord;
     out vec3 Color;
     out vec2 Texcoord;
+
+    uniform sampler2D tex;
+
     void main()
     {
         Color = color;
@@ -53,7 +56,7 @@ const GLchar* fragSrc = R"(
     uniform sampler2D texPuppy;
     void main()
     {
-        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
+        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 1.5);
     }
 )";
 
