@@ -38,8 +38,6 @@ const GLchar* vertSrc = R"(
     out vec3 Color;
     out vec2 Texcoord;
 
-    uniform sampler2D tex;
-
     void main()
     {
         Color = color;
