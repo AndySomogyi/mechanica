@@ -54,9 +54,10 @@ const GLchar* fragSrc = R"(
     out vec4 outColor;
     uniform sampler2D texKitten;
     uniform sampler2D texPuppy;
+
     void main()
     {
-        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 1.5);
+        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 1.5) * vec4(Color , 1.0);
     }
 )";
 
