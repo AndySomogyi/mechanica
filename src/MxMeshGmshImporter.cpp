@@ -50,13 +50,13 @@ bool MxMeshGmshImporter::read(const std::string& path) {
     return true;
 }
 
-uint MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
+VertexPtr MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
     auto iter = vertexMap.find(node.id);
 
     if (iter != vertexMap.end()) {
         return iter->second;
     } else {
-        uint id = mesh.addVertex(makeVertex(node.pos));
+        VertexPtr id = mesh.createVertex(makeVertex(node.pos));
         vertexMap[node.id] = id;
         return id;
     }
@@ -120,7 +120,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     //std::cout << "adding cell " << val.id << std::endl;
 
     // node indices mapping in the MxMesh vertices.
-    uint vertexIds[8];
+    VertexPtr vertexIds[8];
     MxCell &cell = mesh.createCell();
 
     //for (auto i : gmsh.nodes) {
@@ -150,7 +150,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     cell.connectBoundary();
 }
 
-void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<uint, 4>& verts) {
+void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
 
     float ne = (mesh.vertex(verts[0]).position - mesh.vertex(verts[2]).position).length();
     float nw = (mesh.vertex(verts[1]).position - mesh.vertex(verts[3]).position).length();
@@ -193,7 +193,7 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<uint, 4>& 
  */
 void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     // node indices mapping in the MxMesh vertices.
-    uint vertexIds[6];
+    VertexPtr vertexIds[6];
     MxCell &cell = mesh.createCell();
 
     //for (auto i : gmsh.nodes) {

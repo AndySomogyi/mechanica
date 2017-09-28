@@ -26,25 +26,39 @@ using namespace Magnum;
 
 struct MxMesh;
 
-/**
- * Use unsigned as indexes, saves memory space, but need to define
- * what exactly an invalid index is
- */
+struct MxVertex;
+typedef struct MxVertex* VertexPtr;
 
-template <class T>
-inline bool is_valid(T val) {return val < std::numeric_limits<T>::max();};
+typedef std::array<VertexPtr, 3> VertexIndices;
 
-template <class T>
-inline T invalid() {return std::numeric_limits<T>::max();};
+struct MxTriangle;
+typedef struct MxTriangle *TrianglePtr;
 
-template <>
-inline Vector3us invalid<Vector3us>() {return {invalid<ushort>(), invalid<ushort>(), invalid<ushort>()};};
 
-struct MxMeshVertex {
-    Vector3 position;
-    Vector3 velocity;
+struct MxPartialTriangle;
+typedef struct MxPartialTriangle *PTrianglePtr;
 
-    Vector3 acceleration[2];
+typedef std::array<PTrianglePtr, 3> PartialTriangles;
+
+struct MxCell;
+typedef struct MxCell *CellPtr;
+
+struct MxFacet;
+typedef struct MxFacet *FacetPtr;
+
+
+#include "MeshIterators.h"
+
+struct MxVertex {
+    Magnum::Vector3 position;
+    Magnum::Vector3 velocity;
+    Magnum::Vector3 acceleration[2];
+
+    // one to many relationship of vertex -> triangles
+    std::vector<TrianglePtr> triangles;
+
+    // one to many relationship of vertex -> facets
+    std::vector<FacetPtr> facets;
 };
 
 struct MxVertexAttribute {
@@ -67,21 +81,7 @@ struct MxVertexAttribute {
 
 
 
-/**
- * define types to give an indicator what kind of index we're using.
- * Not exactly type safe, but at least gives a good hint as what to do.
- */
-typedef uint32_t VertexIndx;
 
-typedef std::array<VertexIndx, 3> VertexIndices;
-
-typedef uint32_t TriangleIndx;
-
-typedef uint32_t PTriangleIndx;
-
-typedef std::array<PTriangleIndx, 3> PTriangleIndices;
-
-typedef uint32_t CellIndx;
 
 
 
@@ -146,20 +146,20 @@ struct MxPartialTriangleType : MxType {
  */
 struct MxPartialTriangle : MxObject {
 
-    MxPartialTriangle(MxPartialTriangleType *type, TriangleIndx ti,
-            const PTriangleIndices& neighbors, float mass, MxReal *scalars) :
+    MxPartialTriangle(MxPartialTriangleType *type, struct MxTriangle *ti,
+            const PartialTriangles& neighbors, float mass, MxReal *scalars) :
                 MxObject{type}, triangle{ti}, neighbors{neighbors},
                 mass{mass}, scalarFields{scalars} {};
 
     /**
      * index of the triangle that this partial triangle references.
      */
-    TriangleIndx triangle;
+    TrianglePtr triangle;
 
     /**
      * indices of the three neighboring partial triangles.
      */
-    std::array<PTriangleIndx, 3> neighbors;
+    std::array<MxPartialTriangle*, 3> neighbors;
 
 
     float mass;
@@ -201,7 +201,7 @@ struct MxTriangle : MxObject {
      * in the correct winding order. The winding of these vertices correspond to the
      * normal vector.
      */
-    std::array<VertexIndx, 3> vertices;
+    std::array<VertexPtr, 3> vertices;
 
 
     /**
@@ -209,7 +209,7 @@ struct MxTriangle : MxObject {
      * is very frequently calculated, so optimize structure layout for both
      * trans-cell and trans-partial-triangle fluxes.
      */
-    std::array<CellIndx, 2> cells;
+    std::array<struct MxCell*, 2> cells;
     /**
      * The center of geometry of this triangle, the position vector.
      */
@@ -218,8 +218,10 @@ struct MxTriangle : MxObject {
     /**
      * indices of the two partial triangles that are attached to this triangle.
      * The mesh contains a set of partial triangles.
+     *
+     * partialTriangles[0] contains the partial triangle for cells[0]
      */
-    std::array<PTriangleIndx, 2> partialTriangles;
+    std::array<struct MxPartialTriangle*, 2> partialTriangles;
 
     /**
      * Non-normalized normal vector (magnitude is triangle area), oriented away from
@@ -230,6 +232,11 @@ struct MxTriangle : MxObject {
      * point in the correct direction.
      */
     Vector3 normal;
+
+    /**
+     * Each triangle belongs to a facet.
+     */
+    struct MxFacet *facet;
 
     /**
      * does this triangle match the given set of vertex
@@ -247,23 +254,56 @@ struct MxTriangle : MxObject {
      * @returns 0 if the is no match
      * @returns 1 if the vertices match in the same order
      */
-    int matchVertexIndices(const std::array<VertexIndx, 3> &vertInd);
+    int matchVertexIndices(const std::array<VertexPtr, 3> &vertInd);
 
     MxTriangle() :
-        vertices{{invalid<uint>(), invalid<uint>(), invalid<uint>()}},
+        vertices{{nullptr, nullptr, nullptr}},
         cells{{0,0}},
-        partialTriangles{{0,0}}
+        partialTriangles{{0,0}},
+		facet{nullptr}
     {}
 
     /**
      * New triangles default to connecting to the universe cell and
      * universe partial triangles.
      */
-    MxTriangle(const VertexIndices& vertInd,
-            const std::array<CellIndx, 2> &cells = {{0, 0}},
-            const std::array<PTriangleIndx, 2> &ptris = {{0, 0}}) :
-                vertices{vertInd}, cells{cells}, partialTriangles{ptris}
+    MxTriangle(const std::array<VertexPtr, 3> verts,
+            const std::array<struct MxCell*, 2> &cells = {{0, 0}},
+            const std::array<MxPartialTriangle*, 2> &ptris = {{0, 0}}) :
+                vertices{verts}, cells{cells}, partialTriangles{ptris},
+				facet{nullptr}
                 {}
+
+    /**
+     * The triangle aspect ratio for the three corner vertex positions of a triangle.
+     */
+    float aspectRatio() const;
+
+    bool incident(const struct MxCell* c) const {
+        return cells[0] == c || cells[1] == c;
+    }
+
+    bool incident(const struct MxVertex *v) const {
+        return vertices[0] == v || vertices[1] == v || vertices[2] == v;
+    }
+};
+
+struct MxFacetType : MxType {
+
+};
+
+struct MxFacet : MxObject {
+
+    /**
+     * Need to associate this triangle with the cells on both sides. Trans-cell flux
+     * is very frequently calculated, so optimize structure layout for both
+     * trans-cell and trans-partial-triangle fluxes.
+     */
+    std::array<struct MxCell*, 2> cells;
+
+    std::vector<struct MxTriangle*> triangles;
+
+    std::vector<struct MxFacet*> neighbors;
 };
 
 
@@ -317,10 +357,14 @@ struct MxCell : MxObject {
      */
     struct MxMesh *mesh;
 
+
     /**
      * the closed set of faces that define the boundary of this cell
      */
-    std::vector<PTriangleIndx> boundary;
+    std::vector<struct MxPartialTriangle*> boundary;
+
+
+    std::vector<FacetPtr> facets;
 
 
 
@@ -381,7 +425,7 @@ struct MxCell : MxObject {
     void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes,
             uint vertexCount, uint stride, void* buffer);
 
-    void indexData(uint indexCount, uint* buffer);
+    //void indexData(uint indexCount, uint* buffer);
 
     void dump();
 
@@ -398,10 +442,23 @@ struct MxCell : MxObject {
      */
     MxReal *scalarFields;
 
-    void addPartialTriangle(const PTriangleIndices &neighbors, const VertexIndices &vertexIndices);
+    void addPartialTriangle(const PartialTriangles &neighbors, const VertexIndices &vertexIndices);
 };
 
-#endif /* SRC_MXCELL_H_ */
+
+/**
+ * Mapping from vertices to triangles
+ */
+struct MxVertexTriangle {
+    MxVertexTriangle *next = nullptr;
+    MxTriangle *triangle = nullptr;
+};
+
+class EdgeFace;
+
+
+
+
 
 
 /**
@@ -471,3 +528,5 @@ struct MxCell : MxObject {
 //      {
 //      }
 //};
+
+#endif /* SRC_MXCELL_H_ */

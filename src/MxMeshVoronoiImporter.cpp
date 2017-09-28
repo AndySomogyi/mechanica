@@ -39,7 +39,7 @@ static bool pack(T& container, MxMesh& mesh) {
 
     std::vector<double> vertices;
     std::vector<int> indices;
-    std::vector<int> newInd;
+    std::vector<VertexPtr> newInd;
 
     voro::c_loop_all vl(container);
     double *cellOrigin;
@@ -66,7 +66,7 @@ static bool pack(T& container, MxMesh& mesh) {
 
             for (int j = 0; j < indices.size(); ++j) {
                 int k = indices[j];
-                newInd[j] = mesh.addVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
+                newInd[j] = mesh.createVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
             }
 
             // allocate first in the cells vector, then we write directly to that memory block,

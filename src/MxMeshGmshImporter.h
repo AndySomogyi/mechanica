@@ -35,12 +35,12 @@ public:
 private:
     // keep track of original Gmsh vertex indices, and the new indices in
     // the MxMesh
-    std::unordered_map<int, int> vertexMap;
+    std::unordered_map<int, VertexPtr> vertexMap;
 
     /**
      * A Gmsh node corresponds to a vertex (position, index)
      */
-    uint addGmshVertex(const Gmsh::Node &node);
+    VertexPtr addGmshVertex(const Gmsh::Node &node);
 
     void addCell(const Gmsh::Hexahedron &val);
 
@@ -50,7 +50,7 @@ private:
     /**
      * Add a square face with the given vertices in CCW order.
      */
-    void addSquareFace(MxCell &cell, const std::array<uint, 4> &verts);
+    void addSquareFace(MxCell &cell, const std::array<VertexPtr, 4> &verts);
 
     MxMesh &mesh;
     Gmsh::Mesh gmsh;

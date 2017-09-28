@@ -13,26 +13,30 @@
 
 #include "MxDebug.h"
 
+bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {
+	return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
+}
 
 
-static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &pf2, ushort i1, ushort i2) {
-    assert((!is_valid(pf1.neighbors[0]) || !is_valid(pf1.neighbors[1]) || !is_valid(pf1.neighbors[2]))
+
+static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &pf2) {
+    assert((!pf1.neighbors[0] || !pf1.neighbors[1] || !pf1.neighbors[2])
            && "connecting partial face without empty slots");
-    assert((!is_valid(pf2.neighbors[0]) || !is_valid(pf2.neighbors[1]) || !is_valid(pf2.neighbors[2]))
+    assert((!pf2.neighbors[0] || !pf2.neighbors[1] || !pf2.neighbors[2])
            && "connecting partial face without empty slots");
 
     for(uint i = 0; i < 3; ++i) {
-        assert(pf1.neighbors[i] != i1 && pf1.neighbors[i] != i2);
-        if(!is_valid(pf1.neighbors[i])) {
-            pf1.neighbors[i] = i2;
+        assert(pf1.neighbors[i] != &pf1 && pf1.neighbors[i] != &pf2);
+        if(!pf1.neighbors[i]) {
+            pf1.neighbors[i] = &pf2;
             break;
         }
     }
 
     for(uint i = 0; i < 3; ++i) {
-        assert(pf2.neighbors[i] != i1 && pf2.neighbors[i] != i2);
-        if(!is_valid(pf2.neighbors[i])) {
-            pf2.neighbors[i] = i1;
+        assert(pf2.neighbors[i] != &pf1 && pf2.neighbors[i] != &pf2);
+        if(!pf2.neighbors[i]) {
+            pf2.neighbors[i] = &pf1;
             break;
         }
     }
@@ -40,25 +44,20 @@ static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &p
 
 bool MxCell::connectBoundary() {
     // clear all of the boundaries before we connect them.
-    for(PTriangleIndx indx : boundary) {
-        MxPartialTriangle &pt = mesh->partialTriangle(indx);
-        pt.neighbors[0] = invalid<PTriangleIndx>();
-        pt.neighbors[1] = invalid<PTriangleIndx>();
-        pt.neighbors[2] = invalid<PTriangleIndx>();
-        
-        std::cout << "{ptri_indx: " << indx
-                  << ", tri_ind: " << pt.triangle
-                  << ", vertices: " << mesh->partialTriTri(pt.triangle).vertices  << "}" << std::endl;
+    for(MxPartialTriangle *pt : boundary) {
+        pt->neighbors[0] = nullptr;
+        pt->neighbors[1] = nullptr;
+        pt->neighbors[2] = nullptr;
     }
 
-    for (PTriangleIndx i = 0; i < boundary.size(); ++i) {
-        MxPartialTriangle &pti = mesh->partialTriangle(boundary[i]);
+    for (uint i = 0; i < boundary.size(); ++i) {
+        MxPartialTriangle &pti = *boundary[i];
         MxTriangle &ti = mesh->triangle(pti);
 
-        for(PTriangleIndx j = i+1; j < boundary.size(); ++j) {
-            MxPartialTriangle &ptj = mesh->partialTriangle(boundary[j]);
+        for(uint j = i+1; j < boundary.size(); ++j) {
+            MxPartialTriangle &ptj = *boundary[j];
             MxTriangle &tj = mesh->triangle(ptj);
-            
+
 
             for(int k = 0; k < 3; ++k) {
                 if ((ti.vertices[0] == tj.vertices[k] &&
@@ -76,8 +75,8 @@ bool MxCell::connectBoundary() {
                          ti.vertices[0] == tj.vertices[(k+2)%3] ||
                          ti.vertices[1] == tj.vertices[(k+1)%3] ||
                          ti.vertices[1] == tj.vertices[(k+2)%3]))) {
-                            
-                            
+
+
                             /*
                             std::cout << "k: " << k
                                       << ", (k+1)%3 : " << (k+1)%3
@@ -100,7 +99,7 @@ bool MxCell::connectBoundary() {
                             std::cout << "}" << std::endl;
                              */
 
-                            connectPartialTriangles(pti, ptj, i, j);
+                            connectPartialTriangles(pti, ptj);
                     break;
                 }
             }
@@ -108,7 +107,7 @@ bool MxCell::connectBoundary() {
 
         // make sure face is completely connected after searching the rest of the
         // set of faces, if not, that means that our surface is not closed.
-        if(!is_valid(pti.neighbors[0]) || !is_valid(pti.neighbors[1]) || !is_valid(pti.neighbors[2])) {
+        if(!pti.neighbors[0] || !pti.neighbors[1] || !pti.neighbors[2]) {
             std::cout << "error, surface mesh for cell is not closed" << std::endl;
             return false;
         }
@@ -126,7 +125,7 @@ struct Foo : MxObject {
     /**
      * indices of the three neighboring partial triangles.
      */
-    std::array<PTriangleIndx, 3> neighbors;
+    std::array<PTrianglePtr, 3> neighbors;
 
 
 
@@ -145,25 +144,23 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
     uchar *ptr = (uchar*)buffer;
     for(uint i = 0; i < boundary.size() && ptr < vertexCount * stride + (uchar*)buffer; ++i, ptr += 3 * stride) {
         //for(auto& attr : attributes) {
-        //
-        //
-        //}
-        const MxTriangle &face = mesh->partialTriTri(boundary[i]);
+
+        const MxTriangle &face = *(boundary[i])->triangle;
         Vector3 *ppos = (Vector3*)ptr;
-        ppos[0] = mesh->vertices[face.vertices[0]].position;
-        ppos[1] = mesh->vertices[face.vertices[1]].position;
-        ppos[2] = mesh->vertices[face.vertices[2]].position;
+        ppos[0] = face.vertices[0]->position;
+        ppos[1] = face.vertices[1]->position;
+        ppos[2] = face.vertices[2]->position;
     }
 }
 
-void MxCell::indexData(uint indexCount, uint* buffer) {
-    for(int i = 0; i < boundary.size(); ++i, buffer += 3) {
-        const MxTriangle &face = mesh->partialTriTri(boundary[i]);
-        buffer[0] = face.vertices[0];
-        buffer[1] = face.vertices[1];
-        buffer[2] = face.vertices[2];
-    }
-}
+//void MxCell::indexData(uint indexCount, uint* buffer) {
+//    for(int i = 0; i < boundary.size(); ++i, buffer += 3) {
+//        const MxTriangle &face = *boundary[i]->triangle;
+//        buffer[0] = face.vertices[0];
+//        buffer[1] = face.vertices[1];
+//        buffer[2] = face.vertices[2];
+//    }
+//}
 
 
 
@@ -172,7 +169,7 @@ void MxCell::indexData(uint indexCount, uint* buffer) {
 void MxCell::dump() {
 
     for (uint i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &ti = mesh->partialTriTri(boundary[i]);
+        const MxTriangle &ti = *boundary[i]->triangle;
 
         std::cout << "face[" << i << "] {" << std::endl;
         //std::cout << "vertices:" << ti.vertices << std::endl;
@@ -210,7 +207,7 @@ void MxCell::writePOV(std::ostream& out) {
     out << "face_indices {" << std::endl;
     out << boundary.size()  << std::endl;
     for (int i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &face = mesh->partialTriTri(boundary[i]);
+        const MxTriangle &face = *boundary[i]->triangle;
         //out << face.vertices << std::endl;
         //auto &pf = boundary[i];
         //for (int j = 0; j < 3; ++j) {
@@ -222,8 +219,8 @@ void MxCell::writePOV(std::ostream& out) {
     out << "}" << std::endl;
 }
 
-int MxTriangle::matchVertexIndices(const std::array<VertexIndx, 3> &indices) {
-    typedef std::array<VertexIndx, 3> vertind;
+int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
+    typedef std::array<VertexPtr, 3> vertind;
 
     if (vertices == indices ||
         vertices == vertind{indices[1], indices[2], indices[0]} ||
@@ -239,18 +236,30 @@ int MxTriangle::matchVertexIndices(const std::array<VertexIndx, 3> &indices) {
     return 0;
 }
 
-void MxCell::addPartialTriangle(const PTriangleIndices& neighbors,
+void MxCell::addPartialTriangle(const PartialTriangles& neighbors,
         const VertexIndices& vertexIndices) {
-    TriangleIndx ti = mesh->createTriangle(vertexIndices);
+    TrianglePtr ti = mesh->createTriangle(vertexIndices);
     MxTriangle &t = mesh->triangle(ti);
-    if(!is_valid(t.cells[0]) && !is_valid(t.partialTriangles[0])) {
+    if(!t.cells[0] && !t.partialTriangles[0]) {
 
     }
-    else if(!is_valid(t.cells[1]) && !is_valid(t.partialTriangles[1])) {
+    else if(!t.cells[1] && !t.partialTriangles[1]) {
 
     }
     else {
         assert(0 && "invalid triangle");
     }
 
+}
+
+float MxTriangle::aspectRatio() const {
+	const Vector3& v1 = vertices[0]->position;
+	const Vector3& v2 = vertices[1]->position;
+	const Vector3& v3 = vertices[2]->position;
+
+    float a = (v1 - v2).length();
+    float b = (v2 - v3).length();
+    float c = (v3 - v1).length();
+    float s = (a + b + c) / 2.0;
+    return (a * b * c) / (8.0 * (s - a) * (s - b) * (s - c));
 }

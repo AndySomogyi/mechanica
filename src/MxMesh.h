@@ -9,12 +9,14 @@
 #define _INCLUDE_MXMESH_H_
 
 #include <vector>
+#include <list>
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
 #include "mechanica_private.h"
 #include "mdcore_single.h"
 
 #include "MxCell.h"
+#include "MxEdge.h"
 
 
 
@@ -120,7 +122,7 @@ struct MxMesh  {
     std::vector<Magnum::Vector3ui> faces;
 
 
-    std::vector<MxMeshVertex> vertices;
+    std::vector<MxVertex> vertices;
 
     std::vector<Magnum::Vector3> initPos;
 
@@ -243,9 +245,9 @@ struct MxMesh  {
 
     /**
      * Adds a new vertex to this mesh, just pushes it to the end of the
-     * list of verticies.
+     * list of vertices.
      */
-    uint addVertex(const Magnum::Vector3 &pos);
+    VertexPtr createVertex(const Magnum::Vector3 &pos);
 
 
     /**
@@ -255,7 +257,7 @@ struct MxMesh  {
      * Note, only one single triangle can be attached to a triple of
      * vertices.
      */
-    TriangleIndx createTriangle(const std::array<VertexIndx, 3> &vertexInd);
+    TrianglePtr createTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
     /**
      * Creates a new partial triangle, and connects it to the given
@@ -266,7 +268,7 @@ struct MxMesh  {
      * cell's surface.
      */
     MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
-        MxCell &cell, TriangleIndx triIndx, const PTriangleIndices &neighbors);
+        MxCell &cell, TrianglePtr triIndx, const PartialTriangles &neighbors);
 
     /**
      * Searches for a triangle matching the given vertices to get a triangle, then
@@ -279,8 +281,8 @@ struct MxMesh  {
      */
     MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
         MxCell &cell, const VertexIndices &vertIndices,
-        const PTriangleIndices &neighbors =
-            {{invalid<uint>(), invalid<uint>(), invalid<uint>()}});
+        const PartialTriangles &neighbors =
+            {{nullptr, nullptr, nullptr}});
 
 
 
@@ -306,45 +308,122 @@ struct MxMesh  {
     /**
      *
      */
-    std::array<Magnum::Vector3, 3> triangleVertices(TriangleIndx);
+    std::array<Magnum::Vector3, 3> triangleVertices(TrianglePtr);
 
     /**
      * Get the i'th vertex for a given triangle
      */
-    Magnum::Vector3 triangleVertex(TriangleIndx, int vertex);
+    Magnum::Vector3 triangleVertex(TrianglePtr, int vertex);
 
     std::vector<MxPartialTriangle> partialTriangles;
 
     std::vector<MxTriangle> triangles;
 
 
+    std::vector<MxVertexTriangle> vertexTriangles;
 
-    inline MxPartialTriangle& partialTriangle(PTriangleIndx indx) {
-        return partialTriangles[indx];
+
+
+    inline MxPartialTriangle& partialTriangle(PTrianglePtr indx) {
+        return *indx;
     }
 
-    inline MxTriangle& triangle(TriangleIndx indx) {
-        return triangles[indx];
+    inline MxTriangle& triangle(TrianglePtr indx) {
+        return *indx;
     }
+
 
     inline MxTriangle& triangle(const MxPartialTriangle& pt ) {
-        return triangles[pt.triangle];
+        return *pt.triangle;
     }
 
-    inline MxTriangle& partialTriTri(PTriangleIndx ptIndx) {
-        return triangles[partialTriangles[ptIndx].triangle];
+    inline MxTriangle& partialTriTri(PTrianglePtr pt) {
+        return *pt->triangle;
     }
 
-    inline MxMeshVertex& vertex(VertexIndx indx) {
-        return vertices[indx];
+    inline MxVertex& vertex(VertexPtr indx) {
+        return *indx;
     }
+
+    HRESULT collapseEdge(MxEdge& edge);
+
+    HRESULT splitEdge(MxEdge &e);
 
     /**
-     * Get the id of the given cell.
+     * Get the shared edge between a pair of triangles
      */
-    inline CellIndx cellId(const MxCell& cell) {
-        return &cell - &cells[0];
-    }
+    //MxEdge edge(const MxTriangle &t1, MxTriangle &t2);
+
+
+    HRESULT collapseHTriangle(TrianglePtr tri);
+
+    HRESULT collapseHTriangleOld(MxTriangle &tri);
+
+    HRESULT collapseIEdge(MxEdge &edge);
+
+    HRESULT collapseManifoldEdge(MxEdge &e);
+
+    bool adjacentTriangles(const MxTriangle *t0, const MxTriangle *t1) const;
+
+protected:
+
+    /**
+     * Splits a vertex located at the boundary of a facet. The given vertex gets removed from the
+     * facet, and replaced with the vertices v0 and v1. Vertices v0 and v1 should be complete,
+     * in that they should have their positions set. This method creates a new triangle,
+     * and returns in it result.
+     *
+     * The newly formed edge is in the result triangle 0 and 1 indices. The caller is responsible
+     * for splitting the all of the remaining faced incident to v. The method generates two new
+     * partial triangles also, but the 0'th neighboring partial triangle index is left to nullptr,
+     * the caller is responsible for attaching the new partial triangles.
+     *
+     * This method does not delete v, it only detaches v from the facet, and attaches v0 and
+     * v1 to the facet.
+     */
+    HRESULT splitFacetBoundaryVertex(FacetPtr face, VertexPtr v, VertexPtr v0, VertexPtr v1,
+    		TrianglePtr *result);
+
+    /**
+     * Collapses a facet that contains a single triangle down to vertex. The facet,
+     * and triangle are removed from the cell. First a new vertex is generated at the
+     * center of the target triangle, and the neighboring facets, partial
+     * triangles and triangles all get re-attached to this vertex. The given facet, and
+     * it's contained triangle, partial triangle and vertices get orphaned, and the
+     * caller is responsible for deleting them. The newly created vertex is returned in
+     * result.
+     */
+    HRESULT collapseCellSingularFacet(CellPtr cell, FacetPtr facet, VertexPtr *result);
+
+    /**
+     * iterate over all of the triangles attached to vertex o, and
+     * replace the triangle's o vertex with n.
+     */
+    void vertexReconnect(VertexPtr o, VertexPtr n);
+
+    /**
+     * Removes the triangle from the triangle list of the old vertex o,
+     * and attaches it to the list of n. Updates tri to replace o with n.
+     */
+    void triangleVertexReconnect(MxTriangle &tri, VertexPtr o, VertexPtr n);
+
+    /**
+     * The triangle tri is going to be removed, with an edge collapse. Take the partial faces on
+     * both sides and connect them to each other. Verifies that the tri is a manifold triangle.
+     *
+     * This only reconnect the partial faces. reconnectVertex must be used separately
+     * to reconnect the triangles attached to a removed vertex. Removes the triangle
+     * from the cell's list of partial faces.
+     */
+    void triangleManifoldDisconnect(const MxTriangle &tri, const MxEdge &edge);
+
+    bool splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1, MxCell* c0,
+            MxCell* c1, MxTriangle *tri);
+
+
+    std::list<MxEdge> shortEdges;
+    std::list<MxEdge> longEdges;
 };
+
 
 #endif /* _INCLUDE_MXMESH_H_ */

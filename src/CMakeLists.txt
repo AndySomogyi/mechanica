@@ -78,6 +78,9 @@ set(SRC
   MxForceFunction.cpp
   MeshLangevinPropagator.cpp
   MeshDampedLangevinPropagator.cpp
+  MeshIterators.cpp
+  ScalarField.cpp
+  MxEdge.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -119,6 +122,9 @@ set(HEADERS
   MxForceFunction.h
   MeshLangevinPropagator.h
   MeshDampedLangevinPropagator.h
+  MeshIterators.h
+  ScalarField.h
+  MxEdge.h
   )
 
 
