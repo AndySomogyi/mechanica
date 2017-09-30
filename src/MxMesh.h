@@ -259,30 +259,6 @@ struct MxMesh  {
      */
     TrianglePtr createTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
-    /**
-     * Creates a new partial triangle, and connects it to the given
-     * triangle. The existing triangle MUST have at least one side free,
-     * otherwise an error is raised. Attaches the given cell's id to the
-     * triangle, basically connects everything related to this new
-     * partial triangle. Appends the new partial triangle to the given
-     * cell's surface.
-     */
-    MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
-        MxCell &cell, TrianglePtr triIndx, const PartialTriangles &neighbors);
-
-    /**
-     * Searches for a triangle matching the given vertices to get a triangle, then
-     * Creates a new partial triangle, and connects it to this
-     * triangle. The existing triangle MUST have at least one side free,
-     * otherwise an error is raised. Attaches the given cell's id to the
-     * triangle, basically connects everything related to this new
-     * partial triangle. Appends the new partial triangle to the given
-     * cell's surface.
-     */
-    MxPartialTriangle& createPartialTriangle(MxPartialTriangleType *type,
-        MxCell &cell, const VertexIndices &vertIndices,
-        const PartialTriangles &neighbors =
-            {{nullptr, nullptr, nullptr}});
 
 
 
@@ -363,7 +339,7 @@ struct MxMesh  {
 
     HRESULT collapseManifoldEdge(MxEdge &e);
 
-    bool adjacentTriangles(const MxTriangle *t0, const MxTriangle *t1) const;
+
 
 protected:
 
@@ -381,8 +357,7 @@ protected:
      * This method does not delete v, it only detaches v from the facet, and attaches v0 and
      * v1 to the facet.
      */
-    HRESULT splitFacetBoundaryVertex(FacetPtr face, VertexPtr v, VertexPtr v0, VertexPtr v1,
-    		TrianglePtr *result);
+    TrianglePtr splitFacetBoundaryVertex(FacetPtr face, VertexPtr v, VertexPtr v0, VertexPtr v1);
 
     /**
      * Collapses a facet that contains a single triangle down to vertex. The facet,
@@ -393,7 +368,7 @@ protected:
      * caller is responsible for deleting them. The newly created vertex is returned in
      * result.
      */
-    HRESULT collapseCellSingularFacet(CellPtr cell, FacetPtr facet, VertexPtr *result);
+    VertexPtr collapseCellSingularFacet(CellPtr cell, FacetPtr facet);
 
     /**
      * iterate over all of the triangles attached to vertex o, and

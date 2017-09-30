@@ -86,45 +86,17 @@ TrianglePtr MxMesh::createTriangle(const std::array<VertexPtr, 3> &vertInd) {
         }
     }
 
-    triangles.push_back(MxTriangle{vertInd});
+    MxTriangle tri;
+    tri.vertices = vertInd;
+
+    triangles.push_back(tri);
     return &triangles[triangles.size() - 1];
 }
 
 
-MxPartialTriangle& MxMesh::createPartialTriangle(
-        MxPartialTriangleType* type, MxCell& cell,
-        TrianglePtr triIndx, const PartialTriangles& neighbors)
-{
-    MxTriangle &t = triangle(triIndx);
-    if(t.cells[0] == 0 && t.partialTriangles[0] == 0)
-    {
-        t.cells[0] = &cell;
-        partialTriangles.push_back(MxPartialTriangle{type, &t, neighbors, 0.0, nullptr});
-        t.partialTriangles[0] = nullptr;
-        cell.boundary.push_back(t.partialTriangles[0]);
-        return partialTriangles.back();
-    }
-    else if(t.cells[1] == 0 && t.partialTriangles[1] == 0)
-    {
-        t.cells[1] = &cell;
-        partialTriangles.push_back(MxPartialTriangle{type, &t, neighbors, 0.0, nullptr});
-        t.partialTriangles[1] = nullptr;
-        cell.boundary.push_back(t.partialTriangles[1]);
-        return partialTriangles.back();
-    }
-    else {
-        assert(0 && "invalid triangle");
-        throw(0);
-    }
-}
 
-MxPartialTriangle& MxMesh::createPartialTriangle(
-        MxPartialTriangleType* type, MxCell& cell,
-        const VertexIndices& vertIndices, const PartialTriangles& neighbors)
-{
-    TrianglePtr ti = createTriangle(vertIndices);
-    return createPartialTriangle(type, cell, ti, neighbors);
-}
+
+
 
 MxCellType universeCellType = {};
 
@@ -139,8 +111,6 @@ MxMesh::MxMesh()
 {
     createCell(MxUniverseCell_Type);
     vertices.push_back(MxVertex{});
-    triangles.push_back(MxTriangle{{{0,0,0}}});
-    partialTriangles.push_back(MxPartialTriangle{MxUniversePartialTriangle_Type, 0, {{0,0,0}}, 0.0, nullptr});
 }
 
 
@@ -352,7 +322,7 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
     Vector3 nv1_pos = vertex(nv1).position;
 
     for(TrianglePtr t : v0->triangles) {
-        if (t->incident(c0) && t->incident(c1)) {
+        if (incident(t, c0) && incident(t, c1)) {
             startTri = t;
             break;
         }
@@ -381,17 +351,17 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
     };
 
     auto nextTri = [this, v0] (const MxTriangle *prev, const MxTriangle *current, MxCell *c) -> MxTriangle* {
-        auto &p = *current->partialTriangles[0];
+        auto &p = current->partialTriangles[0];
         MxTriangle *n = p.neighbors[0]->triangle;
-        if(n != prev && n->incident(v0) && n->incident(c)) {
+        if(n != prev && incident(n, v0) && incident(n, c)) {
             return n;
         }
         n = p.neighbors[1]->triangle;
-        if(n != prev && n->incident(v0) && n->incident(c)) {
+        if(n != prev && incident(n, v0) && incident(n, c)) {
             return n;
         }
         n = p.neighbors[2]->triangle;
-        if(n != prev && n->incident(v0) && n->incident(c)) {
+        if(n != prev && incident(n, v0) && incident(n, c)) {
             return n;
         }
         return nullptr;
@@ -433,7 +403,7 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
 #ifndef NDEBUG
     for(int i = 0; i < wedge.size() - 1; ++i) {
         TriEdge &e = wedge[i];
-        assert(this->adjacentTriangles(e.t0, e.t1));
+        assert(adjacent(e.t0, e.t1));
         assert(wedge[i].t1 == wedge[i+1].t0);
     }
 #endif
@@ -455,14 +425,14 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
         next = e.t1;
 
         // get the shared far vertex
-        if (prev->vertices[0] != v0 && next->incident(prev->vertices[0])) {
+        if (prev->vertices[0] != v0 && incident(next, prev->vertices[0])) {
             v = prev->vertices[0];
         }
-        else if (prev->vertices[1] != v0 && next->incident(prev->vertices[1])) {
+        else if (prev->vertices[1] != v0 && incident(next, prev->vertices[1])) {
             v = prev->vertices[1];
         }
         else {
-            assert(prev->vertices[2] != v0 && next->incident(prev->vertices[2]));
+            assert(prev->vertices[2] != v0 && incident(next, prev->vertices[2]));
             v = prev->vertices[2];
         }
 
@@ -621,31 +591,25 @@ HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 		assert(perpFacets[i]);
 	}
 
-	VertexPtr v0 = nullptr;
-	VertexPtr v1 = nullptr;
+	VertexPtr v0 = collapseCellSingularFacet(tri->cells[0], tri->facet);
+	VertexPtr v1 = collapseCellSingularFacet(tri->cells[1], tri->facet);
 
-	collapseCellSingularFacet(tri->cells[0], tri->facet, &v0);
-	collapseCellSingularFacet(tri->cells[1], tri->facet, &v1);
-
-	TrianglePtr perpTriangles[3] = {nullptr};
+	TrianglePtr perpTriangles[3];
 
 	for(int i = 0; i < 3; ++i) {
-		splitFacetBoundaryVertex(perpFacets[i], tri->vertices[i], v0, v1, &perpTriangles[i]);
+		perpTriangles[i] = splitFacetBoundaryVertex(perpFacets[i], tri->vertices[i], v0, v1);
 	}
 
 	return 0;
 }
 
-bool MxMesh::adjacentTriangles(const MxTriangle* t0,
-		const MxTriangle* t1) const {
+
+
+TrianglePtr MxMesh::splitFacetBoundaryVertex(FacetPtr face, VertexPtr v,
+		VertexPtr v0, VertexPtr v1) {
 }
 
-HRESULT MxMesh::splitFacetBoundaryVertex(FacetPtr face, VertexPtr v,
-		VertexPtr v0, VertexPtr v1, TrianglePtr* result) {
-}
-
-HRESULT MxMesh::collapseCellSingularFacet(CellPtr cell, FacetPtr facet,
-		VertexPtr* result) {
+VertexPtr MxMesh::collapseCellSingularFacet(CellPtr cell, FacetPtr facet) {
 }
 
 void MxMesh::triangleVertexReconnect(MxTriangle& tri, VertexPtr o,

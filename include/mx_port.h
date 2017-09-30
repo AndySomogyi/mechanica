@@ -110,7 +110,19 @@ typedef size_t         Mx_ssize_t;
 
 
 #ifndef WIN32
-typedef int32_t HRESULT;
+typedef uint32_t HRESULT;
+
+#define S_OK	             0x00000000 //  Operation successful
+#define E_ABORT          0x80004004 // Operation aborted
+#define E_ACCESSDENIED   0x80070005 // General access denied error	
+#define E_FAIL           0x80004005 // Unspecified failure
+#define E_HANDLE         0x80070006 // Handle that is not valid	
+#define E_INVALIDARG     0x80070057 // One or more arguments are not valid	
+#define E_NOINTERFACE    0x80004002 // No such interface supported
+#define E_NOTIMPL        0x80004001 // Not implemented
+#define E_OUTOFMEMORY    0x8007000E // Failed to allocate necessary memory
+#define E_POINTER        0x80004003 // Pointer that is not valid	
+#define E_UNEXPECTED     0x8000FFFF // Unexpected failure
 #endif
 
 

@@ -81,6 +81,7 @@ set(SRC
   MeshIterators.cpp
   ScalarField.cpp
   MxEdge.cpp
+  MeshRelationships.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -125,6 +126,7 @@ set(HEADERS
   MeshIterators.h
   ScalarField.h
   MxEdge.h
+  MeshRelationships.h
   )
 
 

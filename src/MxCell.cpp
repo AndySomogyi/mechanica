@@ -236,21 +236,7 @@ int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
     return 0;
 }
 
-void MxCell::addPartialTriangle(const PartialTriangles& neighbors,
-        const VertexIndices& vertexIndices) {
-    TrianglePtr ti = mesh->createTriangle(vertexIndices);
-    MxTriangle &t = mesh->triangle(ti);
-    if(!t.cells[0] && !t.partialTriangles[0]) {
 
-    }
-    else if(!t.cells[1] && !t.partialTriangles[1]) {
-
-    }
-    else {
-        assert(0 && "invalid triangle");
-    }
-
-}
 
 float MxTriangle::aspectRatio() const {
 	const Vector3& v1 = vertices[0]->position;
@@ -262,4 +248,27 @@ float MxTriangle::aspectRatio() const {
     float c = (v3 - v1).length();
     float s = (a + b + c) / 2.0;
     return (a * b * c) / (8.0 * (s - a) * (s - b) * (s - c));
+}
+
+HRESULT MxTriangle::attachToCell(CellPtr cell)  {
+	if(cells[0] == nullptr) {
+		cells[0] = cell;
+
+        // make sure the tri is not already in the cell.
+		assert(std::find(cell->boundary.begin(), cell->boundary.end(),
+				&partialTriangles[0]) == cell->boundary.end());
+        
+		cell->boundary.push_back(&partialTriangles[0]);
+		return S_OK;
+	}
+	if(cells[1] == nullptr) {
+		cells[1] = cell;
+
+		assert(std::find(cell->boundary.begin(), cell->boundary.end(),
+						&partialTriangles[1]) == cell->boundary.end());
+
+		cell->boundary.push_back(&partialTriangles[1]);
+		return S_OK;
+	}
+	return E_FAIL;
 }

@@ -17,14 +17,14 @@ set(CMAKE_MODULE_PATH
 
 find_package(GLFW REQUIRED)
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")                  
 message("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")                  
 message("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")            
 message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
 
 
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp 2.7 REQUIRED)
 message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
 message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
 message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2

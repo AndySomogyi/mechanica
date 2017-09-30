@@ -48,6 +48,7 @@ typedef struct MxFacet *FacetPtr;
 
 
 #include "MeshIterators.h"
+#include "MeshRelationships.h"
 
 struct MxVertex {
     Magnum::Vector3 position;
@@ -221,7 +222,7 @@ struct MxTriangle : MxObject {
      *
      * partialTriangles[0] contains the partial triangle for cells[0]
      */
-    std::array<struct MxPartialTriangle*, 2> partialTriangles;
+    std::array<MxPartialTriangle, 2> partialTriangles;
 
     /**
      * Non-normalized normal vector (magnitude is triangle area), oriented away from
@@ -232,6 +233,14 @@ struct MxTriangle : MxObject {
      * point in the correct direction.
      */
     Vector3 normal;
+
+    void test() {
+    		MxPartialTriangle p[2] = {
+    				{nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
+				{nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
+    		};
+
+    }
 
     /**
      * Each triangle belongs to a facet.
@@ -258,34 +267,40 @@ struct MxTriangle : MxObject {
 
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
-        cells{{0,0}},
-        partialTriangles{{0,0}},
-		facet{nullptr}
+        cells{{nullptr,nullptr}},
+		facet{nullptr},
+		partialTriangles {{
+            {nullptr, this, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
+		    {nullptr, this, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
+	    }}
     {}
+
+    /**
+     * If there is an available cell slot (cells[0] or cells[1] is nullptr), then
+     * attaches this triangle to a cell and returns SUCCESS, otherwise returns error code.
+     *
+     * The attach also appends the correct partial triangle of this triangle to the
+     * cell's list of partial triangles.
+     */
+    HRESULT attachToCell(CellPtr cell);
 
     /**
      * New triangles default to connecting to the universe cell and
      * universe partial triangles.
      */
-    MxTriangle(const std::array<VertexPtr, 3> verts,
-            const std::array<struct MxCell*, 2> &cells = {{0, 0}},
-            const std::array<MxPartialTriangle*, 2> &ptris = {{0, 0}}) :
-                vertices{verts}, cells{cells}, partialTriangles{ptris},
-				facet{nullptr}
-                {}
+    //MxTriangle(const std::array<VertexPtr, 3> verts,
+    //        const std::array<struct MxCell*, 2> &cells = {{0, 0}},
+    //        const std::array<MxPartialTriangle*, 2> &ptris = {{0, 0}}) :
+    //            vertices{verts}, cells{cells}, partialTriangles{ptris},
+	//			facet{nullptr}
+    //            {}
 
     /**
      * The triangle aspect ratio for the three corner vertex positions of a triangle.
      */
     float aspectRatio() const;
 
-    bool incident(const struct MxCell* c) const {
-        return cells[0] == c || cells[1] == c;
-    }
 
-    bool incident(const struct MxVertex *v) const {
-        return vertices[0] == v || vertices[1] == v || vertices[2] == v;
-    }
 };
 
 struct MxFacetType : MxType {
