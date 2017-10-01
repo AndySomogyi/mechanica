@@ -71,7 +71,7 @@ static bool pack(T& container, MxMesh& mesh) {
 
             // allocate first in the cells vector, then we write directly to that memory block,
             // avoid copy
-            MxCell &cell = mesh.createCell();
+            CellPtr cell = mesh.createCell();
 
             // add the faces to the cell, then sort out the connectivity
             for(int i = 0; i < newInd.size(); i+=3) {
@@ -80,16 +80,16 @@ static bool pack(T& container, MxMesh& mesh) {
             }
 
             std::cout << "The cell...\n";
-            cell.writePOV(std::cout);
+            cell->writePOV(std::cout);
 
             std::cout << "connecting...\n";
 
 
             // boundary had better be connected from a voronoi cell
-            bool connected = cell.connectBoundary();
+            bool connected = cell->connectBoundary();
 
             cout << "MxCell["<< i << "]" << std::endl;
-            cell.writePOV(std::cout);
+            cell->writePOV(std::cout);
             cout << std::endl;
 
 
@@ -97,11 +97,11 @@ static bool pack(T& container, MxMesh& mesh) {
         }
     } while(vl.inc() && ++i < Keep);
 
-    mesh.initPos.resize(mesh.vertices.size());
+    //mesh.initPos.resize(mesh.vertices.size());
 
-    for(int i = 0; i < mesh.vertices.size(); ++i) {
-        mesh.initPos[i] = mesh.vertices[i].position;
-    }
+    //for(int i = 0; i < mesh.vertices.size(); ++i) {
+     //   mesh.initPos[i] = mesh.vertices[i].position;
+    //}
 
 
     //mesh.dump(0);

@@ -18,7 +18,7 @@
 
 int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     for (int i = 1; i < vertices.size(); ++i) {
-        float dist = (vertices[i].position - pos).dot();
+        float dist = (vertices[i]->position - pos).dot();
         if (dist <= tolerance) {
             return i;
         }
@@ -27,12 +27,14 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 }
 
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
-    vertices.push_back({pos, {}, {}});
-    return &vertices[vertices.size() - 1];
+	VertexPtr v = new MxVertex{pos, {}, {}};
+    vertices.push_back(v);
+    assert(valid(v));
+    return v;
 }
 
-MxCell& MxMesh::createCell(MxCellType *type) {
-    cells.push_back(MxCell{type, this, nullptr});
+CellPtr MxMesh::createCell(MxCellType *type) {
+    cells.push_back(new MxCell{type, nullptr});
     return cells[cells.size() - 1];
 }
 
@@ -43,7 +45,7 @@ void MxMesh::vertexAtributes(const std::vector<MxVertexAttribute>& attributes,
 
 void MxMesh::dump(uint what) {
     for(int i = 0; i < vertices.size(); ++i) {
-        std::cout << "[" << i << "]" << vertices[i].position << std::endl;
+        std::cout << "[" << i << "]" << vertices[i]->position << std::endl;
     }
 }
 
@@ -57,10 +59,10 @@ void MxMesh::jiggle() {
 
     for (int i = 0; i < vertices.size(); ++i) {
 
-        Vector3 test = vertices[i].position + Vector3{distribution(eng), distribution(eng), distribution(eng)};
+        Vector3 test = vertices[i]->position + Vector3{distribution(eng), distribution(eng), distribution(eng)};
 
         if((test - initPos[i]).length() < 0.7) {
-            vertices[i].position  = test;
+            vertices[i]->position  = test;
         }
     }
 }
@@ -72,25 +74,33 @@ std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
 
 
     for(auto& v : vertices) {
-        for(int i = 0; i < 3; ++i) {min[i] = (v.position[i] < min[i] ? v.position[i] : min[i]);}
-        for(int i = 0; i < 3; ++i) {max[i] = (v.position[i] > max[i] ? v.position[i] : max[i]);}
+        for(int i = 0; i < 3; ++i) {min[i] = (v->position[i] < min[i] ? v->position[i] : min[i]);}
+        for(int i = 0; i < 3; ++i) {max[i] = (v->position[i] > max[i] ? v->position[i] : max[i]);}
     }
 
     return std::make_tuple(min, max);
 }
 
-TrianglePtr MxMesh::createTriangle(const std::array<VertexPtr, 3> &vertInd) {
-    for (MxTriangle& tri : triangles) {
-        if (tri.matchVertexIndices(vertInd) != 0) {
-            return &tri;
+TrianglePtr MxMesh::createTriangle(const std::array<VertexPtr, 3> &verts) {
+    assert(valid(verts[0]));
+    assert(valid(verts[1]));
+    assert(valid(verts[2]));
+    
+    for (TrianglePtr tri : triangles) {
+        if (tri->matchVertexIndices(verts) != 0) {
+            return tri;
         }
     }
 
-    MxTriangle tri;
-    tri.vertices = vertInd;
+    triangles.push_back(new MxTriangle{});
+    
+    TrianglePtr p = triangles[triangles.size() - 1];
+    
+    p->init(verts);
+    
+    assert(valid(p));
 
-    triangles.push_back(tri);
-    return &triangles[triangles.size() - 1];
+    return p;
 }
 
 
@@ -109,13 +119,11 @@ MxPartialTriangleType *MxUniversePartialTriangle_Type =
 
 MxMesh::MxMesh()
 {
-    createCell(MxUniverseCell_Type);
-    vertices.push_back(MxVertex{});
 }
 
 
 
-
+#if 0
 /**
  * Configuration only valid for 5 cell arrangement, two cells on each face of triangle,
  * and one cell attached to each side.
@@ -297,6 +305,7 @@ HRESULT MxMesh::collapseHTriangleOld(MxTriangle& tri) {
     // the triangle, and it's vertices.
     return true;
 }
+#endif
 
 HRESULT MxMesh::collapseIEdge(MxEdge& edge) {
 	return 1;
@@ -309,6 +318,7 @@ void MxMesh::triangleManifoldDisconnect(const MxTriangle& tri,
         const MxEdge& edge) {
 }
 
+
 bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
         MxCell* c0, MxCell* c1, MxTriangle* tri) {
 
@@ -317,9 +327,9 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
 
     MxTriangle *startTri = 0;
 
-    Vector3 v0_pos = vertex(v0).position;
-    Vector3 nv0_pos = vertex(nv0).position;
-    Vector3 nv1_pos = vertex(nv1).position;
+    Vector3 v0_pos = v0->position;
+    Vector3 nv0_pos = nv0->position;
+    Vector3 nv1_pos = nv1->position;
 
     for(TrianglePtr t : v0->triangles) {
         if (incident(t, c0) && incident(t, c1)) {
@@ -335,16 +345,16 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
     auto triDistance = [this, &v0_pos, v0] (const MxTriangle *t) {
         Vector3 p1, p2;
         if(t->vertices[0] != v0) {
-            p1 = vertex(t->vertices[1]).position;
-            p2 = vertex(t->vertices[2]).position;
+            p1 = t->vertices[1]->position;
+            p2 = t->vertices[2]->position;
         }
         else if(t->vertices[1] != v0) {
-            p1 = vertex(t->vertices[0]).position;
-            p2 = vertex(t->vertices[2]).position;
+            p1 = t->vertices[0]->position;
+            p2 = t->vertices[2]->position;
         }
         else {
-            p1 = vertex(t->vertices[0]).position;
-            p2 = vertex(t->vertices[1]).position;
+            p1 = t->vertices[0]->position;
+            p2 = t->vertices[1]->position;
         }
         (p1 + p2) / 2.;
         return 0;
@@ -436,7 +446,7 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
             v = prev->vertices[2];
         }
 
-        Vector3 pos = vertex(v).position;
+        Vector3 pos = v->position;
 
         e.d0 = (nv0_pos - pos).length();
         e.d1 = (nv1_pos - pos).length();
@@ -607,11 +617,70 @@ HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 
 TrianglePtr MxMesh::splitFacetBoundaryVertex(FacetPtr face, VertexPtr v,
 		VertexPtr v0, VertexPtr v1) {
+	return nullptr;
 }
 
 VertexPtr MxMesh::collapseCellSingularFacet(CellPtr cell, FacetPtr facet) {
+	return nullptr;
 }
 
 void MxMesh::triangleVertexReconnect(MxTriangle& tri, VertexPtr o,
 		VertexPtr n) {
+}
+
+bool MxMesh::valid(TrianglePtr p) {
+
+	if(std::find(triangles.begin(), triangles.end(), p) == triangles.end()) {
+		return false;
+	}
+
+
+	return
+		p == p->partialTriangles[0].triangle &&
+		p == p->partialTriangles[1].triangle &&
+		valid(p->vertices[0]) &&
+		valid(p->vertices[1]) &&
+		valid(p->vertices[2]);
+}
+
+bool MxMesh::valid(CellPtr c) {
+	if(std::find(cells.begin(), cells.end(), c) == cells.end()) {
+		return false;
+	}
+
+	for(PTrianglePtr p : c->boundary) {
+		if(!valid(p)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool MxMesh::valid(VertexPtr v) {
+    return std::find(vertices.begin(), vertices.end(), v) != vertices.end();
+}
+
+bool MxMesh::valid(PTrianglePtr p) {
+	return p && valid(p->triangle);
+}
+
+MxMesh::~MxMesh() {
+	for(auto c : cells) {
+		delete c;
+	}
+	for(auto p : vertices) {
+		delete p;
+	}
+	for(auto t : triangles) {
+		delete t;
+	}
+}
+
+HRESULT MxMesh::updatedVertexPosition(VertexPtr v) {
+	return E_NOTIMPL;
+}
+
+HRESULT MxMesh::processOffendingEdges() {
+	return E_NOTIMPL;
 }

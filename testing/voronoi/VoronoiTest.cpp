@@ -107,7 +107,7 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
 
     center = (max + min)/2;
 
-    renderer.setMesh(mesh);
+    renderer.setMesh(&mesh);
 
     //renderer.setModelMatrix(Matrix4::translation({0.0f, 0.0f, 1.0f}));
 

@@ -108,7 +108,7 @@ public:
 
     ~MxMeshRenderer();
 
-    MxMeshRenderer& setMesh(MxMesh &mesh);
+    MxMeshRenderer& setMesh(MxMesh *mesh);
 
     MxMeshRenderer& setModelMatrix(const Magnum::Matrix4& mat);
 

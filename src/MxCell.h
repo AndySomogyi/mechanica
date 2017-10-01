@@ -53,7 +53,7 @@ typedef struct MxFacet *FacetPtr;
 struct MxVertex {
     Magnum::Vector3 position;
     Magnum::Vector3 velocity;
-    Magnum::Vector3 acceleration[2];
+    Magnum::Vector3 acceleration;
 
     // one to many relationship of vertex -> triangles
     std::vector<TrianglePtr> triangles;
@@ -210,7 +210,7 @@ struct MxTriangle : MxObject {
      * is very frequently calculated, so optimize structure layout for both
      * trans-cell and trans-partial-triangle fluxes.
      */
-    std::array<struct MxCell*, 2> cells;
+    std::array<CellPtr, 2> cells;
     /**
      * The center of geometry of this triangle, the position vector.
      */
@@ -243,7 +243,7 @@ struct MxTriangle : MxObject {
     }
 
     /**
-     * Each triangle belongs to a facet.
+     * Each triangle belongs to exactly one facet.
      */
     struct MxFacet *facet;
 
@@ -265,15 +265,24 @@ struct MxTriangle : MxObject {
      */
     int matchVertexIndices(const std::array<VertexPtr, 3> &vertInd);
 
+    /**
+     * This is designed to be stack allocated, then pushed into a vector.
+     */
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
 		facet{nullptr},
 		partialTriangles {{
-            {nullptr, this, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
-		    {nullptr, this, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
+            {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
+		    {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
 	    }}
     {}
+
+    void init(const std::array<VertexPtr, 3> &verts) {
+    		partialTriangles[0].triangle = this;
+    		partialTriangles[1].triangle = this;
+    		vertices = verts;
+    }
 
     /**
      * If there is an available cell slot (cells[0] or cells[1] is nullptr), then
@@ -284,23 +293,11 @@ struct MxTriangle : MxObject {
      */
     HRESULT attachToCell(CellPtr cell);
 
-    /**
-     * New triangles default to connecting to the universe cell and
-     * universe partial triangles.
-     */
-    //MxTriangle(const std::array<VertexPtr, 3> verts,
-    //        const std::array<struct MxCell*, 2> &cells = {{0, 0}},
-    //        const std::array<MxPartialTriangle*, 2> &ptris = {{0, 0}}) :
-    //            vertices{verts}, cells{cells}, partialTriangles{ptris},
-	//			facet{nullptr}
-    //            {}
 
     /**
      * The triangle aspect ratio for the three corner vertex positions of a triangle.
      */
     float aspectRatio() const;
-
-
 };
 
 struct MxFacetType : MxType {
@@ -364,25 +361,20 @@ struct MxCellType : MxType {
  */
 struct MxCell : MxObject {
 
-    MxCell(MxType *type, MxMesh *mesh, MxReal *stateVector) :
-        MxObject{type}, mesh{mesh}, stateVector{stateVector} {};
-
-    /**
-     * the mesh that this cell belongs to.
-     */
-    struct MxMesh *mesh;
-
+    MxCell(MxType *type, MxReal *stateVector) :
+        MxObject{type}, stateVector{stateVector} {};
 
     /**
      * the closed set of faces that define the boundary of this cell
      */
     std::vector<struct MxPartialTriangle*> boundary;
 
-
+    /**
+     * A cell has one of more facets. Each facet defines a shared 2D region
+     * of space between two different cells. If one cell is completely contained
+     * within another cell, then it has one facet.
+     */
     std::vector<FacetPtr> facets;
-
-
-
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state
@@ -440,108 +432,9 @@ struct MxCell : MxObject {
     void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes,
             uint vertexCount, uint stride, void* buffer);
 
-    //void indexData(uint indexCount, uint* buffer);
-
     void dump();
 
     void writePOV(std::ostream &out);
-
-    //void
-
-
-
-
-    /**
-     * A contiguous sequence of scalar attributes, who's time evolution is
-     * defined by reactions and odes.
-     */
-    MxReal *scalarFields;
-
-    void addPartialTriangle(const PartialTriangles &neighbors, const VertexIndices &vertexIndices);
 };
-
-
-/**
- * Mapping from vertices to triangles
- */
-struct MxVertexTriangle {
-    MxVertexTriangle *next = nullptr;
-    MxTriangle *triangle = nullptr;
-};
-
-class EdgeFace;
-
-
-
-
-
-
-/**
-
- *
- */
-//struct MxPartialFace {
-
-    /**
-     * indices of the 3 vertices in the MxMesh that make up this partial face,
-     * in the correct winding order
-     */
-   // Vector3ui vertices;
-
-
-    /**
-     * index of the three neighbors of this face, these
-     * neighbors are indices in the faces of the MxCell
-     *
-     * Don't expect ever to be more than 65,000 faces in a cell
-     */
- //   Vector3us neighbors;
-
-    /**
-     * index of the neighboring cell that this partial face shares
-     * a face with. We keep track of the neighboring cell here, this
-     * lets the containing cell enumerate all neighboring cells via
-     * connectivity through the partial faces.
-     */
- //   uint neighborCell;
-
-    /**
-     * index in the neighboring cell's boundary array of the mirroring
-     * partial face that matches this face.
-     */
-  //  ushort mirrorFace;
-
- //   double mass;
-
-
-    /**
-     * Last field in this struct, create a struct where the number of fields
-     * are determined at runtime, and lets us allocate the entire struct in
-     * a single contiguous memory block.
-     *
-     * But to get things working quickly, we'll just use a std::vector here
-     * for now, lets us get the rest of the system up an running quickly
-     * with just std::vector.
-     */
-   // std::vector<double> fields;
-
-  //  MxPartialFace(Vector3ui const& vert):
-//        vertices{vert},
-//        neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
-//        neighborCell{invalid<uint>()},
-//        mirrorFace{invalid<ushort>()},
-//        mass{0}
-//    {
-//    }
-//
-//    MxPartialFace():
-//          vertices{invalid<uint>(), invalid<uint>(), invalid<uint>()},
-//          neighbors{invalid<ushort>(),invalid<ushort>(),invalid<ushort>()},
-//          neighborCell{invalid<uint>()},
-//          mirrorFace{invalid<ushort>()},
-//          mass{0}
-//      {
-//      }
-//};
 
 #endif /* SRC_MXCELL_H_ */

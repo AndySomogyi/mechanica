@@ -43,7 +43,7 @@ bool MxMeshGmshImporter::read(const std::string& path) {
     mesh.initPos.resize(mesh.vertices.size());
 
     for(int i = 0; i < mesh.vertices.size(); ++i) {
-        mesh.initPos[i] = mesh.vertices[i].position;
+        mesh.initPos[i] = mesh.vertices[i]->position;
     }
 
 
@@ -54,10 +54,13 @@ VertexPtr MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
     auto iter = vertexMap.find(node.id);
 
     if (iter != vertexMap.end()) {
-        return iter->second;
+        VertexPtr p = iter->second;
+        assert(mesh.valid(p));
+        return p;
     } else {
         VertexPtr id = mesh.createVertex(makeVertex(node.pos));
         vertexMap[node.id] = id;
+        assert(mesh.valid(id));
         return id;
     }
 }
@@ -121,7 +124,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[8];
-    MxCell &cell = mesh.createCell();
+    MxCell &cell = *mesh.createCell();
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -132,6 +135,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     for(int i = 0; i < 8; ++i) {
         const Gmsh::Node &node = gmsh.nodes[val.nodes[i]];
         vertexIds[i] = addGmshVertex(node);
+        assert(mesh.valid(vertexIds[i]));
     }
 
     // top face, vertices {2,3,7,6}
@@ -148,12 +152,19 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
     cell.connectBoundary();
+
+    assert(mesh.valid(&cell));
 }
 
 void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
+    
+    assert(mesh.valid(verts[0]));
+    assert(mesh.valid(verts[1]));
+    assert(mesh.valid(verts[2]));
+    assert(mesh.valid(verts[3]));
 
-    float ne = (mesh.vertex(verts[0]).position - mesh.vertex(verts[2]).position).length();
-    float nw = (mesh.vertex(verts[1]).position - mesh.vertex(verts[3]).position).length();
+    float ne = (verts[0]->position - verts[2]->position).length();
+    float nw = (verts[1]->position - verts[3]->position).length();
     if (nw > ne) {
         // nw is longer, split along ne axis
         //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
@@ -194,7 +205,7 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr,
 void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[6];
-    MxCell &cell = mesh.createCell();
+    CellPtr cell = mesh.createCell();
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -208,12 +219,14 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     }
 
     // create the two top and bottom faces.
-    mesh.createTriangle(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}})->attachToCell(&cell);
-    mesh.createTriangle(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}})->attachToCell(&cell);
+    mesh.createTriangle(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}})->attachToCell(cell);
+    mesh.createTriangle(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}})->attachToCell(cell);
 
-    addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
-    addSquareFace(cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
-    addSquareFace(cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
+    addSquareFace(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
+    addSquareFace(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
+    addSquareFace(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
     
-    cell.connectBoundary();
+    cell->connectBoundary();
+
+    assert(mesh.valid(cell));
 }

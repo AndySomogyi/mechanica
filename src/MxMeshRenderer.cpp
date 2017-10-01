@@ -79,7 +79,7 @@ void MxMeshRenderer::draw() {
     for (int i = 0; i < gpuObjects.size(); ++i) {
 
         CellGPUObjects &obj = gpuObjects[i];
-        MxCell& cell = mesh->cells[i];
+        MxCell& cell = *mesh->cells[i];
 
         //cell.dump();
 
@@ -142,11 +142,11 @@ MxMeshRenderer::~MxMeshRenderer() {
     delete shader;
 }
 
-MxMeshRenderer& MxMeshRenderer::setMesh(MxMesh& _mesh) {
-    mesh = &_mesh;
+MxMeshRenderer& MxMeshRenderer::setMesh(MxMesh* _mesh) {
+    mesh = _mesh;
 
-    for(auto& cell : mesh->cells) {
-        addCellGPUObjects(cell);
+    for(auto cell : mesh->cells) {
+        addCellGPUObjects(*cell);
     }
 
     return *this;

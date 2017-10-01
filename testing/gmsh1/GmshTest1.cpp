@@ -48,7 +48,7 @@ private:
 
 
 
-        MxMesh mesh;
+        MxMesh *mesh;
         MxMeshRenderer renderer;
 };
 
@@ -56,7 +56,8 @@ GmshTest1::GmshTest1(const Arguments& arguments):
     Platform::GlfwApplication{arguments,
         Configuration{}.setVersion(Version::GL410).
             setTitle("Gmsh Test 1")},
-renderer{MxMeshRenderer::Flag::Wireframe} {
+renderer{MxMeshRenderer::Flag::Wireframe},
+mesh{new MxMesh()} {
 
     // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
     // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
@@ -67,14 +68,14 @@ renderer{MxMeshRenderer::Flag::Wireframe} {
     // draw them.
     Renderer::enable(Renderer::Feature::FaceCulling);
 
-    MxMeshGmshImporter importer{mesh};
+    MxMeshGmshImporter importer{*mesh};
 
     //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
-    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sphere1.msh");
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
     Vector3 min, max;
-    std::tie(min, max) = mesh.extents();
+    std::tie(min, max) = mesh->extents();
 
     center = (max + min)/2;
 

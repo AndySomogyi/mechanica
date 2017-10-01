@@ -20,6 +20,8 @@ bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex 
 
 
 static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &pf2) {
+    assert(pf1.triangle != pf2.triangle && "partial triangles are on the same triangle");
+    
     assert((!pf1.neighbors[0] || !pf1.neighbors[1] || !pf1.neighbors[2])
            && "connecting partial face without empty slots");
     assert((!pf2.neighbors[0] || !pf2.neighbors[1] || !pf2.neighbors[2])
@@ -52,11 +54,11 @@ bool MxCell::connectBoundary() {
 
     for (uint i = 0; i < boundary.size(); ++i) {
         MxPartialTriangle &pti = *boundary[i];
-        MxTriangle &ti = mesh->triangle(pti);
+        MxTriangle &ti = *pti.triangle;
 
         for(uint j = i+1; j < boundary.size(); ++j) {
             MxPartialTriangle &ptj = *boundary[j];
-            MxTriangle &tj = mesh->triangle(ptj);
+            MxTriangle &tj = *ptj.triangle;
 
 
             for(int k = 0; k < 3; ++k) {
@@ -223,14 +225,14 @@ int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
     typedef std::array<VertexPtr, 3> vertind;
 
     if (vertices == indices ||
-        vertices == vertind{indices[1], indices[2], indices[0]} ||
-        vertices == vertind{indices[2], indices[0], indices[1]}) {
+        vertices == vertind{{indices[1], indices[2], indices[0]}} ||
+        vertices == vertind{{indices[2], indices[0], indices[1]}}) {
         return 1;
     }
 
-    if (vertices == vertind{indices[2], indices[1], indices[0]} ||
-        vertices == vertind{indices[1], indices[0], indices[2]} ||
-        vertices == vertind{indices[0], indices[2], indices[1]}) {
+    if (vertices == vertind{{indices[2], indices[1], indices[0]}} ||
+        vertices == vertind{{indices[1], indices[0], indices[2]}} ||
+        vertices == vertind{{indices[0], indices[2], indices[1]}}) {
         return -1;
     }
     return 0;
@@ -251,6 +253,7 @@ float MxTriangle::aspectRatio() const {
 }
 
 HRESULT MxTriangle::attachToCell(CellPtr cell)  {
+
 	if(cells[0] == nullptr) {
 		cells[0] = cell;
 

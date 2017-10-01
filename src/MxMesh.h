@@ -104,40 +104,20 @@ MxAPI_DATA(MxPartialTriangleType) *MxUniversePartialTriangle_Type;
  */
 struct MxMesh  {
 
-    /**
-     * each facet has a set of attriubtes associated with it.
-     */
-    enum class FacetAttribute : int {
-
-
-    };
 
     MxMesh();
 
-    /**
-     * The set of triangle faces that define boundary of this cell. Each
-     * one of these in an index into the vector of positions owned by the
-     * MxMesh.
-     */
-    std::vector<Magnum::Vector3ui> faces;
+    ~MxMesh();
 
-
-    std::vector<MxVertex> vertices;
 
     std::vector<Magnum::Vector3> initPos;
 
-
-    std::vector<MxCell> cells;
-
-
-    // mdcore engine (where geometry lives)
-    engine mdEngine;
 
     /**
      * @brief Initialize an #engine with the given data.
      *
      * @param e The #engine to initialize.
-     * @param origin An array of three doubles containing the cartesian origin
+     * @param origin An array of three doubles containing the Cartesian origin
      *      of the space.
      * @param dim An array of three doubles containing the size of the space.
      * @param L The minimum cell edge length in each dimension.
@@ -151,18 +131,8 @@ struct MxMesh  {
      * @return #engine_err_ok or < 0 on error (see #engine_err).
      */
 
-    MxMesh(const Vector3 &origin , const Vector3 &dim , const Vector3 &L ,
-            double cutoff , unsigned int period , int max_type , unsigned int flags );
-
-    /**
-     * Not good design, reading from data files belongs in a separate class,
-     * TODO refactor this later.
-     *
-     * Read the particles and connectivity info from a pair of psf and pdb files.
-     */
-    bool readPSF(const std::string& psfPath, const std::string& pdbPath);
-
-
+    //MxMesh(const Vector3 &origin , const Vector3 &dim , const Vector3 &L ,
+    //        double cutoff , unsigned int period , int max_type , unsigned int flags );
 
 
     /**
@@ -239,7 +209,8 @@ struct MxMesh  {
      * all the neighboring faces force vectors.
      *
      */
-    void vertexAtributes(const std::vector<MxVertexAttribute> &attributes, uint vertexCount, uint stride, void* buffer);
+    void vertexAtributes(const std::vector<MxVertexAttribute> &attributes, uint vertexCount,
+    		uint stride, void* buffer);
 
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
@@ -247,10 +218,7 @@ struct MxMesh  {
      * Adds a new vertex to this mesh, just pushes it to the end of the
      * list of vertices.
      */
-    VertexPtr createVertex(const Magnum::Vector3 &pos);
-
-
-    /**
+        /**
      * Searches for a triangle that's attached to the given triple
      * of vertex indices. If no triangle exists, a new one is created.
      *
@@ -260,18 +228,7 @@ struct MxMesh  {
     TrianglePtr createTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
 
-
-
-
-
-
-    static const Magnum::Mesh::IndexType IndexType = Magnum::Mesh::IndexType::UnsignedInt;
-
-
-
-
-
-    MxCell &createCell(MxCellType *type = nullptr);
+    CellPtr createCell(MxCellType *type = nullptr);
 
 
     void dump(uint what);
@@ -281,67 +238,54 @@ struct MxMesh  {
     std::tuple<Magnum::Vector3, Magnum::Vector3> extents();
 
 
+
     /**
+     * inform the mesh that the vertex position was changed. This causes the mesh
+     * to check if any adjoining edge lengths exceed the distance cutoffs.
      *
+     * The mesh will then place them in a set of priority queues (based on distance), and
+     * will process all of the offending edges.
      */
-    std::array<Magnum::Vector3, 3> triangleVertices(TrianglePtr);
+    HRESULT updatedVertexPosition(VertexPtr v);
 
     /**
-     * Get the i'th vertex for a given triangle
+     * process all of the edges that violate the min/max cutoff distance constraints.
      */
-    Magnum::Vector3 triangleVertex(TrianglePtr, int vertex);
-
-    std::vector<MxPartialTriangle> partialTriangles;
-
-    std::vector<MxTriangle> triangles;
+    HRESULT processOffendingEdges();
 
 
-    std::vector<MxVertexTriangle> vertexTriangles;
+    VertexPtr createVertex(const Magnum::Vector3 &pos);
 
 
-
-    inline MxPartialTriangle& partialTriangle(PTrianglePtr indx) {
-        return *indx;
-    }
-
-    inline MxTriangle& triangle(TrianglePtr indx) {
-        return *indx;
-    }
-
-
-    inline MxTriangle& triangle(const MxPartialTriangle& pt ) {
-        return *pt.triangle;
-    }
-
-    inline MxTriangle& partialTriTri(PTrianglePtr pt) {
-        return *pt->triangle;
-    }
-
-    inline MxVertex& vertex(VertexPtr indx) {
-        return *indx;
-    }
-
-    HRESULT collapseEdge(MxEdge& edge);
+HRESULT collapseEdge(MxEdge& edge);
 
     HRESULT splitEdge(MxEdge &e);
 
-    /**
-     * Get the shared edge between a pair of triangles
-     */
-    //MxEdge edge(const MxTriangle &t1, MxTriangle &t2);
-
-
     HRESULT collapseHTriangle(TrianglePtr tri);
 
-    HRESULT collapseHTriangleOld(MxTriangle &tri);
+    //HRESULT collapseHTriangleOld(MxTriangle &tri);
 
     HRESULT collapseIEdge(MxEdge &edge);
 
     HRESULT collapseManifoldEdge(MxEdge &e);
 
+    bool valid(TrianglePtr p);
+
+    bool valid(CellPtr c);
+
+    bool valid(VertexPtr v);
+
+    bool valid(PTrianglePtr p);
+
+    std::vector<TrianglePtr> triangles;
+    std::vector<VertexPtr> vertices;
+    std::vector<CellPtr> cells;
 
 
-protected:
+private:
+
+
+
 
     /**
      * Splits a vertex located at the boundary of a facet. The given vertex gets removed from the
@@ -398,6 +342,9 @@ protected:
 
     std::list<MxEdge> shortEdges;
     std::list<MxEdge> longEdges;
+
+    float shortCutoff;
+    float longCutoff;
 };
 
 
