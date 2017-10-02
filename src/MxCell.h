@@ -147,8 +147,9 @@ struct MxPartialTriangleType : MxType {
  */
 struct MxPartialTriangle : MxObject {
 
-    MxPartialTriangle(MxPartialTriangleType *type, struct MxTriangle *ti,
-            const PartialTriangles& neighbors, float mass, MxReal *scalars) :
+    MxPartialTriangle(MxPartialTriangleType *type, MxTriangle *ti,
+            const PartialTriangles& neighbors = {{nullptr, nullptr, nullptr}},
+			float mass = 0, MxReal *scalars = nullptr) :
                 MxObject{type}, triangle{ti}, neighbors{neighbors},
                 mass{mass}, scalarFields{scalars} {};
 
@@ -197,6 +198,11 @@ struct MxTriangleType : MxType {
  */
 struct MxTriangle : MxObject {
 
+	MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
+			const std::array<CellPtr, 2> &cells,
+			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes,
+			FacetPtr facet);
+
     /**
      * indices of the 3 vertices in the MxMesh that make up this partial face,
      * in the correct winding order. The winding of these vertices correspond to the
@@ -225,6 +231,11 @@ struct MxTriangle : MxObject {
     std::array<MxPartialTriangle, 2> partialTriangles;
 
     /**
+     * Each triangle belongs to exactly one facet.
+     */
+    struct MxFacet *facet;
+
+    /**
      * Non-normalized normal vector (magnitude is triangle area), oriented away from
      * cellIds[0].
      *
@@ -242,10 +253,7 @@ struct MxTriangle : MxObject {
 
     }
 
-    /**
-     * Each triangle belongs to exactly one facet.
-     */
-    struct MxFacet *facet;
+
 
     /**
      * does this triangle match the given set of vertex
@@ -305,6 +313,8 @@ struct MxFacetType : MxType {
 };
 
 struct MxFacet : MxObject {
+
+	MxFacet (MxFacetType *type, const std::array<CellPtr, 2> &cells);
 
     /**
      * Need to associate this triangle with the cells on both sides. Trans-cell flux

@@ -168,11 +168,11 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr,
     if (nw > ne) {
         // nw is longer, split along ne axis
         //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
-    		mesh.createTriangle(VI{{verts[0], verts[1], verts[2]}})->attachToCell(&cell);
-    		mesh.createTriangle(VI{{verts[2], verts[3], verts[0]}})->attachToCell(&cell);
+    		createTriangleForCell(VI{{verts[0], verts[1], verts[2]}}, &cell);
+    		createTriangleForCell(VI{{verts[2], verts[3], verts[0]}}, &cell);
     } else {
-    		mesh.createTriangle(VI{{verts[1], verts[2], verts[3]}})->attachToCell(&cell);
-    		mesh.createTriangle(VI{{verts[3], verts[0], verts[1]}})->attachToCell(&cell);
+    		createTriangleForCell(VI{{verts[1], verts[2], verts[3]}}, &cell);
+    		createTriangleForCell(VI{{verts[3], verts[0], verts[1]}}, &cell);
     }
 }
 
@@ -219,8 +219,8 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     }
 
     // create the two top and bottom faces.
-    mesh.createTriangle(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}})->attachToCell(cell);
-    mesh.createTriangle(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}})->attachToCell(cell);
+    createTriangleForCell(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}}, cell);
+    createTriangleForCell(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}}, cell);
 
     addSquareFace(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
     addSquareFace(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
@@ -229,4 +229,14 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     cell->connectBoundary();
 
     assert(mesh.valid(cell));
+}
+
+void MxMeshGmshImporter::createTriangleForCell(
+		const std::array<VertexPtr, 3>& verts, CellPtr cell) {
+	TrianglePtr tri = mesh.findTriangle(verts);
+	if (tri) {
+		mesh.replaceTriangleCell(tri, cell, nullptr);
+	} else {
+		mesh.createTriangle(nullptr, verts, cell, nullptr);
+	}
 }

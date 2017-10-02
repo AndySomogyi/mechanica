@@ -48,6 +48,12 @@ private:
     void addCell(const Gmsh::Prism &val);
 
     /**
+     * Search for an existing triangle, if so, attach it to the cell. If not, create
+     * a new triangle, and attach it to the cell.
+     */
+    void createTriangleForCell(const std::array<VertexPtr, 3> &verts, CellPtr cell);
+
+    /**
      * Add a square face with the given vertices in CCW order.
      */
     void addSquareFace(MxCell &cell, const std::array<VertexPtr, 4> &verts);

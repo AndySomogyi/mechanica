@@ -275,3 +275,16 @@ HRESULT MxTriangle::attachToCell(CellPtr cell)  {
 	}
 	return E_FAIL;
 }
+
+MxTriangle::MxTriangle(MxTriangleType* type,
+		const std::array<VertexPtr, 3>& verts,
+		const std::array<CellPtr, 2>& cells,
+		const std::array<MxPartialTriangleType*, 2>& partTriTypes,
+		FacetPtr facet) :
+			MxObject{type}, vertices{verts}, cells{cells},
+			partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
+			facet{facet} {
+}
+
+MxFacet::MxFacet(MxFacetType* type, const std::array<CellPtr, 2>& cells) {
+}

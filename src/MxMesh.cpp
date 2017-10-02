@@ -81,7 +81,7 @@ std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
     return std::make_tuple(min, max);
 }
 
-TrianglePtr MxMesh::createTriangle(const std::array<VertexPtr, 3> &verts) {
+TrianglePtr MxMesh::findTriangle(const std::array<VertexPtr, 3> &verts) {
     assert(valid(verts[0]));
     assert(valid(verts[1]));
     assert(valid(verts[2]));
@@ -91,16 +91,8 @@ TrianglePtr MxMesh::createTriangle(const std::array<VertexPtr, 3> &verts) {
             return tri;
         }
     }
-
-    triangles.push_back(new MxTriangle{});
     
-    TrianglePtr p = triangles[triangles.size() - 1];
-    
-    p->init(verts);
-    
-    assert(valid(p));
-
-    return p;
+    return nullptr;
 }
 
 
@@ -318,6 +310,20 @@ void MxMesh::triangleManifoldDisconnect(const MxTriangle& tri,
         const MxEdge& edge) {
 }
 
+FacetPtr MxMesh::findFacet(CellPtr a, CellPtr b) {
+	for(auto facet : a->facets) {
+		if (incident(facet, b)) {
+			return facet;
+		}
+	}
+	return nullptr;
+}
+
+FacetPtr MxMesh::createFacet(MxFacetType* type, CellPtr a, CellPtr b) {
+	FacetPtr facet = new MxFacet{type, {{a, b}}};
+	facets.push_back(facet);
+	return facet;
+}
 
 bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
         MxCell* c0, MxCell* c1, MxTriangle* tri) {
@@ -677,10 +683,50 @@ MxMesh::~MxMesh() {
 	}
 }
 
-HRESULT MxMesh::updatedVertexPosition(VertexPtr v) {
+HRESULT MxMesh::vertexPositionChanged(VertexPtr v) {
 	return E_NOTIMPL;
 }
 
 HRESULT MxMesh::processOffendingEdges() {
 	return E_NOTIMPL;
+}
+
+HRESULT MxMesh::replaceTriangleCell(TrianglePtr tri, CellPtr newCell,
+		CellPtr oldCell) {
+	CellPtr *cell = nullptr;
+	if(tri->cells[0] == oldCell) {
+		cell = &tri->cells[0];
+	}
+	else if (tri->cells[1] == oldCell) {
+		cell = &tri->cells[1];
+	}
+
+	if(cell) {
+
+		if (oldCell) {
+			oldCell->facets.erase(std::find(oldCell->facets.begin(), oldCell->facets.end(), tri->facet));
+		}
+
+
+	}
+
+	return E_FAIL;
+}
+
+TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
+		const std::array<VertexPtr, 3>& verts, CellPtr a, CellPtr b) {
+
+	FacetPtr facet = findFacet(a, b);
+
+	TrianglePtr tri = new MxTriangle{type, verts, {{a, b}}, {{nullptr, nullptr}}, facet};
+	triangles.push_back(tri);
+
+	if(facet) {
+		if (a) {a->facets.push_back(facet);};
+		if (b) {b->facets.push_back(facet);};
+	}
+
+    assert(valid(tri));
+
+    return tri;
 }

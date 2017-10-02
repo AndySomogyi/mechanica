@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <list>
+#include <deque>
+
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
 #include "mechanica_private.h"
@@ -214,22 +216,35 @@ struct MxMesh  {
 
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
+
     /**
-     * Adds a new vertex to this mesh, just pushes it to the end of the
-     * list of vertices.
+     * Searches for a triangle which contains the given three vertices.
      */
-        /**
-     * Searches for a triangle that's attached to the given triple
-     * of vertex indices. If no triangle exists, a new one is created.
-     *
-     * Note, only one single triangle can be attached to a triple of
-     * vertices.
-     */
-    TrianglePtr createTriangle(const std::array<VertexPtr, 3> &vertexInd);
+    TrianglePtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
 
+    /**
+     * Searches for a facet joining cells a and b, returns if found. null otherwise.
+     */
+    FacetPtr findFacet(CellPtr a, CellPtr b);
+
+    /**
+     * Creates a new facet that connects cells a and b.
+     */
+    FacetPtr createFacet(MxFacetType *type, CellPtr a, CellPtr b);
+
+
+    /**
+     * Creates a new triangle for the given three vertices. Attaches the new
+     * triangle to the the given cells, a and b.
+     */
+    TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertexInd,
+    		CellPtr a = nullptr, CellPtr b = nullptr);
+
+    /**
+     * Creates a new empty cell and inserts it into the cell inventory.
+     */
     CellPtr createCell(MxCellType *type = nullptr);
-
 
     void dump(uint what);
 
@@ -246,7 +261,7 @@ struct MxMesh  {
      * The mesh will then place them in a set of priority queues (based on distance), and
      * will process all of the offending edges.
      */
-    HRESULT updatedVertexPosition(VertexPtr v);
+    HRESULT vertexPositionChanged(VertexPtr v);
 
     /**
      * process all of the edges that violate the min/max cutoff distance constraints.
@@ -257,7 +272,23 @@ struct MxMesh  {
     VertexPtr createVertex(const Magnum::Vector3 &pos);
 
 
-HRESULT collapseEdge(MxEdge& edge);
+    /**
+     * Alters the triangle-cell relationship. A triangle always faces two cells,
+     * a triangle when initially created, both sides are attached to the universe null
+     * cell.
+     *
+     * If the oldCell is currently attached to the cell, then this triangle is removed
+     * from the oldCell's list of triangles, and added to the newCell's list. Each cell
+     * maintains a list of facets, which contain lists of triangles. This method
+     * updates the facets, if no existing facet exists for the triangle, with the
+     * new cell arrangement, a new facet is created. The oldCell gets removed from
+     * it's current facet. If that facet no longer contains any triangles, that facet
+     * gets deleted.
+     */
+    HRESULT replaceTriangleCell(TrianglePtr tri, CellPtr newCell, CellPtr oldCell);
+
+
+    HRESULT collapseEdge(MxEdge& edge);
 
     HRESULT splitEdge(MxEdge &e);
 
@@ -280,6 +311,7 @@ HRESULT collapseEdge(MxEdge& edge);
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
+    std::deque<FacetPtr> facets;
 
 
 private:

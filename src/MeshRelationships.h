@@ -24,4 +24,10 @@ inline bool incident(const struct MxVertex *v, const TrianglePtr tri) {
 	return incident(tri, v);
 }
 
+bool incident(const FacetPtr facet, const CellPtr cell);
+
+inline bool incident(const CellPtr cell, const FacetPtr facet) {
+	return incident(facet, cell);
+}
+
 #endif /* SRC_MESHRELATIONSHIPS_H_ */
