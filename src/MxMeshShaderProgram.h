@@ -17,7 +17,7 @@
 
 #include "Magnum/Shaders/visibility.h"
 
-#include "MxMeshRenderer.h";
+#include "MxMeshRenderer.h"
 
 
 

@@ -273,7 +273,7 @@ struct MxMesh  {
 
 
     /**
-     * Alters the triangle-cell relationship. A triangle always faces two cells,
+     * Connects the triangle/cell pointers. A triangle always faces two cells,
      * a triangle when initially created, both sides are attached to the universe null
      * cell.
      *
@@ -284,8 +284,11 @@ struct MxMesh  {
      * new cell arrangement, a new facet is created. The oldCell gets removed from
      * it's current facet. If that facet no longer contains any triangles, that facet
      * gets deleted.
+     *
+     * This method ONLY updates the pointers relationships, it DOES NOT collapse, replace
+     * or alter geometry.
      */
-    HRESULT replaceTriangleCell(TrianglePtr tri, CellPtr newCell, CellPtr oldCell);
+    HRESULT reconnectTriangleCell(TrianglePtr tri, CellPtr newCell, CellPtr oldCell);
 
 
     HRESULT collapseEdge(MxEdge& edge);
@@ -377,6 +380,12 @@ private:
 
     float shortCutoff;
     float longCutoff;
+
+    friend class MxVertex;
+    friend class MxTriangle;
+    friend class MxFacet;
+    friend class MxEdge;
+    friend class MxCell;
 };
 
 

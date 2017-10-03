@@ -47,7 +47,10 @@ set(SRC
   MxObject.cpp
   mx_stmt.cpp
   mx_tupleobject.cpp
+  MxMeshCore.cpp
   MxMesh.cpp
+  MxTriangle.cpp
+  MxFacet.cpp
   MxModule.cpp
   MxSimulator.cpp
   MxTestCube.cpp
@@ -93,7 +96,10 @@ set(HEADERS
   mechanica_llvm.h
   mechanica_private.h
   MxObject.h
+  MxMeshCore.h
   MxMesh.h
+  MxTriangle.h
+  MxFacet.h
   MxModule.h
   MxSimulator.h
   MxTestCube.h

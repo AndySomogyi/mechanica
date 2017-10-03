@@ -14,8 +14,6 @@
 #include <deque>
 #include <limits>
 
-
-
 int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     for (int i = 1; i < vertices.size(); ++i) {
         float dist = (vertices[i]->position - pos).dot();
@@ -691,7 +689,7 @@ HRESULT MxMesh::processOffendingEdges() {
 	return E_NOTIMPL;
 }
 
-HRESULT MxMesh::replaceTriangleCell(TrianglePtr tri, CellPtr newCell,
+HRESULT MxMesh::reconnectTriangleCell(TrianglePtr tri, CellPtr newCell,
 		CellPtr oldCell) {
 	CellPtr *cell = nullptr;
 	if(tri->cells[0] == oldCell) {
@@ -702,28 +700,37 @@ HRESULT MxMesh::replaceTriangleCell(TrianglePtr tri, CellPtr newCell,
 	}
 
 	if(cell) {
+		*cell = newCell;
 
 		if (oldCell) {
-			oldCell->facets.erase(std::find(oldCell->facets.begin(), oldCell->facets.end(), tri->facet));
+			oldCell->facets.erase(
+			    std::find(oldCell->facets.begin(), oldCell->facets.end(), tri->facet));
 		}
 
-
+		if(newCell) {
+			assert(std::find(
+			    newCell->facets.begin(), newCell->facets.end(), tri->facet) ==
+				    newCell->facets.end());
+			newCell->facets.push_back(tri->facet);
+		}
+		return S_OK;
 	}
-
 	return E_FAIL;
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
 		const std::array<VertexPtr, 3>& verts, CellPtr a, CellPtr b) {
 
+	// find the facet between the cells
 	FacetPtr facet = findFacet(a, b);
+
+	// if no facet, but
 
 	TrianglePtr tri = new MxTriangle{type, verts, {{a, b}}, {{nullptr, nullptr}}, facet};
 	triangles.push_back(tri);
 
 	if(facet) {
-		if (a) {a->facets.push_back(facet);};
-		if (b) {b->facets.push_back(facet);};
+		facet->triangles.push_back(tri);
 	}
 
     assert(valid(tri));
