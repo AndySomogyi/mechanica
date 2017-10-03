@@ -234,9 +234,10 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
 void MxMeshGmshImporter::createTriangleForCell(
 		const std::array<VertexPtr, 3>& verts, CellPtr cell) {
 	TrianglePtr tri = mesh.findTriangle(verts);
-	if (tri) {
-		mesh.reconnectTriangleCell(tri, cell, nullptr);
-	} else {
-		mesh.createTriangle(nullptr, verts, cell, nullptr);
+	if (!tri) {
+		tri = mesh.createTriangle(nullptr, verts);
 	}
+
+	assert(tri);
+	cell->appendChild(tri);
 }

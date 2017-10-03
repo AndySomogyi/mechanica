@@ -123,9 +123,9 @@ struct MxTriangleType : MxType {
 struct MxTriangle : MxObject {
 
 	MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
-			const std::array<CellPtr, 2> &cells,
-			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes,
-			FacetPtr facet);
+			const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
+			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}},
+			FacetPtr facet = nullptr);
 
     /**
      * indices of the 3 vertices in the MxMesh that make up this partial face,

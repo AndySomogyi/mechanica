@@ -28,6 +28,7 @@ file(GLOB AST_SRC
 corrade_add_resource(MxMeshShaderProgramRes MxMeshShaderProgram.res)
 
 set(SRC
+  mx_error.cpp
   moduledef.cpp
   mx_callable.cpp
   mx_float.cpp
@@ -92,6 +93,7 @@ set(SRC
 
 set(HEADERS
   ${MECHANICA_PUBLIC_HEADERS}
+  mx_error.h
   MxDebug.h
   mechanica_llvm.h
   mechanica_private.h

@@ -32,7 +32,7 @@ VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
 }
 
 CellPtr MxMesh::createCell(MxCellType *type) {
-    cells.push_back(new MxCell{type, nullptr});
+    cells.push_back(new MxCell{type, this, nullptr});
     return cells[cells.size() - 1];
 }
 
@@ -318,7 +318,7 @@ FacetPtr MxMesh::findFacet(CellPtr a, CellPtr b) {
 }
 
 FacetPtr MxMesh::createFacet(MxFacetType* type, CellPtr a, CellPtr b) {
-	FacetPtr facet = new MxFacet{type, {{a, b}}};
+	FacetPtr facet = new MxFacet{type, this, {{a, b}}};
 	facets.push_back(facet);
 	return facet;
 }
@@ -716,22 +716,15 @@ HRESULT MxMesh::reconnectTriangleCell(TrianglePtr tri, CellPtr newCell,
 		return S_OK;
 	}
 	return E_FAIL;
+
+
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
-		const std::array<VertexPtr, 3>& verts, CellPtr a, CellPtr b) {
+		const std::array<VertexPtr, 3>& verts) {
 
-	// find the facet between the cells
-	FacetPtr facet = findFacet(a, b);
-
-	// if no facet, but
-
-	TrianglePtr tri = new MxTriangle{type, verts, {{a, b}}, {{nullptr, nullptr}}, facet};
+	TrianglePtr tri = new MxTriangle{type, verts};
 	triangles.push_back(tri);
-
-	if(facet) {
-		facet->triangles.push_back(tri);
-	}
 
     assert(valid(tri));
 

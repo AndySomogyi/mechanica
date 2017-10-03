@@ -54,13 +54,13 @@ struct MxCellType : MxType {
  * has descriptors for the memory layout of the state vector. Derived types need to
  * calculate rate of change of the state vector.
  *
- * The way we do vtables, derived types can contain objects, and stuff thier
- * vtables in the main vtable to do containment correctly.
+ * The way we do v-tables, derived types can contain objects, and stuff their
+ * v-tables in the main v-table to do containment correctly.
  */
-struct MxCell : MxObject {
+struct MxCell : MxObject, MxMeshNode {
 
-    MxCell(MxType *type, MxReal *stateVector) :
-        MxObject{type}, stateVector{stateVector} {};
+    MxCell(MxCellType *type, MeshPtr msh, MxReal *stateVector) :
+        MxObject{type}, MxMeshNode{msh}, stateVector{stateVector} {};
 
     /**
      * the closed set of faces that define the boundary of this cell

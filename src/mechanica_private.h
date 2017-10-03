@@ -76,5 +76,7 @@ int _CaAstInit();
 	assert("Not Implemented" && 0);\
     return 0;
 
+#include "mx_error.h"
+
 
 #endif /* _INCLUDED_CAYMAN_PRIVATE_H_ */

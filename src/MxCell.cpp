@@ -14,14 +14,14 @@
 #include "MxDebug.h"
 
 bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {
-	return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
+  return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
 }
 
 
 
 static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &pf2) {
     assert(pf1.triangle != pf2.triangle && "partial triangles are on the same triangle");
-    
+
     assert((!pf1.neighbors[0] || !pf1.neighbors[1] || !pf1.neighbors[2])
            && "connecting partial face without empty slots");
     assert((!pf2.neighbors[0] || !pf2.neighbors[1] || !pf2.neighbors[2])
@@ -221,6 +221,85 @@ void MxCell::writePOV(std::ostream& out) {
     out << "}" << std::endl;
 }
 
+HRESULT MxCell::appendChild(TrianglePtr tri) {
+    CellPtr *cell = nullptr;
 
+    if(tri->cells[0] == this || tri->cells[1] == this) {
+        return mx_error(E_FAIL, "triangle is already attached to this cell");
+    }
 
+    int index = tri->cells[0] == nullptr ? 0 : tri->cells[1] == nullptr ? 1 : -1;
 
+    if (index < 0) {
+        return mx_error(E_FAIL, "triangle is already attached to two cells");
+    }
+
+    if (tri->partialTriangles[index].neighbors[0] ||
+        tri->partialTriangles[index].neighbors[1] ||
+        tri->partialTriangles[index].neighbors[2]) {
+        return mx_error(E_FAIL, "triangle partial triangles already connected");
+    }
+
+    tri->cells[index] = this;
+
+    // index of other cell.
+    int otherIndex = index == 0 ? 1 : 0;
+
+    // if the triangle is already attached to another cell, we look for a corresponding
+    // facet, if no facet, that means that this is a new fact between this cell, and
+    // the other cell the triangle is attached to.
+    if (tri->cells[0] || tri->cells[1]) {
+        // look first to see if we're connected by a facet.
+        FacetPtr facet = nullptr;
+        for(auto f : facets) {
+            if (incident(f, tri->cells[otherIndex])) {
+                facet = f;
+                break;
+            }
+        }
+
+        // not connected, make a new facet that connects this cell and the other
+        if (facet == nullptr) {
+            facet = mesh->createFacet(nullptr, this, tri->cells[otherIndex]);
+            facets.push_back(facet);
+            if (tri->cells[otherIndex]) {
+                tri->cells[otherIndex]->facets.push_back(facet);
+            }
+        }
+
+        // add the tri to the facet
+        facet->triangles.push_back(tri);
+    }
+
+    // scan through the list of partial triangles, and connect whichever ones share
+    // an edge with the given triangle.
+    for(MxPartialTriangle *pt : boundary) {
+        TrianglePtr t = pt->triangle;
+
+        for(int k = 0; k < 3; ++k) {
+            if ((tri->vertices[0] == t->vertices[k] &&
+                    (tri->vertices[1] == t->vertices[(k+1)%3] ||
+                     tri->vertices[1] == t->vertices[(k+2)%3] ||
+                     tri->vertices[2] == t->vertices[(k+1)%3] ||
+                     tri->vertices[2] == t->vertices[(k+2)%3])) ||
+                (tri->vertices[1] == t->vertices[k] &&
+                    (tri->vertices[0] == t->vertices[(k+1)%3] ||
+                     tri->vertices[0] == t->vertices[(k+2)%3] ||
+                     tri->vertices[2] == t->vertices[(k+1)%3] ||
+                     tri->vertices[2] == t->vertices[(k+2)%3])) ||
+                (tri->vertices[2] == t->vertices[k] &&
+                    (tri->vertices[0] == t->vertices[(k+1)%3] ||
+                     tri->vertices[0] == t->vertices[(k+2)%3] ||
+                     tri->vertices[1] == t->vertices[(k+1)%3] ||
+                     tri->vertices[1] == t->vertices[(k+2)%3]))) {
+
+                connectPartialTriangles(*pt, tri->partialTriangles[index]);
+                break;
+            }
+        }
+    }
+    
+    boundary.push_back(&tri->partialTriangles[index]);
+
+    return S_OK;
+}

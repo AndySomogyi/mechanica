@@ -47,7 +47,12 @@ struct MxMesh;
 typedef MxMesh *MeshPtr;
 
 
+struct MxMeshNode {
+	MxMeshNode(MeshPtr m) : mesh{m} {};
 
+protected:
+    MeshPtr mesh;
+};
 
 struct MxVertex {
     Magnum::Vector3 position;

@@ -235,11 +235,11 @@ struct MxMesh  {
 
 
     /**
-     * Creates a new triangle for the given three vertices. Attaches the new
-     * triangle to the the given cells, a and b.
+     * Creates a new triangle for the given three vertices.
+     *
+     * returns a new, orphaned triangle.
      */
-    TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertexInd,
-    		CellPtr a = nullptr, CellPtr b = nullptr);
+    TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &verts);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
@@ -381,11 +381,11 @@ private:
     float shortCutoff;
     float longCutoff;
 
-    friend class MxVertex;
-    friend class MxTriangle;
-    friend class MxFacet;
-    friend class MxEdge;
-    friend class MxCell;
+    friend struct MxVertex;
+    friend struct MxTriangle;
+    friend struct MxFacet;
+    friend struct MxEdge;
+    friend struct MxCell;
 };
 
 
