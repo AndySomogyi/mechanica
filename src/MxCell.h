@@ -88,7 +88,7 @@ struct MxCell : MxObject, MxMeshNode {
      * Returns true if the boundary connected successfully, false if the
      * boundary in non-manifold.
      */
-    bool connectBoundary();
+    bool manifold() const;
 
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
@@ -145,6 +145,21 @@ struct MxCell : MxObject, MxMeshNode {
      * the triangle incident to.
      */
     HRESULT appendChild(TrianglePtr tri);
+
+
+    /**
+     * Removes the triangle from this cell, the triangle is then no-longer attached
+     * to this cell. If the triangle is not attached to any other cell, it becomes
+     * orphaned.
+     *
+     * Does not modify or alter geometry, removing a triangle from a cell will
+     * likely leave a hole in the cell, making such that the cell is no longer
+     * a manifold surface.
+     *
+     * Warning, volume calculations for non-manifold cells will not yield a
+     * correct value, volume is undefined for non-manifold cells.
+     */
+    HRESULT removeChild(TrianglePtr tri);
 
     void dump();
 

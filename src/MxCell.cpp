@@ -44,101 +44,24 @@ static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &p
     }
 }
 
-bool MxCell::connectBoundary() {
-    // clear all of the boundaries before we connect them.
-    for(MxPartialTriangle *pt : boundary) {
-        pt->neighbors[0] = nullptr;
-        pt->neighbors[1] = nullptr;
-        pt->neighbors[2] = nullptr;
-    }
 
-    for (uint i = 0; i < boundary.size(); ++i) {
-        MxPartialTriangle &pti = *boundary[i];
-        MxTriangle &ti = *pti.triangle;
+bool MxCell::manifold() const {
 
-        for(uint j = i+1; j < boundary.size(); ++j) {
-            MxPartialTriangle &ptj = *boundary[j];
-            MxTriangle &tj = *ptj.triangle;
-
-
-            for(int k = 0; k < 3; ++k) {
-                if ((ti.vertices[0] == tj.vertices[k] &&
-                        (ti.vertices[1] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[1] == tj.vertices[(k+2)%3] ||
-                         ti.vertices[2] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[2] == tj.vertices[(k+2)%3])) ||
-                    (ti.vertices[1] == tj.vertices[k] &&
-                        (ti.vertices[0] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[0] == tj.vertices[(k+2)%3] ||
-                         ti.vertices[2] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[2] == tj.vertices[(k+2)%3])) ||
-                    (ti.vertices[2] == tj.vertices[k] &&
-                        (ti.vertices[0] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[0] == tj.vertices[(k+2)%3] ||
-                         ti.vertices[1] == tj.vertices[(k+1)%3] ||
-                         ti.vertices[1] == tj.vertices[(k+2)%3]))) {
-
-
-                            /*
-                            std::cout << "k: " << k
-                                      << ", (k+1)%3 : " << (k+1)%3
-                                      << ", (k+2)%3 : " << (k+2)%3
-                                      << ", (k+1)%3 : " << (k+1)%3
-                                      << ", (k+2)%3 : " << (k+2)%3 << std::endl;
-
-                            std::cout << "face 1" << std::endl;
-                            std::cout << "pf[" << i << "] " << ti.vertices << " {" << std::endl;
-                            std::cout << mesh->vertices[ti.vertices[0]].position << std::endl;
-                            std::cout << mesh->vertices[ti.vertices[1]].position << std::endl;
-                            std::cout << mesh->vertices[ti.vertices[2]].position << std::endl;
-                            std::cout << "}" << std::endl;
-
-                            std::cout << "face 2" << std::endl;
-                            std::cout << "pf[" << j << "] " << tj.vertices << " {" << std::endl;
-                            std::cout << mesh->vertices[tj.vertices[0]].position << std::endl;
-                            std::cout << mesh->vertices[tj.vertices[1]].position << std::endl;
-                            std::cout << mesh->vertices[tj.vertices[2]].position << std::endl;
-                            std::cout << "}" << std::endl;
-                             */
-
-                            connectPartialTriangles(pti, ptj);
-                    break;
-                }
-            }
-        }
-
-        // make sure face is completely connected after searching the rest of the
-        // set of faces, if not, that means that our surface is not closed.
-        if(!pti.neighbors[0] || !pti.neighbors[1] || !pti.neighbors[2]) {
-            std::cout << "error, surface mesh for cell is not closed" << std::endl;
+    for(auto t : boundary) {
+        if (!adjacent(t, t->neighbors[0]) ||
+            !adjacent(t, t->neighbors[1]) ||
+            !adjacent(t, t->neighbors[2])) {
             return false;
         }
     }
-
     return true;
 }
 
 float MxCell::volume(VolumeMethod vm) {
 }
 
-struct Foo : MxObject {
-
-
-    /**
-     * indices of the three neighboring partial triangles.
-     */
-    std::array<PTrianglePtr, 3> neighbors;
-
-
-
-};
-
 
 float MxCell::area() {
-
-
-
-
 }
 
 void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes,
@@ -154,6 +77,9 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
         ppos[2] = face.vertices[2]->position;
     }
 }
+
+
+
 
 //void MxCell::indexData(uint indexCount, uint* buffer) {
 //    for(int i = 0; i < boundary.size(); ++i, buffer += 3) {
@@ -178,6 +104,42 @@ void MxCell::dump() {
         std::cout << "}" << std::endl;
     }
 
+}
+
+HRESULT MxCell::removeChild(TrianglePtr tri) {
+    if(tri->cells[0] != this || tri->cells[1] != this) {
+        return mx_error(E_FAIL, "triangle does not belong to this cell");
+    }
+
+    int index = tri->cells[0] == this ? 0 : 1;
+
+    tri->cells[index] = nullptr;
+
+    PTrianglePtr pt = &tri->partialTriangles[index];
+
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            if(pt->neighbors[i] && pt->neighbors[i]->neighbors[j] == pt) {
+                pt->neighbors[i]->neighbors[j] = nullptr;
+                break;
+            }
+        }
+        pt->neighbors[i] = nullptr;
+    }
+
+    // remove the triangle from the facets. If the facet size is
+    // zero, remove the facet from both incident cells.
+    std::remove(boundary.begin(), boundary.end(), pt);
+    tri->facet->removeChild(tri);
+    if(tri->facet->triangles.size() == 0) {
+        std::remove(facets.begin(), facets.end(), tri->facet);
+        int otherIndex = index == 0 ? 1 : 0;
+        if(tri->cells[otherIndex]) {
+            std::remove(tri->cells[otherIndex]->facets.begin(),
+                        tri->cells[otherIndex]->facets.end(), tri->facet);
+        }
+    }
+    tri->facet = nullptr;
 }
 
 /* POV mesh format:
@@ -298,7 +260,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
             }
         }
     }
-    
+
     boundary.push_back(&tri->partialTriangles[index]);
 
     return S_OK;

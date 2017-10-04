@@ -19,13 +19,18 @@ struct MxFacet : MxObject, MxMeshNode {
 
 	MxFacet (MxFacetType *type, MeshPtr msh, const std::array<CellPtr, 2> &cells);
 
-
 	/**
 	 * Append a triangle to this facet. Examines the neighbors of the triangle, if the triangle
 	 * has belongs to any facets that are not neighbors of this facet, than those facets
 	 * are added to this facets list of neighbors.
 	 */
 	HRESULT appendChild(TrianglePtr tri);
+
+	/**
+	 * Removes the triangle from the list of triangles. Removes this facet from the
+	 * triangle's list of facets.
+	 */
+	HRESULT removeChild(TrianglePtr tri);
 
     /**
      * Need to associate this triangle with the cells on both sides. Trans-cell flux

@@ -272,25 +272,6 @@ struct MxMesh  {
     VertexPtr createVertex(const Magnum::Vector3 &pos);
 
 
-    /**
-     * Connects the triangle/cell pointers. A triangle always faces two cells,
-     * a triangle when initially created, both sides are attached to the universe null
-     * cell.
-     *
-     * If the oldCell is currently attached to the cell, then this triangle is removed
-     * from the oldCell's list of triangles, and added to the newCell's list. Each cell
-     * maintains a list of facets, which contain lists of triangles. This method
-     * updates the facets, if no existing facet exists for the triangle, with the
-     * new cell arrangement, a new facet is created. The oldCell gets removed from
-     * it's current facet. If that facet no longer contains any triangles, that facet
-     * gets deleted.
-     *
-     * This method ONLY updates the pointers relationships, it DOES NOT collapse, replace
-     * or alter geometry.
-     */
-    HRESULT reconnectTriangleCell(TrianglePtr tri, CellPtr newCell, CellPtr oldCell);
-
-
     HRESULT collapseEdge(MxEdge& edge);
 
     HRESULT splitEdge(MxEdge &e);

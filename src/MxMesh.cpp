@@ -83,13 +83,13 @@ TrianglePtr MxMesh::findTriangle(const std::array<VertexPtr, 3> &verts) {
     assert(valid(verts[0]));
     assert(valid(verts[1]));
     assert(valid(verts[2]));
-    
+
     for (TrianglePtr tri : triangles) {
         if (tri->matchVertexIndices(verts) != 0) {
             return tri;
         }
     }
-    
+
     return nullptr;
 }
 
@@ -687,37 +687,6 @@ HRESULT MxMesh::vertexPositionChanged(VertexPtr v) {
 
 HRESULT MxMesh::processOffendingEdges() {
 	return E_NOTIMPL;
-}
-
-HRESULT MxMesh::reconnectTriangleCell(TrianglePtr tri, CellPtr newCell,
-		CellPtr oldCell) {
-	CellPtr *cell = nullptr;
-	if(tri->cells[0] == oldCell) {
-		cell = &tri->cells[0];
-	}
-	else if (tri->cells[1] == oldCell) {
-		cell = &tri->cells[1];
-	}
-
-	if(cell) {
-		*cell = newCell;
-
-		if (oldCell) {
-			oldCell->facets.erase(
-			    std::find(oldCell->facets.begin(), oldCell->facets.end(), tri->facet));
-		}
-
-		if(newCell) {
-			assert(std::find(
-			    newCell->facets.begin(), newCell->facets.end(), tri->facet) ==
-				    newCell->facets.end());
-			newCell->facets.push_back(tri->facet);
-		}
-		return S_OK;
-	}
-	return E_FAIL;
-
-
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,

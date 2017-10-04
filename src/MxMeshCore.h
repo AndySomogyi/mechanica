@@ -11,6 +11,7 @@
 #include "mechanica_private.h"
 #include <vector>
 #include <array>
+#include <algorithm>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 
@@ -18,6 +19,11 @@
 namespace Magnum {
 /** @brief Three-component unsigned integer vector */
 typedef Math::Vector3<UnsignedShort> Vector3us;
+}
+
+template<typename Container, typename Value>
+bool contains(const Container& container, const Value& value) {
+    return std::find(container.begin(), container.end(), value) != container.end();
 }
 
 

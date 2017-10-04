@@ -86,7 +86,7 @@ static bool pack(T& container, MxMesh& mesh) {
 
 
             // boundary had better be connected from a voronoi cell
-            bool connected = cell->connectBoundary();
+            bool connected = cell->manifold();
 
             cout << "MxCell["<< i << "]" << std::endl;
             cell->writePOV(std::cout);

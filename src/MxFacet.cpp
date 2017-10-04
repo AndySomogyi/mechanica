@@ -12,4 +12,24 @@ MxFacet::MxFacet(MxFacetType* type, MeshPtr msh, const std::array<CellPtr, 2>& c
 }
 
 HRESULT MxFacet::appendChild(TrianglePtr tri) {
+    if(contains(triangles, tri)) {
+        return mx_error(E_FAIL, "already contains triangle");
+    }
+
+    if(tri->facet) {
+        return mx_error(E_FAIL, "triangle belongs to another facet");
+    }
+
+    tri->facet = this;
+    triangles.push_back(tri);
+    return S_OK;
+}
+
+HRESULT MxFacet::removeChild(TrianglePtr tri) {
+    if(tri->facet != this) {
+        return mx_error(E_FAIL, "triangles does not belong to this facet");
+    }
+    std::remove(triangles.begin(), triangles.end(), tri);
+    tri->facet = nullptr;
+    return S_OK;
 }
