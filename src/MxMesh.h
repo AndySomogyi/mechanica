@@ -11,6 +11,7 @@
 #include <vector>
 #include <list>
 #include <deque>
+#include <queue>
 
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
@@ -261,7 +262,7 @@ struct MxMesh  {
      * The mesh will then place them in a set of priority queues (based on distance), and
      * will process all of the offending edges.
      */
-    HRESULT vertexPositionChanged(VertexPtr v);
+    HRESULT positionsChanged();
 
     /**
      * process all of the edges that violate the min/max cutoff distance constraints.
@@ -272,17 +273,17 @@ struct MxMesh  {
     VertexPtr createVertex(const Magnum::Vector3 &pos);
 
 
-    HRESULT collapseEdge(MxEdge& edge);
+    HRESULT collapseEdge(const MxEdge& edge);
 
-    HRESULT splitEdge(MxEdge &e);
+    HRESULT splitEdge(const MxEdge &e);
 
     HRESULT collapseHTriangle(TrianglePtr tri);
 
     //HRESULT collapseHTriangleOld(MxTriangle &tri);
 
-    HRESULT collapseIEdge(MxEdge &edge);
+    HRESULT collapseIEdge(const MxEdge &edge);
 
-    HRESULT collapseManifoldEdge(MxEdge &e);
+    HRESULT collapseManifoldEdge(const MxEdge &e);
 
     bool valid(TrianglePtr p);
 
@@ -291,6 +292,8 @@ struct MxMesh  {
     bool valid(VertexPtr v);
 
     bool valid(PTrianglePtr p);
+
+    CellPtr rootCell() {return _rootCell;};
 
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
@@ -356,11 +359,37 @@ private:
             MxCell* c1, MxTriangle *tri);
 
 
-    std::list<MxEdge> shortEdges;
-    std::list<MxEdge> longEdges;
+    // hack to check if the queue contains an element
+    // the std::priority_queue container is protected, and we need to check
+    // if the item is contained before inserting.
+    template<class Compare>
+    class EdgeQueue : public std::priority_queue<MxEdge, std::deque<MxEdge>, Compare> {
+        typedef std::priority_queue<MxEdge, std::deque<MxEdge>, Compare>  _base;
+    public:
+        bool contains(const std::array<VertexPtr, 2> &value) const {
+            for(auto i = _base::c.begin(); i < _base::c.end(); i++) {
+                const MxEdge& e = *i;
+                if(e == value) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-    float shortCutoff;
-    float longCutoff;
+        void push(const std::array<VertexPtr, 2> &value) {
+            if (!contains(value)) {
+                _base::push(MxEdge{value[0], value[1]});
+            }
+        }
+    };
+
+    EdgeQueue<std::less<MxEdge>> shortEdges;
+    EdgeQueue<std::greater<MxEdge>> longEdges;
+
+    float shortCutoff = 0.2;
+    float longCutoff = 0.5;
+
+    CellPtr _rootCell;
 
     friend struct MxVertex;
     friend struct MxTriangle;

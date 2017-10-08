@@ -30,6 +30,12 @@ inline bool incident(const CellPtr cell, const FacetPtr facet) {
 	return incident(facet, cell);
 }
 
+bool incident(const VertexPtr vertex, const FacetPtr facet);
+
+inline bool incident(const FacetPtr facet, const VertexPtr vertex) {
+    return incident(vertex, facet);
+}
+
 bool adjacent(const PTrianglePtr a, PTrianglePtr b);
 
 #endif /* SRC_MESHRELATIONSHIPS_H_ */

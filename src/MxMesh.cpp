@@ -109,6 +109,7 @@ MxPartialTriangleType *MxUniversePartialTriangle_Type =
 
 MxMesh::MxMesh()
 {
+    _rootCell = createCell();
 }
 
 
@@ -297,7 +298,7 @@ HRESULT MxMesh::collapseHTriangleOld(MxTriangle& tri) {
 }
 #endif
 
-HRESULT MxMesh::collapseIEdge(MxEdge& edge) {
+HRESULT MxMesh::collapseIEdge(const MxEdge& edge) {
 	return 1;
 }
 
@@ -480,28 +481,11 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
     return false;
 }
 
-/*
-MxEdge MxMesh::edge(const MxTriangle& t1, MxTriangle& t2) {
-    if(t1.incident(t2.vertices[0])) {
-        if(t1.incident(t2.vertices[1])) {
-            return MxEdge{t2.vertices[0], t2.vertices[1]};
-        }
-        if(t1.incident(t2.vertices[2])) {
-            return MxEdge{t2.vertices[0], t2.vertices[2]};
-        }
-    }
-    else if(t1.incident(t2.vertices[1]) && t1.incident(t2.vertices[2])) {
-        return MxEdge{t2.vertices[1], t2.vertices[1]};
-    }
-    return MxEdge{0,0};
-}
-*/
-
 
 /**
  * Determine what kind of edge we have.
  */
-HRESULT MxMesh::collapseEdge(MxEdge& edge) {
+HRESULT MxMesh::collapseEdge(const MxEdge& edge) {
 
 	// check if we have a manifold edge, most common kind of short edge
 	if (edge.upperFacets().size() == 0 &&
@@ -533,7 +517,7 @@ HRESULT MxMesh::collapseEdge(MxEdge& edge) {
 	return -1;
 }
 
-HRESULT MxMesh::collapseManifoldEdge(MxEdge& e) {
+HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
 	return -1;
 }
 
@@ -541,7 +525,7 @@ HRESULT MxMesh::collapseManifoldEdge(MxEdge& e) {
  * go around the ring of the edge, and split every incident triangle on
  * that edge. Creates a new vertex at the midpoint of this edge.
  */
-HRESULT MxMesh::splitEdge(MxEdge& e) {
+HRESULT MxMesh::splitEdge(const MxEdge& e) {
 	auto triangles = e.radialTriangles();
 
 	for (auto tri : triangles) {
@@ -681,12 +665,58 @@ MxMesh::~MxMesh() {
 	}
 }
 
-HRESULT MxMesh::vertexPositionChanged(VertexPtr v) {
-	return E_NOTIMPL;
+HRESULT MxMesh::positionsChanged() {
+    HRESULT result = E_FAIL;
+
+    for(TrianglePtr tri : triangles) {
+        if((result = tri->positionsChanged() != S_OK)) {
+            return result;
+        }
+
+        // TODO: should we have explicit edges??? Save on compute time.
+        for(int i = 0; i < 3; ++i) {
+            float d = (tri->vertices[i]->position - tri->vertices[(i+1)%3]->position).length();
+
+            if (d <= shortCutoff) {
+                shortEdges.push({{tri->vertices[i], tri->vertices[(i+1)%3]}});
+            }
+
+            if (d >= longCutoff) {
+                longEdges.push({{tri->vertices[i], tri->vertices[(i+1)%3]}});
+            }
+        }
+    }
+
+    if((result = processOffendingEdges()) != S_OK) {
+        return result;
+    }
+
+    for(FacetPtr facet : facets) {
+        if((result = facet->positionsChanged() != S_OK)) {
+            return result;
+        }
+    }
+
+    for(CellPtr cell : cells) {
+        if((result = cell->positionsChanged() != S_OK)) {
+            return result;
+        }
+    }
+
+	return S_OK;
 }
 
 HRESULT MxMesh::processOffendingEdges() {
-	return E_NOTIMPL;
+    HRESULT result;
+    while(!longEdges.empty()) {
+        result = splitEdge(longEdges.top());
+        if(result == S_OK) {
+            longEdges.pop();
+        } else {
+            return result;
+        }
+    }
+    return S_OK;
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,

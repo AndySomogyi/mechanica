@@ -57,13 +57,6 @@ bool MxCell::manifold() const {
     return true;
 }
 
-float MxCell::volume(VolumeMethod vm) {
-}
-
-
-float MxCell::area() {
-}
-
 void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes,
         uint vertexCount, uint stride, void* buffer) {
     uchar *ptr = (uchar*)buffer;
@@ -107,7 +100,7 @@ void MxCell::dump() {
 }
 
 HRESULT MxCell::removeChild(TrianglePtr tri) {
-    if(tri->cells[0] != this || tri->cells[1] != this) {
+    if(tri->cells[0] != this && tri->cells[1] != this) {
         return mx_error(E_FAIL, "triangle does not belong to this cell");
     }
 
@@ -130,13 +123,14 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
     // remove the triangle from the facets. If the facet size is
     // zero, remove the facet from both incident cells.
     std::remove(boundary.begin(), boundary.end(), pt);
-    tri->facet->removeChild(tri);
-    if(tri->facet->triangles.size() == 0) {
-        std::remove(facets.begin(), facets.end(), tri->facet);
+    FacetPtr facet = tri->facet;
+    facet->removeChild(tri);
+    if(facet->triangles.size() == 0) {
+        std::remove(facets.begin(), facets.end(), facet);
         int otherIndex = index == 0 ? 1 : 0;
         if(tri->cells[otherIndex]) {
             std::remove(tri->cells[otherIndex]->facets.begin(),
-                        tri->cells[otherIndex]->facets.end(), tri->facet);
+                        tri->cells[otherIndex]->facets.end(), facet);
         }
     }
     tri->facet = nullptr;
@@ -184,12 +178,12 @@ void MxCell::writePOV(std::ostream& out) {
 }
 
 HRESULT MxCell::appendChild(TrianglePtr tri) {
-    CellPtr *cell = nullptr;
-
+ 
     if(tri->cells[0] == this || tri->cells[1] == this) {
         return mx_error(E_FAIL, "triangle is already attached to this cell");
     }
 
+    // index where this cell attaches to triangle, must be initially null.
     int index = tri->cells[0] == nullptr ? 0 : tri->cells[1] == nullptr ? 1 : -1;
 
     if (index < 0) {
@@ -207,12 +201,29 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
     // index of other cell.
     int otherIndex = index == 0 ? 1 : 0;
 
+    
+
+    // other cell index could be:
+    // null: this is a brand new triangle that's not connected to anything.
+    // not null: the other side of the triangle is already connected to another cell.
+
+    // each non-empty cell must have at least one face that's connected to the root cell.
+    // but a cell with no triangles has no facets.
+
     // if the triangle is already attached to another cell, we look for a corresponding
     // facet, if no facet, that means that this is a new fact between this cell, and
     // the other cell the triangle is attached to.
-    if (tri->cells[0] || tri->cells[1]) {
-        // look first to see if we're connected by a facet.
+
+    if(tri->cells[otherIndex] == nullptr) {
+        // this creates a facet between root and this cell (if not exists), and
+        // adds the tri to it.
+        mesh->rootCell()->appendChild(tri);
+        assert(tri->cells[otherIndex] == mesh->rootCell());
+    } else {
+        // the facet we connect the triangle to.
         FacetPtr facet = nullptr;
+
+        // look first to see if we're connected by a facet.
         for(auto f : facets) {
             if (incident(f, tri->cells[otherIndex])) {
                 facet = f;
@@ -224,38 +235,37 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
         if (facet == nullptr) {
             facet = mesh->createFacet(nullptr, this, tri->cells[otherIndex]);
             facets.push_back(facet);
-            if (tri->cells[otherIndex]) {
-                tri->cells[otherIndex]->facets.push_back(facet);
-            }
+            tri->cells[otherIndex]->facets.push_back(facet);
         }
 
         // add the tri to the facet
-        facet->triangles.push_back(tri);
+        facet->appendChild(tri);
     }
-
+    
+    std::cout << "tri" << ", {" << tri->vertices[0]->position;
+    std::cout << ", " << tri->vertices[1]->position;
+    std::cout << ", " << tri->vertices[2]->position;
+    std::cout << "}" << std::endl;
+    
+    for(int i = 0; i < boundary.size(); ++i) {
+        auto pt = boundary[i];
+        std::cout << i << ", {" << pt->triangle->vertices[0]->position;
+        std::cout << ", " << pt->triangle->vertices[1]->position;
+        std::cout << ", " << pt->triangle->vertices[2]->position;
+        std::cout << "}" << std::endl;
+    }
+    
+    if(this == mesh->rootCell()) {
+        return S_OK;
+    }
+    
     // scan through the list of partial triangles, and connect whichever ones share
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
-        TrianglePtr t = pt->triangle;
-
         for(int k = 0; k < 3; ++k) {
-            if ((tri->vertices[0] == t->vertices[k] &&
-                    (tri->vertices[1] == t->vertices[(k+1)%3] ||
-                     tri->vertices[1] == t->vertices[(k+2)%3] ||
-                     tri->vertices[2] == t->vertices[(k+1)%3] ||
-                     tri->vertices[2] == t->vertices[(k+2)%3])) ||
-                (tri->vertices[1] == t->vertices[k] &&
-                    (tri->vertices[0] == t->vertices[(k+1)%3] ||
-                     tri->vertices[0] == t->vertices[(k+2)%3] ||
-                     tri->vertices[2] == t->vertices[(k+1)%3] ||
-                     tri->vertices[2] == t->vertices[(k+2)%3])) ||
-                (tri->vertices[2] == t->vertices[k] &&
-                    (tri->vertices[0] == t->vertices[(k+1)%3] ||
-                     tri->vertices[0] == t->vertices[(k+2)%3] ||
-                     tri->vertices[1] == t->vertices[(k+1)%3] ||
-                     tri->vertices[1] == t->vertices[(k+2)%3]))) {
-
+            if(adjacent(pt->triangle, tri)) {
                 connectPartialTriangles(*pt, tri->partialTriangles[index]);
+                assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
             }
         }
@@ -264,4 +274,8 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
     boundary.push_back(&tri->partialTriangles[index]);
 
     return S_OK;
+}
+
+HRESULT MxCell::positionsChanged() {
+    return E_NOTIMPL;
 }

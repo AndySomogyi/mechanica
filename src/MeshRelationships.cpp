@@ -17,6 +17,30 @@ bool incident(const TrianglePtr tri, const struct MxVertex *v)  {
 }
 
 bool adjacent(const TrianglePtr a, const TrianglePtr b) {
+    if(a == b) {
+        return false;
+    }
+    
+    for(int k = 0; k < 3; ++k) {
+        if ((a->vertices[0] == b->vertices[k] &&
+             (a->vertices[1] == b->vertices[(k+1)%3] ||
+              a->vertices[1] == b->vertices[(k+2)%3] ||
+              a->vertices[2] == b->vertices[(k+1)%3] ||
+              a->vertices[2] == b->vertices[(k+2)%3])) ||
+            (a->vertices[1] == b->vertices[k] &&
+             (a->vertices[0] == b->vertices[(k+1)%3] ||
+              a->vertices[0] == b->vertices[(k+2)%3] ||
+              a->vertices[2] == b->vertices[(k+1)%3] ||
+              a->vertices[2] == b->vertices[(k+2)%3])) ||
+            (a->vertices[2] == b->vertices[k] &&
+             (a->vertices[0] == b->vertices[(k+1)%3] ||
+              a->vertices[0] == b->vertices[(k+2)%3] ||
+              a->vertices[1] == b->vertices[(k+1)%3] ||
+              a->vertices[1] == b->vertices[(k+2)%3]))) {
+                 return true;
+             }
+    }
+    return false;
 }
 
 bool incident(const FacetPtr facet, const CellPtr cell) {
@@ -28,34 +52,10 @@ bool adjacent(const PTrianglePtr a, PTrianglePtr b) {
         return false;
     }
 
-    TrianglePtr ta = a->triangle;
-    TrianglePtr tb = a->triangle;
+    return (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) &&
+           (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
+}
 
-    for(int k = 0; k < 3; ++k) {
-        if ((ta->vertices[0] == tb->vertices[k] &&
-                (ta->vertices[1] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[1] == tb->vertices[(k+2)%3] ||
-                 ta->vertices[2] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[2] == tb->vertices[(k+2)%3])) ||
-            (ta->vertices[1] == tb->vertices[k] &&
-                (ta->vertices[0] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[0] == tb->vertices[(k+2)%3] ||
-                 ta->vertices[2] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[2] == tb->vertices[(k+2)%3])) ||
-            (ta->vertices[2] == tb->vertices[k] &&
-                (ta->vertices[0] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[0] == tb->vertices[(k+2)%3] ||
-                 ta->vertices[1] == tb->vertices[(k+1)%3] ||
-                 ta->vertices[1] == tb->vertices[(k+2)%3]))) {
-            // make sure the adjacency is set up correctly
-            assert((a->neighbors[0] == b ||
-                    a->neighbors[1] == b ||
-                    a->neighbors[2] == b) &&
-                   (b->neighbors[0] == a ||
-                    b->neighbors[1] == a ||
-                    b->neighbors[2] == a));
-            return true;
-        }
-    }
-    return false;
+bool incident(const VertexPtr vertex, const FacetPtr facet) {
+    return contains(vertex->facets, facet);
 }

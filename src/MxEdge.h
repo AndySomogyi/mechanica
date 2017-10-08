@@ -9,12 +9,24 @@
 #define _INCLUDE_MXEDGE_H_
 
 #include "MxCell.h"
+#include <array>
 
+
+/**
+ * An edge connects two vertices, and an edge must be incident to at
+ * least one triangle. An edge can be incident to 1 ... n triangles.
+ *
+ * If a facet contains only the top vertex a, but not the bottom one,
+ * then that facet in in the set of top facets. Similarly, if a facet only
+ * contains the bottom vertex b, but not the top, then it is a bottom
+ * facet. If a facet contains both vertices, then it is a radial facet.
+ */
 struct MxEdge {
-    MxVertex *a;
-    MxVertex *b;
+    const MxVertex *a;
+    const MxVertex *b;
 
-    typedef std::vector<MxFacet*> FacetVector;
+    typedef std::vector<FacetPtr> FacetVector;
+    typedef std::vector<TrianglePtr> TriangleVector;
 
     MxEdge(VertexPtr a, VertexPtr b);
 
@@ -24,10 +36,7 @@ struct MxEdge {
      */
     MxEdge(const TrianglePtr a, const TrianglePtr b);
 
-    EdgeFacets facets() const;
-
-    std::vector<TrianglePtr> radialTriangles() const;
-
+    const TriangleVector& radialTriangles() const;
 
     const FacetVector& upperFacets() const;
 
@@ -35,12 +44,22 @@ struct MxEdge {
 
     const FacetVector& radialFacets() const;
 
-    bool operator == (const MxEdge& other);
+    bool operator == (const MxEdge& other) const;
 
-    bool incidentTo(const MxTriangle& tri);
+    bool operator < (const MxEdge& other) const;
+
+    bool operator > (const MxEdge& other) const;
+
+    bool operator == (const std::array<VertexPtr, 2> &verts) const;
+
+
+
+    bool incidentTo(const MxTriangle& tri) const;
 
 private:
     FacetVector upper, lower, radial;
+    TriangleVector radialTri    ;
+    float len;
 };
 
 

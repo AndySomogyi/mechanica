@@ -92,16 +92,6 @@ struct MxCell : MxObject, MxMeshNode {
 
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
-    /**
-     * Calculate the volume of this cell.
-     */
-    float volume(VolumeMethod vm = ConvexTrapezoidSum);
-
-    /**
-     * calculate the total area
-     */
-    float area();
-
 
     /**
      * Sometimes a mesh may have separate vertices for each triangle corner, even
@@ -161,9 +151,19 @@ struct MxCell : MxObject, MxMeshNode {
      */
     HRESULT removeChild(TrianglePtr tri);
 
+
+    /**
+     * Inform the cell that the vertex positions have changed. Causes the
+     * cell to recalculate area and volume, also inform all contained objects.
+     */
+    HRESULT positionsChanged();
+
     void dump();
 
     void writePOV(std::ostream &out);
+
+    float area = 0;
+    float volume = 0;
 };
 
 #endif /* SRC_MXCELL_H_ */

@@ -153,7 +153,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     assert(cell.manifold() && "Cell is not manifold");
 
-    assert(mesh.valid(&cell));
+    //assert(mesh.valid(&cell));
 }
 
 void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
@@ -234,10 +234,16 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
 void MxMeshGmshImporter::createTriangleForCell(
 		const std::array<VertexPtr, 3>& verts, CellPtr cell) {
 	TrianglePtr tri = mesh.findTriangle(verts);
-	if (!tri) {
+    if(tri) {
+        if(incident(tri, mesh.rootCell())) {
+            assert(mesh.rootCell()->removeChild(tri) == S_OK);
+        }
+    }
+	else {
 		tri = mesh.createTriangle(nullptr, verts);
 	}
 
 	assert(tri);
+    assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
 	cell->appendChild(tri);
 }

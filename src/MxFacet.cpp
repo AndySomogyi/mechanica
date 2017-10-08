@@ -8,7 +8,7 @@
 #include <MxFacet.h>
 
 MxFacet::MxFacet(MxFacetType* type, MeshPtr msh, const std::array<CellPtr, 2>& cells) :
-	MxObject{type}, MxMeshNode{msh} {
+    MxObject{type}, MxMeshNode{msh}, cells{cells} {
 }
 
 HRESULT MxFacet::appendChild(TrianglePtr tri) {
@@ -18,6 +18,12 @@ HRESULT MxFacet::appendChild(TrianglePtr tri) {
 
     if(tri->facet) {
         return mx_error(E_FAIL, "triangle belongs to another facet");
+    }
+
+    for(VertexPtr v : tri->vertices) {
+        if(!contains(v->facets, this)) {
+            v->facets.push_back(this);
+        }
     }
 
     tri->facet = this;
@@ -32,4 +38,7 @@ HRESULT MxFacet::removeChild(TrianglePtr tri) {
     std::remove(triangles.begin(), triangles.end(), tri);
     tri->facet = nullptr;
     return S_OK;
+}
+
+HRESULT MxFacet::positionsChanged() {
 }

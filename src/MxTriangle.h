@@ -122,45 +122,20 @@ struct MxTriangleType : MxType {
  */
 struct MxTriangle : MxObject {
 
-	MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
-			const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
-			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}},
-			FacetPtr facet = nullptr);
-
     /**
-     * indices of the 3 vertices in the MxMesh that make up this partial face,
-     * in the correct winding order. The winding of these vertices correspond to the
-     * normal vector.
+     * The triangle aspect ratio for the three corner vertex positions of a triangle.
      */
-    std::array<VertexPtr, 3> vertices;
-
-
-    /**
-     * Need to associate this triangle with the cells on both sides. Trans-cell flux
-     * is very frequently calculated, so optimize structure layout for both
-     * trans-cell and trans-partial-triangle fluxes.
-     */
-    std::array<CellPtr, 2> cells;
-    /**
-     * The center of geometry of this triangle, the position vector.
-     */
-    //Vector3 position;
+    float aspectRatio = 0;
 
     /**
-     * indices of the two partial triangles that are attached to this triangle.
-     * The mesh contains a set of partial triangles.
+     * Area of this triangle, calculated in positionsChanged().
      *
-     * partialTriangles[0] contains the partial triangle for cells[0]
+     * non-normalized normal vector is normal * area.
      */
-    std::array<MxPartialTriangle, 2> partialTriangles;
+    float area = 0.;
 
     /**
-     * Each triangle belongs to exactly one facet.
-     */
-    struct MxFacet *facet;
-
-    /**
-     * Non-normalized normal vector (magnitude is triangle area), oriented away from
+     * Normalized normal vector (magnitude is triangle area), oriented away from
      * cellIds[0].
      *
      * If a cell has cellIds[0], then the normal points in the correct direction, but
@@ -169,15 +144,37 @@ struct MxTriangle : MxObject {
      */
     Vector3 normal;
 
-    void test() {
-    		MxPartialTriangle p[2] = {
-    				{nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
-				{nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
-    		};
+    /**
+     * Geometric center (barycenter) of the triangle, computed in positionsChanged()
+     */
+    Vector3 centroid;
 
-    }
+    /**
+     * Each triangle belongs to exactly one facet.
+     */
+    FacetPtr facet = nullptr;
 
+    /**
+     * indices of the 3 vertices in the MxMesh that make up this partial face,
+     * in the correct winding order. The winding of these vertices correspond to the
+     * normal vector.
+     */
+    std::array<VertexPtr, 3> vertices;
 
+    /**
+     * Need to associate this triangle with the cells on both sides. Trans-cell flux
+     * is very frequently calculated, so optimize structure layout for both
+     * trans-cell and trans-partial-triangle fluxes.
+     */
+    std::array<CellPtr, 2> cells;
+
+    /**
+     * indices of the two partial triangles that are attached to this triangle.
+     * The mesh contains a set of partial triangles.
+     *
+     * partialTriangles[0] contains the partial triangle for cells[0]
+     */
+    std::array<MxPartialTriangle, 2> partialTriangles;
 
     /**
      * does this triangle match the given set of vertex
@@ -203,33 +200,24 @@ struct MxTriangle : MxObject {
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
-		facet{nullptr},
 		partialTriangles {{
             {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
 		    {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
 	    }}
     {}
 
-    void init(const std::array<VertexPtr, 3> &verts) {
-    		partialTriangles[0].triangle = this;
-    		partialTriangles[1].triangle = this;
-    		vertices = verts;
-    }
 
-    /**
-     * If there is an available cell slot (cells[0] or cells[1] is nullptr), then
-     * attaches this triangle to a cell and returns SUCCESS, otherwise returns error code.
-     *
-     * The attach also appends the correct partial triangle of this triangle to the
-     * cell's list of partial triangles.
-     */
-    HRESULT attachToCell(CellPtr cell);
+	MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
+			const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
+			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}},
+			FacetPtr facet = nullptr);
 
 
     /**
-     * The triangle aspect ratio for the three corner vertex positions of a triangle.
+     * Inform the cell that the vertex positions have changed. Causes the
+     * cell to recalculate area and volume, also inform all contained objects.
      */
-    float aspectRatio() const;
+    HRESULT positionsChanged();
 };
 
 #endif /* SRC_MXTRIANGLE_H_ */

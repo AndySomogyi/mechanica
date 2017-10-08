@@ -33,6 +33,12 @@ struct MxFacet : MxObject, MxMeshNode {
 	HRESULT removeChild(TrianglePtr tri);
 
     /**
+     * Inform the facet that the vertex positions have changed. Causes the
+     * cell to recalculate area and volume, also inform all contained objects.
+     */
+    HRESULT positionsChanged();
+
+    /**
      * Need to associate this triangle with the cells on both sides. Trans-cell flux
      * is very frequently calculated, so optimize structure layout for both
      * trans-cell and trans-partial-triangle fluxes.
@@ -42,6 +48,8 @@ struct MxFacet : MxObject, MxMeshNode {
     std::vector<TrianglePtr> triangles;
 
     std::vector<FacetPtr> neighbors;
+
+    float area = 0;
 };
 
 

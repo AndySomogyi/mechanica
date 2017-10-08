@@ -80,12 +80,12 @@ set(SRC
   MxMeshGmshImporter.cpp
   MxExecutionContext.cpp
   MxForceFunction.cpp
-  MeshLangevinPropagator.cpp
-  MeshDampedLangevinPropagator.cpp
+  LangevinPropagator.cpp
   MeshIterators.cpp
   ScalarField.cpp
   MxEdge.cpp
   MeshRelationships.cpp
+  ForceAccumulator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -129,12 +129,12 @@ set(HEADERS
   MxMeshGmshImporter.h
   MxExecutionContext.h
   MxForceFunction.h
-  MeshLangevinPropagator.h
-  MeshDampedLangevinPropagator.h
+  LangevinPropagator.h
   MeshIterators.h
   ScalarField.h
   MxEdge.h
   MeshRelationships.h
+  ForceAccumulator.h
   )
 
 
