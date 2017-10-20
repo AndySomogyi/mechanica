@@ -16,12 +16,14 @@
 #include <iostream>
 
 
-#include <MxMeshGmshImporter.h>
+
 #include <MxMeshRenderer.h>
 #include <LangevinPropagator.h>
 
 
 #include <Magnum/Trade/MeshData3D.h>
+
+#include "GrowthModel.h"
 
 
 using namespace std;
@@ -47,10 +49,8 @@ private:
     Color4 color;
     Vector3 center;
 
+    MxModel *model;
 
-
-
-    MxMesh *mesh;
     MxMeshRenderer renderer;
 
     LangevinPropagator propagator;
@@ -61,8 +61,8 @@ Growth1::Growth1(const Arguments& arguments):
         Configuration{}.setVersion(Version::GL410).
             setTitle("Gmsh Test 1")},
             renderer{MxMeshRenderer::Flag::Wireframe},
-            mesh{new MxMesh()},
-            propagator{mesh}{
+            model{new GrowthModel{}},
+            propagator{model}{
 
     // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
     // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
@@ -73,18 +73,13 @@ Growth1::Growth1(const Arguments& arguments):
     // draw them.
     Renderer::enable(Renderer::Feature::FaceCulling);
 
-    MxMeshGmshImporter importer{*mesh};
-
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-
-    importer.read("/Users/andy/src/mechanica/testing/growth1/cube.msh");
 
     Vector3 min, max;
-    std::tie(min, max) = mesh->extents();
+    std::tie(min, max) = model->mesh->extents();
 
     center = (max + min)/2;
 
-    renderer.setMesh(mesh);
+    renderer.setMesh(model->mesh);
 
 }
 

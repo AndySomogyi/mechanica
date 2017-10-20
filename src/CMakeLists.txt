@@ -85,7 +85,6 @@ set(SRC
   ScalarField.cpp
   MxEdge.cpp
   MeshRelationships.cpp
-  ForceAccumulator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -134,7 +133,6 @@ set(HEADERS
   ScalarField.h
   MxEdge.h
   MeshRelationships.h
-  ForceAccumulator.h
   )
 
 

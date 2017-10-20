@@ -6,7 +6,6 @@
  */
 
 #include "MxModel.h"
-
 #include "structmember.h"
 
 typedef struct {

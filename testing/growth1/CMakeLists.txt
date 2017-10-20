@@ -16,6 +16,8 @@ find_package(Magnum REQUIRED
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_executable(growth1
+  GrowthModel.cpp
+  GrowthModel.h
   Growth1.cpp
   SphereShader.cpp
   SphereShader.h

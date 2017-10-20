@@ -6,9 +6,10 @@
  */
 
 #include <LangevinPropagator.h>
+#include <MxModel.h>
 
-LangevinPropagator::LangevinPropagator(MxMesh* msh) :
-    mesh{msh} {
+LangevinPropagator::LangevinPropagator(MxModel* m) :
+    model{m}, mesh{m->mesh} {
 }
 
 HRESULT LangevinPropagator::step(MxReal dt) {
@@ -17,7 +18,7 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 
     HRESULT result;
 
-    if((result = forceAccumulator.calculateForce(
+    if((result = model->calcForce(
             tris, (uint32_t)mesh->triangles.size())) != S_OK) {
         return result;
     }
@@ -30,5 +31,13 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 }
 
 HRESULT LangevinPropagator::eulerStep(MxReal dt) {
+
+    for(int i = 0; i < mesh->vertices.size(); ++i) {
+        VertexPtr v = mesh->vertices[i];
+
+        v->position = v->position + dt * v->acceleration;
+
+    }
+
     return S_OK;
 }

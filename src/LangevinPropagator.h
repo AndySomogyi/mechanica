@@ -9,7 +9,8 @@
 #define SRC_MESHDAMPEDLANGEVINPROPAGATOR_H_
 
 #include "MxPropagator.h"
-#include "ForceAccumulator.h"
+
+struct MxModel;
 
 /**
  * Damped Langevin propagator,
@@ -24,7 +25,7 @@ class LangevinPropagator {
 
 public:
 
-    LangevinPropagator(MxMesh *msh);
+    LangevinPropagator(MxModel *model);
 
     HRESULT step(MxReal dt);
 
@@ -34,12 +35,8 @@ private:
     HRESULT eulerStep(MxReal dt);
 
 
+    MxModel *model;
     MxMesh *mesh;
-
-
-
-    ForceAccumulator forceAccumulator;
-
 
 };
 

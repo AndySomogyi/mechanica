@@ -164,6 +164,8 @@ struct MxCell : MxObject, MxMeshNode {
 
     float area = 0;
     float volume = 0;
+
+    float centroid = 0;
 };
 
 #endif /* SRC_MXCELL_H_ */
