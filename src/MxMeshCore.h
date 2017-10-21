@@ -54,7 +54,7 @@ typedef MxMesh *MeshPtr;
 
 
 struct MxMeshNode {
-	MxMeshNode(MeshPtr m) : mesh{m} {};
+    MxMeshNode(MeshPtr m) : mesh{m} {};
 
 protected:
     MeshPtr mesh;
@@ -63,7 +63,7 @@ protected:
 struct MxVertex {
     Magnum::Vector3 position;
     Magnum::Vector3 velocity;
-    Magnum::Vector3 acceleration;
+    Magnum::Vector3 force;
 
     // one to many relationship of vertex -> triangles
     std::vector<TrianglePtr> triangles;

@@ -22,7 +22,7 @@ static inline Magnum::Vector3 makeVertex(const double pos[]) {
 
 
 
-bool MxMeshGmshImporter::read(const std::string& path) {
+HRESULT MxMeshGmshImporter::read(const std::string& path) {
 
     gmsh = Gmsh::Mesh::read(path);
 
@@ -46,8 +46,7 @@ bool MxMeshGmshImporter::read(const std::string& path) {
         mesh.initPos[i] = mesh.vertices[i]->position;
     }
 
-
-    return true;
+    return mesh.positionsChanged();
 }
 
 VertexPtr MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
@@ -157,7 +156,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 }
 
 void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
-    
+
     assert(mesh.valid(verts[0]));
     assert(mesh.valid(verts[1]));
     assert(mesh.valid(verts[2]));
@@ -168,11 +167,11 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr,
     if (nw > ne) {
         // nw is longer, split along ne axis
         //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
-    		createTriangleForCell(VI{{verts[0], verts[1], verts[2]}}, &cell);
-    		createTriangleForCell(VI{{verts[2], verts[3], verts[0]}}, &cell);
+            createTriangleForCell(VI{{verts[0], verts[1], verts[2]}}, &cell);
+            createTriangleForCell(VI{{verts[2], verts[3], verts[0]}}, &cell);
     } else {
-    		createTriangleForCell(VI{{verts[1], verts[2], verts[3]}}, &cell);
-    		createTriangleForCell(VI{{verts[3], verts[0], verts[1]}}, &cell);
+            createTriangleForCell(VI{{verts[1], verts[2], verts[3]}}, &cell);
+            createTriangleForCell(VI{{verts[3], verts[0], verts[1]}}, &cell);
     }
 }
 
@@ -225,25 +224,25 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     addSquareFace(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
     addSquareFace(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
     addSquareFace(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
-    
+
     assert(cell->manifold() && "Cell is not manifold");
 
     assert(mesh.valid(cell));
 }
 
 void MxMeshGmshImporter::createTriangleForCell(
-		const std::array<VertexPtr, 3>& verts, CellPtr cell) {
-	TrianglePtr tri = mesh.findTriangle(verts);
+        const std::array<VertexPtr, 3>& verts, CellPtr cell) {
+    TrianglePtr tri = mesh.findTriangle(verts);
     if(tri) {
         if(incident(tri, mesh.rootCell())) {
             assert(mesh.rootCell()->removeChild(tri) == S_OK);
         }
     }
-	else {
-		tri = mesh.createTriangle(nullptr, verts);
-	}
+    else {
+        tri = mesh.createTriangle(nullptr, verts);
+    }
 
-	assert(tri);
+    assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
-	cell->appendChild(tri);
+    cell->appendChild(tri);
 }

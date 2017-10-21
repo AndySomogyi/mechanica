@@ -30,7 +30,7 @@ public:
 
     MxMeshGmshImporter(MxMesh& mesh) : mesh{mesh} {};
 
-    bool read(const std::string &path);
+    HRESULT read(const std::string &path);
 
 private:
     // keep track of original Gmsh vertex indices, and the new indices in

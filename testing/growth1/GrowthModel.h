@@ -14,6 +14,11 @@ struct GrowthModel : public MxModel {
 
     GrowthModel();
 
+    /**
+     * Evaluate the force functions,
+     */
+    virtual HRESULT calcForce(TrianglePtr* triangles, uint32_t len) ;
+
 };
 
 

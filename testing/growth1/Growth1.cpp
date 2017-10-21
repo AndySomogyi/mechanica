@@ -87,7 +87,7 @@ Growth1::Growth1(const Arguments& arguments):
 
 void Growth1::drawEvent() {
 
-    propagator.step(0);
+    propagator.step(0.01);
 
     defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
 

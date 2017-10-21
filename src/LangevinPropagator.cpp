@@ -35,7 +35,7 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
     for(int i = 0; i < mesh->vertices.size(); ++i) {
         VertexPtr v = mesh->vertices[i];
 
-        v->position = v->position + dt * v->acceleration;
+        v->position = v->position + dt * v->force;
 
     }
 
