@@ -14,30 +14,46 @@ GrowthModel::GrowthModel()  {
 
     MxMeshGmshImporter importer{*mesh};
 
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
-    importer.read("/Users/andy/src/mechanica/testing/growth1/cube.msh");
+    //importer.read("/Users/andy/src/mechanica/testing/growth1/cube.msh");
 
 }
 
-const float targetArea = 2.0;
+const float targetArea = 0.1;
 
 HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
+
+    HRESULT result;
 
     for(VertexPtr vert : mesh->vertices) {
         vert->force = Vector3{};
     }
 
-    for(uint i = 0; i < len; ++i) {
-        TrianglePtr tri = triangles[i];
 
-        float diff = targetArea - tri->area;
 
-        for(int v = 0; v < 3; ++v) {
-            tri->vertices[v]->force += diff * (tri->vertices[v]->position - tri->centroid).normalized();
+    for(CellPtr cell : mesh->cells) {
+        if((result = cellAreaForce(cell)) != S_OK) {
+            return mx_error(result, "cell area force");
         }
     }
 
+    return S_OK;
+}
 
+HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
+
+    float diff = targetArea - cell->area;
+
+    for(auto f: cell->facets) {
+        for(auto tri : f->triangles) {
+
+            for(int v = 0; v < 3; ++v) {
+                Vector3 dir = tri->vertices[v]->position - tri->centroid;
+                float len = dir.length();
+                tri->vertices[v]->force += diff * len * dir;
+            }
+        }
+    }
     return S_OK;
 }

@@ -35,10 +35,30 @@ HRESULT MxFacet::removeChild(TrianglePtr tri) {
     if(tri->facet != this) {
         return mx_error(E_FAIL, "triangles does not belong to this facet");
     }
-    std::remove(triangles.begin(), triangles.end(), tri);
+
+#ifndef NDEBUG
+    auto size = triangles.size();
+    assert(contains(triangles, tri));
+#endif
+
+
+    remove(triangles, tri);
+
+#ifndef NDEBUG
+    auto newSize = triangles.size();
+    assert(newSize == size - 1);
+    assert(!contains(triangles, tri));
+#endif
+
+
     tri->facet = nullptr;
     return S_OK;
 }
 
 HRESULT MxFacet::positionsChanged() {
+    area = 0;
+    for(auto tri : triangles) {
+        area += tri->area;
+    }
+    return S_OK;
 }

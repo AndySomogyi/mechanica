@@ -26,6 +26,14 @@ bool contains(const Container& container, const Value& value) {
     return std::find(container.begin(), container.end(), value) != container.end();
 }
 
+template<typename Container, typename Value>
+void remove(Container& cont, const Value& val) {
+    auto it = std::find(cont.begin(), cont.end(), val);
+    if(it != cont.end()) {
+        cont.erase(it);
+    }
+}
+
 
 using namespace Magnum;
 

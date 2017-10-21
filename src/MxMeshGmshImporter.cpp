@@ -151,6 +151,8 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
     assert(cell.manifold() && "Cell is not manifold");
+    
+    assert(cell.positionsChanged() == S_OK);
 
     //assert(mesh.valid(&cell));
 }
@@ -228,6 +230,8 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     assert(cell->manifold() && "Cell is not manifold");
 
     assert(mesh.valid(cell));
+    
+    assert(cell->positionsChanged() == S_OK);
 }
 
 void MxMeshGmshImporter::createTriangleForCell(

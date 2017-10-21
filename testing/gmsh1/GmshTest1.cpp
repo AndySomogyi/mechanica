@@ -70,9 +70,9 @@ mesh{new MxMesh()} {
 
     MxMeshGmshImporter importer{*mesh};
 
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+
+    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
     Vector3 min, max;
     std::tie(min, max) = mesh->extents();

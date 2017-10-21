@@ -66,9 +66,11 @@ HRESULT MxTriangle::positionsChanged() {
     // Ny = UzVx - UxVz
     // Nz = UxVy - UyVx
     // non-normalized normal vector
-    Vector3 abnormal = Math::cross(v2 - v1, v3 - v1);
-    area = abnormal.length();
-    normal = abnormal / area;
+    // multiply by neg 1, CCW winding. 
+    Vector3 abnormal = -1. * Math::cross(v2 - v1, v3 - v1);
+    float len = abnormal.length();
+    area = 0.5 * len;
+    normal = abnormal / len;
 
     // average position of 3 position vectors
     centroid = (v1 + v2 + v3) / 3;

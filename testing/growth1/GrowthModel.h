@@ -19,6 +19,10 @@ struct GrowthModel : public MxModel {
      */
     virtual HRESULT calcForce(TrianglePtr* triangles, uint32_t len) ;
 
+
+    HRESULT cellAreaForce(CellPtr cell);
+
+
 };
 
 

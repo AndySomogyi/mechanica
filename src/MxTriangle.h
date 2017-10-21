@@ -194,6 +194,16 @@ struct MxTriangle : MxObject {
      */
     int matchVertexIndices(const std::array<VertexPtr, 3> &vertInd);
 
+
+    /**
+     * Orient the normal in the correct direction for the given cell.
+     */
+    inline Vector3 cellNormal(const CellPtr cell) const {
+        assert(cell == cells[0] || cell == cells[1]);
+        float dir = cell == cells[0] ? 1.0 : -1.0;
+        return dir * normal;
+    }
+
     /**
      * This is designed to be stack allocated, then pushed into a vector.
      */

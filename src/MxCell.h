@@ -162,10 +162,28 @@ struct MxCell : MxObject, MxMeshNode {
 
     void writePOV(std::ostream &out);
 
+    /**
+     * sum of all of the triangle areas.
+     */
     float area = 0;
+
+    /**
+     * The volume of each cell is calculated using the divergence theorem, each triangle
+     * contributes a bit of volume to each cell. We compute the volume contribution here
+     * and then separately sum all of the volume contributions for each cell.
+     *
+     * The total volume of each cell is
+     *
+     * 1/3 \Sum \left( a_i/3 * \left( N \dot (r1 + r2 + r3\right)\right)
+     *
+     * where r1, r2, r3 are the position vectors for each vertex. Note that
+     * 1/3 * (r1 + r2 + r3) is just the centroid of each triangle, which is already
+     * computed by the triangle's positionChanged method, so to compute the volume contribution,
+     * we just dot the centroid with the triangle's normal vector.
+     */
     float volume = 0;
 
-    float centroid = 0;
+    Vector3 centroid = {0., 0., 0.};
 };
 
 #endif /* SRC_MXCELL_H_ */

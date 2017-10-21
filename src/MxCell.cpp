@@ -122,18 +122,19 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
 
     // remove the triangle from the facets. If the facet size is
     // zero, remove the facet from both incident cells.
-    std::remove(boundary.begin(), boundary.end(), pt);
+    remove(boundary, pt);
     FacetPtr facet = tri->facet;
     facet->removeChild(tri);
     if(facet->triangles.size() == 0) {
-        std::remove(facets.begin(), facets.end(), facet);
+        remove(facets, facet);
         int otherIndex = index == 0 ? 1 : 0;
         if(tri->cells[otherIndex]) {
-            std::remove(tri->cells[otherIndex]->facets.begin(),
-                        tri->cells[otherIndex]->facets.end(), facet);
+            remove(tri->cells[otherIndex]->facets, facet);
         }
     }
     tri->facet = nullptr;
+
+    return S_OK;
 }
 
 /* POV mesh format:
@@ -178,7 +179,7 @@ void MxCell::writePOV(std::ostream& out) {
 }
 
 HRESULT MxCell::appendChild(TrianglePtr tri) {
- 
+
     if(tri->cells[0] == this || tri->cells[1] == this) {
         return mx_error(E_FAIL, "triangle is already attached to this cell");
     }
@@ -201,7 +202,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
     // index of other cell.
     int otherIndex = index == 0 ? 1 : 0;
 
-    
+
 
     // other cell index could be:
     // null: this is a brand new triangle that's not connected to anything.
@@ -241,12 +242,12 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
         // add the tri to the facet
         facet->appendChild(tri);
     }
-    
+
     std::cout << "tri" << ", {" << tri->vertices[0]->position;
     std::cout << ", " << tri->vertices[1]->position;
     std::cout << ", " << tri->vertices[2]->position;
     std::cout << "}" << std::endl;
-    
+
     for(int i = 0; i < boundary.size(); ++i) {
         auto pt = boundary[i];
         std::cout << i << ", {" << pt->triangle->vertices[0]->position;
@@ -254,11 +255,11 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
         std::cout << ", " << pt->triangle->vertices[2]->position;
         std::cout << "}" << std::endl;
     }
-    
+
     if(this == mesh->rootCell()) {
         return S_OK;
     }
-    
+
     // scan through the list of partial triangles, and connect whichever ones share
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
@@ -277,5 +278,32 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
 }
 
 HRESULT MxCell::positionsChanged() {
-    return E_NOTIMPL;
+    area = 0;
+    volume = 0;
+    centroid = Vector3{0., 0., 0.};
+    int ntri = 0;
+
+#ifndef NDEBUG
+    std::cout << __PRETTY_FUNCTION__ << " root cell: " <<  (mesh->rootCell() == this) << std::endl;
+#endif
+
+
+    for(auto f : facets) {
+        for (auto tri : f->triangles) {
+            //std::cout << ntri << std::endl;
+            //std::cout << "\t" << tri->cellNormal(this) << ", " << tri->centroid << std::endl;
+            //std::cout << "\t" << tri->vertices[0]->position << ", "
+            //                  << tri->vertices[1]->position << ", "
+            //                  << tri->vertices[2]->position << std::endl;
+
+            ntri += 1;
+            centroid += tri->centroid;
+            area += tri->area;
+            float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
+            volume += volumeContr;
+        }
+    }
+    volume /= 3.;
+    centroid /= (float)ntri;
+    return S_OK;
 }
