@@ -151,7 +151,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
     assert(cell.manifold() && "Cell is not manifold");
-    
+
     assert(cell.positionsChanged() == S_OK);
 
     //assert(mesh.valid(&cell));
@@ -169,9 +169,15 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr,
     if (nw > ne) {
         // nw is longer, split along ne axis
         //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
+        assert(Math::dot(
+               Math::normal(verts[0]->position, verts[1]->position, verts[2]->position),
+               Math::normal(verts[2]->position, verts[3]->position, verts[0]->position)) > 0);
             createTriangleForCell(VI{{verts[0], verts[1], verts[2]}}, &cell);
             createTriangleForCell(VI{{verts[2], verts[3], verts[0]}}, &cell);
     } else {
+        assert(Math::dot(
+               Math::normal(verts[1]->position, verts[2]->position, verts[3]->position),
+               Math::normal(verts[3]->position, verts[0]->position, verts[1]->position)) > 0);
             createTriangleForCell(VI{{verts[1], verts[2], verts[3]}}, &cell);
             createTriangleForCell(VI{{verts[3], verts[0], verts[1]}}, &cell);
     }
@@ -230,7 +236,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     assert(cell->manifold() && "Cell is not manifold");
 
     assert(mesh.valid(cell));
-    
+
     assert(cell->positionsChanged() == S_OK);
 }
 
@@ -248,5 +254,8 @@ void MxMeshGmshImporter::createTriangleForCell(
 
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
-    cell->appendChild(tri);
+
+    Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
+    float orientation = Math::dot(meshNorm, tri->normal);
+    cell->appendChild(tri, orientation > 0 ? 0 : 1);
 }

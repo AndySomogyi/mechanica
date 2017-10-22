@@ -133,8 +133,14 @@ struct MxCell : MxObject, MxMeshNode {
      * will either add the tri to the existing face (if one exists), or it will generate
      * a new face, and append that face to both this cell, and the other cell to which
      * the triangle incident to.
+     *
+     * @param index, specifies the the orientation of the triangle, must be either
+     * 0 or 1. A 0 means the that the triangle winding orients the normal away from the
+     * cell, and the cell goes in the MxTriangle::cell[0] position, a 1 means the
+     * triangle winding is backwards, and must go in the MxTriangle::cells[1] slot. Must
+     * go in the correct slot so the normal gets correctly calculated.
      */
-    HRESULT appendChild(TrianglePtr tri);
+    HRESULT appendChild(TrianglePtr tri, int index);
 
 
     /**

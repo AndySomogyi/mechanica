@@ -20,7 +20,7 @@ GrowthModel::GrowthModel()  {
 
 }
 
-const float targetArea = 0.1;
+const float targetArea = 0.75;
 
 HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
 
@@ -42,6 +42,10 @@ HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
 }
 
 HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
+
+    if(mesh->rootCell() == cell) {
+        return S_OK;
+    }
 
     float diff = targetArea - cell->area;
 

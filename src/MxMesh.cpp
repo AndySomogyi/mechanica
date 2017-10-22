@@ -32,8 +32,10 @@ VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
 }
 
 CellPtr MxMesh::createCell(MxCellType *type) {
-    cells.push_back(new MxCell{type, this, nullptr});
-    return cells[cells.size() - 1];
+    CellPtr cell = new MxCell{type, this, nullptr};
+    cells.push_back(cell);
+    cell->ob_refcnt = cells.size() - 1;
+    return cell;
 }
 
 void MxMesh::vertexAtributes(const std::vector<MxVertexAttribute>& attributes,

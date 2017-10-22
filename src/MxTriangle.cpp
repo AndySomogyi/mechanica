@@ -66,8 +66,8 @@ HRESULT MxTriangle::positionsChanged() {
     // Ny = UzVx - UxVz
     // Nz = UxVy - UyVx
     // non-normalized normal vector
-    // multiply by neg 1, CCW winding. 
-    Vector3 abnormal = -1. * Math::cross(v2 - v1, v3 - v1);
+    // multiply by neg 1, CCW winding.
+    Vector3 abnormal = Math::normal(v1, v2, v3);
     float len = abnormal.length();
     area = 0.5 * len;
     normal = abnormal / len;

@@ -178,17 +178,18 @@ void MxCell::writePOV(std::ostream& out) {
     out << "}" << std::endl;
 }
 
-HRESULT MxCell::appendChild(TrianglePtr tri) {
+HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
 
     if(tri->cells[0] == this || tri->cells[1] == this) {
         return mx_error(E_FAIL, "triangle is already attached to this cell");
     }
 
-    // index where this cell attaches to triangle, must be initially null.
-    int index = tri->cells[0] == nullptr ? 0 : tri->cells[1] == nullptr ? 1 : -1;
+    if (index != 0 && index != 1) {
+        return mx_error(E_FAIL, "invalid index argument");
+    }
 
-    if (index < 0) {
-        return mx_error(E_FAIL, "triangle is already attached to two cells");
+    if (tri->cells[index] != nullptr) {
+        return mx_error(E_FAIL, "triangle is already attached to a cell at the specified index");
     }
 
     if (tri->partialTriangles[index].neighbors[0] ||
@@ -201,8 +202,6 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
 
     // index of other cell.
     int otherIndex = index == 0 ? 1 : 0;
-
-
 
     // other cell index could be:
     // null: this is a brand new triangle that's not connected to anything.
@@ -218,7 +217,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri) {
     if(tri->cells[otherIndex] == nullptr) {
         // this creates a facet between root and this cell (if not exists), and
         // adds the tri to it.
-        mesh->rootCell()->appendChild(tri);
+        mesh->rootCell()->appendChild(tri, otherIndex);
         assert(tri->cells[otherIndex] == mesh->rootCell());
     } else {
         // the facet we connect the triangle to.
@@ -283,11 +282,6 @@ HRESULT MxCell::positionsChanged() {
     centroid = Vector3{0., 0., 0.};
     int ntri = 0;
 
-#ifndef NDEBUG
-    std::cout << __PRETTY_FUNCTION__ << " root cell: " <<  (mesh->rootCell() == this) << std::endl;
-#endif
-
-
     for(auto f : facets) {
         for (auto tri : f->triangles) {
             //std::cout << ntri << std::endl;
@@ -300,10 +294,31 @@ HRESULT MxCell::positionsChanged() {
             centroid += tri->centroid;
             area += tri->area;
             float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
+
+            //if(volumeContr < 0) {
+            //    std::cout << "root: " << (mesh->rootCell() == this) <<
+            //    ", normal: " << tri->normal << ", cell normal: " << tri->cellNormal(this) <<
+            //    ", centroid: " << tri->centroid <<
+            //    ", vol contr: "  << volumeContr << std::endl;
+            //}
+
+            float a = tri->area * Math::dot(tri->normal, tri->centroid);
+            float b = tri->area * Math::dot(-tri->normal, tri->centroid);
+
             volume += volumeContr;
         }
     }
     volume /= 3.;
     centroid /= (float)ntri;
+
+    #ifndef NDEBUG
+    if(mesh->rootCell() != this) {
+        assert(volume >= 0);
+    }
+    std::cout << "cell " << this->ob_refcnt <<
+    ", volume: " << volume << ", area: " << area << ", root: " <<
+    (mesh->rootCell() == this) <<std::endl;
+    #endif
+
     return S_OK;
 }

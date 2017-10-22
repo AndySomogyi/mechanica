@@ -230,4 +230,21 @@ struct MxTriangle : MxObject {
     HRESULT positionsChanged();
 };
 
+namespace Magnum { namespace Math {
+
+/**
+     * calculates the normal vector for three triangle vertices.
+     *
+     * Assumes CCW winding.
+     *
+     * TODO: have some global to set CCW winding.
+     */
+    inline Vector3<float> normal(const Vector3<float>& v1,
+            const Vector3<float>& v2, const Vector3<float>& v3) {
+        return Magnum::Math::cross(v2 - v1, v3 - v1);
+    }
+
+
+}}
+
 #endif /* SRC_MXTRIANGLE_H_ */
