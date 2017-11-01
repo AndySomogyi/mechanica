@@ -1,7 +1,7 @@
 # build glfw here, set up variables so magnum does not try to find it
 add_subdirectory(glfw)
 
-set(GLFW_Found YES)
+
 
 # glfw does not set it's target include directories, but it turns out we
 # can set them after the glfw subproject is processed.
@@ -22,7 +22,12 @@ target_include_directories(glfw PUBLIC
 #
 add_library(GLFW::GLFW ALIAS glfw)
 
+set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/extern/glfw/include/GLFW)
+set(GLFW_FOUND TRUE)
 
+
+message("GLFW_INCLUDE_DIR: ${GLFW_INCLUDE_DIR}")
+message("GLFW_LIBRARY: ${GLFW_LIBRARY}")
 
 add_subdirectory(soil)
 
@@ -30,8 +35,6 @@ set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
 #option(MDCORE_USE_FFTW3 "use FFTW" YES)
 
 add_subdirectory(mdcore)
-
-
 
 
 # Disable building extras we won't need (pure C++ project)
@@ -83,3 +86,5 @@ set(BUILD_IDAS           OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 set(BUILD_KINSOL         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 
 add_subdirectory(sundials)
+
+

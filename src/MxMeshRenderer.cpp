@@ -18,7 +18,8 @@
 
 MxMeshRenderer::MxMeshRenderer(Flags flags) :
         shader{new MxMeshShaderProgram(flags)},
-        mesh{nullptr} {
+        mesh{nullptr}
+{
 }
 
 MxMeshRenderer& MxMeshRenderer::setViewportSize(const Magnum::Vector2& size) {
@@ -143,6 +144,7 @@ MxMeshRenderer::~MxMeshRenderer() {
 }
 
 MxMeshRenderer& MxMeshRenderer::setMesh(MxMesh* _mesh) {
+    gpuObjects.clear();
     mesh = _mesh;
 
     for(auto cell : mesh->cells) {

@@ -15,7 +15,7 @@ set(CMAKE_MODULE_PATH
 
 
 
-find_package(GLFW REQUIRED)
+#find_package(GLFW REQUIRED)
 
 find_package(PythonLibs 2.7 REQUIRED)
 message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")                  
@@ -170,4 +170,4 @@ add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(models)
 add_subdirectory(testing)
-add_subdirectory(magnum_examples)
+#add_subdirectory(magnum_examples)

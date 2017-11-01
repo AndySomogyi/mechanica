@@ -135,6 +135,13 @@ struct MxTriangle : MxObject {
     float area = 0.;
 
     /**
+     * The mass of a triangle can vary, depending on the density and amount
+     * of attached scalar quantities. Mass is the weighted average of the
+     * attached scalar quantity densities times the area.
+     */
+    float mass = 0.;
+
+    /**
      * Normalized normal vector (magnitude is triangle area), oriented away from
      * cellIds[0].
      *
@@ -175,6 +182,8 @@ struct MxTriangle : MxObject {
      * partialTriangles[0] contains the partial triangle for cells[0]
      */
     std::array<MxPartialTriangle, 2> partialTriangles;
+    
+    uint32_t id;
 
     /**
      * does this triangle match the given set of vertex

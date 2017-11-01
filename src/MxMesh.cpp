@@ -25,7 +25,7 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 }
 
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
-	VertexPtr v = new MxVertex{pos, {}, {}};
+	VertexPtr v = new MxVertex{0., 0., pos, {}, {}};
     vertices.push_back(v);
     assert(valid(v));
     return v;
@@ -669,6 +669,11 @@ MxMesh::~MxMesh() {
 
 HRESULT MxMesh::positionsChanged() {
     HRESULT result = E_FAIL;
+
+    for(VertexPtr v : vertices) {
+        v->mass = 0;
+        v->area = 0;
+    }
 
     for(TrianglePtr tri : triangles) {
         if((result = tri->positionsChanged() != S_OK)) {

@@ -35,7 +35,14 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
     for(int i = 0; i < mesh->vertices.size(); ++i) {
         VertexPtr v = mesh->vertices[i];
 
-        v->position = v->position + dt * v->force;
+        assert(v->mass > 0 && v->area > 0);
+        
+        float len = v->force.length();
+        float tmp = len / v->mass;
+        int tri = v->triangles.size();
+        float a = v->force.length() / v->mass;
+
+        v->position = v->position + dt * v->force / v->mass;
 
     }
 

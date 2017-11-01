@@ -75,5 +75,12 @@ HRESULT MxTriangle::positionsChanged() {
     // average position of 3 position vectors
     centroid = (v1 + v2 + v3) / 3;
 
+    // TODO: change vertex mass only in response to some sort of mass change
+    // event -- we're mass conserving.
+    for(int i = 0; i < 3; ++i) {
+        vertices[i]->area += area / 3.;
+        vertices[i]->mass += mass / 3.;
+    }
+
     return S_OK;
 }

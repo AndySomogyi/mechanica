@@ -194,8 +194,6 @@ private:
      */
     Magnum::Matrix4 modelMat, viewMat, projMat = Magnum::Math::IdentityInit;
     
-    
-
 
 
 };

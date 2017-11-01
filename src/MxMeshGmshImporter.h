@@ -28,7 +28,8 @@
 class MxMeshGmshImporter {
 public:
 
-    MxMeshGmshImporter(MxMesh& mesh) : mesh{mesh} {};
+    MxMeshGmshImporter(MxMesh& mesh, float density = 1.0) :
+        mesh{mesh}, density{density} {};
 
     HRESULT read(const std::string &path);
 
@@ -60,6 +61,12 @@ private:
 
     MxMesh &mesh;
     Gmsh::Mesh gmsh;
+
+    const float density;
+    
+    uint32_t triId = 0;
+    
+    uint32_t cellId = 0;
 };
 
 /* Node ordering for Gmsh Low order elements

@@ -26,3 +26,6 @@
 [submodule "extern/sundials"]
 	path = extern/sundials
 	url = https://github.com/AndySomogyi/sundials.git
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = git@github.com:AndySomogyi/imgui.git
