@@ -23,7 +23,6 @@ git clone --recursive https://github.com/AndySomogyi/mechanica.git
 Mechanica relies on a few external depencencies that are very standard and easy enough to get. You can grab these from brew:
 
 ```
-brew install glfw
 brew install assimp
 brew install llvm
 brew install fftw
