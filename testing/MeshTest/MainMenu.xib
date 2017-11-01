@@ -650,14 +650,14 @@
         <window title="Mesh Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="335" y="390" width="368" height="231"/>
+            <rect key="contentRect" x="62" y="594" width="368" height="221"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="368" height="231"/>
+                <rect key="frame" x="0.0" y="0.0" width="368" height="221"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KH6-ef-9U6">
-                        <rect key="frame" x="10" y="197" width="65" height="25"/>
+                        <rect key="frame" x="10" y="187" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Step" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="eVb-Hq-0Kl">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -668,7 +668,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Wv-7N-25F">
-                        <rect key="frame" x="10" y="167" width="65" height="25"/>
+                        <rect key="frame" x="10" y="157" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Run" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sFA-IX-s4s">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -679,7 +679,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SAw-am-0pe">
-                        <rect key="frame" x="10" y="137" width="65" height="25"/>
+                        <rect key="frame" x="10" y="127" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Stop" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dOp-n1-i7O">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -690,7 +690,7 @@
                         </connections>
                     </button>
                     <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sFK-eo-CYW">
-                        <rect key="frame" x="8" y="80" width="192" height="19"/>
+                        <rect key="frame" x="8" y="70" width="192" height="19"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="kX5-rB-pma"/>
                         <connections>
@@ -698,7 +698,7 @@
                         </connections>
                     </slider>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SZY-O0-rFM">
-                        <rect key="frame" x="56" y="105" width="96" height="22"/>
+                        <rect key="frame" x="56" y="95" width="96" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="eqS-vh-BoP">
                             <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="mWz-U8-Adg"/>
@@ -711,7 +711,7 @@
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QET-ok-bXK">
-                        <rect key="frame" x="10" y="105" width="43" height="22"/>
+                        <rect key="frame" x="10" y="95" width="43" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="jAF-b2-Xr9">
                             <font key="font" metaFont="system"/>
@@ -720,7 +720,7 @@
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fO2-fh-TET">
-                        <rect key="frame" x="155" y="105" width="43" height="22"/>
+                        <rect key="frame" x="155" y="95" width="43" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="FlZ-5g-VTd">
                             <font key="font" metaFont="system"/>
@@ -729,7 +729,7 @@
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UUO-wU-AtN">
-                        <rect key="frame" x="87" y="197" width="65" height="25"/>
+                        <rect key="frame" x="87" y="187" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Reset" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Zf4-aH-F70">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -741,7 +741,7 @@
                     </button>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-184" y="-292"/>
+            <point key="canvasLocation" x="-304" y="-381.5"/>
         </window>
         <customObject id="494" customClass="AppDelegate">
             <connections>

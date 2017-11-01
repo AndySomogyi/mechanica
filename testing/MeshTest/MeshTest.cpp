@@ -57,35 +57,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 
-void MeshTest::createWindow(int width, int height, int x, int y) {
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-    window = glfwCreateWindow(width, height, "Simple example", NULL, NULL);
-
-    if (!window)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
-
-    glfwSetKeyCallback(window, key_callback);
-
-    glfwSetWindowRefreshCallback(window, window_refresh_callback);
-
-    glfwSetWindowCloseCallback(window, window_close_callback);
-
-    glfwMakeContextCurrent(window);
-    //gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-    glfwSwapInterval(1);
-
-    // NOTE: OpenGL error checks have been omitted for brevity
-}
-
 HRESULT MeshTest::createContext(const Configuration& configuration) {
     CORRADE_ASSERT(context->version() ==
             Version::None,
@@ -143,6 +114,8 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
     }
 
     glfwSetWindowUserPointer(window, this);
+    
+    glfwSetWindowPos(window, 500, 100);
 
     /* Proceed with configuring other stuff that couldn't be done with window
        hints */
@@ -244,11 +217,11 @@ void MeshTest::draw() {
 
     renderer->setViewMatrix(mat);
 
-    renderer->setColor(Color4::blue());
+    renderer->setColor(Color4::yellow());
 
     renderer->setWireframeColor(Color4{0., 0., 0.});
 
-    renderer->setWireframeWidth(0.5);
+    renderer->setWireframeWidth(2.0);
 
     renderer->draw();
 

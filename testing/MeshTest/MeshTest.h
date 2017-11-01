@@ -17,15 +17,16 @@
 #include <Magnum/Primitives/Cube.h>
 #include <Magnum/Version.h>
 #include <Magnum/Renderer.h>
+#include <Magnum/Trade/MeshData3D.h>
+
+
 #include <iostream>
-
-
-
 #include <MxMeshRenderer.h>
+
 #include <LangevinPropagator.h>
 
 
-#include <Magnum/Trade/MeshData3D.h>
+
 
 #include "GrowthModel.h"
 
@@ -48,10 +49,7 @@ struct MeshTest {
 
     LangevinPropagator *propagator = nullptr;
 
-    void createWindow(int width, int height, int x, int y);
-
     HRESULT createContext(const Configuration& configuration);
-
 
     explicit MeshTest();
     explicit MeshTest(const Configuration& configuration);

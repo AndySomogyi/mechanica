@@ -1,6 +1,5 @@
 #import "AppDelegate.h"
 #include <iostream>
-#include "GLFWTest.h"
 
 
 @implementation AppDelegate

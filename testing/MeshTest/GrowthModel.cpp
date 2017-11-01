@@ -15,15 +15,24 @@ GrowthModel::GrowthModel()  {
 
     MxMeshGmshImporter importer{*mesh};
 
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    minTargetArea = 0.01;
+    targetArea = 0.45;
+    maxTargetArea = 1.5;
 
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
+    
 
     //importer.read("/Users/andy/src/mechanica/testing/MeshTest/flatcube.msh");
     
-    minTargetArea = 0.1;
-    targetArea = 2.0;
-    maxTargetArea = 10;
+    // cube
+    //importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
+    //minTargetArea = 0.1;
+    //targetArea = 2.0;
+    //maxTargetArea = 15;
+    
+    
+    
+    
     
     
 

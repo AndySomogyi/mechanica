@@ -1,9 +1,3 @@
-
-set(GLAD
-  "${GLFW_SOURCE_DIR}/deps/glad/glad.h"
-  "${GLFW_SOURCE_DIR}/deps/glad.c"
-  )
-
 add_executable(
   MeshTest
   MACOSX_BUNDLE
@@ -15,7 +9,6 @@ add_executable(
   GrowthModel.cpp
   main.mm
   MainMenu.xib
-  ${GLAD}
   )
 
 
