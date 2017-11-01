@@ -9,10 +9,10 @@
 #define SRC_MXTESTMDCOREPARTICLES_H_
 
 #include "mechanica_private.h"
-#include "mdcore_single.h"
+
 
 class MxTestMDCoreParticles {
-	engine eng;
+	//engine eng;
 };
 
 #endif /* SRC_MXTESTMDCOREPARTICLES_H_ */

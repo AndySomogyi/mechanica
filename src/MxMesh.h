@@ -16,7 +16,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
 #include "mechanica_private.h"
-#include "mdcore_single.h"
+
 
 #include "MxCell.h"
 #include "MxEdge.h"

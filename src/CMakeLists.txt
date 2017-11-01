@@ -186,7 +186,6 @@ target_include_directories(mechanica PUBLIC
 #target_link_libraries(mechanica glfw)
 #target_link_libraries(mechanica ${OPENGL_LIBRARIES})
 target_link_libraries(mechanica
-  mdcore_single
   ${PYTHON_LIBRARIES}
   Magnum::Application
   Magnum::Magnum

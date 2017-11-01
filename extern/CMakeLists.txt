@@ -31,15 +31,15 @@ message("GLFW_LIBRARY: ${GLFW_LIBRARY}")
 
 add_subdirectory(soil)
 
-set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
+#set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
 #option(MDCORE_USE_FFTW3 "use FFTW" YES)
 
-add_subdirectory(mdcore)
+#add_subdirectory(mdcore)
 
 
 # Disable building extras we won't need (pure C++ project)
-set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
-set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+#set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
+#set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 
 # Add the configurations from nanogui
 #add_subdirectory(nanogui)
@@ -75,7 +75,6 @@ set(WITH_PNGIMPORTER       ON CACHE BOOL "build PNG importer"    FORCE)
 add_subdirectory(magnum)
 
 add_subdirectory(magnum-plugins)
-
 
 # SUNDIALS options
 set(BUILD_ARKODE         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
