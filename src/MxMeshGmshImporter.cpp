@@ -124,6 +124,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[8];
     MxCell &cell = *mesh.createCell();
+    cell.id = cellId++;
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -250,10 +251,13 @@ void MxMeshGmshImporter::createTriangleForCell(
     }
     else {
         tri = mesh.createTriangle(nullptr, verts);
+        tri->id = triId++;
     }
 
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
+
+    tri->mass = density * tri->area;
 
     Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
     float orientation = Math::dot(meshNorm, tri->normal);

@@ -190,6 +190,8 @@ struct MxCell : MxObject, MxMeshNode {
     float volume = 0;
 
     Vector3 centroid = {0., 0., 0.};
+    
+    uint32_t id = 0;
 };
 
 #endif /* SRC_MXCELL_H_ */

@@ -21,8 +21,10 @@ struct GrowthModel : public MxModel {
 
 
     HRESULT cellAreaForce(CellPtr cell);
-
-
+    
+    float minTargetArea;
+    float maxTargetArea;
+    float targetArea;
 };
 
 

@@ -16,10 +16,15 @@ find_package(Magnum REQUIRED
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
 
 add_executable(gmsh1
+  MACOSX_BUNDLE
   GmshTest1.cpp
   SphereShader.cpp
   SphereShader.h
   )
+
+set_target_properties(gmsh1 PROPERTIES
+
+    MACOSX_BUNDLE_INFO_PLIST "${GLFW_SOURCE_DIR}/CMake/MacOSXBundleInfo.plist.in")
 
 target_link_libraries(gmsh1
   mechanica

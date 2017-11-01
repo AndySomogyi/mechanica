@@ -69,6 +69,20 @@ protected:
 };
 
 struct MxVertex {
+    /**
+     * The Mechanica vertex does not represent a point mass as in a traditional
+     * particle based approach. Rather, the vertex here represents a region of space,
+     * hence, we need to calculate the mass as a weighted sum of all the neighboring
+     * triangles.
+     *
+     * TODO: We presently compute the mass in the MxTriangle::positionsChanged method.
+     * This approach is not very cache friendly, will come up with a more optimal
+     * solution in a later release.
+     */
+    float mass;
+
+    float area;
+
     Magnum::Vector3 position;
     Magnum::Vector3 velocity;
     Magnum::Vector3 force;
