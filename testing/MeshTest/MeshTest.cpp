@@ -13,7 +13,7 @@ using namespace Magnum::Platform;
 
 
 MeshTest::Configuration::Configuration():
-    _title{"Magnum GLFW Application"},
+    _title{"Mesh Test"},
     _size{800, 600}, _sampleCount{0},
     _version{Version::GL410},
     _windowFlags{WindowFlag::Focused},
@@ -212,7 +212,7 @@ void MeshTest::draw() {
 
     renderer->setProjectionMatrix(projection);
 
-    Matrix4 mat = Matrix4::translation({0.0f, 0.0f, -5.0f}) *
+    Matrix4 mat = Matrix4::translation({0.0f, 0.0f, -10.0f}) *
         transformation  * Matrix4::translation(-center);
 
     renderer->setViewMatrix(mat);

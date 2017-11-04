@@ -17,6 +17,24 @@
 #include <Magnum/Mesh.h>
 
 
+struct MagnumCellRenderer : MxCellRenderer {
+
+
+    CellPtr cell;
+    Magnum::Mesh mesh;
+    Magnum::Buffer indexBuffer;
+    Magnum::Buffer vertexBuffer;
+
+    MagnumCellRenderer(CellPtr cell) : cell{cell} {invalidate();};
+
+    void draw(AbstractShaderProgram& shader);
+
+    virtual HRESULT invalidate();
+
+    virtual ~MagnumCellRenderer();
+};
+
+
 
 /**
  * purpose: map the geometry of an MxMesh object to the screen, preform the
@@ -181,7 +199,7 @@ private:
     std::vector<CellGPUObjects> gpuObjects;
 
 
-    void addCellGPUObjects(MxCell &cell);
+    void addCellGPUObjects(CellPtr cell);
 
 
     /**
@@ -193,7 +211,7 @@ private:
      * Therefore you do totalmat = proj * view * model.
      */
     Magnum::Matrix4 modelMat, viewMat, projMat = Magnum::Math::IdentityInit;
-    
+
 
 
 };

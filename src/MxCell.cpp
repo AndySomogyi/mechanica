@@ -18,33 +18,6 @@ bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex 
 }
 
 
-
-static void connectPartialTriangles(MxPartialTriangle &pf1, MxPartialTriangle &pf2) {
-    assert(pf1.triangle != pf2.triangle && "partial triangles are on the same triangle");
-
-    assert((!pf1.neighbors[0] || !pf1.neighbors[1] || !pf1.neighbors[2])
-           && "connecting partial face without empty slots");
-    assert((!pf2.neighbors[0] || !pf2.neighbors[1] || !pf2.neighbors[2])
-           && "connecting partial face without empty slots");
-
-    for(uint i = 0; i < 3; ++i) {
-        assert(pf1.neighbors[i] != &pf1 && pf1.neighbors[i] != &pf2);
-        if(!pf1.neighbors[i]) {
-            pf1.neighbors[i] = &pf2;
-            break;
-        }
-    }
-
-    for(uint i = 0; i < 3; ++i) {
-        assert(pf2.neighbors[i] != &pf1 && pf2.neighbors[i] != &pf2);
-        if(!pf2.neighbors[i]) {
-            pf2.neighbors[i] = &pf1;
-            break;
-        }
-    }
-}
-
-
 bool MxCell::manifold() const {
 
     for(auto t : boundary) {
@@ -264,7 +237,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
             if(adjacent(pt->triangle, tri)) {
-                connectPartialTriangles(*pt, tri->partialTriangles[index]);
+                connect(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
             }

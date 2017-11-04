@@ -95,6 +95,16 @@ struct MxPartialTriangle : MxObject {
      * defined by reactions and odes.
      */
     MxReal *scalarFields;
+
+    int unboundNeighborCount() {
+        int count = 0;
+        for(int i = 0; i < 3; ++i) {
+            if(neighbors[i] == nullptr) {
+                count += 1;
+            }
+        }
+        return count;
+    }
 };
 
 
@@ -182,7 +192,7 @@ struct MxTriangle : MxObject {
      * partialTriangles[0] contains the partial triangle for cells[0]
      */
     std::array<MxPartialTriangle, 2> partialTriangles;
-    
+
     uint32_t id;
 
     /**
@@ -232,6 +242,9 @@ struct MxTriangle : MxObject {
 			FacetPtr facet = nullptr);
 
 
+	VertexPtr replaceChild(VertexPtr newVertex, VertexPtr oldVertex);
+
+
     /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.
@@ -241,7 +254,7 @@ struct MxTriangle : MxObject {
 
 namespace Magnum { namespace Math {
 
-/**
+    /**
      * calculates the normal vector for three triangle vertices.
      *
      * Assumes CCW winding.

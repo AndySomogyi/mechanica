@@ -22,13 +22,15 @@
  * facet. If a facet contains both vertices, then it is a radial facet.
  */
 struct MxEdge {
-    const MxVertex *a;
-    const MxVertex *b;
+    MxVertex *a;
+    MxVertex *b;
 
     typedef std::vector<FacetPtr> FacetVector;
     typedef std::vector<TrianglePtr> TriangleVector;
 
     MxEdge(VertexPtr a, VertexPtr b);
+    
+    MxEdge(const Edge& e) : MxEdge{e[0], e[1]} {};
 
     /**
      * find the edge that connects a pair of triangles. If these
@@ -51,7 +53,10 @@ struct MxEdge {
     bool operator > (const MxEdge& other) const;
 
     bool operator == (const std::array<VertexPtr, 2> &verts) const;
-
+    
+    float length() const {
+        return (a->position - b->position).length();
+    }
 
 
     bool incidentTo(const MxTriangle& tri) const;

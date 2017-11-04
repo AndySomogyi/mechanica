@@ -242,6 +242,7 @@ struct MxMesh  {
      */
     TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &verts);
 
+
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
@@ -275,14 +276,86 @@ struct MxMesh  {
 
     HRESULT collapseEdge(const MxEdge& edge);
 
+    /**
+     * A manifold edge is an edge on a closed surface, it
+     * resided between exactly two triangles. If the given edge
+     * does not have one or two indicent triangles, returns a failure.
+     *
+     * To split an edge, it doesn't really matter if this edge is a
+     * manifold edge or not. This method creates a new vertex at the
+     * center of this edge, and splits each incident triangle into
+     * two, and reconnects them. Each new triangle maintains the same
+     * cell connectivity relationships.
+     *
+     * For every triangle connected to an edge like:
+     *
+     *
+     *     edge.a
+     *       *
+     *       | \
+     *       |   \
+     *       |     \    B
+     *       |       \
+     *       |         \
+     *       |          * c
+     *    A  |         /
+     *       |        /
+     *       |       /
+     *       |      /  C
+     *       |     /
+     *       |    /
+     *       |   /
+     *       |  /
+     *       | /
+     *       *
+     *    edge.b
+     *
+     *       *
+     *       | \
+     *       |   \
+     *       |     \    <- new triangle
+     *       |       \
+     *       |         \
+     *       |      _ - * c
+     *       |  _ -    /
+     *    n  *-       /
+     *       |       /
+     *       |      /
+     *       |     /    <- old triangle
+     *       |    /
+     *       |   /
+     *       |  /
+     *       | /
+     *       *
+     *
+     *  * maintain a list of the newly created triangles.
+     *  * for each existing triangle
+     *        disconnect the old triangle from the top vertex
+     *        disconnect the old triangle from the a-c edge
+     *        create a new triangle
+     *        attach the new tri to the old triangle, and the a-c edge
+     *        add new tri to list
+     *        add new tri to each cell that the old tri belongs to.
+     *
+     *  * for each new tri
+     *        connect the tri to the next and prev tri around the n-a edge
+     *
+     */
     HRESULT splitEdge(const MxEdge &e);
 
-    HRESULT collapseHTriangle(TrianglePtr tri);
 
-    //HRESULT collapseHTriangleOld(MxTriangle &tri);
 
-    HRESULT collapseIEdge(const MxEdge &edge);
-
+    /**
+     * A manifold edge is an edge on a closed surface, it
+     * resided between exactly two triangles. If the given edge
+     * does not have one or two incident triangles, returns a failure.
+     *
+     * This method collapses the two incident triangles such that the
+     * this edge is replaced with a new vertex at the center of this edge,
+     * and the two incident triangles are removed and replaced with edges.
+     * The two remaining triangles adjacent to each triangle are then
+     * re-connected with each other.
+     */
     HRESULT collapseManifoldEdge(const MxEdge &e);
 
     bool valid(TrianglePtr p);
@@ -293,6 +366,12 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
+    /**
+     * Process all of the edges that are too long or too short, and adaptively refine
+     * coarsen the mesh topology.
+     */
+    HRESULT updateMeshToplogy();
+
     CellPtr rootCell() {return _rootCell;};
 
     std::vector<TrianglePtr> triangles;
@@ -300,11 +379,15 @@ struct MxMesh  {
     std::vector<CellPtr> cells;
     std::deque<FacetPtr> facets;
 
+    float shortCutoff = 0.0;
+    float longCutoff = 1.5;
+
 
 private:
 
+    HRESULT collapseHTriangle(TrianglePtr tri);
 
-
+    HRESULT collapseIEdge(const MxEdge &edge);
 
     /**
      * Splits a vertex located at the boundary of a facet. The given vertex gets removed from the
@@ -363,31 +446,44 @@ private:
     // the std::priority_queue container is protected, and we need to check
     // if the item is contained before inserting.
     template<class Compare>
-    class EdgeQueue : public std::priority_queue<MxEdge, std::deque<MxEdge>, Compare> {
-        typedef std::priority_queue<MxEdge, std::deque<MxEdge>, Compare>  _base;
+    class EdgeQueue : public std::priority_queue<Edge, std::deque<Edge>, Compare> {
+        typedef std::priority_queue<Edge, std::deque<Edge>, Compare>  _base;
     public:
-        bool contains(const std::array<VertexPtr, 2> &value) const {
+        bool contains(const Edge &value) const {
             for(auto i = _base::c.begin(); i < _base::c.end(); i++) {
-                const MxEdge& e = *i;
-                if(e == value) {
+                const Edge& e = *i;
+                if((e[0] == value[0] && e[1] == value[1]) || (e[1] == value[0] && e[0] == value[1])) {
                     return true;
                 }
             }
             return false;
         }
 
-        void push(const std::array<VertexPtr, 2> &value) {
+        void push(const Edge &value) {
             if (!contains(value)) {
-                _base::push(MxEdge{value[0], value[1]});
+                _base::push(value);
             }
         }
+
+
     };
 
-    EdgeQueue<std::less<MxEdge>> shortEdges;
-    EdgeQueue<std::greater<MxEdge>> longEdges;
+    struct edge_less
+    {
+        bool operator()(const Edge& a, const Edge& b) const
+        {return length(a) < length(b);}
+    };
 
-    float shortCutoff = 0.2;
-    float longCutoff = 0.5;
+    struct edge_greater
+    {
+        bool operator()(const Edge& a, const Edge& b) const
+        {return length(a) > length(b);}
+    };
+
+    EdgeQueue<edge_greater> shortEdges;
+    EdgeQueue<edge_less> longEdges;
+
+
 
     CellPtr _rootCell;
 

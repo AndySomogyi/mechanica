@@ -112,6 +112,18 @@ struct MxVertexAttribute {
 };
 
 
+/**
+ * TODO: clean up the naming convention.
+ *
+ * An Edge is a lightweight pair of vertices, but an MxEdge is a heavy
+ * struct that enumerates all the the triangle relationships.
+ */
+typedef std::array<VertexPtr, 2> Edge;
+
+inline float length(const Edge& edge) {
+    return (edge[0]->position - edge[1]->position).length();
+}
+
 
 
 #endif /* SRC_MXMESHCORE_H_ */

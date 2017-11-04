@@ -84,3 +84,28 @@ HRESULT MxTriangle::positionsChanged() {
 
     return S_OK;
 }
+
+VertexPtr MxTriangle::replaceChild(VertexPtr newVertex, VertexPtr oldVertex) {
+    assert(contains(oldVertex->triangles, this));
+    remove(oldVertex->triangles, this);
+    for(uint i = 0; i < 3; ++i) {
+        if(vertices[i] == oldVertex) {
+            vertices[i] = newVertex;
+            newVertex->triangles.push_back(this);
+            break;
+        }
+    }
+
+    for(uint i = 0; i < 2; ++i) {
+        for(uint j = 0; j < 3; ++j) {
+            for(uint k = 0; k < 3; ++k) {
+                if(partialTriangles[i].neighbors[j] &&
+                        !incident(partialTriangles[i].neighbors[j], {{vertices[k], vertices[(k+1)%3]}})) {
+                    disconnect(partialTriangles[i].neighbors[j], {{vertices[k], vertices[(k+1)%3]}});
+                }
+            }
+        }
+    }
+    positionsChanged();
+    return oldVertex;
+}

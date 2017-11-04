@@ -326,6 +326,9 @@ FacetPtr MxMesh::createFacet(MxFacetType* type, CellPtr a, CellPtr b) {
 	return facet;
 }
 
+HRESULT MxMesh::updateMeshToplogy() {
+}
+
 bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
         MxCell* c0, MxCell* c1, MxTriangle* tri) {
 
@@ -523,18 +526,171 @@ HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
 	return -1;
 }
 
+static int ctr = 0;
+
 /**
  * go around the ring of the edge, and split every incident triangle on
  * that edge. Creates a new vertex at the midpoint of this edge.
  */
 HRESULT MxMesh::splitEdge(const MxEdge& e) {
-	auto triangles = e.radialTriangles();
+    auto triangles = e.radialTriangles();
+    
+    assert(triangles.size() >= 2);
+    
+    ctr += 1;
+    
+    if(ctr >= 23) {
+        std::cout << "oh shit... \n";
+    }
 
-	for (auto tri : triangles) {
+    // new vertex at the center of this edge
+    Vector3 center = (e.a->position + e.b->position) / 2.;
+    VertexPtr vert = createVertex(center);
 
-	}
+    TrianglePtr firstNewTri = nullptr;
+    TrianglePtr prevNewTri = nullptr;
 
-	return 0;
+    for(uint i = 0; i < triangles.size(); ++i)
+    {
+        TrianglePtr tri = triangles[i];
+
+        #ifndef NDEBUG
+        float originalArea = tri->area;
+        #endif
+
+        // find the outside tri vertex
+        VertexPtr outer = nullptr;
+        for(uint i = 0; i < 3; ++i) {
+            if(tri->vertices[i] !=  e.b && tri->vertices[i] != e.a ) {
+                outer = tri->vertices[i];
+                break;
+            }
+        }
+        assert(outer);
+
+        // copy of old triangle vertices, replace the bottom (a) vertex
+        // here with the new center vertex
+        auto vertices = tri->vertices;
+        for(uint i = 0; i < 3; ++i) {
+            if(vertices[i] == e.a) {
+                vertices[i] = vert;
+                break;
+            }
+        }
+
+        // the original triangle has three vertices in the order
+        // {a, outer, b}, in CCW winding order. The new vertices in the same
+        // winding order are {vert, outer, b}. Because we ensure the same winding
+        // we can set up the cell pointers and partial triangles in the same
+        // order.
+        TrianglePtr nt = createTriangle((MxTriangleType*)tri->ob_type, vertices);
+        nt->cells = tri->cells;
+        nt->partialTriangles[0].ob_type = tri->partialTriangles[0].ob_type;
+        nt->partialTriangles[1].ob_type = tri->partialTriangles[1].ob_type;
+
+        // make damned sure the winding is correct and the new triangle points
+        // in the same direction as the existing one
+        assert(Math::dot(nt->normal, tri->normal) >= 0);
+
+
+        if(tri->facet) {
+            tri->facet->appendChild(nt);
+        }
+
+        // remove the b vertex from the old triangle, and replace it with the
+        // new center vertex
+        assert(contains(e.b->triangles, tri));
+        remove(e.b->triangles, tri);
+        for(uint i = 0; i < 3; ++i) {
+            if(tri->vertices[i] == e.b) {
+                tri->vertices[i] = vert;
+                vert->triangles.push_back(tri);
+                break;
+            }
+        }
+        tri->positionsChanged();
+
+        // make damned sure the winding is correct and the new triangle points
+        // in the same direction as the existing one, but now with the
+        // replaced b vertex
+        assert(Math::dot(nt->normal, tri->normal) >= 0);
+
+        // make sure at most 1% difference in new total area and original area.
+        assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
+
+        // makes sure that new and old tri share an edge.
+        assert(adjacent(tri, nt));
+
+        // removes the e.b - outer edge connection connection from the old
+        // triangle and replaces it with the new triangle,
+        // manually add the partial triangles to the cell
+        for(uint i = 0; i < 2; ++i) {
+            if(tri->cells[i] != rootCell()) {
+            
+                assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+                assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
+                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{e.b, outer}});
+                assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
+                assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
+                connect(&tri->partialTriangles[i], &nt->partialTriangles[i]);
+                assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+                assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
+                tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
+                if(tri->cells[i]->renderer) {
+                    tri->cells[i]->renderer->invalidate();
+                }
+            }
+        }
+
+        assert(incident(nt, {{e.b, outer}}));
+        assert(!incident(tri, {{e.b, outer}}));
+
+        //connect(tri, nt);
+        
+        //for(uint i = 0; i < 2; ++i) {
+        //    if(tri->cells[i] != rootCell()) {
+        //
+        //        assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
+        //        assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
+        //        connect(&tri->partialTriangles[i], &nt->partialTriangles[i]);
+        //        assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+        //        assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
+        //    }
+        //}
+
+        // split the mass according to area
+        nt->mass = nt->area / (nt->area + tri->area) * tri->mass;
+        tri->mass = tri->area / (nt->area + tri->area) * tri->mass;
+
+        if(i == 0) {
+            firstNewTri = nt;
+            prevNewTri = nt;
+        } else {
+            connect(nt, prevNewTri);
+            prevNewTri = nt;
+        }
+    }
+
+    // connect the first and last new triangles. If this is a
+    // manifold edge, only 2 new triangles, which already got
+    // connected above.
+    if(triangles.size() > 2) {
+        connect(firstNewTri, prevNewTri);
+    }
+
+#ifndef NDEBUG
+    for(auto tri : triangles) {
+        if(tri->cells[0] != rootCell()) {
+            assert(tri->cells[0]->manifold());
+        }
+
+        if(tri->cells[1] != rootCell()) {
+            assert(tri->cells[1]->manifold());
+        }
+    }
+#endif
+
+    return S_OK;
 }
 
 HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
@@ -716,11 +872,14 @@ HRESULT MxMesh::positionsChanged() {
 HRESULT MxMesh::processOffendingEdges() {
     HRESULT result;
     while(!longEdges.empty()) {
-        result = splitEdge(longEdges.top());
-        if(result == S_OK) {
-            longEdges.pop();
-        } else {
-            return result;
+        MxEdge edge = longEdges.top();
+        longEdges.pop();
+        std::cout << "trying edge split len " << edge.length() << std::endl;
+        if(edge.length() >= longCutoff) {
+            result = splitEdge(edge);
+            if(result != S_OK) {
+                return result;
+            }
         }
     }
     return S_OK;
