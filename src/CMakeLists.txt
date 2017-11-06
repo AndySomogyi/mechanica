@@ -85,6 +85,7 @@ set(SRC
   ScalarField.cpp
   MxEdge.cpp
   MeshRelationships.cpp
+  stochastic_rk.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -133,6 +134,7 @@ set(HEADERS
   ScalarField.h
   MxEdge.h
   MeshRelationships.h
+  stochastic_rk.h
   )
 
 
@@ -140,7 +142,7 @@ set(HEADERS
 
 # For development, for the time being, we won't build the object library
 # because it takes longer to build if we're only building one library,
-# and won't build the py version for a while. 
+# and won't build the py version for a while.
 
 # build all the source as a CMake 'OBJECT' lib, this gets
 # linked into the real libraries below.

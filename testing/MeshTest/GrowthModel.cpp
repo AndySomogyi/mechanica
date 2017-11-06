@@ -138,7 +138,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
     for(auto f: cell->facets) {
         for(auto tri : f->triangles) {
             
-            Vector3 force = 0.01 * tri->normal * tri->area * diff;
+            Vector3 force = 0.5 * tri->normal * tri->area * diff;
             
             for(int v = 0; v < 3; ++v) {
                 tri->vertices[v]->force +=  force;

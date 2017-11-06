@@ -12,6 +12,7 @@
 #include <list>
 #include <deque>
 #include <queue>
+#include <random>
 
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
@@ -381,6 +382,12 @@ struct MxMesh  {
 
     float shortCutoff = 0.0;
     float longCutoff = 1.5;
+    
+    /**
+     * random percent of difference from true center of split
+     * edge. Number between 0 and 1. 
+     */
+    float edgeSplitStochasticAsymmetry = 0.2;
 
 
 private:
@@ -486,6 +493,11 @@ private:
 
 
     CellPtr _rootCell;
+    
+    
+    std::default_random_engine randEngine;
+    std::uniform_real_distribution<float> uniformDist;
+
 
     friend struct MxVertex;
     friend struct MxTriangle;

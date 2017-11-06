@@ -112,6 +112,8 @@ MxPartialTriangleType *MxUniversePartialTriangle_Type =
 MxMesh::MxMesh()
 {
     _rootCell = createCell();
+    float range = edgeSplitStochasticAsymmetry / 2;
+    uniformDist = std::uniform_real_distribution<float>(-range, range);
 }
 
 
@@ -545,6 +547,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 
     // new vertex at the center of this edge
     Vector3 center = (e.a->position + e.b->position) / 2.;
+    center = center + (e.a->position - e.b->position) * uniformDist(randEngine);
     VertexPtr vert = createVertex(center);
 
     TrianglePtr firstNewTri = nullptr;

@@ -7,6 +7,7 @@
 
 #include <LangevinPropagator.h>
 #include <MxModel.h>
+#include "stochastic_rk.h"
 
 LangevinPropagator::LangevinPropagator(MxModel* m) :
     model{m}, mesh{m->mesh} {
@@ -36,7 +37,7 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
         VertexPtr v = mesh->vertices[i];
 
         assert(v->mass > 0 && v->area > 0);
-        
+
         float len = v->force.length();
         float tmp = len / v->mass;
         int tri = v->triangles.size();
