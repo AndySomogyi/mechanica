@@ -16,7 +16,7 @@ GrowthModel::GrowthModel()  {
 
     MxMeshGmshImporter importer{*mesh};
     
-    /*
+    
     
     mesh->shortCutoff = 0;
     mesh->longCutoff = 10;
@@ -30,7 +30,7 @@ GrowthModel::GrowthModel()  {
     maxTargetVolume = 0.03;
      
     
-     */
+    
     
 
     //importer.read("/Users/andy/src/mechanica/testing/MeshTest/flatcube.msh");
@@ -38,6 +38,7 @@ GrowthModel::GrowthModel()  {
     
     // cube
     
+    /*
     mesh->shortCutoff = 0;
     mesh->longCutoff = 0.6;
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
@@ -48,6 +49,7 @@ GrowthModel::GrowthModel()  {
     targetVolume = 1.5;
     minTargetVolume = 0.5;
     maxTargetVolume = 25.0;
+     */
     
     
 }
