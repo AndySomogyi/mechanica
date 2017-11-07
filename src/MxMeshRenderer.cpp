@@ -9,6 +9,8 @@
 #include <MxMeshRenderer.h>
 #include <MxMeshShaderProgram.h>
 
+typedef MxMeshShaderProgram ShaderProgram;
+
 
 MxMeshRenderer::MxMeshRenderer(Flags flags) :
         shader{new MxMeshShaderProgram(flags)},
@@ -72,11 +74,11 @@ void MxMeshRenderer::draw() {
         if(cell == mesh->rootCell()) {
             continue;
         }
-        
+
         if(!cell->renderer) {
             cell->renderer = new MagnumCellRenderer{cell};
         }
-        
+
         ((MagnumCellRenderer*)cell->renderer)->draw(*shader);
     }
 }
@@ -96,31 +98,14 @@ std::string glErrorString() {
     }
 }
 
-void MxMeshRenderer::addCellGPUObjects(CellPtr cell) {
-    CellGPUObjects obj;
 
-    Buffer vertexBuffer;
-    vertexBuffer.setData({nullptr, cell->vertexCount() * sizeof(Vector3)}, BufferUsage::DynamicDraw);
-    obj.vertexBuffers.push_back(std::move(vertexBuffer));
-
-
-    //obj.indexBuffer.setData({nullptr, cell.faceCount() * 3 * sizeof(uint)}, BufferUsage::DynamicDraw);
-
-
-    obj.mesh.setCount(cell->faceCount() * 3)
-            .setPrimitive(MeshPrimitive::Triangles)
-            .addVertexBuffer(obj.vertexBuffers[0], 0, Attribute<0, Vector3>{});
-            //.setIndexBuffer(obj.indexBuffer, 0, Mesh::IndexType::UnsignedInt);
-
-    gpuObjects.push_back(std::move(obj));
-}
 
 MxMeshRenderer::~MxMeshRenderer() {
     delete shader;
 }
 
 MxMeshRenderer& MxMeshRenderer::setMesh(MxMesh* _mesh) {
-    gpuObjects.clear();
+
     mesh = _mesh;
 
     for(auto cell : mesh->cells) {
@@ -154,9 +139,11 @@ MxMeshRenderer& MxMeshRenderer::setProjectionMatrix(
 void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
     indexBuffer.unmap();
 
-    void* vertexPtr = vertexBuffer.map<void>(0,  cell->vertexCount() * sizeof(Vector3),
+    void* vertexPtr = vertexBuffer.map<void>(0,
+            cell->vertexCount() * ShaderProgram::AttributeSize,
             Buffer::MapFlag::Write|Buffer::MapFlag::InvalidateBuffer);
-    cell->vertexAtributeData({}, cell->vertexCount(), sizeof(Vector3), vertexPtr);
+
+    cell->vertexAtributeData({}, cell->vertexCount(), ShaderProgram::AttributeSize, vertexPtr);
 
     //dumpVertex(vertexPtr, cell.vertexCount());
 
@@ -167,13 +154,14 @@ void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
 
 HRESULT MagnumCellRenderer::invalidate() {
 
-    vertexBuffer.setData({nullptr, cell->vertexCount() * sizeof(Vector3)}, BufferUsage::DynamicDraw);
+    vertexBuffer.setData({nullptr, cell->vertexCount() * sizeof(VertexAttribute)},
+                         BufferUsage::DynamicDraw);
 
     mesh = Mesh{};
 
     mesh.setCount(cell->faceCount() * 3)
             .setPrimitive(MeshPrimitive::Triangles)
-            .addVertexBuffer(vertexBuffer, 0, Attribute<0, Vector3>{});
+            .addVertexBuffer(vertexBuffer, 0, ShaderProgram::Position{}, ShaderProgram::Color{});
             //.setIndexBuffer(obj.indexBuffer, 0, Mesh::IndexType::UnsignedInt);
 
     return S_OK;

@@ -44,42 +44,16 @@
 #extension GL_NV_shader_noperspective_interpolation: require
 #endif
 
-#ifdef EXPLICIT_UNIFORM_LOCATION
-layout(location = 2)
-#endif
-uniform lowp vec4 color
-    #ifndef GL_ES
-    = vec4(1.0, 1.0, 1.0, 1.0)
-    #endif
-    ;
+
+layout(location = 2) uniform lowp vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
 
 #ifdef WIREFRAME_RENDERING
-#ifdef EXPLICIT_UNIFORM_LOCATION
-layout(location = 3)
-#endif
-uniform lowp vec4 wireframeColor
-    #ifndef GL_ES
-    = vec4(0.0, 0.0, 0.0, 1.0)
-    #endif
-    ;
 
-#ifdef EXPLICIT_UNIFORM_LOCATION
-layout(location = 4)
-#endif
-uniform lowp float wireframeWidth
-    #ifndef GL_ES
-    = 1.0
-    #endif
-    ;
+layout(location = 3) uniform lowp vec4 wireframeColor = vec4(0.0, 0.0, 0.0, 1.0);
 
-#ifdef EXPLICIT_UNIFORM_LOCATION
-layout(location = 5)
-#endif
-uniform lowp float smoothness
-    #ifndef GL_ES
-    = 2.0
-    #endif
-    ;
+layout(location = 4) uniform lowp float wireframeWidth = 1.0;
+
+layout(location = 5) uniform lowp float smoothness = 2.0;
 
 #ifndef NO_GEOMETRY_SHADER
 #ifdef GL_NV_shader_noperspective_interpolation
@@ -91,26 +65,18 @@ in lowp vec3 barycentric;
 #endif
 #endif
 
-#ifdef NEW_GLSL
+in vec4 geomColor;
 out lowp vec4 fragmentColor;
-#endif
+
 
 void main() {
     #ifdef WIREFRAME_RENDERING
-    #ifndef NO_GEOMETRY_SHADER
     /* Distance to nearest side */
     lowp const float nearest = min(min(dist.x, dist.y), dist.z);
 
     /* Smooth step between face color and wireframe color based on distance */
-    fragmentColor = mix(wireframeColor, color, smoothstep(wireframeWidth-smoothness, wireframeWidth+smoothness, nearest));
+    fragmentColor = mix(wireframeColor, geomColor, smoothstep(wireframeWidth-smoothness, wireframeWidth+smoothness, nearest));
     #else
-    const lowp vec3 d = fwidth(barycentric);
-    const lowp vec3 factor = smoothstep(vec3(0.0), d*1.5, barycentric);
-    const lowp float nearest = min(min(factor.x, factor.y), factor.z);
-    fragmentColor = mix(wireframeColor, color, nearest);
-    #endif
-
-    #else
-    fragmentColor = color;
+    fragmentColor = geomColor;
     #endif
 }

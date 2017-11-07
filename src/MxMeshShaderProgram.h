@@ -160,6 +160,10 @@ class MxMeshShaderProgram: public Magnum::AbstractShaderProgram {
          */
         typedef Magnum::Attribute<0, Magnum::Vector3> Position;
 
+        typedef Magnum::Attribute<1, Magnum::Color4> Color;
+
+        static const size_t AttributeSize = sizeof(Magnum::Vector3) + sizeof(Magnum::Color4);
+
         /**
          * @brief Vertex index
          *

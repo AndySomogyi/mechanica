@@ -49,6 +49,9 @@ noperspective
 #endif
 out lowp vec3 dist;
 
+in vec4 vertColor[];
+out vec4 geomColor;
+
 void main() {
     /* Screen position of each vertex */
     vec2 p[3];
@@ -70,6 +73,7 @@ void main() {
         dist = vec3(0.0, 0.0, 0.0);
         dist[i] = area/length(v[i]);
         gl_Position = gl_in[i].gl_Position;
+        geomColor = vertColor[i];
         EmitVertex();
     }
 

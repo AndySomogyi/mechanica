@@ -5,11 +5,13 @@
  *      Author: andy
  */
 
+
 #include <MxCell.h>
 #include <MxMesh.h>
 #include <iostream>
 #include <algorithm>
 #include <array>
+
 
 #include "MxDebug.h"
 
@@ -37,10 +39,13 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
         //for(auto& attr : attributes) {
 
         const MxTriangle &face = *(boundary[i])->triangle;
-        Vector3 *ppos = (Vector3*)ptr;
-        ppos[0] = face.vertices[0]->position;
-        ppos[1] = face.vertices[1]->position;
-        ppos[2] = face.vertices[2]->position;
+        VertexAttribute *attrs = (VertexAttribute*)ptr;
+        attrs[0].position = face.vertices[0]->position;
+        attrs[0].color = Color4::yellow();
+        attrs[1].position = face.vertices[1]->position;
+        attrs[1].color = Color4::green();
+        attrs[2].position = face.vertices[2]->position;
+        attrs[2].color = Color4::blue();
     }
 }
 

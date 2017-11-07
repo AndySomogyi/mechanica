@@ -1,4 +1,4 @@
-typedef float (*rk_dxdt)(void* user, float x);
+typedef float (*rk_dxdt)(float x);
 
 
 float rk1_ti_step ( float x, float t, float h, float q,

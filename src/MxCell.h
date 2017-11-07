@@ -12,6 +12,7 @@
 #include <vector>
 #include <array>
 #include <Magnum/Magnum.h>
+#include "Magnum/Math/Color.h"
 #include <Magnum/Math/Vector3.h>
 #include "MxMeshCore.h"
 #include "MxTriangle.h"
@@ -206,6 +207,12 @@ struct MxCell : MxObject, MxMeshNode {
     uint32_t id = 0;
 
     MxCellRenderer *renderer = nullptr;
+};
+
+struct VertexAttribute
+{
+    Magnum::Vector3 position;
+    Magnum::Color4 color;
 };
 
 #endif /* SRC_MXCELL_H_ */

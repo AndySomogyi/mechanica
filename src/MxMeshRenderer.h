@@ -190,16 +190,6 @@ private:
     MxMesh *mesh;
     class MxMeshShaderProgram *shader;
 
-    struct CellGPUObjects {
-        Magnum::Mesh mesh;
-        Magnum::Buffer indexBuffer;
-        std::vector<Magnum::Buffer> vertexBuffers;
-    };
-
-    std::vector<CellGPUObjects> gpuObjects;
-
-
-    void addCellGPUObjects(CellPtr cell);
 
 
     /**
