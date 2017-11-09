@@ -14,7 +14,7 @@ static float volume(float radius) {
 }
 
 static float area(float radius) {
-    return 0.7 * M_PI * radius * radius;
+    return 1 * M_PI * radius * radius;
 }
 
 
@@ -70,7 +70,7 @@ static float area(float radius) {
 }
 
 -(IBAction)step:(id)sender {
-    meshTest->step(0.0001);
+    meshTest->step(0.001);
 }
 
 -(IBAction)stop:(id)sender {

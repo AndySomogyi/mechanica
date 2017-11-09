@@ -231,10 +231,10 @@ struct MxMesh  {
     FacetPtr findFacet(CellPtr a, CellPtr b);
 
     /**
-     * Creates a new facet that connects cells a and b.
+     * Creates a new facet of the given facet type. The new facet is added 
+     * to the mesh facet list, but the caller must add the facets to the cells.
      */
-    FacetPtr createFacet(MxFacetType *type, CellPtr a, CellPtr b);
-
+    FacetPtr createFacet(MxFacetType *type);
 
     /**
      * Creates a new triangle for the given three vertices.
@@ -344,6 +344,12 @@ struct MxMesh  {
      */
     HRESULT splitEdge(const MxEdge &e);
 
+    /**
+     * Find a facet that contains two triangles and matches the
+     * given 4 vertices.
+     */
+    FacetPtr findFacet(const std::array<VertexPtr, 4>& verts);
+
 
 
     /**
@@ -373,7 +379,7 @@ struct MxMesh  {
      */
     HRESULT updateMeshToplogy();
 
-    CellPtr rootCell() {return _rootCell;};
+    CellPtr rootCell() const {return _rootCell;};
 
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
@@ -382,10 +388,10 @@ struct MxMesh  {
 
     float shortCutoff = 0.0;
     float longCutoff = 1.5;
-    
+
     /**
      * random percent of difference from true center of split
-     * edge. Number between 0 and 1. 
+     * edge. Number between 0 and 1.
      */
     float edgeSplitStochasticAsymmetry = 0.2;
 
@@ -493,8 +499,8 @@ private:
 
 
     CellPtr _rootCell;
-    
-    
+
+
     std::default_random_engine randEngine;
     std::uniform_real_distribution<float> uniformDist;
 

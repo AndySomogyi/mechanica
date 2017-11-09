@@ -250,6 +250,8 @@ struct MxTriangle : MxObject {
      * cell to recalculate area and volume, also inform all contained objects.
      */
     HRESULT positionsChanged();
+
+    float alpha = 0.5;
 };
 
 namespace Magnum { namespace Math {

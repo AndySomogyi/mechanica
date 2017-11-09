@@ -61,9 +61,42 @@ bool incident(const VertexPtr vertex, const FacetPtr facet) {
 }
 
 void connect(TrianglePtr a, TrianglePtr b) {
+    // check to see that triangles share adjacent vertices.
     assert(adjacent(a, b));
-    connect(&a->partialTriangles[0], &b->partialTriangles[0]);
-    connect(&a->partialTriangles[1], &b->partialTriangles[1]);
+
+    #ifndef NDEBUG
+    int conCnt = 0;
+    int rootCnt = 0;
+    #endif
+
+    // hook up the partial triangles on the correct cell sides.
+    for(uint i = 0; i < 2; ++i) {
+        // don't connect root facing ptris.
+        // in non-debug mode, we never hit the inner loop if
+        // a[i] is the root cell.
+        #ifdef NDEBUG
+        if(a->cells[i]->isRoot()) continue;
+        #endif
+
+        for(uint j = 0; j < 2; ++j) {
+            if(a->cells[i] == b->cells[j]) {
+                #ifndef NDEBUG
+                if(a->cells[i]->isRoot()) {
+                    rootCnt++;
+                    continue;
+                }
+                #endif
+                connect(&a->partialTriangles[i], &b->partialTriangles[j]);
+                #ifndef NDEBUG
+                conCnt++;
+                #endif
+            }
+        }
+    }
+
+    #ifndef NDEBUG
+    assert(rootCnt > 0 || conCnt > 0);
+    #endif
 }
 
 void connect(PTrianglePtr a, PTrianglePtr b) {

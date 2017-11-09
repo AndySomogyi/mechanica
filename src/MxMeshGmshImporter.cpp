@@ -20,6 +20,11 @@ static inline Magnum::Vector3 makeVertex(const double pos[]) {
     return Vector3{float(pos[0]), float(pos[1]), float(pos[2])};
 }
 
+MxCell *MxMeshGmshImporter::createCell(Gmsh::ElementType type, int id) {
+    MxCellType *cellType = (elementCellTypeHandler) ? elementCellTypeHandler(type, id) : nullptr;
+    return mesh.createCell(cellType);
+}
+
 
 
 HRESULT MxMeshGmshImporter::read(const std::string& path) {
@@ -123,7 +128,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[8];
-    MxCell &cell = *mesh.createCell();
+    MxCell &cell = *createCell(Gmsh::ElementType::Hexahedron, val.id);
     cell.id = cellId++;
 
     //for (auto i : gmsh.nodes) {
@@ -139,49 +144,66 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     }
 
     // top face, vertices {2,3,7,6}
-    addSquareFace(cell, {{vertexIds[2], vertexIds[3], vertexIds[7], vertexIds[6]}});
+    addSquareFacet(cell, {{vertexIds[2], vertexIds[3], vertexIds[7], vertexIds[6]}});
 
-    addSquareFace(cell, {{vertexIds[7], vertexIds[3], vertexIds[0], vertexIds[4]}});
+    addSquareFacet(cell, {{vertexIds[7], vertexIds[3], vertexIds[0], vertexIds[4]}});
 
-    addSquareFace(cell, {{vertexIds[6], vertexIds[7], vertexIds[4], vertexIds[5]}});
+    addSquareFacet(cell, {{vertexIds[6], vertexIds[7], vertexIds[4], vertexIds[5]}});
 
-    addSquareFace(cell, {{vertexIds[2], vertexIds[6], vertexIds[5], vertexIds[1]}});
+    addSquareFacet(cell, {{vertexIds[2], vertexIds[6], vertexIds[5], vertexIds[1]}});
 
-    addSquareFace(cell, {{vertexIds[3], vertexIds[2], vertexIds[1], vertexIds[0]}});
+    addSquareFacet(cell, {{vertexIds[3], vertexIds[2], vertexIds[1], vertexIds[0]}});
 
-    addSquareFace(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
+    addSquareFacet(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
     assert(cell.manifold() && "Cell is not manifold");
 
     assert(cell.positionsChanged() == S_OK);
-
-    //assert(mesh.valid(&cell));
 }
 
-void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
+void MxMeshGmshImporter::addSquareFacet(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
 
     assert(mesh.valid(verts[0]));
     assert(mesh.valid(verts[1]));
     assert(mesh.valid(verts[2]));
     assert(mesh.valid(verts[3]));
 
-    float ne = (verts[0]->position - verts[2]->position).length();
-    float nw = (verts[1]->position - verts[3]->position).length();
-    if (nw > ne) {
-        // nw is longer, split along ne axis
-        //mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
-        assert(Math::dot(
-               Math::normal(verts[0]->position, verts[1]->position, verts[2]->position),
-               Math::normal(verts[2]->position, verts[3]->position, verts[0]->position)) > 0);
-            createTriangleForCell(VI{{verts[0], verts[1], verts[2]}}, &cell);
-            createTriangleForCell(VI{{verts[2], verts[3], verts[0]}}, &cell);
+    FacetPtr facet = mesh.findFacet(verts);
+
+    if(facet) {
+        if(incident(facet, mesh.rootCell())) {
+            mesh.rootCell()->removeChild(facet);
+        }
+        assert(facet->cells[0] == nullptr || facet->cells[1] == nullptr);
     } else {
-        assert(Math::dot(
-               Math::normal(verts[1]->position, verts[2]->position, verts[3]->position),
-               Math::normal(verts[3]->position, verts[0]->position, verts[1]->position)) > 0);
-            createTriangleForCell(VI{{verts[1], verts[2], verts[3]}}, &cell);
-            createTriangleForCell(VI{{verts[3], verts[0], verts[1]}}, &cell);
+
+        facet = mesh.createFacet(nullptr);
+
+        float ne = (verts[0]->position - verts[2]->position).length();
+        float nw = (verts[1]->position - verts[3]->position).length();
+        if (nw > ne) {
+            // nw is longer, split along ne axis
+            // mesh.createPartialTriangle(nullptr, cell, VI{{verts[2], verts[1], verts[0]}});
+            assert(Math::dot(
+                   Math::normal(verts[0]->position, verts[1]->position, verts[2]->position),
+                   Math::normal(verts[2]->position, verts[3]->position, verts[0]->position)) > 0);
+                createTriangleForFacet(VI{{verts[0], verts[1], verts[2]}}, facet);
+                createTriangleForFacet(VI{{verts[2], verts[3], verts[0]}}, facet);
+        } else {
+            assert(Math::dot(
+                   Math::normal(verts[1]->position, verts[2]->position, verts[3]->position),
+                   Math::normal(verts[3]->position, verts[0]->position, verts[1]->position)) > 0);
+                createTriangleForFacet(VI{{verts[1], verts[2], verts[3]}}, facet);
+                createTriangleForFacet(VI{{verts[3], verts[0], verts[1]}}, facet);
+        }
     }
+
+    cell.appendChild(facet);
+    if(facet->cells[1] == nullptr) {
+        mesh.rootCell()->appendChild(facet);
+    }
+
+    assert(facet->cells[0] && facet->cells[1]);
 }
 
 
@@ -213,7 +235,7 @@ void MxMeshGmshImporter::addSquareFace(MxCell& cell, const std::array<VertexPtr,
 void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[6];
-    CellPtr cell = mesh.createCell();
+    CellPtr cell = createCell(Gmsh::ElementType::Prism, val.id);
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -230,9 +252,9 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     createTriangleForCell(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}}, cell);
     createTriangleForCell(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}}, cell);
 
-    addSquareFace(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
-    addSquareFace(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
-    addSquareFace(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
+    addSquareFacet(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
+    addSquareFacet(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
+    addSquareFacet(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
 
     assert(cell->manifold() && "Cell is not manifold");
 
@@ -262,4 +284,22 @@ void MxMeshGmshImporter::createTriangleForCell(
     Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
     float orientation = Math::dot(meshNorm, tri->normal);
     cell->appendChild(tri, orientation > 0 ? 0 : 1);
+}
+
+void MxMeshGmshImporter::createTriangleForFacet(
+        const std::array<VertexPtr, 3>& verts, FacetPtr facet) {
+    TrianglePtr tri = mesh.findTriangle(verts);
+
+    assert(tri == nullptr && "triangle already exists when creating facet");
+
+    // creates a new triangle based on the winding order of the vertices.
+    tri = mesh.createTriangle(nullptr, verts);
+    tri->id = triId++;
+
+    assert(tri);
+    assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
+
+    tri->mass = density * tri->area;
+
+    facet->appendChild(tri);
 }

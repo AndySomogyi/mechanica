@@ -14,7 +14,10 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include <functional>
 #include <GmshIO.h>
+
+typedef std::function<MxCellType* (Gmsh::ElementType, int)> ElementCellTypeHandler;
 
 /**
  * Import a Gmsh mesh and generate a Mechanica mesh.
@@ -30,6 +33,9 @@ public:
 
     MxMeshGmshImporter(MxMesh& mesh, float density = 1.0) :
         mesh{mesh}, density{density} {};
+
+    MxMeshGmshImporter(MxMesh& mesh, const ElementCellTypeHandler &handler, float density = 1.0) :
+        mesh{mesh}, density{density}, elementCellTypeHandler{handler} {};
 
     HRESULT read(const std::string &path);
 
@@ -54,19 +60,36 @@ private:
      */
     void createTriangleForCell(const std::array<VertexPtr, 3> &verts, CellPtr cell);
 
+
     /**
-     * Add a square face with the given vertices in CCW order.
+     * Creates a triangle for the given vertices, and adds them to the facet.
+     *
+     * The triangle defined by the given vertices must not exist already. Logic here
+     * is that when a new cell is created, we need to create the faces. If a cell
+     * shares a face with another cell, then either that complete face already exists,
+     * we find it, and hook it up. Otherwise, the face does not exist, and we create
+     * it here. If the face does not exist, then by definition, none of the triangles
+     * that make up that face must exist.
      */
-    void addSquareFace(MxCell &cell, const std::array<VertexPtr, 4> &verts);
+    void createTriangleForFacet(const std::array<VertexPtr, 3> &verts, FacetPtr facet);
+
+    /**
+     * Add a square facet with the given vertices in CCW order.
+     */
+    void addSquareFacet(MxCell &cell, const std::array<VertexPtr, 4> &verts);
+
+    MxCell *createCell(Gmsh::ElementType, int id);
 
     MxMesh &mesh;
     Gmsh::Mesh gmsh;
 
     const float density;
-    
+
     uint32_t triId = 0;
-    
+
     uint32_t cellId = 0;
+
+    ElementCellTypeHandler elementCellTypeHandler;
 };
 
 /* Node ordering for Gmsh Low order elements

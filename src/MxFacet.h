@@ -15,6 +15,12 @@ struct MxFacetType : MxType {
 
 };
 
+
+/**
+ * All of the triangles in a facet must have the correct winding, and the normal,
+ * calculated by the vertex winding must point in the correct outward direction,
+ * with respect to the cell at the cells[0] index.
+ */
 struct MxFacet : MxObject, MxMeshNode {
 
 	MxFacet (MxFacetType *type, MeshPtr msh, const std::array<CellPtr, 2> &cells);

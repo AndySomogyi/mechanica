@@ -40,6 +40,17 @@ struct MxCellType : MxType {
      * Store the stoichiometry matrix in the type, initially Mechanica will
      * not support time-dependent stochiometries.
      */
+
+
+    /**
+     * TODO: hideously bad design, this is a complete and total fucking hack, fix
+     * this shit at soon as possible.
+     *
+     * Color has no business here, cell rendering should be delegated completely to a
+     * plugable cell renderer object. The cell renderer would likely be a closure of
+     * some sort.
+     */
+    Magnum::Color4 color;
 };
 
 
@@ -102,6 +113,12 @@ struct MxCell : MxObject, MxMeshNode {
      * boundary in non-manifold.
      */
     bool manifold() const;
+
+
+    /**
+     * is this the root cell?
+     */
+    bool isRoot() const;
 
     enum VolumeMethod { ConvexTrapezoidSum, GeneralDivergence };
 
@@ -170,6 +187,10 @@ struct MxCell : MxObject, MxMeshNode {
      */
     HRESULT removeChild(TrianglePtr tri);
 
+    HRESULT removeChild(FacetPtr);
+
+    HRESULT appendChild(FacetPtr);
+
 
     /**
      * Inform the cell that the vertex positions have changed. Causes the
@@ -207,8 +228,20 @@ struct MxCell : MxObject, MxMeshNode {
     uint32_t id = 0;
 
     MxCellRenderer *renderer = nullptr;
+
+    bool render = true;
+
+private:
+    HRESULT appendTriangleFromFacet(TrianglePtr tri, int index);
+
+    HRESULT removeTriangleFromFacet(TrianglePtr tri, int index);
 };
 
+
+/**
+ * TODO, horribly bad design, need to completely reevaluate how we handle cell
+ * rendering / vertex attributes.
+ */
 struct VertexAttribute
 {
     Magnum::Vector3 position;

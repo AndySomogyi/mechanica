@@ -322,13 +322,34 @@ FacetPtr MxMesh::findFacet(CellPtr a, CellPtr b) {
 	return nullptr;
 }
 
-FacetPtr MxMesh::createFacet(MxFacetType* type, CellPtr a, CellPtr b) {
-	FacetPtr facet = new MxFacet{type, this, {{a, b}}};
-	facets.push_back(facet);
-	return facet;
+FacetPtr MxMesh::createFacet(MxFacetType* type) {
+    FacetPtr facet = new MxFacet{type, this, {{nullptr, nullptr}}};
+    facets.push_back(facet);
+    return facet;
 }
 
 HRESULT MxMesh::updateMeshToplogy() {
+}
+
+FacetPtr MxMesh::findFacet(const std::array<VertexPtr, 4>& verts) {
+    for(FacetPtr facet : facets) {
+        if(facet->triangles.size() != 2) continue;
+        
+        // each triangle has to be incident to two vertices.
+
+        bool inc = true;
+        for(TrianglePtr tri : facet->triangles) {
+            int incCnt = 0;
+            for(VertexPtr vert : verts) {
+                if(incident(tri, vert)) {
+                    incCnt += 1;
+                }
+            }
+            inc &= (incCnt == 3);
+        }
+        if(inc) return facet;
+    }
+    return nullptr;
 }
 
 bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
@@ -536,13 +557,17 @@ static int ctr = 0;
  */
 HRESULT MxMesh::splitEdge(const MxEdge& e) {
     auto triangles = e.radialTriangles();
-    
+
     assert(triangles.size() >= 2);
-    
+
+#ifndef NDEBUG
+    std::vector<TrianglePtr> newTriangles;
+#endif
+
     ctr += 1;
-    
-    if(ctr >= 23) {
-        std::cout << "oh shit... \n";
+
+    if(triangles.size() > 2) {
+        std::cout << "boom" << std::endl;
     }
 
     // new vertex at the center of this edge
@@ -591,6 +616,10 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         nt->partialTriangles[0].ob_type = tri->partialTriangles[0].ob_type;
         nt->partialTriangles[1].ob_type = tri->partialTriangles[1].ob_type;
 
+#ifndef NDEBUG
+        newTriangles.push_back(nt);
+#endif
+
         // make damned sure the winding is correct and the new triangle points
         // in the same direction as the existing one
         assert(Math::dot(nt->normal, tri->normal) >= 0);
@@ -629,7 +658,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         // manually add the partial triangles to the cell
         for(uint i = 0; i < 2; ++i) {
             if(tri->cells[i] != rootCell()) {
-            
+
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
                 reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{e.b, outer}});
@@ -649,7 +678,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         assert(!incident(tri, {{e.b, outer}}));
 
         //connect(tri, nt);
-        
+
         //for(uint i = 0; i < 2; ++i) {
         //    if(tri->cells[i] != rootCell()) {
         //
@@ -665,10 +694,17 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         nt->mass = nt->area / (nt->area + tri->area) * tri->mass;
         tri->mass = tri->area / (nt->area + tri->area) * tri->mass;
 
+
+
         if(i == 0) {
             firstNewTri = nt;
             prevNewTri = nt;
         } else {
+            #ifndef NDEBUG
+            if (triangles.size() > 2 &&  i >= 1) {
+                std::cout << "boom" << std::endl;
+            }
+            #endif
             connect(nt, prevNewTri);
             prevNewTri = nt;
         }
@@ -678,17 +714,36 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
     // manifold edge, only 2 new triangles, which already got
     // connected above.
     if(triangles.size() > 2) {
+        if(triangles.size() >= 4) {
+            std::cout << "root cell: " << rootCell() << std::endl;
+            std::cout << "boom" << std::endl;
+        }
         connect(firstNewTri, prevNewTri);
     }
 
 #ifndef NDEBUG
-    for(auto tri : triangles) {
-        if(tri->cells[0] != rootCell()) {
-            assert(tri->cells[0]->manifold());
+    for(uint t = 0; t < newTriangles.size(); ++t) {
+        TrianglePtr nt = newTriangles[t];
+        for(uint i = 0; i < 2; ++i) {
+            if(nt->cells[i] != rootCell()) {
+                assert(nt->partialTriangles[i].unboundNeighborCount() == 0);
+            }
         }
-
-        if(tri->cells[1] != rootCell()) {
-            assert(tri->cells[1]->manifold());
+    }
+    for(uint t = 0; t < triangles.size(); ++t) {
+        TrianglePtr tri = triangles[t];
+        for(uint i = 0; i < 2; ++i) {
+            if(tri->cells[i] != rootCell()) {
+                assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+            }
+        }
+    }
+    for(uint t = 0; t < triangles.size(); ++t) {
+        TrianglePtr tri = triangles[t];
+        for(uint i = 0; i < 2; ++i) {
+            if(tri->cells[i] != rootCell()) {
+                assert(tri->cells[i]->manifold());
+            }
         }
     }
 #endif

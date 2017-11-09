@@ -137,6 +137,11 @@ MxMeshRenderer& MxMeshRenderer::setProjectionMatrix(
 }
 
 void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
+
+    //if(!cell->render) {
+    //    return;
+    //}
+
     indexBuffer.unmap();
 
     void* vertexPtr = vertexBuffer.map<void>(0,

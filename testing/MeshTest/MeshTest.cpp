@@ -14,7 +14,7 @@ using namespace Magnum::Platform;
 
 MeshTest::Configuration::Configuration():
     _title{"Mesh Test"},
-    _size{800, 600}, _sampleCount{0},
+    _size{700, 700}, _sampleCount{0},
     _version{Version::GL410},
     _windowFlags{WindowFlag::Focused},
     _cursorMode{CursorMode::Normal},
@@ -114,7 +114,7 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
     }
 
     glfwSetWindowUserPointer(window, this);
-    
+
     glfwSetWindowPos(window, 500, 100);
 
     /* Proceed with configuring other stuff that couldn't be done with window
@@ -163,11 +163,14 @@ MeshTest::MeshTest(const Configuration& configuration) :
     // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
     // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
     // don't cover up front ones.
-    Renderer::enable(Renderer::Feature::DepthTest);
+    //Renderer::enable(Renderer::Feature::DepthTest);
 
     // don't draw facets that face away from us. We have A LOT of these INSIDE cells, no need to
     // draw them.
-    Renderer::enable(Renderer::Feature::FaceCulling);
+    //Renderer::enable(Renderer::Feature::FaceCulling);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable( GL_BLEND );
 
     renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe},
     model = new GrowthModel{};
@@ -180,6 +183,8 @@ MeshTest::MeshTest(const Configuration& configuration) :
     renderer->setMesh(model->mesh);
 
     propagator = new LangevinPropagator{model};
+
+    Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
 }
 
 
@@ -193,10 +198,10 @@ void MeshTest::step(float dt) {
 }
 
 void MeshTest::draw() {
-    
+
     Vector3 min, max;
     std::tie(min, max) = model->mesh->extents();
-    
+
     center = (max + min)/2;
 
     defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
@@ -206,13 +211,13 @@ void MeshTest::draw() {
     projection = Matrix4::perspectiveProjection(35.0_degf,
                      Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(),
                     0.01f, 100.0f);
-    
+
     //* Matrix4::translation(Vector3::zAxis(-10.0f));
 
 
     renderer->setProjectionMatrix(projection);
 
-    Matrix4 mat = Matrix4::translation({0.0f, 0.0f, -10.0f}) *
+    Matrix4 mat = Matrix4::translation({0.0f, 0.0f, -3.0f}) *
         transformation  * Matrix4::translation(-center);
 
     renderer->setViewMatrix(mat);
@@ -257,21 +262,21 @@ void MeshTest::mouseClick(int button, int action, int mods) {
 }
 
 void MeshTest::reset() {
-    
+
     delete model;
-    
+
     model = new GrowthModel{};
-    
+
     Vector3 min, max;
     std::tie(min, max) = model->mesh->extents();
-    
+
     center = (max + min)/2;
-    
+
     renderer->setMesh(model->mesh);
-    
+
     delete propagator;
-    
+
     propagator = new LangevinPropagator{model};
-    
+
     draw();
 }
