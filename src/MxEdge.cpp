@@ -7,6 +7,15 @@
 
 #include "MxCell.h"
 #include "MxEdge.h"
+#include <algorithm>
+
+static bool commonCell(const TrianglePtr a, const TrianglePtr b) {
+    assert(a->cells[0] && a->cells[1] && b->cells[0] && b->cells[1]);
+    return (a->cells[0] == b->cells[0] ||
+            a->cells[0] == b->cells[1] ||
+            a->cells[1] == b->cells[0] ||
+            a->cells[1] == b->cells[1]);
+}
 
 MxEdge::MxEdge(VertexPtr a, VertexPtr b) :
 a{a}, b{b} {
@@ -33,12 +42,31 @@ a{a}, b{b} {
             radialTri.push_back(ta);
         }
     }
+
+    // TODO: TOTAL FUCKING HACK
+    // we desperately need to come up with a cleaner way of representing
+    // ordered triangles around an edge. The correct way to do this is with
+    // radial edge pointers around each triangle. But, do that in the next
+    // release.
+
+    // need to sort the radial triangles, so each tri shares a cell with the next one.
+    for(uint i = 0; i < radialTri.size() - 1; ++i) {
+        if(commonCell(radialTri[i], radialTri[i+1])) continue;
+
+        for(uint j = i + 2; j < radialTri.size(); ++j) {
+            if(commonCell(radialTri[i], radialTri[j])) {
+                std::swap(radialTri[i+1], radialTri[j]);
+            }
+        }
+
+        assert(commonCell(radialTri[i], radialTri[i+1]));
+    }
 }
 
-MxEdge::MxEdge(const TrianglePtr a, const TrianglePtr b)
-{
-    //len = (a->positionsCh))
-}
+//MxEdge::MxEdge(const TrianglePtr a, const TrianglePtr b)
+//{
+//    //len = (a->positionsCh))
+//}
 
 //EdgeFacets MxEdge::facets() const {
 //}

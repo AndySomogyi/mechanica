@@ -394,6 +394,15 @@ struct MxMesh  {
      * edge. Number between 0 and 1.
      */
     float edgeSplitStochasticAsymmetry = 0.2;
+    
+    /**
+     * debug code to set the alpha to near zero on all triangles.
+     */
+    void makeTrianglesTransparent() {
+        for (TrianglePtr tri : triangles) {
+            tri->alpha = 0.0;
+        }
+    }
 
 
 private:

@@ -29,7 +29,7 @@ GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
 
-    /*
+    
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -40,19 +40,21 @@ GrowthModel::GrowthModel()  {
         }
     };
     mesh->shortCutoff = 0;
-    mesh->longCutoff = 10;
+    mesh->longCutoff = 0.1;
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.001;
-    targetArea = 0.45;
+    targetArea = 0.35;
     maxTargetArea = 0.7;
 
-    targetVolume = 0.017;
+    targetVolume = 0.05;
     minTargetVolume = 0.005;
-    maxTargetVolume = 0.03;
-     */
-
-
+    maxTargetVolume = 0.1;
     
+    testEdges();
+    
+
+
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -72,7 +74,7 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.4;
     minTargetVolume = 0.005;
     maxTargetVolume = 1;
-
+*/
 
 
 
@@ -110,6 +112,8 @@ GrowthModel::GrowthModel()  {
 HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
 
     HRESULT result;
+    
+    testEdges();
 
 
     for(VertexPtr vert : mesh->vertices) {
@@ -201,6 +205,8 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 
 void GrowthModel::testEdges() {
     
+    return;
+    
     /*
     for(int i = 0; i < mesh->cells.size(); ++i) {
         if(i % 2) {
@@ -211,35 +217,22 @@ void GrowthModel::testEdges() {
     }
      */
     
+    for (auto tri : mesh->triangles) {
+        tri->alpha = 0.001;
+    }
+    
     
     for (auto tri : mesh->triangles) {
-        
-
         
         for(int i = 0; i < 3; ++i) {
             MxEdge e{tri->vertices[i], tri->vertices[(i+1)%3]};
             auto triangles = e.radialTriangles();
             
-            if(e.length() < 0.6) {
-                continue;
-            }
-            
-            int rootCnt = 0;
-            for(auto tri : triangles) {
-                if(tri->cells[0]->isRoot() || tri->cells[1]->isRoot()) {
-                    rootCnt++;
-                }
-            }
-            
-            if(triangles.size() != 4) {
-                continue;
-            }
-            
 
             for(auto tri : triangles) {
-                tri->alpha = 0.2;
+                if(triangles.size() >= 4)
+                    tri->alpha = 0.3;
             }
-            
         }
     }
     

@@ -29,14 +29,14 @@ struct MxEdge {
     typedef std::vector<TrianglePtr> TriangleVector;
 
     MxEdge(VertexPtr a, VertexPtr b);
-    
+
     MxEdge(const Edge& e) : MxEdge{e[0], e[1]} {};
 
     /**
      * find the edge that connects a pair of triangles. If these
      * triangles don't share an edge, both vertices are null.
      */
-    MxEdge(const TrianglePtr a, const TrianglePtr b);
+    //MxEdge(const TrianglePtr a, const TrianglePtr b);
 
     const TriangleVector& radialTriangles() const;
 
@@ -53,7 +53,7 @@ struct MxEdge {
     bool operator > (const MxEdge& other) const;
 
     bool operator == (const std::array<VertexPtr, 2> &verts) const;
-    
+
     float length() const {
         return (a->position - b->position).length();
     }

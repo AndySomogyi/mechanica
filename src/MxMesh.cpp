@@ -565,11 +565,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 #endif
 
     ctr += 1;
-
-    if(triangles.size() > 2) {
-        std::cout << "boom" << std::endl;
-    }
-
+    
     // new vertex at the center of this edge
     Vector3 center = (e.a->position + e.b->position) / 2.;
     center = center + (e.a->position - e.b->position) * uniformDist(randEngine);
@@ -577,6 +573,12 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 
     TrianglePtr firstNewTri = nullptr;
     TrianglePtr prevNewTri = nullptr;
+    
+    for(uint i = 0; i < triangles.size(); ++i)
+    {
+        TrianglePtr tri = triangles[i];
+        std::cout << "tri[" << i << "], cell[0]:" << tri->cells[0] << ", cell[1]:" << tri->cells[1] << std::endl;
+    }
 
     for(uint i = 0; i < triangles.size(); ++i)
     {
@@ -701,7 +703,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
             prevNewTri = nt;
         } else {
             #ifndef NDEBUG
-            if (triangles.size() > 2 &&  i >= 1) {
+            if (ctr >= 109 && triangles.size() >= 4) {
                 std::cout << "boom" << std::endl;
             }
             #endif
