@@ -36,10 +36,21 @@ MxTriangle::MxTriangle(MxTriangleType* type,
 			partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
 			facet{facet} {
     for(VertexPtr vert : verts) {
-        assert(!contains(vert->triangles, this));
-        vert->triangles.push_back(this);
+        auto res = vert->appendTriangle(this);
+        assert(res==S_OK);
     }
+
     positionsChanged();
+}
+
+int MxTriangle::adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const {
+    for(int i = 0; i < 3; ++i) {
+        if((vertices[i] == a && vertices[(i+1)%3] == b) ||
+           (vertices[i] == b && vertices[(i+1)%3] == a)) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 HRESULT MxTriangle::positionsChanged() {
@@ -86,12 +97,12 @@ HRESULT MxTriangle::positionsChanged() {
 }
 
 VertexPtr MxTriangle::replaceChild(VertexPtr newVertex, VertexPtr oldVertex) {
-    assert(contains(oldVertex->triangles, this));
-    remove(oldVertex->triangles, this);
+    auto res = oldVertex->removeTriangle(this);
+    assert(res==S_OK);
     for(uint i = 0; i < 3; ++i) {
         if(vertices[i] == oldVertex) {
             vertices[i] = newVertex;
-            newVertex->triangles.push_back(this);
+            if(newVertex) newVertex->appendTriangle(this);
             break;
         }
     }
@@ -108,4 +119,43 @@ VertexPtr MxTriangle::replaceChild(VertexPtr newVertex, VertexPtr oldVertex) {
     }
     positionsChanged();
     return oldVertex;
+}
+
+
+
+bool MxTriangle::isConnected() {
+
+    for(int i = 0; i < 2; ++i) {
+
+        if(cells[i]->isRoot()) continue;
+
+        PTrianglePtr t = &partialTriangles[i];
+
+        // check pointers
+        if (!adjacent(t, t->neighbors[0]) ||
+            !adjacent(t, t->neighbors[1]) ||
+            !adjacent(t, t->neighbors[2])) {
+            return false;
+        }
+
+        assert(this == t->triangle);
+
+        // check vertices
+        if (!adjacent(this, t->neighbors[0]->triangle) ||
+            !adjacent(this, t->neighbors[1]->triangle) ||
+            !adjacent(this, t->neighbors[2]->triangle)) {
+            return false;
+        }
+    }
+    return true;
+
+}
+
+bool MxTriangle::isValid() {
+    return facet &&
+            contains(facet->triangles, this) &&
+            cells[0] && incident(this, cells[0]) &&
+            cells[1] && incident(this, cells[1]) &&
+            isConnected() &&
+            area > 0 && aspectRatio > 0 && mass > 0;
 }

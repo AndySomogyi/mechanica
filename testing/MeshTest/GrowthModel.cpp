@@ -29,7 +29,7 @@ GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
 
-    
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -43,18 +43,18 @@ GrowthModel::GrowthModel()  {
     mesh->longCutoff = 0.1;
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.001;
-    targetArea = 0.35;
-    maxTargetArea = 0.7;
+    targetArea = 0.3;
+    maxTargetArea = 0.5;
 
-    targetVolume = 0.05;
+    targetVolume = 0.1;
     minTargetVolume = 0.005;
-    maxTargetVolume = 0.1;
+    maxTargetVolume = 0.2;
+    */
+     
     
-    testEdges();
     
+   
 
-
-    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -64,17 +64,19 @@ GrowthModel::GrowthModel()  {
             }
         }
     };
-    mesh->shortCutoff = 0;
-    mesh->longCutoff = 1.5;
+    mesh->shortCutoff = 0.5;
+    mesh->longCutoff = 1.0;
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.1;
     maxTargetArea = 2;
 
-    targetVolume = 0.4;
+    targetVolume = 0.9;
     minTargetVolume = 0.005;
-    maxTargetVolume = 1;
-*/
+    maxTargetVolume = 1.5;
+     
+     
+
 
 
 
@@ -99,6 +101,8 @@ GrowthModel::GrowthModel()  {
     minTargetVolume = 0.5;
     maxTargetVolume = 25.0;
  */
+    
+     testEdges();
     
 }
 

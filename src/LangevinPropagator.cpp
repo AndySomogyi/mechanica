@@ -40,7 +40,7 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
 
         float len = v->force.length();
         float tmp = len / v->mass;
-        int tri = v->triangles.size();
+        int tri = v->triangles().size();
         float a = v->force.length() / v->mass;
 
         v->position = v->position + dt * v->force / v->mass;

@@ -58,6 +58,8 @@ struct MxEdge {
         return (a->position - b->position).length();
     }
 
+    std::set<VertexPtr> link() const;
+
 
     bool incidentTo(const MxTriangle& tri) const;
 

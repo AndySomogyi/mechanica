@@ -24,6 +24,13 @@ inline bool incident(const VertexPtr v, const TrianglePtr tri) {
 	return incident(tri, v);
 }
 
+bool incident(const PTrianglePtr tri, const VertexPtr v);
+
+inline bool incident(const VertexPtr v, const PTrianglePtr tri) {
+	return incident(tri, v);
+}
+
+
 bool incident(const FacetPtr facet, const CellPtr cell);
 
 inline bool incident(const CellPtr cell, const FacetPtr facet) {
@@ -36,14 +43,14 @@ inline bool incident(const FacetPtr facet, const VertexPtr vertex) {
     return incident(vertex, facet);
 }
 
-bool adjacent(const PTrianglePtr a, PTrianglePtr b);
+bool adjacent(const PTrianglePtr a, const PTrianglePtr b);
 
 /**
  * Is the given triangle tri incident to the edge formed
  * by vertices a and b. The partial triangle incident if the
  * it is incident to both vertices a and b.
  */
-bool incident(TrianglePtr tri, const Edge&);
+bool incident(const TrianglePtr tri, const Edge&);
 
 
 /**
@@ -52,7 +59,7 @@ bool incident(TrianglePtr tri, const Edge&);
  * triangle that the partial triangle is attached to is incident to
  * this edge.
  */
-bool incident(PTrianglePtr pt, const Edge&);
+bool incident(const PTrianglePtr pt, const Edge&);
 
 /**
  * Connects the pointers of a pair of triangles. Searches through the
@@ -108,6 +115,19 @@ void disconnect(PTrianglePtr pt, const Edge&);
  * neighbor slot.
  */
 void reconnect(PTrianglePtr o, PTrianglePtr n, const Edge&);
+
+/**
+ * disconnects a vertex from a triangle, and sets the triangle's
+ * vertex slot that pointed to the vertex to null.
+ *
+ * Disconnects all the partial triangles that referred to the
+ * two triangles that were disconnected.
+ */
+void disconnect(TrianglePtr tri, VertexPtr v);
+
+void connect(TrianglePtr tri, VertexPtr v);
+
+
 
 
 #endif /* SRC_MESHRELATIONSHIPS_H_ */

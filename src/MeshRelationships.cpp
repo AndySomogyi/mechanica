@@ -47,7 +47,7 @@ bool incident(const FacetPtr facet, const CellPtr cell) {
 	return facet->cells[0] == cell || facet->cells[1] == cell;
 }
 
-bool adjacent(const PTrianglePtr a, PTrianglePtr b) {
+bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
     if (!a || !b || a == b) {
         return false;
     }
@@ -57,7 +57,7 @@ bool adjacent(const PTrianglePtr a, PTrianglePtr b) {
 }
 
 bool incident(const VertexPtr vertex, const FacetPtr facet) {
-    return contains(vertex->facets, facet);
+    return contains(vertex->facets(), facet);
 }
 
 void connect(TrianglePtr a, TrianglePtr b) {
@@ -147,8 +147,8 @@ bool incident(const TrianglePtr tri, const VertexPtr v) {
 void disconnect(TrianglePtr tri, const Edge& edge) {
     assert(incident(tri, edge[0]));
     assert(incident(tri, edge[1]));
-    disconnect(&tri->partialTriangles[0], edge);
-    disconnect(&tri->partialTriangles[1], edge);
+    if(!tri->cells[0]->isRoot()) { disconnect(&tri->partialTriangles[0], edge); }
+    if(!tri->cells[1]->isRoot()) { disconnect(&tri->partialTriangles[1], edge); }
 }
 
 void disconnect(PTrianglePtr pt, const Edge& edge) {
@@ -164,11 +164,11 @@ void disconnect(PTrianglePtr pt, const Edge& edge) {
     assert(0 && "partial triangle is not adjacent to given edge");
 }
 
-bool incident(PTrianglePtr pt, const Edge& edge) {
+bool incident(const PTrianglePtr pt, const Edge& edge) {
     return incident(pt->triangle, edge);
 }
 
-bool incident(TrianglePtr tri, const std::array<VertexPtr, 2>& edge) {
+bool incident(const TrianglePtr tri, const std::array<VertexPtr, 2>& edge) {
     return incident(tri, edge[0]) && incident(tri, edge[1]);
 }
 
@@ -186,4 +186,44 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const std::array<VertexPtr, 2>& e
     }
     assert(0 && "partial triangle is not adjacent to given edge");
 
+}
+
+bool incident(const PTrianglePtr tri, const VertexPtr v) {
+    return incident(tri->triangle, v);
+}
+
+void disconnect(TrianglePtr tri, VertexPtr v) {
+    if(!v) return;
+
+    for(uint i = 0; i < 3; ++i) {
+        if(tri->vertices[i] == v) {
+            v->removeTriangle(tri);
+            tri->vertices[i] = nullptr;
+            return;
+        }
+    }
+
+    assert(0 && "triangle did not match vertex");
+
+    /*
+    for(uint i = 0; i < 2; ++i) {
+        for(uint j = 0; j < 3; ++j) {
+            if(tri->partialTriangles[i].neighbors[j] &&
+                    incident(tri->partialTriangles[i].neighbors[j], v)) {
+                disconnect(&tri->partialTriangles[i], tri->partialTriangles[i].neighbors[j]);
+            }
+        }
+    }
+    */
+}
+
+void connect(TrianglePtr tri, VertexPtr v) {
+    for(int i = 0; i < 3; ++i) {
+        if(tri->vertices[i] == nullptr) {
+            tri->vertices[i] = v;
+            v->appendTriangle(tri);
+            return;
+        }
+    }
+    assert(0 && "triangle has no empty slot");
 }

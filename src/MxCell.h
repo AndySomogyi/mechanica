@@ -191,6 +191,12 @@ struct MxCell : MxObject, MxMeshNode {
 
     HRESULT appendChild(FacetPtr);
 
+    /**
+     * Inform the cell that the topology changed (change in vertex or triangle
+     * number or connectivity).
+     */
+    HRESULT topologyChanged();
+
 
     /**
      * Inform the cell that the vertex positions have changed. Causes the

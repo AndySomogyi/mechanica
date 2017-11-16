@@ -18,93 +18,71 @@
 /**
  * Enumerates all of the triangles that share an edge.
  */
-class TriangleEdgeStarIterator {
+class EdgeTriangleIterator {
 public:
     // Iterator traits, previously from std::iterator.
-    using value_type = MxTriangle;
+    using value_type = TrianglePtr;
     using difference_type = std::ptrdiff_t;
-    using pointer = MxTriangle*;
-    using reference = MxTriangle&;
+    using pointer = TrianglePtr*;
+    using reference = TrianglePtr&;
     using iterator_category = std::bidirectional_iterator_tag;
 
     // Default constructible.
-    TriangleEdgeStarIterator() = default;
-    explicit TriangleEdgeStarIterator(const class EdgeTriangles &edgeStar);
+    EdgeTriangleIterator() = delete;
 
     // Dereferencable.
-    reference operator*() const;
+    value_type operator*() const;
 
-    // Pre- and post-incrementable.
-    TriangleEdgeStarIterator& operator++();
-    TriangleEdgeStarIterator operator++(int);
+    // pre-incrementable.
+    EdgeTriangleIterator& operator++();
+
+    // post increment
+    EdgeTriangleIterator operator++(int);
 
     // Pre- and post-decrementable.
-    TriangleEdgeStarIterator& operator--();
-    TriangleEdgeStarIterator operator--(int);
+    EdgeTriangleIterator& operator--();
+    EdgeTriangleIterator operator--(int);
 
     // Equality / inequality.
-    bool operator==(const TriangleEdgeStarIterator& rhs);
-    bool operator!=(const TriangleEdgeStarIterator& rhs);
+    bool operator==(const EdgeTriangleIterator& rhs);
+    bool operator!=(const EdgeTriangleIterator& rhs);
 
 private:
+    explicit EdgeTriangleIterator(const std::vector<TrianglePtr> &triangles, int index) :
+        triangles{triangles}, index{index} {};
 
+    const std::vector<TrianglePtr> &triangles;
+    int index;
+
+    friend class EdgeTriangles;
 };
-
-
-class EdgeTriangles {
-public:
-  using value_type = MxTriangle;
-
-
-
-public:
-
-  using const_iterator = TriangleEdgeStarIterator;
-
-  const_iterator begin() const;
-
-  const_iterator end() const;
-
-  explicit EdgeTriangles(const MxMesh* mesh, const MxTriangle &startTri, const std::array<VertexPtr, 2> &edge);
-
-
-};
-
 
 /**
- * Enumerates all of the triangles that share an edge.
+ * Enumerate triangles that share an edge.
+ *
+ * This is a temporary measure to enumerate triangles based on the triangle lists
+ * of a pair of vertices. This is very slow, will switch over to triangle linked
+ * lists. This class will hide the linked list implementation.
  */
-class EdgeTrianglesIterator {
+class EdgeTriangles {
 public:
-    // Iterator traits, previously from std::iterator.
-    using value_type = MxCell;
-    using difference_type = std::ptrdiff_t;
-    using pointer = MxCell*;
-    using reference = MxCell&;
-    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = TrianglePtr;
 
-    // Default constructible.
-    EdgeTrianglesIterator() = default;
-    explicit EdgeTrianglesIterator(const class EdgeTriangles &edgeStar);
+    using iterator = EdgeTriangleIterator;
 
-    // Dereferencable.
-    reference operator*() const;
+    iterator begin() const;
 
-    // Pre- and post-incrementable.
-    TriangleEdgeStarIterator& operator++();
-    TriangleEdgeStarIterator operator++(int);
+    iterator end() const;
 
-    // Pre- and post-decrementable.
-    TriangleEdgeStarIterator& operator--();
-    TriangleEdgeStarIterator operator--(int);
-
-    // Equality / inequality.
-    bool operator==(const TriangleEdgeStarIterator& rhs);
-    bool operator!=(const TriangleEdgeStarIterator& rhs);
+    explicit EdgeTriangles(TrianglePtr startTri, int index);
 
 private:
-
+    std::vector<TrianglePtr> triangles;
+    friend class EdgeTriangleIterator;
 };
+
+
+
 
 
 
@@ -130,12 +108,12 @@ public:
     reference operator*() const;
 
     // Pre- and post-incrementable.
-    TriangleEdgeStarIterator& operator++();
-    TriangleEdgeStarIterator operator++(int);
+    EdgeTriangleIterator& operator++();
+    EdgeTriangleIterator operator++(int);
 
     // Pre- and post-decrementable.
-    TriangleEdgeStarIterator& operator--();
-    TriangleEdgeStarIterator operator--(int);
+    EdgeTriangleIterator& operator--();
+    EdgeTriangleIterator operator--(int);
 
     // Equality / inequality.
     bool operator==(const EdgeFacetIterator& rhs);

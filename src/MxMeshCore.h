@@ -12,6 +12,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <set>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 
@@ -79,19 +80,37 @@ struct MxVertex {
      * This approach is not very cache friendly, will come up with a more optimal
      * solution in a later release.
      */
-    float mass;
+    float mass = 0;
 
-    float area;
+    float area = 0;
+
+    MxVertex(float mass, float area, const Magnum::Vector3 &pos) :
+        mass{mass}, area{area}, position{pos} {};
 
     Magnum::Vector3 position;
     Magnum::Vector3 velocity;
     Magnum::Vector3 force;
 
-    // one to many relationship of vertex -> triangles
-    std::vector<TrianglePtr> triangles;
+     // one to many relationship of vertex -> triangles
+    const std::vector<TrianglePtr> &triangles() const {return _triangles;}
 
-    // one to many relationship of vertex -> facets
-    std::vector<FacetPtr> facets;
+
+    const std::vector<FacetPtr> &facets() const {return _facets;}
+
+    std::set<VertexPtr> link() const;
+
+    HRESULT removeTriangle(const TrianglePtr);
+
+    HRESULT appendTriangle(TrianglePtr);
+
+private:
+     // one to many relationship of vertex -> triangles
+    std::vector<TrianglePtr> _triangles;
+
+        // one to many relationship of vertex -> facets
+    std::vector<FacetPtr> _facets;
+
+    void rebuildFacets();
 };
 
 struct MxVertexAttribute {

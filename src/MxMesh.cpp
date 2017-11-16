@@ -13,6 +13,7 @@
 
 #include <deque>
 #include <limits>
+#include <cmath>
 
 int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     for (int i = 1; i < vertices.size(); ++i) {
@@ -25,7 +26,7 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 }
 
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
-	VertexPtr v = new MxVertex{0., 0., pos, {}, {}};
+	VertexPtr v = new MxVertex{0., 0., pos};
     vertices.push_back(v);
     assert(valid(v));
     return v;
@@ -334,7 +335,7 @@ HRESULT MxMesh::updateMeshToplogy() {
 FacetPtr MxMesh::findFacet(const std::array<VertexPtr, 4>& verts) {
     for(FacetPtr facet : facets) {
         if(facet->triangles.size() != 2) continue;
-        
+
         // each triangle has to be incident to two vertices.
 
         bool inc = true;
@@ -352,6 +353,40 @@ FacetPtr MxMesh::findFacet(const std::array<VertexPtr, 4>& verts) {
     return nullptr;
 }
 
+HRESULT MxMesh::deleteVertex(VertexPtr v) {
+    longEdges.remove(v);
+    shortEdges.remove(v);
+    validateEnquedEdges();
+    remove(vertices, v);
+#ifndef NDEBUG
+    for(TrianglePtr tri : triangles) {
+        assert(!incident(tri, v));
+    }
+#endif
+    delete v;
+    return S_OK;
+}
+
+HRESULT MxMesh::deleteTriangle(TrianglePtr tri) {
+    longEdges.remove(tri);
+    shortEdges.remove(tri);
+    validateEnquedEdges();
+    remove(triangles, tri);
+    delete tri;
+
+    assert(!contains(triangles, tri));
+
+#ifndef NDEBUG
+    for(CellPtr cell : cells) {
+        assert(!incident(cell, tri));
+    }
+    for(FacetPtr facet : facets) {
+        assert(!contains(facet->triangles, tri));
+    }
+#endif
+    return S_OK;
+}
+
 bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
         MxCell* c0, MxCell* c1, MxTriangle* tri) {
 
@@ -364,7 +399,7 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
     Vector3 nv0_pos = nv0->position;
     Vector3 nv1_pos = nv1->position;
 
-    for(TrianglePtr t : v0->triangles) {
+    for(TrianglePtr t : v0->triangles()) {
         if (incident(t, c0) && incident(t, c1)) {
             startTri = t;
             break;
@@ -503,9 +538,6 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
 
         }
     }
-
-
-
     return false;
 }
 
@@ -521,6 +553,9 @@ HRESULT MxMesh::collapseEdge(const MxEdge& edge) {
 		edge.radialFacets().size() == 1) {
 		return collapseManifoldEdge(edge);
 	}
+
+	std::cout << "only manifold edge collapse supported" << std::endl;
+	return S_OK;
 
 	if (edge.upperFacets().size() == 1 && edge.upperFacets().size() == 1) {
 
@@ -545,9 +580,327 @@ HRESULT MxMesh::collapseEdge(const MxEdge& edge) {
 	return -1;
 }
 
-HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
-	return -1;
+
+int test(const std::vector<std::string*> &stuff) {
+
+    for(int i = 0; i < stuff.size(); ++i) {
+        std::string *s = stuff[i];
+
+        s->append("foo");
+    }
+
+    //stuff.push_back("");
+    return 5;
 }
+
+
+static void testTriangle(const TrianglePtr tri) {
+    assert(isfinite(tri->area) && tri->area > 0);
+    assert(isfinite(tri->aspectRatio) && tri->aspectRatio > 0);
+    assert(isfinite(tri->mass) && tri->mass > 0);
+    assert(isfinite(tri->normal.length()) && tri->normal.length() > 0.9 && tri->normal.length() < 1.1);
+    assert(tri->cells[0] && tri->cells[1]);
+}
+
+static int collapseStr = 0;
+HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
+
+    HRESULT res;
+
+    collapseStr++;
+
+    TrianglePtr t1 = nullptr, t2 = nullptr;
+
+    std::vector<TrianglePtr> edgeTri = e.radialTriangles();
+
+    assert(edgeTri.size() == 2);
+
+    t1 = edgeTri[0]; t2 = edgeTri[1];
+
+    VertexPtr c = nullptr, d = nullptr;
+
+#ifndef NDEBUG
+    auto cells = t1->cells;
+    assert(cells == t2->cells);
+
+    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
+    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
+#endif
+
+    for(VertexPtr v : t1->vertices) {
+        if(v != e.a && v != e.b) {
+            c = v;
+        }
+        if(v->facets().size() != 1) {
+        //    return mx_error(E_FAIL, "vertex belongs to more than one facet");
+        }
+    }
+
+    for(VertexPtr v : t2->vertices) {
+        if(v != e.a && v != e.b) {
+            d = v;
+        }
+        if(v->facets().size() != 1) {
+        //    return mx_error(E_FAIL, "vertex belongs to more than one facet");
+        }
+    }
+
+    assert(c && d);
+
+    auto t3 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.a, c));
+    auto t4 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.b, c));
+    auto t5 = EdgeTriangles(t2, t2->adjacentEdgeIndex(e.a, d));
+    auto t6 = EdgeTriangles(t2, t2->adjacentEdgeIndex(e.b, d));
+
+    // new center postion
+    Magnum::Vector3 pos = (e.a->position + e.b->position) / 2;
+
+    // all of the triangles attached to edge endpoints a and b will have thier corner
+    // that is attached to the edge endpoints moved to the new center. Need to
+    // check all of these triangles and make sure that we do not invert any triangles,
+    // or cause any triangles to become colinear (zero area).
+
+
+    // is it safe to move this triangle
+    auto safeTriangleMove = [pos, t1, t2](const TrianglePtr tri, const VertexPtr vert) -> HRESULT {
+
+        if((tri == t1) || (tri == t2)) {
+            return S_OK;
+        }
+
+        Vector3 before = normal(tri->vertices[0]->position,
+                tri->vertices[1]->position,
+                tri->vertices[2]->position);
+
+        Vector3 pos0 = (tri->vertices[0] == vert) ? pos : tri->vertices[0]->position;
+        Vector3 pos1 = (tri->vertices[1] == vert) ? pos : tri->vertices[1]->position;
+        Vector3 pos2 = (tri->vertices[2] == vert) ? pos : tri->vertices[2]->position;
+
+        Vector3 after = normal(pos0, pos1, pos2);
+
+        if(Magnum::Math::dot(before, after) <= 0) {
+            return mx_error(E_FAIL, "can't perform edge collapse, triangle will become inverted");
+        }
+
+        if(Magnum::Math::triangle_area(pos0, pos1, pos2) < 0.001) {
+            return mx_error(E_FAIL, "can't perform edge collapse, triangle area becomes too small or colinear");
+        }
+
+        return S_OK;
+    };
+
+    for(TrianglePtr tri : e.a->triangles()) {
+        if((res = safeTriangleMove(tri, e.a)) != S_OK) {
+            return res;
+        }
+    }
+
+    for(TrianglePtr tri : e.b->triangles()) {
+        if((res = safeTriangleMove(tri, e.b)) != S_OK) {
+            return res;
+        }
+    }
+
+    float leftUpperArea = Magnum::Math::triangle_area(e.a->position, c->position, pos);
+    float leftLowerArea = Magnum::Math::triangle_area(e.a->position, d->position, pos);
+    float rightUpperArea = Magnum::Math::triangle_area(e.b->position, c->position, pos);
+    float rightLowerArea = Magnum::Math::triangle_area(e.b->position, d->position, pos);
+    
+    // need to calculate area here, because the area in the triangle has not been updated yet.
+    float upperArea = Magnum::Math::triangle_area(e.a->position, e.b->position, c->position);
+    float lowerArea = Magnum::Math::triangle_area(e.a->position, e.b->position, d->position);
+
+    assert(leftLowerArea > 0 && leftUpperArea > 0 && rightLowerArea > 0 && rightUpperArea > 0);
+
+    auto moveMaterial = [](const EdgeTriangles& leftTri,
+                              const EdgeTriangles& rightTri,
+                              float leftFraction, float rightFraction,
+                              const TrianglePtr src) -> void {
+        assert(abs(1.0 - (leftFraction + rightFraction)) < 0.01);
+        int leftCount = 0;
+        int rightCount = 0;
+        
+        for(auto i = leftTri.begin(); i != leftTri.end(); ++i) {
+            leftCount += 1;
+        }
+        
+        for(auto i = rightTri.begin(); i != rightTri.end(); ++i) {
+            rightCount += 1;
+        }
+        
+        assert(leftCount > 0 && rightCount > 0);
+        
+        for(TrianglePtr tri : leftTri) {
+            tri->mass += (leftFraction * src->mass) / leftCount;
+        }
+
+        for(TrianglePtr tri : rightTri) {
+            tri->mass += (rightFraction * src->mass) / rightCount;
+        }
+    };
+
+    moveMaterial(t3, t4, leftUpperArea/upperArea, rightUpperArea/upperArea, t1);
+    moveMaterial(t5, t6, leftLowerArea/lowerArea, rightLowerArea/lowerArea, t2);
+
+    // Remove the partial triangles pointers from the given triangle,
+    // and it's two neighboring partial on the given two edges,
+    // and reconnect the two outer neighboring partial triangles with each other.
+    // do this for both sides of the triangle.
+    auto reconnectPartialTriangles = [](TrianglePtr tri, const Edge& edge1, const Edge& edge2) {
+        for(int i = 0; i < 2; ++i) {
+            if(!tri->cells[i]->isRoot()) {
+
+                PTrianglePtr p1 = nullptr, p2 = nullptr;
+
+                assert(incident(tri, edge1));
+                assert(incident(tri, edge2));
+                assert(incident(&tri->partialTriangles[i], edge1));
+                assert(incident(&tri->partialTriangles[i], edge2));
+
+                for(int j = 0; j < 3; ++j) {
+                    assert(tri->partialTriangles[i].neighbors[j]);
+
+                    PTrianglePtr pn = tri->partialTriangles[i].neighbors[j];
+                    if(incident(pn, edge1)) {
+                        p1 = pn;
+                        continue;
+                    }
+                    if(incident(pn, edge2)) {
+                        p2 = pn;
+                        continue;
+                    }
+                }
+
+                assert(p1 && p2);
+                assert(p1 != p2);
+                assert(p1 != &tri->partialTriangles[i]);
+                assert(p2 != &tri->partialTriangles[i]);
+                assert(adjacent(p1, &tri->partialTriangles[i]));
+                assert(adjacent(p2, &tri->partialTriangles[i]));
+
+                assert(!adjacent(p1, p1));
+
+                disconnect(p1, &tri->partialTriangles[i]);
+                disconnect(p2, &tri->partialTriangles[i]);
+                connect(p1, p2);
+                assert(tri->partialTriangles[i].unboundNeighborCount() == 2);
+            }
+        }
+    };
+
+#ifndef NDEBUG
+    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
+    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
+
+    for(TrianglePtr tri : e.a->triangles()) {
+        assert(tri->cells[0] && tri->cells[1]);
+    }
+    for(TrianglePtr tri : e.b->triangles()) {
+        assert(tri->cells[0] && tri->cells[1]);
+    }
+#endif
+
+    // disconnect the partial triangle pointers.
+    reconnectPartialTriangles(t1, {{e.a, c}}, {{e.b, c}});
+    reconnectPartialTriangles(t2, {{e.a, d}}, {{e.b, d}});
+
+    VertexPtr vsrc = nullptr, vdest = nullptr;
+
+    if(e.a->triangles().size() >= e.b->triangles().size()) {
+        vsrc = e.b;
+        vdest = e.a;
+    } else {
+        vsrc = e.a;
+        vdest = e.b;
+    }
+
+    // the destination vertex where all the other triangles get moved to,
+    // set this to the new center pos.
+    vdest->position = pos;
+
+    vdest->removeTriangle(t1);
+    vdest->removeTriangle(t2);
+    vsrc->removeTriangle(t1);
+    vsrc->removeTriangle(t2);
+
+    std::vector<TrianglePtr> srcTriangles = vsrc->triangles();
+
+    for(int i = 0; i < vdest->triangles().size(); ++i) {
+        TrianglePtr tri = vdest->triangles()[i];
+        testTriangle(tri);
+    }
+
+    for(int i = 0; i < vsrc->triangles().size(); ++i) {
+        TrianglePtr tri = vsrc->triangles()[i];
+        testTriangle(tri);
+    }
+
+    for(TrianglePtr tri : srcTriangles) {
+        if(tri == t1 || tri == t2) continue;
+
+        testTriangle(tri);
+
+        disconnect(tri, vsrc);
+        connect(tri, vdest);
+
+        assert(tri->cells[0] && tri->cells[1]);
+
+        tri->positionsChanged();
+
+        testTriangle(tri);
+
+        for(int i = 0; i < 2; ++i) {
+            tri->cells[i]->topologyChanged();
+        }
+    }
+
+    disconnect(t1, e.a);
+    disconnect(t1, e.b);
+    disconnect(t2, e.a);
+    disconnect(t2, e.b);
+    disconnect(t1, c);
+    disconnect(t2, d);
+
+    assert(t1->vertices[0] == nullptr && t1->vertices[1] == nullptr && t1->vertices[2] == nullptr);
+    assert(t2->vertices[0] == nullptr && t2->vertices[1] == nullptr && t2->vertices[2] == nullptr);
+
+    deleteVertex(vsrc);
+
+#ifndef NDEBUG
+    for(TrianglePtr tri : triangles) {
+        if(tri == t1 || tri == t2) continue;
+        assert(!incident(tri, vsrc));
+    }
+
+    for(int i = 0; i < vdest->triangles().size(); ++i) {
+        TrianglePtr tri = vdest->triangles()[i];
+        assert(tri != t1 && tri != t2);
+        assert(tri->isValid());
+    }
+#endif
+
+    for(int i = 0; i < 2; ++i) {
+        CellPtr cell = t1->cells[i];
+        cell->removeChild(t1);
+        cell->topologyChanged();
+        cell = t2->cells[i];
+        cell->removeChild(t2);
+        cell->topologyChanged();
+    }
+
+    deleteTriangle(t1);
+    deleteTriangle(t2);
+
+#ifndef NDEBUG
+    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
+    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
+    validate();
+#endif
+
+    return S_OK;
+}
+
+
 
 static int ctr = 0;
 
@@ -565,7 +918,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 #endif
 
     ctr += 1;
-    
+
     // new vertex at the center of this edge
     Vector3 center = (e.a->position + e.b->position) / 2.;
     center = center + (e.a->position - e.b->position) * uniformDist(randEngine);
@@ -573,7 +926,7 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 
     TrianglePtr firstNewTri = nullptr;
     TrianglePtr prevNewTri = nullptr;
-    
+
     for(uint i = 0; i < triangles.size(); ++i)
     {
         TrianglePtr tri = triangles[i];
@@ -633,15 +986,9 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
-        assert(contains(e.b->triangles, tri));
-        remove(e.b->triangles, tri);
-        for(uint i = 0; i < 3; ++i) {
-            if(tri->vertices[i] == e.b) {
-                tri->vertices[i] = vert;
-                vert->triangles.push_back(tri);
-                break;
-            }
-        }
+        disconnect(tri, e.b);
+        connect(tri, vert);
+
         tri->positionsChanged();
 
         // make damned sure the winding is correct and the new triangle points
@@ -679,24 +1026,10 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         assert(incident(nt, {{e.b, outer}}));
         assert(!incident(tri, {{e.b, outer}}));
 
-        //connect(tri, nt);
-
-        //for(uint i = 0; i < 2; ++i) {
-        //    if(tri->cells[i] != rootCell()) {
-        //
-        //        assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
-        //        assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
-        //        connect(&tri->partialTriangles[i], &nt->partialTriangles[i]);
-        //        assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
-        //        assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
-        //    }
-        //}
 
         // split the mass according to area
         nt->mass = nt->area / (nt->area + tri->area) * tri->mass;
         tri->mass = tri->area / (nt->area + tri->area) * tri->mass;
-
-
 
         if(i == 0) {
             firstNewTri = nt;
@@ -723,9 +1056,12 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
         connect(firstNewTri, prevNewTri);
     }
 
+
+
 #ifndef NDEBUG
     for(uint t = 0; t < newTriangles.size(); ++t) {
         TrianglePtr nt = newTriangles[t];
+        assert(nt->isValid());
         for(uint i = 0; i < 2; ++i) {
             if(nt->cells[i] != rootCell()) {
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 0);
@@ -748,6 +1084,8 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
             }
         }
     }
+
+    validate();
 #endif
 
     return S_OK;
@@ -765,7 +1103,7 @@ HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 	// Indecent facet that is not indecent to any other triangle vertices
 	// for this to be a valid H configuration.
 	for(int i = 0; i < 3; ++i) {
-		for(FacetPtr p : tri->vertices[i]->facets) {
+		for(FacetPtr p : tri->vertices[i]->facets()) {
 
 			bool found = false;
 
@@ -773,7 +1111,7 @@ HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 				continue;
 			}
 
-			for(FacetPtr x : tri->vertices[(i+1)%3]->facets) {
+			for(FacetPtr x : tri->vertices[(i+1)%3]->facets()) {
 				if (x == p) {
 					found = true;
 					break;
@@ -781,7 +1119,7 @@ HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 			}
 
 			if (!found) {
-				for(FacetPtr x : tri->vertices[(i+2)%3]->facets) {
+				for(FacetPtr x : tri->vertices[(i+2)%3]->facets()) {
 					if (x == p) {
 						found = true;
 						break;
@@ -901,11 +1239,11 @@ HRESULT MxMesh::positionsChanged() {
             float d = (tri->vertices[i]->position - tri->vertices[(i+1)%3]->position).length();
 
             if (d <= shortCutoff) {
-                shortEdges.push({{tri->vertices[i], tri->vertices[(i+1)%3]}});
+                enqueueShortEdge(tri->vertices[i], tri->vertices[(i+1)%3]);
             }
 
             if (d >= longCutoff) {
-                longEdges.push({{tri->vertices[i], tri->vertices[(i+1)%3]}});
+                enqueueLongEdge(tri->vertices[i], tri->vertices[(i+1)%3]);
             }
         }
     }
@@ -934,12 +1272,23 @@ HRESULT MxMesh::processOffendingEdges() {
     while(!longEdges.empty()) {
         MxEdge edge = longEdges.top();
         longEdges.pop();
-        std::cout << "trying edge split len " << edge.length() << std::endl;
+        shortEdges.remove(edge.a);
+        shortEdges.remove(edge.b);
+        std::cout << "trying edge split, len: " << edge.length() << std::endl;
         if(edge.length() >= longCutoff) {
             result = splitEdge(edge);
-            if(result != S_OK) {
-                return result;
-            }
+        }
+
+    }
+
+    while(!shortEdges.empty()) {
+        MxEdge edge = shortEdges.top();
+        shortEdges.pop();
+        longEdges.remove(edge.a);
+        longEdges.remove(edge.b);
+        std::cout << "trying edge collapse edge, len: " << edge.length() << std::endl;
+        if(edge.length() < shortCutoff) {
+            result = collapseEdge(edge);
         }
     }
     return S_OK;
@@ -954,4 +1303,109 @@ TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
     assert(valid(tri));
 
     return tri;
+}
+
+HRESULT MxMesh::flipManifoldEdge(const MxEdge& e) {
+
+    return E_NOTIMPL;
+}
+
+HRESULT MxMesh::collapseManifoldEdgeTriangles(const MxEdge& e) {
+
+    return E_NOTIMPL;
+
+}
+
+bool MxMesh::isCollapseManifoldEdgeValid(const MxEdge& e) const {
+    std::set<VertexPtr> v1_link = e.a->link();
+    std::set<VertexPtr> v2_link = e.b->link();
+    std::set<VertexPtr> e_link = e.link();
+    std::vector<VertexPtr> vertexIntersection;
+
+    std::set_intersection(v1_link.begin(), v1_link.end(),
+                          v2_link.begin(), v2_link.end(),
+                          std::back_inserter(vertexIntersection));
+
+    if(e_link.size() != vertexIntersection.size()) {
+        return false;
+    }
+
+    for(VertexPtr v : e_link) {
+        if(!contains(vertexIntersection, v)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool MxMesh::validateVertex(const VertexPtr v) {
+    assert(contains(vertices, v));
+    for(TrianglePtr tri : v->triangles()) {
+        assert(incident(tri, v));
+        assert(contains(triangles, tri));
+        assert(tri->cells[0] && tri->cells[1]);
+    }
+    return true;
+}
+
+bool MxMesh::validateVertices() {
+    for(int i = 0; i < vertices.size(); ++i) {
+        validateVertex(vertices[i]);
+    }
+    return true;
+}
+
+bool MxMesh::validateTriangles() {
+    for(int i = 0; i < triangles.size(); ++i) {
+        validateTriangle(triangles[i]);
+    }
+    return true;
+}
+
+bool MxMesh::validateTriangle(const TrianglePtr tri) {
+    assert(tri->isValid());
+
+    for(int i = 0; i < 3; ++i) {
+        validateVertex(tri->vertices[i]);
+        assert(contains(tri->vertices[i]->triangles(), tri));
+    }
+    return true;
+}
+
+bool MxMesh::validate() {
+    return true;
+    validateTriangles();
+    validateVertices();
+    return true;
+}
+
+HRESULT MxMesh::enqueueShortEdge(const VertexPtr a, const VertexPtr b) {
+    validateEdge(a, b);
+    this->shortEdges.push({{a, b}});
+    return S_OK;
+}
+
+HRESULT MxMesh::enqueueLongEdge(const VertexPtr a, const VertexPtr b) {
+    validateEdge(a, b);
+    longEdges.push({{a, b}});
+    return S_OK;
+}
+
+bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
+    MxEdge e(a, b);
+    return true;
+}
+
+bool MxMesh::validateEnquedEdges() {
+    for(auto i = shortEdges.begin(); i != shortEdges.end(); ++i) {
+        const Edge& e = *i;
+        MxEdge(e[0], e[1]);
+    }
+
+   for(auto i = longEdges.begin(); i != longEdges.end(); ++i) {
+        const Edge& e = *i;
+        MxEdge(e[0], e[1]);
+    }
+   return true;
 }

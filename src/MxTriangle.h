@@ -145,6 +145,11 @@ struct MxTriangle : MxObject {
     float area = 0.;
 
     /**
+     * The triangle is the fundamental material unit in Mechanica. All material
+     * properties are associated with the triangle. The vertex mass / area
+     * values are determined FROM the triangle. Only set the triangle mass,
+     * as the triangle will calculate the vertex mass from the triangle mass.
+     *
      * The mass of a triangle can vary, depending on the density and amount
      * of attached scalar quantities. Mass is the weighted average of the
      * attached scalar quantity densities times the area.
@@ -224,7 +229,9 @@ struct MxTriangle : MxObject {
     }
 
     /**
-     * This is designed to be stack allocated, then pushed into a vector.
+     * This is designed to heap allocated.
+     *
+     * Later versions will investigate stack allocation.
      */
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
@@ -232,7 +239,8 @@ struct MxTriangle : MxObject {
 		partialTriangles {{
             {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
 		    {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
-	    }}
+	    }},
+	    id{0}
     {}
 
 
@@ -242,7 +250,24 @@ struct MxTriangle : MxObject {
 			FacetPtr facet = nullptr);
 
 
+	/**
+	 * get the edge index of edge from a pair of vertices.
+	 *
+	 * If vertices[0] == a and vertices[1] == b or vertices[1] == a and vertices[0] == b,
+	 * then the edge is in the zero position, and so forth.
+	 *
+	 * If the edge does not match, then returns a -1.
+	 */
+	int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
+
+
+
+	/**
+	 * Disconnects a corner of this triangle from oldVertex, and re-attaches
+	 * this triangle to newVertex.
+	 */
 	VertexPtr replaceChild(VertexPtr newVertex, VertexPtr oldVertex);
+
 
 
     /**
@@ -250,6 +275,11 @@ struct MxTriangle : MxObject {
      * cell to recalculate area and volume, also inform all contained objects.
      */
     HRESULT positionsChanged();
+
+    bool isConnected();
+
+
+    bool isValid();
 
     float alpha = 0.5;
 };
@@ -268,6 +298,19 @@ namespace Magnum { namespace Math {
         return Magnum::Math::cross(v2 - v1, v3 - v1);
     }
 
+    // Nx = UyVz - UzVy
+    // Ny = UzVx - UxVz
+    // Nz = UxVy - UyVx
+    // non-normalized normal vector
+    // multiply by neg 1, CCW winding.
+
+
+    inline float triangle_area(const Vector3<float>& v1,
+            const Vector3<float>& v2, const Vector3<float>& v3) {
+        Vector3<float> abnormal = Math::normal(v1, v2, v3);
+        float len = abnormal.length();
+        return 0.5 * len;
+    }
 
 }}
 

@@ -20,12 +20,6 @@ HRESULT MxFacet::appendChild(TrianglePtr tri) {
         return mx_error(E_FAIL, "triangle belongs to another facet");
     }
 
-    for(VertexPtr v : tri->vertices) {
-        if(!contains(v->facets, this)) {
-            v->facets.push_back(this);
-        }
-    }
-
     tri->facet = this;
     triangles.push_back(tri);
     return S_OK;

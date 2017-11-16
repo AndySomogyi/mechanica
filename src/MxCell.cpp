@@ -23,9 +23,18 @@ bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex 
 bool MxCell::manifold() const {
 
     for(auto t : boundary) {
+
+        // check pointers
         if (!adjacent(t, t->neighbors[0]) ||
             !adjacent(t, t->neighbors[1]) ||
             !adjacent(t, t->neighbors[2])) {
+            return false;
+        }
+
+        // check vertices
+        if (!adjacent(t->triangle, t->neighbors[0]->triangle) ||
+            !adjacent(t->triangle, t->neighbors[1]->triangle) ||
+            !adjacent(t->triangle, t->neighbors[2]->triangle)) {
             return false;
         }
     }
@@ -106,12 +115,14 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
     // zero, remove the facet from both incident cells.
     remove(boundary, pt);
     FacetPtr facet = tri->facet;
-    facet->removeChild(tri);
-    if(facet->triangles.size() == 0) {
-        remove(facets, facet);
-        int otherIndex = index == 0 ? 1 : 0;
-        if(tri->cells[otherIndex]) {
-            remove(tri->cells[otherIndex]->facets, facet);
+    if(facet) {
+        facet->removeChild(tri);
+        if(facet->triangles.size() == 0) {
+            remove(facets, facet);
+            int otherIndex = index == 0 ? 1 : 0;
+            if(tri->cells[otherIndex]) {
+                remove(tri->cells[otherIndex]->facets, facet);
+            }
         }
     }
     tri->facet = nullptr;
@@ -136,16 +147,16 @@ HRESULT MxCell::removeChild(FacetPtr facet) {
     } else {
         return mx_error(E_FAIL, "facet does not belong to this cell");
     }
-    
+
     facet->cells[index] = nullptr;
     remove(facets, facet);
-    
+
     for(TrianglePtr tri : facet->triangles) {
         if((result = removeTriangleFromFacet(tri, index)) != S_OK) {
             return result;
         }
     }
-    
+
     return S_OK;
 }
 
@@ -357,7 +368,7 @@ HRESULT MxCell::positionsChanged() {
 
     #ifndef NDEBUG
     if(mesh->rootCell() != this) {
-        assert(volume >= 0);
+        //assert(volume >= 0);
     }
     //std::cout << "cell " << this->ob_refcnt <<
     //", volume: " << volume << ", area: " << area << ", root: " <<
@@ -423,6 +434,13 @@ HRESULT MxCell::appendTriangleFromFacet(TrianglePtr tri, int index) {
 
     boundary.push_back(&tri->partialTriangles[index]);
 
+    return S_OK;
+}
+
+HRESULT MxCell::topologyChanged() {
+    if(renderer) {
+        renderer->invalidate();
+    }
     return S_OK;
 }
 

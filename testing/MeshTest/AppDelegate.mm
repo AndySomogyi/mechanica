@@ -34,6 +34,9 @@ static float area(float radius) {
     self.radiusSlider.maxValue = radius_from_volume(meshTest->model->maxTargetVolume);
     self.radiusSlider.minValue = radius_from_volume(meshTest->model->minTargetVolume);
     
+    meshTest->model->targetVolume = volume(self.radiusVal.floatValue);
+    meshTest->model->targetArea = area(self.radiusVal.floatValue);
+    
     self.areaMax.floatValue = meshTest->model->maxTargetArea;
     self.areaMin.floatValue = meshTest->model->minTargetArea;
     self.areaVal.floatValue = meshTest->model->targetArea;

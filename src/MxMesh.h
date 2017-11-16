@@ -214,7 +214,7 @@ struct MxMesh  {
      *
      */
     void vertexAtributes(const std::vector<MxVertexAttribute> &attributes, uint vertexCount,
-    		uint stride, void* buffer);
+                uint stride, void* buffer);
 
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
@@ -231,7 +231,7 @@ struct MxMesh  {
     FacetPtr findFacet(CellPtr a, CellPtr b);
 
     /**
-     * Creates a new facet of the given facet type. The new facet is added 
+     * Creates a new facet of the given facet type. The new facet is added
      * to the mesh facet list, but the caller must add the facets to the cells.
      */
     FacetPtr createFacet(MxFacetType *type);
@@ -273,6 +273,10 @@ struct MxMesh  {
 
 
     VertexPtr createVertex(const Magnum::Vector3 &pos);
+
+    HRESULT deleteVertex(VertexPtr v);
+
+    HRESULT deleteTriangle(TrianglePtr tri);
 
 
     HRESULT collapseEdge(const MxEdge& edge);
@@ -354,16 +358,59 @@ struct MxMesh  {
 
     /**
      * A manifold edge is an edge on a closed surface, it
-     * resided between exactly two triangles. If the given edge
-     * does not have one or two incident triangles, returns a failure.
+     * resides between exactly two triangles. If the given edge
+     * does not have exactly two incident triangles, returns a failure.
      *
      * This method collapses the two incident triangles such that the
      * this edge is replaced with a new vertex at the center of this edge,
      * and the two incident triangles are removed and replaced with edges.
      * The two remaining triangles adjacent to each triangle are then
      * re-connected with each other.
+     *
+     *              *                                *
+     *           /    \                            / | \
+     *         /        \                        /   |   \
+     *       /            \                    /     |     \
+     *     /                \                /       |       \
+     *   /                    \            /         |         \
+     * * --------------------- *    ->   *           |           *
+     *   \                   /             \         |          /
+     *     \               /                 \       |        /
+     *       \           /                     \     |      /
+     *         \       /                         \   |    /
+     *           \   /                             \ | /
+     *             *                                 *
+     *
+     *
+     *
+     *    _        |        _		              |        _
+     *      _      |      _		              |      _
+     *        _    |    _		              |    _
+     *          _  |  _ 		              |  _
+     *             *                  	               *
+     *           /    \              	               |
+     *         /        \            	               |
+     *       /            \          	               |
+     *     /                \        	               |
+     *   /                    \      	               |
+     * * --------------------- *    ->	               *
+     *   \                   /       	     \         |         /
+     *     \               /         	       \       |       /
+     *       \           /           	         \     |     /
+     *         \       /             	           \   |   /
+     *           \   /               	             \ | /
+     *             *                 	               *
+
+
      */
     HRESULT collapseManifoldEdge(const MxEdge &e);
+
+    bool isCollapseManifoldEdgeValid(const MxEdge &e) const;
+
+
+    HRESULT flipManifoldEdge(const MxEdge &e);
+
+    HRESULT collapseManifoldEdgeTriangles(const MxEdge &e);
 
     bool valid(TrianglePtr p);
 
@@ -394,7 +441,7 @@ struct MxMesh  {
      * edge. Number between 0 and 1.
      */
     float edgeSplitStochasticAsymmetry = 0.2;
-    
+
     /**
      * debug code to set the alpha to near zero on all triangles.
      */
@@ -403,6 +450,8 @@ struct MxMesh  {
             tri->alpha = 0.0;
         }
     }
+
+
 
 
 private:
@@ -463,13 +512,33 @@ private:
     bool splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1, MxCell* c0,
             MxCell* c1, MxTriangle *tri);
 
+    bool validateVertex(const VertexPtr v);
+
+    bool validateVertices();
+
+    bool validateTriangles();
+
+    bool validateEnquedEdges();
+
+    bool validateTriangle(const TrianglePtr tri);
+
+    bool validate();
+
+    HRESULT enqueueShortEdge(const VertexPtr a, const VertexPtr b);
+
+    HRESULT enqueueLongEdge(const VertexPtr a, const VertexPtr b);
+
+    bool validateEdge(const VertexPtr a, const VertexPtr b);
+
 
     // hack to check if the queue contains an element
     // the std::priority_queue container is protected, and we need to check
     // if the item is contained before inserting.
     template<class Compare>
     class EdgeQueue : public std::priority_queue<Edge, std::deque<Edge>, Compare> {
-        typedef std::priority_queue<Edge, std::deque<Edge>, Compare>  _base;
+        typedef std::deque<Edge> container;
+        typedef std::priority_queue<Edge, container, Compare>  _base;
+
     public:
         bool contains(const Edge &value) const {
             for(auto i = _base::c.begin(); i < _base::c.end(); i++) {
@@ -487,7 +556,35 @@ private:
             }
         }
 
+        void remove(TrianglePtr tri) {
+            for(int i = 0; i < 3; ++i) {
+                remove(tri->vertices[i]);
+            }
+        }
 
+        void remove(VertexPtr vert) {
+            container::iterator i;
+            while((i = find(vert)) != _base::c.end()) {
+                _base::c.erase(i);
+            }
+        }
+
+        container::iterator find(const VertexPtr v) {
+            container::iterator i = _base::c.begin();
+            for(; i < _base::c.end(); i++) {
+                const Edge& e = *i;
+                if(e[0] == v || e[1] == v) break;
+            }
+            return i;
+        }
+
+        container::iterator begin() {
+            return _base::c.begin();
+        }
+
+        container::iterator end() {
+            return _base::c.end();
+        }
     };
 
     struct edge_less

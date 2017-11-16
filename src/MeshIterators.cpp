@@ -7,67 +7,93 @@
 
 #include <MxCell.h>
 
-TriangleEdgeStarIterator::TriangleEdgeStarIterator(
-		const class EdgeTriangles& edgeStar) {
+static bool commonCell(const TrianglePtr a, const TrianglePtr b) {
+    assert(a->cells[0] && a->cells[1] && b->cells[0] && b->cells[1]);
+    return (a->cells[0] == b->cells[0] ||
+            a->cells[0] == b->cells[1] ||
+            a->cells[1] == b->cells[0] ||
+            a->cells[1] == b->cells[1]);
 }
 
-TriangleEdgeStarIterator::reference TriangleEdgeStarIterator::operator *() const {
+
+
+
+EdgeTriangleIterator::value_type EdgeTriangleIterator::operator *() const {
+    TrianglePtr tri = triangles[index];
+    return tri;
 }
 
-TriangleEdgeStarIterator& TriangleEdgeStarIterator::operator ++() {
+EdgeTriangleIterator& EdgeTriangleIterator::operator ++() {
+    index++;
+    return *this;
 }
 
-TriangleEdgeStarIterator TriangleEdgeStarIterator::operator ++(int int1) {
+EdgeTriangleIterator EdgeTriangleIterator::operator ++(int) {
+    EdgeTriangleIterator ret = *this;
+    ++(*this);
+    return ret;
 }
 
-TriangleEdgeStarIterator& TriangleEdgeStarIterator::operator --() {
+EdgeTriangleIterator& EdgeTriangleIterator::operator --() {
+    index--;
+    return *this;
 }
 
-TriangleEdgeStarIterator TriangleEdgeStarIterator::operator --(int int1) {
+EdgeTriangleIterator EdgeTriangleIterator::operator --(int) {
+    EdgeTriangleIterator ret = *this;
+    --(*this);
+    return ret;
 }
 
-bool TriangleEdgeStarIterator::operator ==(
-		const TriangleEdgeStarIterator& rhs) {
+bool EdgeTriangleIterator::operator ==(
+		const EdgeTriangleIterator& rhs) {
+    return index == rhs.index && &triangles == &rhs.triangles;
 }
 
-bool TriangleEdgeStarIterator::operator !=(
-		const TriangleEdgeStarIterator& rhs) {
+bool EdgeTriangleIterator::operator !=(
+		const EdgeTriangleIterator& rhs) {
+    return index != rhs.index || &triangles != &rhs.triangles;
 }
 
-EdgeTriangles::const_iterator EdgeTriangles::begin() const {
+EdgeTriangles::iterator EdgeTriangles::begin() const {
+    return EdgeTriangleIterator(triangles, 0);
 }
 
-EdgeTriangles::const_iterator EdgeTriangles::end() const {
+EdgeTriangles::iterator EdgeTriangles::end() const {
+    return EdgeTriangleIterator(triangles, triangles.size());
 }
 
-EdgeTriangles::EdgeTriangles(const MxMesh* mesh, const MxTriangle& startTri,
-		const std::array<VertexPtr, 2>& edge) {
+EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) {
+    assert(index >= 0 && index <= 3);
+    VertexPtr a = startTri->vertices[index];
+    VertexPtr b = startTri->vertices[(index+1)%3];
+
+    for(TrianglePtr ta : a->triangles()) {
+        if(incident(ta, b)) {
+            triangles.push_back(ta);
+        }
+    }
+
+    // TODO: TOTAL FUCKING HACK
+    // we desperately need to come up with a cleaner way of representing
+    // ordered triangles around an edge. The correct way to do this is with
+    // radial edge pointers around each triangle. But, do that in the next
+    // release.
+
+    // need to sort the radial triangles, so each tri shares a cell with the next one.
+    for(int i = 0; (i + 1) < triangles.size(); ++i) {
+        if(commonCell(triangles[i], triangles[i+1])) continue;
+
+        for(uint j = i + 2; j < triangles.size(); ++j) {
+            if(commonCell(triangles[i], triangles[j])) {
+                std::swap(triangles[i+1], triangles[j]);
+            }
+        }
+
+        assert(commonCell(triangles[i], triangles[i+1]));
+    }
 }
 
-EdgeTrianglesIterator::EdgeTrianglesIterator(
-		const class EdgeTriangles& edgeStar) {
-}
-
-EdgeTrianglesIterator::reference EdgeTrianglesIterator::operator *() const {
-}
-
-TriangleEdgeStarIterator& EdgeTrianglesIterator::operator ++() {
-}
-
-TriangleEdgeStarIterator EdgeTrianglesIterator::operator ++(int int1) {
-}
-
-TriangleEdgeStarIterator& EdgeTrianglesIterator::operator --() {
-}
-
-TriangleEdgeStarIterator EdgeTrianglesIterator::operator --(int int1) {
-}
-
-bool EdgeTrianglesIterator::operator ==(const TriangleEdgeStarIterator& rhs) {
-}
-
-bool EdgeTrianglesIterator::operator !=(const TriangleEdgeStarIterator& rhs) {
-}
 
 EdgeFacetIterator::EdgeFacetIterator(const class EdgeFacets& edgeStar) {
 }
@@ -75,16 +101,16 @@ EdgeFacetIterator::EdgeFacetIterator(const class EdgeFacets& edgeStar) {
 EdgeFacetIterator::reference EdgeFacetIterator::operator *() const {
 }
 
-TriangleEdgeStarIterator& EdgeFacetIterator::operator ++() {
+EdgeTriangleIterator& EdgeFacetIterator::operator ++() {
 }
 
-TriangleEdgeStarIterator EdgeFacetIterator::operator ++(int int1) {
+EdgeTriangleIterator EdgeFacetIterator::operator ++(int int1) {
 }
 
-TriangleEdgeStarIterator& EdgeFacetIterator::operator --() {
+EdgeTriangleIterator& EdgeFacetIterator::operator --() {
 }
 
-TriangleEdgeStarIterator EdgeFacetIterator::operator --(int int1) {
+EdgeTriangleIterator EdgeFacetIterator::operator --(int int1) {
 }
 
 bool EdgeFacetIterator::operator ==(const EdgeFacetIterator& rhs) {
