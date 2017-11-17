@@ -29,7 +29,7 @@ GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
 
-    /*
+    
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -49,9 +49,9 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.1;
     minTargetVolume = 0.005;
     maxTargetVolume = 0.2;
-    */
-     
     
+     
+    /*
     
    
 
@@ -71,11 +71,11 @@ GrowthModel::GrowthModel()  {
     targetArea = 0.1;
     maxTargetArea = 2;
 
-    targetVolume = 0.9;
+    targetVolume = 0.5;
     minTargetVolume = 0.005;
     maxTargetVolume = 1.5;
      
-     
+    */
 
 
 
@@ -150,6 +150,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     assert(cell->area >= 0);
 
     float diff = targetArea - cell->area;
+    //float diff = -0.35;
 
     for(auto f: cell->facets) {
         for(auto tri : f->triangles) {
@@ -173,7 +174,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
             for(int v = 0; v < 3; ++v) {
                 //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-                tri->vertices[v]->force +=  4.0 * diff * (tri->area / cell->area) *  dir[v].normalized();
+                tri->vertices[v]->force +=  3.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
             }
         }
     }
@@ -195,7 +196,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
     for(auto f: cell->facets) {
         for(auto tri : f->triangles) {
 
-            Vector3 force = 0.5 * tri->normal * tri->area * diff;
+            Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
 
             for(int v = 0; v < 3; ++v) {
                 tri->vertices[v]->force +=  force;

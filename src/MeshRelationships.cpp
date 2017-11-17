@@ -12,10 +12,6 @@ bool incident(const TrianglePtr t, const CellPtr c) {
     return t->cells[0] == c || t->cells[1] == c;
 }
 
-bool incident(const TrianglePtr tri, const struct MxVertex *v)  {
-    return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
-}
-
 bool adjacent(const TrianglePtr a, const TrianglePtr b) {
     if(a == b) {
         return false;
@@ -44,7 +40,8 @@ bool adjacent(const TrianglePtr a, const TrianglePtr b) {
 }
 
 bool incident(const FacetPtr facet, const CellPtr cell) {
-	return facet->cells[0] == cell || facet->cells[1] == cell;
+    assert(facet);
+	return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
 }
 
 bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
@@ -52,7 +49,7 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
         return false;
     }
 
-    return (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) &&
+    return (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) ||
            (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
 }
 
@@ -141,6 +138,7 @@ void disconnect(PTrianglePtr a, PTrianglePtr b) {
 }
 
 bool incident(const TrianglePtr tri, const VertexPtr v) {
+    assert(tri);
     return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
 }
 

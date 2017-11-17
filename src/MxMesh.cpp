@@ -701,11 +701,51 @@ HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
         }
     }
 
+    // is this configuration topologically safe to reconnect. This check that the top
+    // and bottom triangle neighbors are not themselves connected.
+    auto safeTopology = [](const TrianglePtr tri, const Edge& edge1, const Edge& edge2) -> HRESULT {
+        for(int i = 0; i < 2; ++i) {
+            if(!tri->cells[i]->isRoot()) {
+
+                PTrianglePtr p1 = nullptr, p2 = nullptr;
+
+                for(int j = 0; j < 3; ++j) {
+                    PTrianglePtr pn = tri->partialTriangles[i].neighbors[j];
+                    if(incident(pn, edge1)) {
+                        p1 = pn;
+                        continue;
+                    }
+                    if(incident(pn, edge2)) {
+                        p2 = pn;
+                        continue;
+                    }
+                }
+
+                assert(p1 && p2);
+                assert(p1 != p2);
+                assert(p1 != &tri->partialTriangles[i]);
+                assert(p2 != &tri->partialTriangles[i]);
+                assert(adjacent(p1, &tri->partialTriangles[i]));
+                assert(adjacent(p2, &tri->partialTriangles[i]));
+
+                if (adjacent(p1, p2)) {
+                    return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
+                }
+            }
+        }
+        return S_OK;
+    };
+
+    // make sure with topologically safe
+    if((res = safeTopology(t1, {{e.a, c}}, {{e.b, c}})) != S_OK) return res;
+    if((res = safeTopology(t2, {{e.a, d}}, {{e.b, d}})) != S_OK) return res;
+
+
     float leftUpperArea = Magnum::Math::triangle_area(e.a->position, c->position, pos);
     float leftLowerArea = Magnum::Math::triangle_area(e.a->position, d->position, pos);
     float rightUpperArea = Magnum::Math::triangle_area(e.b->position, c->position, pos);
     float rightLowerArea = Magnum::Math::triangle_area(e.b->position, d->position, pos);
-    
+
     // need to calculate area here, because the area in the triangle has not been updated yet.
     float upperArea = Magnum::Math::triangle_area(e.a->position, e.b->position, c->position);
     float lowerArea = Magnum::Math::triangle_area(e.a->position, e.b->position, d->position);
@@ -719,17 +759,17 @@ HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
         assert(abs(1.0 - (leftFraction + rightFraction)) < 0.01);
         int leftCount = 0;
         int rightCount = 0;
-        
+
         for(auto i = leftTri.begin(); i != leftTri.end(); ++i) {
             leftCount += 1;
         }
-        
+
         for(auto i = rightTri.begin(); i != rightTri.end(); ++i) {
             rightCount += 1;
         }
-        
+
         assert(leftCount > 0 && rightCount > 0);
-        
+
         for(TrianglePtr tri : leftTri) {
             tri->mass += (leftFraction * src->mass) / leftCount;
         }
@@ -778,7 +818,7 @@ HRESULT MxMesh::collapseManifoldEdge(const MxEdge& e) {
                 assert(adjacent(p1, &tri->partialTriangles[i]));
                 assert(adjacent(p2, &tri->partialTriangles[i]));
 
-                assert(!adjacent(p1, p1));
+                assert(!adjacent(p1, p2));
 
                 disconnect(p1, &tri->partialTriangles[i]);
                 disconnect(p2, &tri->partialTriangles[i]);
