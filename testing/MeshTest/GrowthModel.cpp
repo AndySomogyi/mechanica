@@ -28,6 +28,8 @@ static struct BlueCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
+    
+    /*
 
     
     MxMeshGmshImporter importer{*mesh,
@@ -50,8 +52,9 @@ GrowthModel::GrowthModel()  {
     minTargetVolume = 0.005;
     maxTargetVolume = 0.2;
     
+     */
      
-    /*
+    
     
    
 
@@ -64,18 +67,18 @@ GrowthModel::GrowthModel()  {
             }
         }
     };
-    mesh->shortCutoff = 0.5;
-    mesh->longCutoff = 1.0;
+    mesh->shortCutoff = 0.07;
+    mesh->longCutoff = 0.16;
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.1;
     maxTargetArea = 2;
 
-    targetVolume = 0.5;
+    targetVolume = 0.6;
     minTargetVolume = 0.005;
     maxTargetVolume = 1.5;
      
-    */
+    
 
 
 
@@ -149,7 +152,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
     assert(cell->area >= 0);
 
-    float diff = targetArea - cell->area;
+    float diff =  - cell->area;
     //float diff = -0.35;
 
     for(auto f: cell->facets) {
@@ -174,7 +177,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
             for(int v = 0; v < 3; ++v) {
                 //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-                tri->vertices[v]->force +=  3.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+                tri->vertices[v]->force +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
             }
         }
     }
