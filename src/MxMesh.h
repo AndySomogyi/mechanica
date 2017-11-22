@@ -11,8 +11,8 @@
 #include <vector>
 #include <list>
 #include <deque>
-#include <queue>
 #include <random>
+
 
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
@@ -114,34 +114,6 @@ struct MxMesh  {
 
     ~MxMesh();
 
-
-
-
-    std::vector<Magnum::Vector3> initPos;
-
-
-    /**
-     * @brief Initialize an #engine with the given data.
-     *
-     * @param e The #engine to initialize.
-     * @param origin An array of three doubles containing the Cartesian origin
-     *      of the space.
-     * @param dim An array of three doubles containing the size of the space.
-     * @param L The minimum cell edge length in each dimension.
-     * @param cutoff The maximum interaction cutoff to use.
-     * @param period A bitmask describing the periodicity of the domain
-     *      (see #space_periodic_full).
-     * @param max_type The maximum number of particle types that will be used
-     *      by this engine.
-     * @param flags Bit-mask containing the flags for this engine.
-     *
-     * @return #engine_err_ok or < 0 on error (see #engine_err).
-     */
-
-    //MxMesh(const Vector3 &origin , const Vector3 &dim , const Vector3 &L ,
-    //        double cutoff , unsigned int period , int max_type , unsigned int flags );
-
-
     /**
      * Write vertex attributes into a given buffer.
      *
@@ -221,12 +193,10 @@ struct MxMesh  {
 
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
-
     /**
      * Searches for a triangle which contains the given three vertices.
      */
     TrianglePtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
-
 
     /**
      * Searches for a facet joining cells a and b, returns if found. null otherwise.
@@ -246,7 +216,6 @@ struct MxMesh  {
      */
     TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &verts);
 
-
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
@@ -254,11 +223,7 @@ struct MxMesh  {
 
     void dump(uint what);
 
-    void jiggle();
-
     std::tuple<Magnum::Vector3, Magnum::Vector3> extents();
-
-
 
     /**
      * inform the mesh that the vertex position was changed. This causes the mesh
@@ -269,151 +234,17 @@ struct MxMesh  {
      */
     HRESULT positionsChanged();
 
-    /**
-     * process all of the edges that violate the min/max cutoff distance constraints.
-     */
-    HRESULT processOffendingEdges();
-
-
     VertexPtr createVertex(const Magnum::Vector3 &pos);
 
     HRESULT deleteVertex(VertexPtr v);
 
     HRESULT deleteTriangle(TrianglePtr tri);
 
-
-    HRESULT collapseEdge(const MxEdge& edge);
-
-    /**
-     * A manifold edge is an edge on a closed surface, it
-     * resided between exactly two triangles. If the given edge
-     * does not have one or two indicent triangles, returns a failure.
-     *
-     * To split an edge, it doesn't really matter if this edge is a
-     * manifold edge or not. This method creates a new vertex at the
-     * center of this edge, and splits each incident triangle into
-     * two, and reconnects them. Each new triangle maintains the same
-     * cell connectivity relationships.
-     *
-     * For every triangle connected to an edge like:
-     *
-     *
-     *     edge.a
-     *       *
-     *       | \
-     *       |   \
-     *       |     \    B
-     *       |       \
-     *       |         \
-     *       |          * c
-     *    A  |         /
-     *       |        /
-     *       |       /
-     *       |      /  C
-     *       |     /
-     *       |    /
-     *       |   /
-     *       |  /
-     *       | /
-     *       *
-     *    edge.b
-     *
-     *       *
-     *       | \
-     *       |   \
-     *       |     \    <- new triangle
-     *       |       \
-     *       |         \
-     *       |      _ - * c
-     *       |  _ -    /
-     *    n  *-       /
-     *       |       /
-     *       |      /
-     *       |     /    <- old triangle
-     *       |    /
-     *       |   /
-     *       |  /
-     *       | /
-     *       *
-     *
-     *  * maintain a list of the newly created triangles.
-     *  * for each existing triangle
-     *        disconnect the old triangle from the top vertex
-     *        disconnect the old triangle from the a-c edge
-     *        create a new triangle
-     *        attach the new tri to the old triangle, and the a-c edge
-     *        add new tri to list
-     *        add new tri to each cell that the old tri belongs to.
-     *
-     *  * for each new tri
-     *        connect the tri to the next and prev tri around the n-a edge
-     *
-     */
-    HRESULT splitEdge(const MxEdge &e);
-
     /**
      * Find a facet that contains two triangles and matches the
      * given 4 vertices.
      */
     FacetPtr findFacet(const std::array<VertexPtr, 4>& verts);
-
-
-
-    /**
-     * A manifold edge is an edge on a closed surface, it
-     * resides between exactly two triangles. If the given edge
-     * does not have exactly two incident triangles, returns a failure.
-     *
-     * This method collapses the two incident triangles such that the
-     * this edge is replaced with a new vertex at the center of this edge,
-     * and the two incident triangles are removed and replaced with edges.
-     * The two remaining triangles adjacent to each triangle are then
-     * re-connected with each other.
-     *
-     *              *                                *
-     *           /    \                            / | \
-     *         /        \                        /   |   \
-     *       /            \                    /     |     \
-     *     /                \                /       |       \
-     *   /                    \            /         |         \
-     * * --------------------- *    ->   *           |           *
-     *   \                   /             \         |          /
-     *     \               /                 \       |        /
-     *       \           /                     \     |      /
-     *         \       /                         \   |    /
-     *           \   /                             \ | /
-     *             *                                 *
-     *
-     *
-     *
-     *    _        |        _                      |        _
-     *      _      |      _                      |      _
-     *        _    |    _                      |    _
-     *          _  |  _                       |  _
-     *             *                                     *
-     *           /    \                                 |
-     *         /        \                               |
-     *       /            \                             |
-     *     /                \                           |
-     *   /                    \                         |
-     * * --------------------- *    ->                   *
-     *   \                   /                \         |         /
-     *     \               /                    \       |       /
-     *       \           /                        \     |     /
-     *         \       /                            \   |   /
-     *           \   /                                \ | /
-     *             *                                    *
-
-
-     */
-    HRESULT collapseManifoldEdge(const MxEdge &e);
-
-    bool isCollapseManifoldEdgeValid(const MxEdge &e) const;
-
-
-    HRESULT flipManifoldEdge(const MxEdge &e);
-
-    HRESULT collapseManifoldEdgeTriangles(const MxEdge &e);
 
     bool valid(TrianglePtr p);
 
@@ -423,21 +254,12 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
-    /**
-     * Process all of the edges that are too long or too short, and adaptively refine
-     * coarsen the mesh topology.
-     */
-    HRESULT updateMeshToplogy();
-
     CellPtr rootCell() const {return _rootCell;};
 
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
     std::deque<FacetPtr> facets;
-
-    float shortCutoff = 0.0;
-    float longCutoff = 1.5;
 
     /**
      * random percent of difference from true center of split
@@ -454,66 +276,14 @@ struct MxMesh  {
         }
     }
 
+    float getShortCutoff() { return meshOperations.getShortCutoff(); };
+    void setShortCutoff(float val) { meshOperations.setShortCutoff(val); }
 
 
+    float getLongCutoff() { return meshOperations.getLongCutoff(); }
+    void setLongCutoff(float val) { meshOperations.setLongCutoff(val); }
 
 private:
-
-    HRESULT collapseHTriangle(TrianglePtr tri);
-
-    HRESULT collapseIEdge(const MxEdge &edge);
-
-    /**
-     * Splits a vertex located at the boundary of a facet. The given vertex gets removed from the
-     * facet, and replaced with the vertices v0 and v1. Vertices v0 and v1 should be complete,
-     * in that they should have their positions set. This method creates a new triangle,
-     * and returns in it result.
-     *
-     * The newly formed edge is in the result triangle 0 and 1 indices. The caller is responsible
-     * for splitting the all of the remaining faced incident to v. The method generates two new
-     * partial triangles also, but the 0'th neighboring partial triangle index is left to nullptr,
-     * the caller is responsible for attaching the new partial triangles.
-     *
-     * This method does not delete v, it only detaches v from the facet, and attaches v0 and
-     * v1 to the facet.
-     */
-    TrianglePtr splitFacetBoundaryVertex(FacetPtr face, VertexPtr v, VertexPtr v0, VertexPtr v1);
-
-    /**
-     * Collapses a facet that contains a single triangle down to vertex. The facet,
-     * and triangle are removed from the cell. First a new vertex is generated at the
-     * center of the target triangle, and the neighboring facets, partial
-     * triangles and triangles all get re-attached to this vertex. The given facet, and
-     * it's contained triangle, partial triangle and vertices get orphaned, and the
-     * caller is responsible for deleting them. The newly created vertex is returned in
-     * result.
-     */
-    VertexPtr collapseCellSingularFacet(CellPtr cell, FacetPtr facet);
-
-    /**
-     * iterate over all of the triangles attached to vertex o, and
-     * replace the triangle's o vertex with n.
-     */
-    void vertexReconnect(VertexPtr o, VertexPtr n);
-
-    /**
-     * Removes the triangle from the triangle list of the old vertex o,
-     * and attaches it to the list of n. Updates tri to replace o with n.
-     */
-    void triangleVertexReconnect(MxTriangle &tri, VertexPtr o, VertexPtr n);
-
-    /**
-     * The triangle tri is going to be removed, with an edge collapse. Take the partial faces on
-     * both sides and connect them to each other. Verifies that the tri is a manifold triangle.
-     *
-     * This only reconnect the partial faces. reconnectVertex must be used separately
-     * to reconnect the triangles attached to a removed vertex. Removes the triangle
-     * from the cell's list of partial faces.
-     */
-    void triangleManifoldDisconnect(const MxTriangle &tri, const MxEdge &edge);
-
-    bool splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1, MxCell* c0,
-            MxCell* c1, MxTriangle *tri);
 
     bool validateVertex(const VertexPtr v);
 
@@ -527,94 +297,13 @@ private:
 
     bool validate();
 
-    HRESULT enqueueShortEdge(const VertexPtr a, const VertexPtr b);
-
-    HRESULT enqueueLongEdge(const VertexPtr a, const VertexPtr b);
 
     bool validateEdge(const VertexPtr a, const VertexPtr b);
 
 
-    // hack to check if the queue contains an element
-    // the std::priority_queue container is protected, and we need to check
-    // if the item is contained before inserting.
-    template<class Compare>
-    class EdgeQueue : public std::priority_queue<Edge, std::deque<Edge>, Compare> {
-        typedef std::deque<Edge> container;
-        typedef std::priority_queue<Edge, container, Compare>  _base;
-
-    public:
-        bool contains(const Edge &value) const {
-            for(auto i = _base::c.begin(); i < _base::c.end(); i++) {
-                const Edge& e = *i;
-                if((e[0] == value[0] && e[1] == value[1]) || (e[1] == value[0] && e[0] == value[1])) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        void push(const Edge &value) {
-            if (!contains(value)) {
-                _base::push(value);
-            }
-        }
-
-        void remove(TrianglePtr tri) {
-            for(int i = 0; i < 3; ++i) {
-                remove(tri->vertices[i]);
-            }
-        }
-
-        void remove(VertexPtr vert) {
-            container::iterator i;
-            while((i = find(vert)) != _base::c.end()) {
-                _base::c.erase(i);
-            }
-        }
-
-        container::iterator find(const VertexPtr v) {
-            container::iterator i = _base::c.begin();
-            for(; i < _base::c.end(); i++) {
-                const Edge& e = *i;
-                if(e[0] == v || e[1] == v) break;
-            }
-            return i;
-        }
-
-        container::iterator begin() {
-            return _base::c.begin();
-        }
-
-        container::iterator end() {
-            return _base::c.end();
-        }
-    };
-
-    struct edge_less
-    {
-        bool operator()(const Edge& a, const Edge& b) const
-        {return length(a) < length(b);}
-    };
-
-    struct edge_greater
-    {
-        bool operator()(const Edge& a, const Edge& b) const
-        {return length(a) > length(b);}
-    };
-
-    EdgeQueue<edge_greater> shortEdges;
-    EdgeQueue<edge_less> longEdges;
-
     MeshOperations meshOperations;
 
-
-
     CellPtr _rootCell;
-
-
-    std::default_random_engine randEngine;
-    std::uniform_real_distribution<float> uniformDist;
-
 
     friend struct MxVertex;
     friend struct MxTriangle;
@@ -624,7 +313,6 @@ private:
     friend struct MeshOperation;
     friend struct RadialEdgeCollapse;
     friend struct RadialEdgeSplit;
-
 };
 
 

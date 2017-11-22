@@ -45,12 +45,6 @@ HRESULT MxMeshGmshImporter::read(const std::string& path) {
         }
     }
 
-    mesh.initPos.resize(mesh.vertices.size());
-
-    for(int i = 0; i < mesh.vertices.size(); ++i) {
-        mesh.initPos[i] = mesh.vertices[i]->position;
-    }
-
     return mesh.positionsChanged();
 }
 

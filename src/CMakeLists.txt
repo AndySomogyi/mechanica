@@ -135,7 +135,7 @@ set(HEADERS
   ScalarField.h
   MxEdge.h
   MeshRelationships.h
-  MeshOperations.cpp
+  MeshOperations.h
   stochastic_rk.h
   )
 

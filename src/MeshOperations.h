@@ -67,6 +67,73 @@ protected:
 };
 
 
+    /**
+     * A manifold edge is an edge on a closed surface, it
+     * resided between exactly two triangles. If the given edge
+     * does not have one or two indicent triangles, returns a failure.
+     *
+     * To split an edge, it doesn't really matter if this edge is a
+     * manifold edge or not. This method creates a new vertex at the
+     * center of this edge, and splits each incident triangle into
+     * two, and reconnects them. Each new triangle maintains the same
+     * cell connectivity relationships.
+     *
+     * For every triangle connected to an edge like:
+     *
+     *
+     *     edge.a
+     *       *
+     *       | \
+     *       |   \
+     *       |     \    B
+     *       |       \
+     *       |         \
+     *       |          * c
+     *    A  |         /
+     *       |        /
+     *       |       /
+     *       |      /  C
+     *       |     /
+     *       |    /
+     *       |   /
+     *       |  /
+     *       | /
+     *       *
+     *    edge.b
+     *
+     *       *
+     *       | \
+     *       |   \
+     *       |     \    <- new triangle
+     *       |       \
+     *       |         \
+     *       |      _ - * c
+     *       |  _ -    /
+     *    n  *-       /
+     *       |       /
+     *       |      /
+     *       |     /    <- old triangle
+     *       |    /
+     *       |   /
+     *       |  /
+     *       | /
+     *       *
+     *
+     *  * maintain a list of the newly created triangles.
+     *  * for each existing triangle
+     *        disconnect the old triangle from the top vertex
+     *        disconnect the old triangle from the a-c edge
+     *        create a new triangle
+     *        attach the new tri to the old triangle, and the a-c edge
+     *        add new tri to list
+     *        add new tri to each cell that the old tri belongs to.
+     *
+     *  * for each new tri
+     *        connect the tri to the next and prev tri around the n-a edge
+     *
+     */
+
+
 struct RadialEdgeSplit : MeshOperation {
     RadialEdgeSplit(MeshPtr mesh, float longCutoff, const Edge& edge);
 
@@ -95,15 +162,12 @@ struct RadialEdgeSplit : MeshOperation {
     virtual bool equals(const Edge& e) const;
 
 private:
-    MxEdge edge;
-
 
     std::default_random_engine randEngine;
     std::uniform_real_distribution<float> uniformDist;
 
     float longCutoff;
-
-
+    Edge edge;
 };
 
 struct RadialEdgeCollapse : MeshOperation {
@@ -135,8 +199,8 @@ struct RadialEdgeCollapse : MeshOperation {
     virtual bool equals(const Edge& e) const;
 
 private:
-    MxEdge edge;
     float shortCutoff;
+    Edge edge;
 };
 
 struct EdgeFlip : MeshOperation {
@@ -224,8 +288,8 @@ private:
 
     MeshOperation* pop();
 
-    float longCutoff;
     float shortCutoff;
+    float longCutoff;
 
     Container::iterator findDependentOperation(Container::iterator start, const TrianglePtr);
 
