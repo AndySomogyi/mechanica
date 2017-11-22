@@ -53,8 +53,8 @@ static float area(float radius) {
     
 
     
-    self.shortCutoff.floatValue = meshTest->model->mesh->shortCutoff;
-    self.longCutoff.floatValue = meshTest->model->mesh->longCutoff;
+    self.shortCutoff.floatValue = meshTest->model->mesh->getShortCutoff();
+    self.longCutoff.floatValue = meshTest->model->mesh->getLongCutoff();
 }
 
 
@@ -102,13 +102,13 @@ static float area(float radius) {
     }
     else if (sender == self.shortCutoff)
     {
-        meshTest->model->mesh->shortCutoff = self.shortCutoff.floatValue;
+        meshTest->model->mesh->setShortCutoff(self.shortCutoff.floatValue);
         meshTest->model->mesh->positionsChanged();
         meshTest->draw();
     }
     else if (sender == self.longCutoff)
     {
-        meshTest->model->mesh->longCutoff = self.longCutoff.floatValue;
+        meshTest->model->mesh->setLongCutoff(self.longCutoff.floatValue);
         meshTest->model->mesh->positionsChanged();
         meshTest->draw();
     }

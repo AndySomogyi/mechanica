@@ -14,19 +14,22 @@
 
 RadialEdgeSplit::RadialEdgeSplit(MeshPtr mesh, float _longCutoff, const Edge& _edge) :
     MeshOperation{mesh}, longCutoff{_longCutoff}, edge{_edge} {
+
+    float range = mesh->edgeSplitStochasticAsymmetry / 2;
+    uniformDist = std::uniform_real_distribution<float>(-range, range);
 }
 
 bool RadialEdgeSplit::applicable(const Edge& e) {
     return true;
 }
 
-RadialEdgeCollapse::RadialEdgeCollapse(MeshPtr mesh, float _shortCutoff, const Edge& edge) :
-    MeshOperation{mesh}, shortCutoff{_shortCutoff}, edge{edge}
+RadialEdgeCollapse::RadialEdgeCollapse(MeshPtr mesh, float _shortCutoff, const Edge& _edge) :
+    MeshOperation{mesh}, shortCutoff{_shortCutoff}, edge{_edge}
 {
 }
 
-bool RadialEdgeCollapse::applicable(const Edge& e) {
-    MxEdge edge{e};
+bool RadialEdgeCollapse::applicable(const Edge& _e) {
+    MxEdge edge{_e};
         // check if we have a manifold edge, most common kind of short edge
     if (edge.upperFacets().size() == 0 &&
         edge.lowerFacets().size() == 0 &&
@@ -38,18 +41,22 @@ bool RadialEdgeCollapse::applicable(const Edge& e) {
     return false;
 }
 
-EdgeFlip::EdgeFlip(MeshPtr mesh, const Edge& edge) : MeshOperation{mesh} {
+EdgeFlip::EdgeFlip(MeshPtr mesh, const Edge& _edge) : MeshOperation{mesh} {
 }
 
-bool EdgeFlip::applicable(const Edge& e) {
+bool EdgeFlip::applicable(const Edge& _e) {
     return false;
 }
 
 
+/**
+ * The std *_heap functions produce a max heap. We need the lowest energy items
+ * first, so flip the compare op here.
+ */
 struct MeshOperationComp
 {
     bool operator()(const MeshOperation* a, const MeshOperation *b) const {
-        return a->energy() < b->energy();
+        return a->energy() > b->energy();
     };
 };
 
@@ -82,7 +89,7 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
         Edge edge = {{tri->vertices[minIndx], tri->vertices[(minIndx+1)%3]}};
 
         if(minEdge < shortCutoff &&
-                findMatchingOperation(edge) != nullptr &&
+                findMatchingOperation(edge) == nullptr &&
                 RadialEdgeCollapse::applicable(edge)) {
             push(new RadialEdgeCollapse(mesh, shortCutoff, edge));
         }
@@ -91,7 +98,7 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
             edge = {{tri->vertices[maxIndx], tri->vertices[(maxIndx+1)%3]}};
 
             if(maxEdge > longCutoff &&
-                    findMatchingOperation(edge) != nullptr &&
+                    findMatchingOperation(edge) == nullptr &&
                     RadialEdgeSplit::applicable(edge)) {
                 push(new RadialEdgeSplit(mesh, longCutoff, edge));
             }
@@ -121,8 +128,8 @@ HRESULT MeshOperations::removeDependentOperations(const VertexPtr vert) {
     Container::iterator iter = c.begin();
     while((iter = findDependentOperation(iter, vert)) != c.end()) {
         MeshOperation *op = *iter;
+        iter = c.erase(iter);
         delete op;
-        c.erase(iter++);
     }
     // stuff was removed, need to re-order the heap.
     std::make_heap(c.begin(), c.end(), MeshOperationComp{});
@@ -150,9 +157,14 @@ void MeshOperations::push(MeshOperation* x) {
 }
 
 MeshOperation* MeshOperations::pop() {
-    MeshOperation *result = c.front();
-    std::pop_heap(c.begin(), c.end(), MeshOperationComp{});
-    return result;
+    if(c.size() > 0) {
+        // moves the largest to the back
+        std::pop_heap(c.begin(), c.end(), MeshOperationComp{});
+        MeshOperation *result = c.back();
+        c.pop_back();
+        return result;
+    }
+    return nullptr;
 }
 
 void MeshOperations::setShortCutoff(float val) {
@@ -191,7 +203,9 @@ static int ctr = 0;
  */
 
 HRESULT RadialEdgeSplit::apply() {
-    auto triangles = edge.radialTriangles();
+    MxEdge e{edge};
+
+    auto triangles = e.radialTriangles();
 
     assert(triangles.size() >= 2);
 
@@ -202,8 +216,8 @@ HRESULT RadialEdgeSplit::apply() {
     ctr += 1;
 
     // new vertex at the center of this edge
-    Vector3 center = (edge.a->position + edge.b->position) / 2.;
-    center = center + (edge.a->position - edge.b->position) * uniformDist(randEngine);
+    Vector3 center = (e.a->position + e.b->position) / 2.;
+    center = center + (e.a->position - e.b->position) * uniformDist(randEngine);
     VertexPtr vert = mesh->createVertex(center);
 
     TrianglePtr firstNewTri = nullptr;
@@ -226,7 +240,7 @@ HRESULT RadialEdgeSplit::apply() {
         // find the outside tri vertex
         VertexPtr outer = nullptr;
         for(uint i = 0; i < 3; ++i) {
-            if(tri->vertices[i] !=  edge.b && tri->vertices[i] != edge.a ) {
+            if(tri->vertices[i] !=  e.b && tri->vertices[i] != e.a ) {
                 outer = tri->vertices[i];
                 break;
             }
@@ -237,7 +251,7 @@ HRESULT RadialEdgeSplit::apply() {
         // here with the new center vertex
         auto vertices = tri->vertices;
         for(uint i = 0; i < 3; ++i) {
-            if(vertices[i] == edge.a) {
+            if(vertices[i] == e.a) {
                 vertices[i] = vert;
                 break;
             }
@@ -268,7 +282,7 @@ HRESULT RadialEdgeSplit::apply() {
 
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
-        disconnect(tri, edge.b);
+        disconnect(tri, e.b);
         connect(tri, vert);
 
         tri->positionsChanged();
@@ -292,7 +306,7 @@ HRESULT RadialEdgeSplit::apply() {
 
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
-                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge.b, outer}});
+                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{e.b, outer}});
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
                 connect(&tri->partialTriangles[i], &nt->partialTriangles[i]);
@@ -305,8 +319,8 @@ HRESULT RadialEdgeSplit::apply() {
             }
         }
 
-        assert(incident(nt, {{edge.b, outer}}));
-        assert(!incident(tri, {{edge.b, outer}}));
+        assert(incident(nt, {{e.b, outer}}));
+        assert(!incident(tri, {{e.b, outer}}));
 
 
         // split the mass according to area
@@ -374,7 +388,7 @@ HRESULT RadialEdgeSplit::apply() {
 }
 
 float RadialEdgeSplit::energy() const {
-    return -(edge.length() - longCutoff);
+    return -(Magnum::Math::distance(edge[0]->position, edge[1]->position) - longCutoff);
 }
 
 bool RadialEdgeSplit::depends(const TrianglePtr tri) const {
@@ -387,12 +401,12 @@ bool RadialEdgeSplit::depends(const TrianglePtr tri) const {
 }
 
 bool RadialEdgeSplit::depends(const VertexPtr v) const {
-    return v == edge.a || v == edge.b;
+    return v == edge[0] || v == edge[1];
 }
 
 bool RadialEdgeSplit::equals(const Edge& e) const {
-    return (e[0] == edge.a && e[1] == edge.b) ||
-           (e[1] == edge.b && e[1] == edge.a);
+    return (e[0] == edge[0] && e[1] == edge[1]) ||
+           (e[0] == edge[1] && e[1] == edge[0]);
 }
 
 
@@ -416,7 +430,9 @@ HRESULT RadialEdgeCollapse::apply() {
 
     TrianglePtr t1 = nullptr, t2 = nullptr;
 
-    std::vector<TrianglePtr> edgeTri = edge.radialTriangles();
+    MxEdge e{edge};
+
+    std::vector<TrianglePtr> edgeTri = e.radialTriangles();
 
     assert(edgeTri.size() == 2);
 
@@ -433,7 +449,7 @@ HRESULT RadialEdgeCollapse::apply() {
 #endif
 
     for(VertexPtr v : t1->vertices) {
-        if(v != edge.a && v != edge.b) {
+        if(v != e.a && v != e.b) {
             c = v;
         }
         if(v->facets().size() != 1) {
@@ -442,7 +458,7 @@ HRESULT RadialEdgeCollapse::apply() {
     }
 
     for(VertexPtr v : t2->vertices) {
-        if(v != edge.a && v != edge.b) {
+        if(v != e.a && v != e.b) {
             d = v;
         }
         if(v->facets().size() != 1) {
@@ -452,13 +468,13 @@ HRESULT RadialEdgeCollapse::apply() {
 
     assert(c && d);
 
-    auto t3 = EdgeTriangles(t1, t1->adjacentEdgeIndex(edge.a, c));
-    auto t4 = EdgeTriangles(t1, t1->adjacentEdgeIndex(edge.b, c));
-    auto t5 = EdgeTriangles(t2, t2->adjacentEdgeIndex(edge.a, d));
-    auto t6 = EdgeTriangles(t2, t2->adjacentEdgeIndex(edge.b, d));
+    auto t3 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.a, c));
+    auto t4 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.b, c));
+    auto t5 = EdgeTriangles(t2, t2->adjacentEdgeIndex(e.a, d));
+    auto t6 = EdgeTriangles(t2, t2->adjacentEdgeIndex(e.b, d));
 
     // new center postion
-    Magnum::Vector3 pos = (edge.a->position + edge.b->position) / 2;
+    Magnum::Vector3 pos = (e.a->position + e.b->position) / 2;
 
     // all of the triangles attached to edge endpoints a and b will have thier corner
     // that is attached to the edge endpoints moved to the new center. Need to
@@ -494,14 +510,14 @@ HRESULT RadialEdgeCollapse::apply() {
         return S_OK;
     };
 
-    for(TrianglePtr tri : edge.a->triangles()) {
-        if((res = safeTriangleMove(tri, edge.a)) != S_OK) {
+    for(TrianglePtr tri : e.a->triangles()) {
+        if((res = safeTriangleMove(tri, e.a)) != S_OK) {
             return res;
         }
     }
 
-    for(TrianglePtr tri : edge.b->triangles()) {
-        if((res = safeTriangleMove(tri, edge.b)) != S_OK) {
+    for(TrianglePtr tri : e.b->triangles()) {
+        if((res = safeTriangleMove(tri, e.b)) != S_OK) {
             return res;
         }
     }
@@ -542,18 +558,18 @@ HRESULT RadialEdgeCollapse::apply() {
     };
 
     // make sure with topologically safe
-    if((res = safeTopology(t1, {{edge.a, c}}, {{edge.b, c}})) != S_OK) return res;
-    if((res = safeTopology(t2, {{edge.a, d}}, {{edge.b, d}})) != S_OK) return res;
+    if((res = safeTopology(t1, {{e.a, c}}, {{e.b, c}})) != S_OK) return res;
+    if((res = safeTopology(t2, {{e.a, d}}, {{e.b, d}})) != S_OK) return res;
 
 
-    float leftUpperArea = Magnum::Math::triangle_area(edge.a->position, c->position, pos);
-    float leftLowerArea = Magnum::Math::triangle_area(edge.a->position, d->position, pos);
-    float rightUpperArea = Magnum::Math::triangle_area(edge.b->position, c->position, pos);
-    float rightLowerArea = Magnum::Math::triangle_area(edge.b->position, d->position, pos);
+    float leftUpperArea = Magnum::Math::triangle_area(e.a->position, c->position, pos);
+    float leftLowerArea = Magnum::Math::triangle_area(e.a->position, d->position, pos);
+    float rightUpperArea = Magnum::Math::triangle_area(e.b->position, c->position, pos);
+    float rightLowerArea = Magnum::Math::triangle_area(e.b->position, d->position, pos);
 
     // need to calculate area here, because the area in the triangle has not been updated yet.
-    float upperArea = Magnum::Math::triangle_area(edge.a->position, edge.b->position, c->position);
-    float lowerArea = Magnum::Math::triangle_area(edge.a->position, edge.b->position, d->position);
+    float upperArea = Magnum::Math::triangle_area(e.a->position, e.b->position, c->position);
+    float lowerArea = Magnum::Math::triangle_area(e.a->position, e.b->position, d->position);
 
     assert(leftLowerArea > 0 && leftUpperArea > 0 && rightLowerArea > 0 && rightUpperArea > 0);
 
@@ -637,26 +653,26 @@ HRESULT RadialEdgeCollapse::apply() {
     if(!cells[0]->isRoot()) assert(cells[0]->manifold());
     if(!cells[1]->isRoot()) assert(cells[1]->manifold());
 
-    for(TrianglePtr tri : edge.a->triangles()) {
+    for(TrianglePtr tri : e.a->triangles()) {
         assert(tri->cells[0] && tri->cells[1]);
     }
-    for(TrianglePtr tri : edge.b->triangles()) {
+    for(TrianglePtr tri : e.b->triangles()) {
         assert(tri->cells[0] && tri->cells[1]);
     }
 #endif
 
     // disconnect the partial triangle pointers.
-    reconnectPartialTriangles(t1, {{edge.a, c}}, {{edge.b, c}});
-    reconnectPartialTriangles(t2, {{edge.a, d}}, {{edge.b, d}});
+    reconnectPartialTriangles(t1, {{e.a, c}}, {{e.b, c}});
+    reconnectPartialTriangles(t2, {{e.a, d}}, {{e.b, d}});
 
     VertexPtr vsrc = nullptr, vdest = nullptr;
 
-    if(edge.a->triangles().size() >= edge.b->triangles().size()) {
-        vsrc = edge.b;
-        vdest = edge.a;
+    if(e.a->triangles().size() >= e.b->triangles().size()) {
+        vsrc = e.b;
+        vdest = e.a;
     } else {
-        vsrc = edge.a;
-        vdest = edge.b;
+        vsrc = e.a;
+        vdest = e.b;
     }
 
     // the destination vertex where all the other triangles get moved to,
@@ -699,10 +715,10 @@ HRESULT RadialEdgeCollapse::apply() {
         }
     }
 
-    disconnect(t1, edge.a);
-    disconnect(t1, edge.b);
-    disconnect(t2, edge.a);
-    disconnect(t2, edge.b);
+    disconnect(t1, e.a);
+    disconnect(t1, e.b);
+    disconnect(t2, e.a);
+    disconnect(t2, e.b);
     disconnect(t1, c);
     disconnect(t2, d);
 
@@ -746,7 +762,7 @@ HRESULT RadialEdgeCollapse::apply() {
 }
 
 float RadialEdgeCollapse::energy() const {
-    return (1 - shortCutoff / edge.length());
+    return (1 - shortCutoff / Magnum::Math::distance(edge[0]->position, edge[1]->position));
 }
 
 bool RadialEdgeCollapse::depends(const TrianglePtr tri) const {
@@ -759,12 +775,12 @@ bool RadialEdgeCollapse::depends(const TrianglePtr tri) const {
 }
 
 bool RadialEdgeCollapse::depends(const VertexPtr v) const {
-    return v == edge.a || v == edge.b;
+    return v == edge[0] || v == edge[1];
 }
 
 bool RadialEdgeCollapse::equals(const Edge& e) const {
-    return (e[0] == edge.a && e[1] == edge.b) ||
-           (e[1] == edge.b && e[1] == edge.a);
+    return (e[0] == edge[0] && e[1] == edge[1]) ||
+           (e[0] == edge[1] && e[1] == edge[0]);
 }
 
 MeshOperations::~MeshOperations() {

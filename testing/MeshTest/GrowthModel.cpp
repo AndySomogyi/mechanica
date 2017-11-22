@@ -28,10 +28,10 @@ static struct BlueCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
-    
-    /*
 
     
+
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -41,8 +41,8 @@ GrowthModel::GrowthModel()  {
             }
         }
     };
-    mesh->shortCutoff = 0;
-    mesh->longCutoff = 0.1;
+    mesh->setShortCutoff(0);
+    mesh->setLongCutoff(0.1);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.3;
@@ -51,13 +51,12 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.1;
     minTargetVolume = 0.005;
     maxTargetVolume = 0.2;
-    
      */
+
      
     
     
-   
-
+    
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -67,8 +66,8 @@ GrowthModel::GrowthModel()  {
             }
         }
     };
-    mesh->shortCutoff = 0.07;
-    mesh->longCutoff = 0.16;
+    mesh->setShortCutoff(0.07);
+    mesh->setLongCutoff(0.16);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.1;
@@ -78,7 +77,9 @@ GrowthModel::GrowthModel()  {
     minTargetVolume = 0.005;
     maxTargetVolume = 1.5;
      
-    
+     
+
+
 
 
 
@@ -91,7 +92,7 @@ GrowthModel::GrowthModel()  {
 
 
 
-    
+
     MxMeshGmshImporter importer{*mesh, [](Gmsh::ElementType, int id) {return nullptr;}};
     mesh->shortCutoff = 0;
     mesh->longCutoff = 0.6;
@@ -104,9 +105,9 @@ GrowthModel::GrowthModel()  {
     minTargetVolume = 0.5;
     maxTargetVolume = 25.0;
  */
-    
+
      testEdges();
-    
+
 }
 
 //const float targetArea = 0.45;
@@ -119,7 +120,7 @@ GrowthModel::GrowthModel()  {
 HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
 
     HRESULT result;
-    
+
     testEdges();
 
 
@@ -212,9 +213,9 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 }
 
 void GrowthModel::testEdges() {
-    
+
     return;
-    
+
     /*
     for(int i = 0; i < mesh->cells.size(); ++i) {
         if(i % 2) {
@@ -224,18 +225,18 @@ void GrowthModel::testEdges() {
         }
     }
      */
-    
+
     for (auto tri : mesh->triangles) {
         tri->alpha = 0.001;
     }
-    
-    
+
+
     for (auto tri : mesh->triangles) {
-        
+
         for(int i = 0; i < 3; ++i) {
             MxEdge e{tri->vertices[i], tri->vertices[(i+1)%3]};
             auto triangles = e.radialTriangles();
-            
+
 
             for(auto tri : triangles) {
                 if(triangles.size() >= 4)
@@ -243,5 +244,5 @@ void GrowthModel::testEdges() {
             }
         }
     }
-    
+
 }
