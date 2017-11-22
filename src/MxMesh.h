@@ -109,7 +109,6 @@ MxAPI_DATA(MxPartialTriangleType) *MxUniversePartialTriangle_Type;
  */
 struct MxMesh  {
 
-
     MxMesh();
 
     ~MxMesh();
