@@ -61,6 +61,8 @@ typedef MxFacet *FacetPtr;
 struct MxMesh;
 typedef MxMesh *MeshPtr;
 
+typedef std::vector<TrianglePtr> TriangleContainer;
+
 
 struct MxMeshNode {
     MxMeshNode(MeshPtr m) : mesh{m} {};

@@ -73,7 +73,7 @@ struct MxPartialTriangle : MxObject {
 
     MxPartialTriangle(MxPartialTriangleType *type, MxTriangle *ti,
             const PartialTriangles& neighbors = {{nullptr, nullptr, nullptr}},
-			float mass = 0, MxReal *scalars = nullptr) :
+            float mass = 0, MxReal *scalars = nullptr) :
                 MxObject{type}, triangle{ti}, neighbors{neighbors},
                 mass{mass}, scalarFields{scalars} {};
 
@@ -191,6 +191,11 @@ struct MxTriangle : MxObject {
     std::array<CellPtr, 2> cells;
 
     /**
+     * pointers to the three triangles around the ring edges.
+     */
+    std::array<TrianglePtr, 3> edgeRing;
+
+    /**
      * indices of the two partial triangles that are attached to this triangle.
      * The mesh contains a set of partial triangles.
      *
@@ -236,37 +241,37 @@ struct MxTriangle : MxObject {
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
-		partialTriangles {{
+        partialTriangles {{
             {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
-		    {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
-	    }},
-	    id{0}
+            {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
+        }},
+        id{0}
     {}
 
 
-	MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
-			const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
-			const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}},
-			FacetPtr facet = nullptr);
+    MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
+            const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
+            const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}},
+            FacetPtr facet = nullptr);
 
 
-	/**
-	 * get the edge index of edge from a pair of vertices.
-	 *
-	 * If vertices[0] == a and vertices[1] == b or vertices[1] == a and vertices[0] == b,
-	 * then the edge is in the zero position, and so forth.
-	 *
-	 * If the edge does not match, then returns a -1.
-	 */
-	int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
+    /**
+     * get the edge index of edge from a pair of vertices.
+     *
+     * If vertices[0] == a and vertices[1] == b or vertices[1] == a and vertices[0] == b,
+     * then the edge is in the zero position, and so forth.
+     *
+     * If the edge does not match, then returns a -1.
+     */
+    int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
 
 
 
-	/**
-	 * Disconnects a corner of this triangle from oldVertex, and re-attaches
-	 * this triangle to newVertex.
-	 */
-	VertexPtr replaceChild(VertexPtr newVertex, VertexPtr oldVertex);
+    /**
+     * Disconnects a corner of this triangle from oldVertex, and re-attaches
+     * this triangle to newVertex.
+     */
+    VertexPtr replaceChild(VertexPtr newVertex, VertexPtr oldVertex);
 
 
 
@@ -312,6 +317,14 @@ namespace Magnum { namespace Math {
         return 0.5 * len;
     }
 
+    inline float distance(const Vector3<float>& a, const Vector3<float>& b) {
+        return (a - b).length();
+    }
+
+    inline float distance_sqr(const Vector3<float>& a, const Vector3<float>& b) {
+        Vector3<float> diff = a - b;
+        return dot(diff, diff);
+    }
 }}
 
 #endif /* SRC_MXTRIANGLE_H_ */

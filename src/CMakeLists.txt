@@ -85,6 +85,7 @@ set(SRC
   ScalarField.cpp
   MxEdge.cpp
   MeshRelationships.cpp
+  MeshOperations.cpp
   stochastic_rk.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -134,6 +135,7 @@ set(HEADERS
   ScalarField.h
   MxEdge.h
   MeshRelationships.h
+  MeshOperations.cpp
   stochastic_rk.h
   )
 

@@ -26,7 +26,7 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 }
 
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
-	VertexPtr v = new MxVertex{0., 0., pos};
+    VertexPtr v = new MxVertex{0., 0., pos};
     vertices.push_back(v);
     assert(valid(v));
     return v;
@@ -110,7 +110,8 @@ MxPartialTriangleType universePartialTriangleType = {};
 MxPartialTriangleType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;
 
-MxMesh::MxMesh()
+MxMesh::MxMesh() :
+        meshOperations(this, shortCutoff, longCutoff)
 {
     _rootCell = createCell();
     float range = edgeSplitStochasticAsymmetry / 2;
@@ -216,7 +217,7 @@ HRESULT MxMesh::collapseHTriangleOld(MxTriangle& tri) {
         if(t) {
             faces[i] = *t;
         } else {
-        		// TODO, raise an error here
+                // TODO, raise an error here
             return false;
         }
     }
@@ -304,7 +305,7 @@ HRESULT MxMesh::collapseHTriangleOld(MxTriangle& tri) {
 #endif
 
 HRESULT MxMesh::collapseIEdge(const MxEdge& edge) {
-	return 1;
+    return 1;
 }
 
 void MxMesh::vertexReconnect(VertexPtr o, VertexPtr n) {
@@ -315,12 +316,12 @@ void MxMesh::triangleManifoldDisconnect(const MxTriangle& tri,
 }
 
 FacetPtr MxMesh::findFacet(CellPtr a, CellPtr b) {
-	for(auto facet : a->facets) {
-		if (incident(facet, b)) {
-			return facet;
-		}
-	}
-	return nullptr;
+    for(auto facet : a->facets) {
+        if (incident(facet, b)) {
+            return facet;
+        }
+    }
+    return nullptr;
 }
 
 FacetPtr MxMesh::createFacet(MxFacetType* type) {
@@ -547,37 +548,37 @@ bool MxMesh::splitWedgeVertex(VertexPtr v0, VertexPtr nv0, VertexPtr nv1,
  */
 HRESULT MxMesh::collapseEdge(const MxEdge& edge) {
 
-	// check if we have a manifold edge, most common kind of short edge
-	if (edge.upperFacets().size() == 0 &&
-	    edge.lowerFacets().size() == 0 &&
-		edge.radialFacets().size() == 1) {
-		return collapseManifoldEdge(edge);
-	}
+    // check if we have a manifold edge, most common kind of short edge
+    if (edge.upperFacets().size() == 0 &&
+        edge.lowerFacets().size() == 0 &&
+        edge.radialFacets().size() == 1) {
+        return collapseManifoldEdge(edge);
+    }
 
-	std::cout << "only manifold edge collapse supported" << std::endl;
-	return S_OK;
+    std::cout << "only manifold edge collapse supported" << std::endl;
+    return S_OK;
 
-	if (edge.upperFacets().size() == 1 && edge.upperFacets().size() == 1) {
+    if (edge.upperFacets().size() == 1 && edge.upperFacets().size() == 1) {
 
-		// if any one of the facets only has one triangle, that means that it's
-		// an H configuration, so collapse that triangle. Note, that means that
-		// that operation will also collapse every other triangle that is adjacent
-		// to that triangle.
-		for(auto f : edge.radialFacets()) {
-			if(f->triangles.size() == 1) {
-				MxTriangle *t = f->triangles[0];
-				return collapseHTriangle(t);
-			}
-		}
+        // if any one of the facets only has one triangle, that means that it's
+        // an H configuration, so collapse that triangle. Note, that means that
+        // that operation will also collapse every other triangle that is adjacent
+        // to that triangle.
+        for(auto f : edge.radialFacets()) {
+            if(f->triangles.size() == 1) {
+                MxTriangle *t = f->triangles[0];
+                return collapseHTriangle(t);
+            }
+        }
 
-		// at this point, we know that the edge is not manifold
-		// is incident to at at least two faces, that means that it's
-		// an I configuration, so collapse that.
-		return collapseIEdge(edge);
-	}
+        // at this point, we know that the edge is not manifold
+        // is incident to at at least two faces, that means that it's
+        // an I configuration, so collapse that.
+        return collapseIEdge(edge);
+    }
 
-	// could not collapse the edge
-	return -1;
+    // could not collapse the edge
+    return -1;
 }
 
 
@@ -1133,112 +1134,112 @@ HRESULT MxMesh::splitEdge(const MxEdge& e) {
 
 HRESULT MxMesh::collapseHTriangle(TrianglePtr tri) {
 
-	// perpendicular facets
-	FacetPtr perpFacets[3] = {nullptr};
+    // perpendicular facets
+    FacetPtr perpFacets[3] = {nullptr};
 
-	// identify the triangle radial facets, these are the facets that are
-	// the side facets. We identify the side facets, as those that are
-	// incident to a triangle vertex, but not incident to any other
-	// triangle vertices. Each triangle vertex should have exactly one
-	// Indecent facet that is not indecent to any other triangle vertices
-	// for this to be a valid H configuration.
-	for(int i = 0; i < 3; ++i) {
-		for(FacetPtr p : tri->vertices[i]->facets()) {
+    // identify the triangle radial facets, these are the facets that are
+    // the side facets. We identify the side facets, as those that are
+    // incident to a triangle vertex, but not incident to any other
+    // triangle vertices. Each triangle vertex should have exactly one
+    // Indecent facet that is not indecent to any other triangle vertices
+    // for this to be a valid H configuration.
+    for(int i = 0; i < 3; ++i) {
+        for(FacetPtr p : tri->vertices[i]->facets()) {
 
-			bool found = false;
+            bool found = false;
 
-			if(p == tri->facet) {
-				continue;
-			}
+            if(p == tri->facet) {
+                continue;
+            }
 
-			for(FacetPtr x : tri->vertices[(i+1)%3]->facets()) {
-				if (x == p) {
-					found = true;
-					break;
-				}
-			}
+            for(FacetPtr x : tri->vertices[(i+1)%3]->facets()) {
+                if (x == p) {
+                    found = true;
+                    break;
+                }
+            }
 
-			if (!found) {
-				for(FacetPtr x : tri->vertices[(i+2)%3]->facets()) {
-					if (x == p) {
-						found = true;
-						break;
-					}
-				}
-			}
+            if (!found) {
+                for(FacetPtr x : tri->vertices[(i+2)%3]->facets()) {
+                    if (x == p) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
 
-			// we did not find this facet is incident to the other two vertices.
-			// need to check that that we have not already found a perpendicular facet
-			// for this triangle vertex.
-			if (!found) {
-				if(perpFacets[i] == nullptr) {
-					perpFacets[i] = p;
-				} else {
-					// not a valid H configuration,
-					// TODO set some sort of error conditions
-					return -1;
-				}
-			}
-		}
+            // we did not find this facet is incident to the other two vertices.
+            // need to check that that we have not already found a perpendicular facet
+            // for this triangle vertex.
+            if (!found) {
+                if(perpFacets[i] == nullptr) {
+                    perpFacets[i] = p;
+                } else {
+                    // not a valid H configuration,
+                    // TODO set some sort of error conditions
+                    return -1;
+                }
+            }
+        }
 
-		// make sure we've found a perpendicular facet
-		assert(perpFacets[i]);
-	}
+        // make sure we've found a perpendicular facet
+        assert(perpFacets[i]);
+    }
 
-	VertexPtr v0 = collapseCellSingularFacet(tri->cells[0], tri->facet);
-	VertexPtr v1 = collapseCellSingularFacet(tri->cells[1], tri->facet);
+    VertexPtr v0 = collapseCellSingularFacet(tri->cells[0], tri->facet);
+    VertexPtr v1 = collapseCellSingularFacet(tri->cells[1], tri->facet);
 
-	TrianglePtr perpTriangles[3];
+    TrianglePtr perpTriangles[3];
 
-	for(int i = 0; i < 3; ++i) {
-		perpTriangles[i] = splitFacetBoundaryVertex(perpFacets[i], tri->vertices[i], v0, v1);
-	}
+    for(int i = 0; i < 3; ++i) {
+        perpTriangles[i] = splitFacetBoundaryVertex(perpFacets[i], tri->vertices[i], v0, v1);
+    }
 
-	return 0;
+    return 0;
 }
 
 
 
 TrianglePtr MxMesh::splitFacetBoundaryVertex(FacetPtr face, VertexPtr v,
-		VertexPtr v0, VertexPtr v1) {
-	return nullptr;
+        VertexPtr v0, VertexPtr v1) {
+    return nullptr;
 }
 
 VertexPtr MxMesh::collapseCellSingularFacet(CellPtr cell, FacetPtr facet) {
-	return nullptr;
+    return nullptr;
 }
 
 void MxMesh::triangleVertexReconnect(MxTriangle& tri, VertexPtr o,
-		VertexPtr n) {
+        VertexPtr n) {
 }
 
 bool MxMesh::valid(TrianglePtr p) {
 
-	if(std::find(triangles.begin(), triangles.end(), p) == triangles.end()) {
-		return false;
-	}
+    if(std::find(triangles.begin(), triangles.end(), p) == triangles.end()) {
+        return false;
+    }
 
 
-	return
-		p == p->partialTriangles[0].triangle &&
-		p == p->partialTriangles[1].triangle &&
-		valid(p->vertices[0]) &&
-		valid(p->vertices[1]) &&
-		valid(p->vertices[2]);
+    return
+        p == p->partialTriangles[0].triangle &&
+        p == p->partialTriangles[1].triangle &&
+        valid(p->vertices[0]) &&
+        valid(p->vertices[1]) &&
+        valid(p->vertices[2]);
 }
 
 bool MxMesh::valid(CellPtr c) {
-	if(std::find(cells.begin(), cells.end(), c) == cells.end()) {
-		return false;
-	}
+    if(std::find(cells.begin(), cells.end(), c) == cells.end()) {
+        return false;
+    }
 
-	for(PTrianglePtr p : c->boundary) {
-		if(!valid(p)) {
-			return false;
-		}
-	}
+    for(PTrianglePtr p : c->boundary) {
+        if(!valid(p)) {
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }
 
 bool MxMesh::valid(VertexPtr v) {
@@ -1246,19 +1247,19 @@ bool MxMesh::valid(VertexPtr v) {
 }
 
 bool MxMesh::valid(PTrianglePtr p) {
-	return p && valid(p->triangle);
+    return p && valid(p->triangle);
 }
 
 MxMesh::~MxMesh() {
-	for(auto c : cells) {
-		delete c;
-	}
-	for(auto p : vertices) {
-		delete p;
-	}
-	for(auto t : triangles) {
-		delete t;
-	}
+    for(auto c : cells) {
+        delete c;
+    }
+    for(auto p : vertices) {
+        delete p;
+    }
+    for(auto t : triangles) {
+        delete t;
+    }
 }
 
 HRESULT MxMesh::positionsChanged() {
@@ -1304,7 +1305,7 @@ HRESULT MxMesh::positionsChanged() {
         }
     }
 
-	return S_OK;
+    return S_OK;
 }
 
 HRESULT MxMesh::processOffendingEdges() {
@@ -1335,10 +1336,10 @@ HRESULT MxMesh::processOffendingEdges() {
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
-		const std::array<VertexPtr, 3>& verts) {
+        const std::array<VertexPtr, 3>& verts) {
 
-	TrianglePtr tri = new MxTriangle{type, verts};
-	triangles.push_back(tri);
+    TrianglePtr tri = new MxTriangle{type, verts};
+    triangles.push_back(tri);
 
     assert(valid(tri));
 

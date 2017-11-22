@@ -21,6 +21,7 @@
 
 #include "MxCell.h"
 #include "MxEdge.h"
+#include "MeshOperations.h"
 
 
 
@@ -112,6 +113,8 @@ struct MxMesh  {
     MxMesh();
 
     ~MxMesh();
+
+
 
 
     std::vector<Magnum::Vector3> initPos;
@@ -383,23 +386,23 @@ struct MxMesh  {
      *
      *
      *
-     *    _        |        _		              |        _
-     *      _      |      _		              |      _
-     *        _    |    _		              |    _
-     *          _  |  _ 		              |  _
-     *             *                  	               *
-     *           /    \              	               |
-     *         /        \            	               |
-     *       /            \          	               |
-     *     /                \        	               |
-     *   /                    \      	               |
-     * * --------------------- *    ->	               *
-     *   \                   /       	     \         |         /
-     *     \               /         	       \       |       /
-     *       \           /           	         \     |     /
-     *         \       /             	           \   |   /
-     *           \   /               	             \ | /
-     *             *                 	               *
+     *    _        |        _                      |        _
+     *      _      |      _                      |      _
+     *        _    |    _                      |    _
+     *          _  |  _                       |  _
+     *             *                                     *
+     *           /    \                                 |
+     *         /        \                               |
+     *       /            \                             |
+     *     /                \                           |
+     *   /                    \                         |
+     * * --------------------- *    ->                   *
+     *   \                   /                \         |         /
+     *     \               /                    \       |       /
+     *       \           /                        \     |     /
+     *         \       /                            \   |   /
+     *           \   /                                \ | /
+     *             *                                    *
 
 
      */
@@ -602,6 +605,8 @@ private:
     EdgeQueue<edge_greater> shortEdges;
     EdgeQueue<edge_less> longEdges;
 
+    MeshOperations meshOperations;
+
 
 
     CellPtr _rootCell;
@@ -616,6 +621,10 @@ private:
     friend struct MxFacet;
     friend struct MxEdge;
     friend struct MxCell;
+    friend struct MeshOperation;
+    friend struct RadialEdgeCollapse;
+    friend struct RadialEdgeSplit;
+
 };
 
 
