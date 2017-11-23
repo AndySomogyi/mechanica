@@ -86,6 +86,9 @@ set(SRC
   MxEdge.cpp
   MeshRelationships.cpp
   MeshOperations.cpp
+  EdgeFlip.cpp
+  RadialEdgeSplit.cpp
+  RadialEdgeCollapse.cpp
   stochastic_rk.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -136,6 +139,9 @@ set(HEADERS
   MxEdge.h
   MeshRelationships.h
   MeshOperations.h
+  EdgeFlip.h
+  RadialEdgeSplit.h
+  RadialEdgeCollapse.h
   stochastic_rk.h
   )
 
