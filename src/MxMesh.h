@@ -253,6 +253,8 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
+    bool validate();
+
     CellPtr rootCell() const {return _rootCell;};
 
     std::vector<TrianglePtr> triangles;
@@ -294,7 +296,7 @@ private:
 
     bool validateTriangle(const TrianglePtr tri);
 
-    bool validate();
+
 
 
     bool validateEdge(const VertexPtr a, const VertexPtr b);

@@ -266,15 +266,6 @@ struct MxTriangle : MxObject {
     int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
 
 
-
-    /**
-     * Disconnects a corner of this triangle from oldVertex, and re-attaches
-     * this triangle to newVertex.
-     */
-    VertexPtr replaceChild(VertexPtr newVertex, VertexPtr oldVertex);
-
-
-
     /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.

@@ -41,7 +41,7 @@ bool adjacent(const TrianglePtr a, const TrianglePtr b) {
 
 bool incident(const FacetPtr facet, const CellPtr cell) {
     assert(facet);
-	return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
+    return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
 }
 
 bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
@@ -142,6 +142,7 @@ bool incident(const TrianglePtr tri, const VertexPtr v) {
     return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
 }
 
+/*
 void disconnect(TrianglePtr tri, const Edge& edge) {
     assert(incident(tri, edge[0]));
     assert(incident(tri, edge[1]));
@@ -161,6 +162,7 @@ void disconnect(PTrianglePtr pt, const Edge& edge) {
     }
     assert(0 && "partial triangle is not adjacent to given edge");
 }
+*/
 
 bool incident(const PTrianglePtr pt, const Edge& edge) {
     return incident(pt->triangle, edge);

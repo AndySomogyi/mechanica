@@ -15,26 +15,26 @@ bool adjacent(const TrianglePtr a, const TrianglePtr b);
 bool incident(const TrianglePtr t, const CellPtr c);
 
 inline bool incident(const CellPtr c, const TrianglePtr t ) {
-	return incident(t, c);
+    return incident(t, c);
 }
 
 bool incident(const TrianglePtr tri, const VertexPtr v);
 
 inline bool incident(const VertexPtr v, const TrianglePtr tri) {
-	return incident(tri, v);
+    return incident(tri, v);
 }
 
 bool incident(const PTrianglePtr tri, const VertexPtr v);
 
 inline bool incident(const VertexPtr v, const PTrianglePtr tri) {
-	return incident(tri, v);
+    return incident(tri, v);
 }
 
 
 bool incident(const FacetPtr facet, const CellPtr cell);
 
 inline bool incident(const CellPtr cell, const FacetPtr facet) {
-	return incident(facet, cell);
+    return incident(facet, cell);
 }
 
 bool incident(const VertexPtr vertex, const FacetPtr facet);
@@ -99,13 +99,13 @@ void disconnect(PTrianglePtr a, PTrianglePtr b);
  * of the other incident triangles, it only detaches tri from it's
  * two adjacent partial triangles.
  */
-void disconnect(TrianglePtr tri, const Edge&);
+//void disconnect(TrianglePtr tri, const Edge&);
 
 /**
  * Disconnects a partial triangle from it's adjacent triangle that
  * is connected through the edge formed by vertices a and b.
  */
-void disconnect(PTrianglePtr pt, const Edge&);
+//void disconnect(PTrianglePtr pt, const Edge&);
 
 /**
  * Disconnects a partial triangle from it's adjacent triangle that
@@ -126,6 +126,25 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const Edge&);
 void disconnect(TrianglePtr tri, VertexPtr v);
 
 void connect(TrianglePtr tri, VertexPtr v);
+
+
+/**
+ * Connect a triangle into a ring edge on the given edge index.
+ * Searches the vertex triangle lists for matching triangles,
+ * finds the ring list, and inserts the triangle into the ring.
+ *
+ * The given triangle must already be inserted into the list of
+ * triangles on each vertex.
+ *
+ * @returns:
+ * -1 if the triangle is already in the ring.
+ * positive integer of the number of triangles in the list on success.
+ *
+ *
+ */
+int insert_triangle_into_ring(TrianglePtr tri, int edgeIndex);
+
+void disconnect_triangle_from_ring();
 
 
 

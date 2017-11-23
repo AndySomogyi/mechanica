@@ -28,13 +28,13 @@ int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
 
 
 MxTriangle::MxTriangle(MxTriangleType* type,
-		const std::array<VertexPtr, 3>& verts,
-		const std::array<CellPtr, 2>& cells,
-		const std::array<MxPartialTriangleType*, 2>& partTriTypes,
-		FacetPtr facet) :
-			MxObject{type}, vertices{verts}, cells{cells},
-			partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
-			facet{facet} {
+        const std::array<VertexPtr, 3>& verts,
+        const std::array<CellPtr, 2>& cells,
+        const std::array<MxPartialTriangleType*, 2>& partTriTypes,
+        FacetPtr facet) :
+            MxObject{type}, vertices{verts}, cells{cells},
+            partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
+            facet{facet} {
     for(VertexPtr vert : verts) {
         auto res = vert->appendTriangle(this);
         assert(res==S_OK);
@@ -55,11 +55,11 @@ int MxTriangle::adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const {
 
 HRESULT MxTriangle::positionsChanged() {
 
-	const Vector3& v1 = vertices[0]->position;
-	const Vector3& v2 = vertices[1]->position;
-	const Vector3& v3 = vertices[2]->position;
+    const Vector3& v1 = vertices[0]->position;
+    const Vector3& v2 = vertices[1]->position;
+    const Vector3& v3 = vertices[2]->position;
 
-	// the aspect ratio
+    // the aspect ratio
     float a = (v1 - v2).length();
     float b = (v2 - v3).length();
     float c = (v3 - v1).length();
@@ -95,32 +95,6 @@ HRESULT MxTriangle::positionsChanged() {
 
     return S_OK;
 }
-
-VertexPtr MxTriangle::replaceChild(VertexPtr newVertex, VertexPtr oldVertex) {
-    auto res = oldVertex->removeTriangle(this);
-    assert(res==S_OK);
-    for(uint i = 0; i < 3; ++i) {
-        if(vertices[i] == oldVertex) {
-            vertices[i] = newVertex;
-            if(newVertex) newVertex->appendTriangle(this);
-            break;
-        }
-    }
-
-    for(uint i = 0; i < 2; ++i) {
-        for(uint j = 0; j < 3; ++j) {
-            for(uint k = 0; k < 3; ++k) {
-                if(partialTriangles[i].neighbors[j] &&
-                        !incident(partialTriangles[i].neighbors[j], {{vertices[k], vertices[(k+1)%3]}})) {
-                    disconnect(partialTriangles[i].neighbors[j], {{vertices[k], vertices[(k+1)%3]}});
-                }
-            }
-        }
-    }
-    positionsChanged();
-    return oldVertex;
-}
-
 
 
 bool MxTriangle::isConnected() {

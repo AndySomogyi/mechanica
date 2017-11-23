@@ -15,7 +15,6 @@
 #include <limits>
 #include <cmath>
 
-#define MESHOP
 
 int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     for (int i = 1; i < vertices.size(); ++i) {
@@ -137,13 +136,9 @@ FacetPtr MxMesh::findFacet(const std::array<VertexPtr, 4>& verts) {
 }
 
 HRESULT MxMesh::deleteVertex(VertexPtr v) {
-#ifdef MESHOP
+
     meshOperations.removeDependentOperations(v);
-#else
-    longEdges.remove(v);
-    shortEdges.remove(v);
-    validateEnquedEdges();
-#endif
+
     remove(vertices, v);
 #ifndef NDEBUG
     for(TrianglePtr tri : triangles) {
@@ -156,14 +151,7 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
 HRESULT MxMesh::deleteTriangle(TrianglePtr tri) {
 
-#ifdef MESHOP
     meshOperations.removeDependentOperations(tri);
-#else
-    longEdges.remove(tri);
-    shortEdges.remove(tri);
-    validateEnquedEdges();
-#endif
-
 
     remove(triangles, tri);
     delete tri;
@@ -257,36 +245,14 @@ HRESULT MxMesh::positionsChanged() {
         if((result = tri->positionsChanged() != S_OK)) {
             return result;
         }
-
-#ifndef MESHOP
-
-        // TODO: should we have explicit edges??? Save on compute time.
-        for(int i = 0; i < 3; ++i) {
-            float d = (tri->vertices[i]->position - tri->vertices[(i+1)%3]->position).length();
-
-            if (d <= meshOperations.getShortCutoff()) {
-                enqueueShortEdge(tri->vertices[i], tri->vertices[(i+1)%3]);
-            }
-
-            if (d >= meshOperations.getLongCutoff()) {
-                enqueueLongEdge(tri->vertices[i], tri->vertices[(i+1)%3]);
-            }
-        }
-#endif
     }
 
-#ifdef MESHOP
     if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
         return result;
     }
     if((result = meshOperations.apply()) != S_OK) {
         return result;
     }
-#else
-    if((result = processOffendingEdges()) != S_OK) {
-        return result;
-    }
-#endif
 
     for(FacetPtr facet : facets) {
         if((result = facet->positionsChanged() != S_OK)) {
