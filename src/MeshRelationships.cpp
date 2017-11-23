@@ -57,7 +57,7 @@ bool incident(const VertexPtr vertex, const FacetPtr facet) {
     return contains(vertex->facets(), facet);
 }
 
-void connect(TrianglePtr a, TrianglePtr b) {
+void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
     // check to see that triangles share adjacent vertices.
     assert(adjacent(a, b));
 
@@ -83,7 +83,7 @@ void connect(TrianglePtr a, TrianglePtr b) {
                     continue;
                 }
                 #endif
-                connect(&a->partialTriangles[i], &b->partialTriangles[j]);
+                connect_partial_triangles(&a->partialTriangles[i], &b->partialTriangles[j]);
                 #ifndef NDEBUG
                 conCnt++;
                 #endif
@@ -96,7 +96,7 @@ void connect(TrianglePtr a, TrianglePtr b) {
     #endif
 }
 
-void connect(PTrianglePtr a, PTrianglePtr b) {
+void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
     assert(a->triangle != b->triangle && "partial triangles are on the same triangle");
 
     assert((!a->neighbors[0] || !a->neighbors[1] || !a->neighbors[2])
@@ -121,7 +121,7 @@ void connect(PTrianglePtr a, PTrianglePtr b) {
     }
 }
 
-void disconnect(PTrianglePtr a, PTrianglePtr b) {
+void disconnect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
     for(uint i = 0; i < 3; ++i) {
         if(a->neighbors[i] == b) {
             a->neighbors[i] = nullptr;
@@ -179,8 +179,8 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const std::array<VertexPtr, 2>& e
            o->neighbors[i]->triangle &&
            incident(o->neighbors[i]->triangle, edge)) {
             PTrianglePtr adj = o->neighbors[i];
-            disconnect(o, adj);
-            connect(n, adj);
+            disconnect_partial_triangles(o, adj);
+            connect_partial_triangles(n, adj);
             return;
         }
     }
@@ -192,7 +192,7 @@ bool incident(const PTrianglePtr tri, const VertexPtr v) {
     return incident(tri->triangle, v);
 }
 
-void disconnect(TrianglePtr tri, VertexPtr v) {
+void disconnect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
     if(!v) return;
 
     for(uint i = 0; i < 3; ++i) {
@@ -217,7 +217,7 @@ void disconnect(TrianglePtr tri, VertexPtr v) {
     */
 }
 
-void connect(TrianglePtr tri, VertexPtr v) {
+void connect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
     for(int i = 0; i < 3; ++i) {
         if(tri->vertices[i] == nullptr) {
             tri->vertices[i] = v;
@@ -226,4 +226,39 @@ void connect(TrianglePtr tri, VertexPtr v) {
         }
     }
     assert(0 && "triangle has no empty slot");
+}
+
+int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
+    assert(edgeIndx >= 0 && edgeIndx < 3);
+    assert(tri->vertices[edgeIndx] && tri->vertices[(edgeIndx+1)%3]);
+    assert(tri->cells[0] && tri->cells[1]);
+
+    TrianglePtr ringTri = nullptr;
+
+    for(TrianglePtr t : tri->vertices[edgeIndx]->triangles()) {
+        if(incident(t, tri->vertices[(edgeIndx+1)%3])) {
+            ringTri = t;
+        }
+    }
+
+    assert(ringTri);
+
+    TrianglePtr t = ringTri;
+    do {
+
+        t = t->edgeRing[edgeIndx];
+    } while(t != ringTri);
+
+
+    //for(TrianglePtr t = ringTri; t )
+
+
+
+
+
+
+
+}
+
+int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex) {
 }

@@ -282,8 +282,8 @@ HRESULT RadialEdgeSplit::apply() {
 
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
-        disconnect(tri, e.b);
-        connect(tri, vert);
+        disconnect_triangle_vertex(tri, e.b);
+        connect_triangle_vertex(tri, vert);
 
         tri->positionsChanged();
 
@@ -309,7 +309,7 @@ HRESULT RadialEdgeSplit::apply() {
                 reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{e.b, outer}});
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
-                connect(&tri->partialTriangles[i], &nt->partialTriangles[i]);
+                connect_partial_triangles(&tri->partialTriangles[i], &nt->partialTriangles[i]);
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
                 tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
@@ -336,7 +336,7 @@ HRESULT RadialEdgeSplit::apply() {
                 std::cout << "boom" << std::endl;
             }
             #endif
-            connect(nt, prevNewTri);
+            connect_triangle_partial_triangles(nt, prevNewTri);
             prevNewTri = nt;
         }
     }
@@ -349,7 +349,7 @@ HRESULT RadialEdgeSplit::apply() {
             std::cout << "root cell: " << mesh->rootCell() << std::endl;
             std::cout << "boom" << std::endl;
         }
-        connect(firstNewTri, prevNewTri);
+        connect_triangle_partial_triangles(firstNewTri, prevNewTri);
     }
 
 
@@ -498,9 +498,9 @@ static void reconnectPartialTriangles(TrianglePtr tri, const Edge& edge1, const 
 
             assert(!adjacent(p1, p2));
 
-            disconnect(p1, &tri->partialTriangles[i]);
-            disconnect(p2, &tri->partialTriangles[i]);
-            connect(p1, p2);
+            disconnect_partial_triangles(p1, &tri->partialTriangles[i]);
+            disconnect_partial_triangles(p2, &tri->partialTriangles[i]);
+            connect_partial_triangles(p1, p2);
             assert(tri->partialTriangles[i].unboundNeighborCount() == 2);
         }
     }
@@ -685,8 +685,8 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& 
 
         testTriangle(tri);
 
-        disconnect(tri, vsrc);
-        connect(tri, vdest);
+        disconnect_triangle_vertex(tri, vsrc);
+        connect_triangle_vertex(tri, vdest);
 
         assert(tri->cells[0] && tri->cells[1]);
 
@@ -699,9 +699,9 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& 
         }
     }
 
-    disconnect(t1, e.a);
-    disconnect(t1, e.b);
-    disconnect(t1, c);
+    disconnect_triangle_vertex(t1, e.a);
+    disconnect_triangle_vertex(t1, e.b);
+    disconnect_triangle_vertex(t1, c);
 
     assert(t1->vertices[0] == nullptr && t1->vertices[1] == nullptr && t1->vertices[2] == nullptr);
 
@@ -916,8 +916,8 @@ HRESULT RadialEdgeCollapse::apply() {
 
         testTriangle(tri);
 
-        disconnect(tri, vsrc);
-        connect(tri, vdest);
+        disconnect_triangle_vertex(tri, vsrc);
+        connect_triangle_vertex(tri, vdest);
 
         assert(tri->cells[0] && tri->cells[1]);
 
@@ -930,12 +930,12 @@ HRESULT RadialEdgeCollapse::apply() {
         }
     }
 
-    disconnect(t1, e.a);
-    disconnect(t1, e.b);
-    disconnect(t2, e.a);
-    disconnect(t2, e.b);
-    disconnect(t1, c);
-    disconnect(t2, d);
+    disconnect_triangle_vertex(t1, e.a);
+    disconnect_triangle_vertex(t1, e.b);
+    disconnect_triangle_vertex(t2, e.a);
+    disconnect_triangle_vertex(t2, e.b);
+    disconnect_triangle_vertex(t1, c);
+    disconnect_triangle_vertex(t2, d);
 
     assert(t1->vertices[0] == nullptr && t1->vertices[1] == nullptr && t1->vertices[2] == nullptr);
     assert(t2->vertices[0] == nullptr && t2->vertices[1] == nullptr && t2->vertices[2] == nullptr);

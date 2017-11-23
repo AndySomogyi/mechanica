@@ -192,6 +192,16 @@ struct MxTriangle : MxObject {
 
     /**
      * pointers to the three triangles around the ring edges.
+     *
+     * The edge ring is a circular linked list. A manifold edge has exactly
+     * two triangles on it. The list is structured such that every triangle
+     * in a ringed edge is pointed to by the previous triangle, and
+     * points to the next triangle in the ring. The logical structure of the
+     * ringed edge list exactly mirrors the physical structure of the ringed
+     * edge.
+     *
+     * Invariants:
+     * tri->cells[1] == tri->edgeRing[i]->cells[0]
      */
     std::array<TrianglePtr, 3> edgeRing;
 

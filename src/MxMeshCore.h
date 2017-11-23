@@ -61,7 +61,13 @@ typedef MxFacet *FacetPtr;
 struct MxMesh;
 typedef MxMesh *MeshPtr;
 
+// triangle container in the main mesh
 typedef std::vector<TrianglePtr> TriangleContainer;
+
+// triangle container for the vertices
+typedef std::vector<TrianglePtr> Triangles;
+
+typedef std::vector<FacetPtr> Facets;
 
 
 struct MxMeshNode {
@@ -94,10 +100,10 @@ struct MxVertex {
     Magnum::Vector3 force;
 
      // one to many relationship of vertex -> triangles
-    const std::vector<TrianglePtr> &triangles() const {return _triangles;}
+    const Triangles &triangles() const {return _triangles;}
 
 
-    const std::vector<FacetPtr> &facets() const {return _facets;}
+    const Facets &facets() const {return _facets;}
 
     std::set<VertexPtr> link() const;
 
@@ -107,10 +113,10 @@ struct MxVertex {
 
 private:
      // one to many relationship of vertex -> triangles
-    std::vector<TrianglePtr> _triangles;
+    Triangles _triangles;
 
         // one to many relationship of vertex -> facets
-    std::vector<FacetPtr> _facets;
+     Facets _facets;
 
     void rebuildFacets();
 };

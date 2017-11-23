@@ -35,6 +35,8 @@ MxTriangle::MxTriangle(MxTriangleType* type,
             MxObject{type}, vertices{verts}, cells{cells},
             partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
             facet{facet} {
+
+    // connect this triangle to the vertex tri lists
     for(VertexPtr vert : verts) {
         auto res = vert->appendTriangle(this);
         assert(res==S_OK);

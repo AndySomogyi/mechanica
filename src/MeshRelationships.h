@@ -66,7 +66,7 @@ bool incident(const PTrianglePtr pt, const Edge&);
  * partial triangle relationships for empty pointer slots and hooks up
  * the neighbor pointers.
  */
-void connect(TrianglePtr a, TrianglePtr b);
+void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b);
 
 /**
  * Connects the pointers of a pair of partial triangles. Searches
@@ -74,13 +74,13 @@ void connect(TrianglePtr a, TrianglePtr b);
  * triangles must have at least one empty (null) neighbor pointer
  * each.
  */
-void connect(PTrianglePtr a, PTrianglePtr b);
+void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b);
 
 /**
  * Disconnects a pair of partial triangles, finds the adjacent
  * neighbor pointer and sets them both to null.
  */
-void disconnect(PTrianglePtr a, PTrianglePtr b);
+void disconnect_partial_triangles(PTrianglePtr a, PTrianglePtr b);
 
 /**
  * Disconnect a triangle from the edge formed by the vertices a and b.
@@ -123,9 +123,9 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const Edge&);
  * Disconnects all the partial triangles that referred to the
  * two triangles that were disconnected.
  */
-void disconnect(TrianglePtr tri, VertexPtr v);
+void disconnect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 
-void connect(TrianglePtr tri, VertexPtr v);
+void connect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 
 
 /**
@@ -142,9 +142,11 @@ void connect(TrianglePtr tri, VertexPtr v);
  *
  *
  */
-int insert_triangle_into_ring(TrianglePtr tri, int edgeIndex);
+int radialedge_connect_triangle(TrianglePtr tri, int edgeIndex);
 
-void disconnect_triangle_from_ring();
+int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex);
+
+
 
 
 

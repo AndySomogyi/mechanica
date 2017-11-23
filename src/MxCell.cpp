@@ -319,7 +319,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
             if(adjacent(pt->triangle, tri)) {
-                connect(pt, &tri->partialTriangles[index]);
+                connect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
             }
@@ -425,7 +425,7 @@ HRESULT MxCell::appendTriangleFromFacet(TrianglePtr tri, int index) {
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
             if(adjacent(pt->triangle, tri)) {
-                connect(pt, &tri->partialTriangles[index]);
+                connect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
             }
@@ -465,7 +465,7 @@ HRESULT MxCell::removeTriangleFromFacet(TrianglePtr tri, int index) {
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
             if(adjacent(pt->triangle, tri)) {
-                disconnect(pt, &tri->partialTriangles[index]);
+                disconnect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(!adjacent(pt, &tri->partialTriangles[index]));
                 break;
             }
