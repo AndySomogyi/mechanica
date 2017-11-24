@@ -9,6 +9,30 @@
 #include "MxMesh.h"
 #include <iostream>
 
+#ifdef _WIN32
+#include <malloc.h>
+#define alloca(SIZE)  _alloca(SIZE)
+#define
+#else
+#include <alloca.h>
+#endif
+
+
+/**
+ * It's expensive to interrogate each triangle, accesses a lot of info that
+ * is used both the check if the configuration is valid, and to reconnect
+ * it. Save in the info here on the query pass, and reuse it on the
+ * reconnect pass.
+ */
+struct RadialTriangle {
+    TrianglePtr tri;
+    VertexPtr apex;
+    Edge edge;
+    EdgeTriangles leftTriangles;
+    EdgeTriangles rightTriangles;
+
+};
+
 
 RadialEdgeCollapse::RadialEdgeCollapse(MeshPtr mesh, float _shortCutoff, const Edge& _edge) :
     MeshOperation{mesh}, shortCutoff{_shortCutoff}, edge{_edge}
@@ -119,9 +143,6 @@ static HRESULT canVertexBeMoved(const VertexPtr v, const Vector3& pos, const Tri
     return S_OK;
 }
 
-static HRESULT canTriangleBeCollapsed(const TrianglePtr, const Edge& e) {
-
-}
 
 /**
  * Remove the partial triangles pointers from the given triangle,
@@ -202,145 +223,67 @@ static void moveMaterial(const EdgeTriangles& leftTri,
 /**
  * Collapses the edge of a single triangle, and reconnect all of the triangles
  * on the two remaining edges to each other.
+ *
+ *
+ * tasks:
+ *     * move the material from the two facing partial triangles, and
+ *       reapportion the material to the four connected partial triangles.
+ *
+ *     * disconnect the four PTs from the center tri, and reconnect the
+ *       PTs to each other.
+ *
+ *     * remove the tri from it's vertices
+ *
+ *     * move one set of triangle corners from the to-be deleted
+ *       vertex to the new common vertex
+ *
+ * preconditions:
+ *     * the edge vertex to be kept already has it's position changed
+ *       to the new center position.
  */
 
-static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& edge) {
+static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
+        const VertexPtr vsrc, const Edge& edge, const VertexPtr vdest, const Vector3 &pos) {
     HRESULT res;
 
     collapseStr++;
 
-    MxEdge e{edge};
 
-    int test[collapseStr];
+    // Move the material from this triangle to it's four connected
+    // surface triangles that belong to the upper and lower
+    // cell surfaces
+    float leftArea = Magnum::Math::triangle_area(edge[0]->position,
+            rt.apex->position, pos);
+    float rightArea = Magnum::Math::triangle_area(edge[1]->position,
+            rt.apex->position, pos);
 
-    // the opposite vertex from the collapse edge
-    VertexPtr c = nullptr;
+    // need to calculate area here, because the area in the triangle
+    // has not been updated yet.
+    float upperArea = Magnum::Math::triangle_area(edge[1]->position,
+            edge[1]->position, rt.apex->position);
 
-#ifndef NDEBUG
-    auto cells = t1->cells;
-    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
-    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
-#endif
-
-    for(VertexPtr v : t1->vertices) {
-        if(v != e.a && v != e.b) {
-            c = v;
-        }
-        if(v->facets().size() != 1) {
-        //    return mx_error(E_FAIL, "vertex belongs to more than one facet");
-        }
-    }
-
-
-
-    assert(c);
-
-    auto t3 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.a, c));
-    auto t4 = EdgeTriangles(t1, t1->adjacentEdgeIndex(e.b, c));
-
-
-    // new center position
-    Magnum::Vector3 pos = (e.a->position + e.b->position) / 2;
-
-    // all of the triangles attached to edge endpoints a and b will have their corner
-    // that is attached to the edge endpoints moved to the new center. Need to
-    // check all of these triangles and make sure that we do not invert any triangles,
-    // or cause any triangles to become colinear (zero area).
-
-
-    // is it safe to move this triangle
-    auto safeTriangleMove = [pos, t1](const TrianglePtr tri, const VertexPtr vert) -> HRESULT {
-
-        if(tri == t1) {
-            return S_OK;
-        }
-
-        Vector3 before = normal(tri->vertices[0]->position,
-                tri->vertices[1]->position,
-                tri->vertices[2]->position);
-
-        Vector3 pos0 = (tri->vertices[0] == vert) ? pos : tri->vertices[0]->position;
-        Vector3 pos1 = (tri->vertices[1] == vert) ? pos : tri->vertices[1]->position;
-        Vector3 pos2 = (tri->vertices[2] == vert) ? pos : tri->vertices[2]->position;
-
-        Vector3 after = normal(pos0, pos1, pos2);
-
-        if(Magnum::Math::dot(before, after) <= 0) {
-            return mx_error(E_FAIL, "can't perform edge collapse, triangle will become inverted");
-        }
-
-        if(Magnum::Math::triangle_area(pos0, pos1, pos2) < 0.001) {
-            return mx_error(E_FAIL, "can't perform edge collapse, triangle area becomes too small or colinear");
-        }
-
-        return S_OK;
-    };
-
-    for(TrianglePtr tri : e.a->triangles()) {
-        if((res = safeTriangleMove(tri, e.a)) != S_OK) {
-            return res;
-        }
-    }
-
-    for(TrianglePtr tri : e.b->triangles()) {
-        if((res = safeTriangleMove(tri, e.b)) != S_OK) {
-            return res;
-        }
-    }
-
-    // make sure with topologically safe
-    if((res = safeTopology(t1, {{e.a, c}}, {{e.b, c}})) != S_OK) return res;
-
-    float leftUpperArea = Magnum::Math::triangle_area(e.a->position, c->position, pos);
-    float rightUpperArea = Magnum::Math::triangle_area(e.b->position, c->position, pos);
-
-    // need to calculate area here, because the area in the triangle has not been updated yet.
-    float upperArea = Magnum::Math::triangle_area(e.a->position, e.b->position, c->position);
-
-
-    assert(leftUpperArea > 0 && rightUpperArea > 0);
-
-
-
-    moveMaterial(t3, t4, leftUpperArea/upperArea, rightUpperArea/upperArea, t1);
-
+    assert(leftArea > 0 && rightArea > 0);
 
 
 
 #ifndef NDEBUG
-    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
-    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
-
-    for(TrianglePtr tri : e.a->triangles()) {
-        assert(tri->cells[0] && tri->cells[1]);
-    }
-    for(TrianglePtr tri : e.b->triangles()) {
-        assert(tri->cells[0] && tri->cells[1]);
-    }
+    if(!rt.tri->cells[0]->isRoot()) assert(rt.tri->cells[0]->manifold());
+    if(!rt.tri->cells[1]->isRoot()) assert(rt.tri->cells[1]->manifold());
 #endif
 
     // disconnect the partial triangle pointers.
-    reconnectPartialTriangles(t1, {{e.a, c}}, {{e.b, c}});
+    reconnectPartialTriangles(rt.tri, {{vsrc, rt.apex}}, {{vdest, rt.apex}});
 
-
-    VertexPtr vsrc = nullptr, vdest = nullptr;
-
-    if(e.a->triangles().size() >= e.b->triangles().size()) {
-        vsrc = e.b;
-        vdest = e.a;
-    } else {
-        vsrc = e.a;
-        vdest = e.b;
-    }
 
     // the destination vertex where all the other triangles get moved to,
     // set this to the new center pos.
     vdest->position = pos;
 
-    vdest->removeTriangle(t1);
-    vsrc->removeTriangle(t1);
+    vdest->removeTriangle(rt.tri);
+    vsrc->removeTriangle(rt.tri);
 
 
+    // copy the src triangles, the original gets modified
     std::vector<TrianglePtr> srcTriangles = vsrc->triangles();
 
     for(int i = 0; i < vdest->triangles().size(); ++i) {
@@ -354,7 +297,7 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& 
     }
 
     for(TrianglePtr tri : srcTriangles) {
-        if(tri == t1) continue;
+        if(tri == rt.tri) continue;
 
         testTriangle(tri);
 
@@ -372,46 +315,119 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& 
         }
     }
 
-    disconnect_triangle_vertex(t1, e.a);
-    disconnect_triangle_vertex(t1, e.b);
-    disconnect_triangle_vertex(t1, c);
+    disconnect_triangle_vertex(rt.tri, edge[0]);
+    disconnect_triangle_vertex(rt.tri, edge[1]);
+    disconnect_triangle_vertex(rt.tri, rt.apex);
 
-    assert(t1->vertices[0] == nullptr && t1->vertices[1] == nullptr && t1->vertices[2] == nullptr);
-
+    assert(rt.tri->vertices[0] == nullptr &&
+           rt.tri->vertices[1] == nullptr &&
+           rt.tri->vertices[2] == nullptr);
 
     mesh->deleteVertex(vsrc);
 
 #ifndef NDEBUG
     for(TrianglePtr tri : mesh->triangles) {
-        if(tri == t1) continue;
+        if(tri == rt.tri) continue;
         assert(!incident(tri, vsrc));
     }
 
     for(int i = 0; i < vdest->triangles().size(); ++i) {
         TrianglePtr tri = vdest->triangles()[i];
-        assert(tri != t1);
+        assert(tri != rt.tri);
         assert(tri->isValid());
     }
 #endif
 
     for(int i = 0; i < 2; ++i) {
-        CellPtr cell = t1->cells[i];
-        cell->removeChild(t1);
-        cell->topologyChanged();
+        CellPtr cell = rt.tri->cells[i];
+        cell->removeChild(rt.tri);
         cell->topologyChanged();
     }
 
-    mesh->deleteTriangle(t1);
+    // delete the triangle here, this will not affect the previously
+    // cached triangle edges for manifold like triangles.
+    mesh->deleteTriangle(rt.tri);
 
 
 #ifndef NDEBUG
-    if(!cells[0]->isRoot()) assert(cells[0]->manifold());
-    if(!cells[1]->isRoot()) assert(cells[1]->manifold());
-    mesh->validate();
+    //if(!cells[0]->isRoot()) assert(cells[0]->manifold());
+    //if(!cells[1]->isRoot()) assert(cells[1]->manifold());
+    //mesh->validate();
 #endif
 
     return S_OK;
 
+}
+
+/**
+ * Can the triangle vertex be moved without inverting the triangle.
+ */
+static HRESULT canTriangleVertexBeMoved(const TrianglePtr tri, const VertexPtr vert,
+        const Vector3 &pos) {
+
+
+    Vector3 before = normal(tri->vertices[0]->position,
+            tri->vertices[1]->position,
+            tri->vertices[2]->position);
+
+    Vector3 pos0 = (tri->vertices[0] == vert) ? pos : tri->vertices[0]->position;
+    Vector3 pos1 = (tri->vertices[1] == vert) ? pos : tri->vertices[1]->position;
+    Vector3 pos2 = (tri->vertices[2] == vert) ? pos : tri->vertices[2]->position;
+
+    Vector3 after = normal(pos0, pos1, pos2);
+
+    if(Magnum::Math::dot(before, after) <= 0) {
+        return mx_error(E_FAIL, "can't perform edge collapse, triangle will become inverted");
+    }
+
+    if(Magnum::Math::triangle_area(pos0, pos1, pos2) < 0.001) {
+        return mx_error(E_FAIL, "can't perform edge collapse, triangle area becomes too small or colinear");
+    }
+
+    return S_OK;
+};
+
+
+/**
+ * Determine if the triangle can be collapsed or not. If it can, save the triangle
+ * info in the RadialTriangle ptr.
+ *
+ * returns S_OK if the triangle can be collapsed, an error otherwise.
+ */
+static HRESULT classifyRadialTriangle(const TrianglePtr tri,
+        const Edge& edge, const Vector3 &pos, RadialTriangle &res) {
+    for(int i = 0; i < 3; ++i) {
+        if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
+            res.apex = tri->vertices[i];
+        }
+    }
+    assert(res.apex);
+
+    res.leftTriangles = EdgeTriangles(tri, tri->adjacentEdgeIndex(edge[0], res.apex));
+    res.rightTriangles = EdgeTriangles(tri, tri->adjacentEdgeIndex(edge[1], res.apex));
+
+    // check if a geometry move would invert any adjacent triangles
+    for(TrianglePtr t : res.leftTriangles) {
+        if(t != tri) {
+            HRESULT r = canTriangleVertexBeMoved(t, edge[0], pos);
+            if(r != S_OK) return r;
+        }
+    }
+
+    for(TrianglePtr t : res.rightTriangles) {
+        if(t != tri) {
+            HRESULT r = canTriangleVertexBeMoved(t, edge[1], pos);
+            if(r != S_OK) return r;
+        }
+    }
+
+    return safeTopology(tri, Edge{edge[0], res.apex}, Edge{edge[1], res.apex});
+}
+
+
+
+HRESULT RadialEdgeCollapse::apply() {
+    return oldApply();
 }
 
 
@@ -422,7 +438,7 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, TrianglePtr t1, const Edge& 
 
 
 
-HRESULT RadialEdgeCollapse::apply() {
+HRESULT RadialEdgeCollapse::oldApply() {
 
     HRESULT res;
 
@@ -440,7 +456,7 @@ HRESULT RadialEdgeCollapse::apply() {
         return E_FAIL;
     }
 
-    int test[e.radialTriangles().size()];
+
 
     std::vector<TrianglePtr> edgeTri = e.radialTriangles();
 
@@ -606,7 +622,10 @@ HRESULT RadialEdgeCollapse::apply() {
 
         testTriangle(tri);
 
+        // side effect of removing triangle from vertex tri list.
         disconnect_triangle_vertex(tri, vsrc);
+
+        // adds tri to vert tri list.
         connect_triangle_vertex(tri, vdest);
 
         assert(tri->cells[0] && tri->cells[1]);
@@ -686,4 +705,15 @@ bool RadialEdgeCollapse::depends(const VertexPtr v) const {
 bool RadialEdgeCollapse::equals(const Edge& e) const {
     return (e[0] == edge[0] && e[1] == edge[1]) ||
            (e[0] == edge[1] && e[1] == edge[0]);
+}
+
+HRESULT RadialEdgeCollapse::newApply() {
+
+    //RadialTriangle *triangles = (RadialTriangle*)alloca(
+    //        e.radialTriangles().size() * sizeof(RadialTriangle));
+
+    // new center position
+    Magnum::Vector3 pos = (edge[0]->position + edge[1]->position) / 2;
+
+    return E_NOTIMPL;
 }
