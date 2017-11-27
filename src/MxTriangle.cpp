@@ -135,3 +135,30 @@ bool MxTriangle::isValid() {
             isConnected() &&
             area > 0 && aspectRatio > 0 && mass > 0;
 }
+
+bool MxTriangle::validate() {
+    for(int c = 0; c < 2; ++c) {
+        PTrianglePtr pt =  &partialTriangles[c];
+        assert(cells[c]);
+        if(!cells[c]->isRoot()) {
+            for(int i = 0; i < 3; ++i) {
+                assert(pt->neighbors[i]);
+                assert(adjacent(this, pt->neighbors[i]->triangle));
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; ++i) {
+        EdgeTriangles e{{{vertices[i], vertices[(i+1)%3]}}};
+        assert(e.size() > 0);
+    }
+
+
+    return facet &&
+            contains(facet->triangles, this) &&
+            cells[0] && incident(this, cells[0]) &&
+            cells[1] && incident(this, cells[1]) &&
+            cells[0] != cells[1] &&
+            isConnected() &&
+            area > 0 && aspectRatio > 0 && mass > 0;
+}

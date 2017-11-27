@@ -298,8 +298,10 @@ bool MxMesh::validateVertices() {
 }
 
 bool MxMesh::validateTriangles() {
+    bool result = true;
     for(int i = 0; i < triangles.size(); ++i) {
-        validateTriangle(triangles[i]);
+        TrianglePtr tri = triangles[i];
+        result &= tri->validate();
     }
     return true;
 }
@@ -315,8 +317,10 @@ bool MxMesh::validateTriangle(const TrianglePtr tri) {
 }
 
 bool MxMesh::validate() {
-    return true;
+
     validateTriangles();
+
+    return true;
     validateVertices();
     return true;
 }

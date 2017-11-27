@@ -74,7 +74,13 @@ public:
 
     iterator end() const;
 
+    size_t size() const;
+
     explicit EdgeTriangles(TrianglePtr startTri, int index);
+
+    explicit EdgeTriangles(const Edge& edge);
+
+    explicit EdgeTriangles() {};
 
 private:
     std::vector<TrianglePtr> triangles;

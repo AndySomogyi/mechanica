@@ -284,6 +284,8 @@ struct MxTriangle : MxObject {
 
     bool isConnected();
 
+    bool validate();
+
 
     bool isValid();
 

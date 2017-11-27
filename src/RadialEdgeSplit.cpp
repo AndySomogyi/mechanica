@@ -32,9 +32,9 @@ static int ctr = 0;
  */
 
 HRESULT RadialEdgeSplit::apply() {
-    MxEdge e{edge};
+    EdgeTriangles e{edge};
 
-    auto triangles = e.radialTriangles();
+    std::vector<TrianglePtr> triangles(e.begin(), e.end());
 
     assert(triangles.size() >= 2);
 
@@ -45,8 +45,8 @@ HRESULT RadialEdgeSplit::apply() {
     ctr += 1;
 
     // new vertex at the center of this edge
-    Vector3 center = (e.a->position + e.b->position) / 2.;
-    center = center + (e.a->position - e.b->position) * uniformDist(randEngine);
+    Vector3 center = (edge[0]->position + edge[1]->position) / 2.;
+    center = center + (edge[1]->position - edge[1]->position) * uniformDist(randEngine);
     VertexPtr vert = mesh->createVertex(center);
 
     TrianglePtr firstNewTri = nullptr;
@@ -69,7 +69,7 @@ HRESULT RadialEdgeSplit::apply() {
         // find the outside tri vertex
         VertexPtr outer = nullptr;
         for(uint i = 0; i < 3; ++i) {
-            if(tri->vertices[i] !=  e.b && tri->vertices[i] != e.a ) {
+            if(tri->vertices[i] !=  edge[1] && tri->vertices[i] != edge[0] ) {
                 outer = tri->vertices[i];
                 break;
             }
@@ -80,7 +80,7 @@ HRESULT RadialEdgeSplit::apply() {
         // here with the new center vertex
         auto vertices = tri->vertices;
         for(uint i = 0; i < 3; ++i) {
-            if(vertices[i] == e.a) {
+            if(vertices[i] == edge[0]) {
                 vertices[i] = vert;
                 break;
             }
@@ -111,7 +111,7 @@ HRESULT RadialEdgeSplit::apply() {
 
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
-        disconnect_triangle_vertex(tri, e.b);
+        disconnect_triangle_vertex(tri, edge[1]);
         connect_triangle_vertex(tri, vert);
 
         tri->positionsChanged();
@@ -127,7 +127,7 @@ HRESULT RadialEdgeSplit::apply() {
         // makes sure that new and old tri share an edge.
         assert(adjacent(tri, nt));
 
-        // removes the e.b - outer edge connection connection from the old
+        // removes the edge[1] - outer edge connection connection from the old
         // triangle and replaces it with the new triangle,
         // manually add the partial triangles to the cell
         for(uint i = 0; i < 2; ++i) {
@@ -135,7 +135,7 @@ HRESULT RadialEdgeSplit::apply() {
 
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
-                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{e.b, outer}});
+                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge[1], outer}});
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
                 connect_partial_triangles(&tri->partialTriangles[i], &nt->partialTriangles[i]);
@@ -148,8 +148,8 @@ HRESULT RadialEdgeSplit::apply() {
             }
         }
 
-        assert(incident(nt, {{e.b, outer}}));
-        assert(!incident(tri, {{e.b, outer}}));
+        assert(incident(nt, {{edge[1], outer}}));
+        assert(!incident(tri, {{edge[1], outer}}));
 
 
         // split the mass according to area
@@ -209,6 +209,15 @@ HRESULT RadialEdgeSplit::apply() {
             }
         }
     }
+
+    for(TrianglePtr tri : edge[0]->triangles()) {
+        assert(tri->validate());
+    }
+
+    for(TrianglePtr tri : edge[1]->triangles()) {
+        assert(tri->validate());
+    }
+
 
     mesh->validate();
 #endif

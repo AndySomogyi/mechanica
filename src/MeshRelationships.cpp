@@ -49,8 +49,14 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
         return false;
     }
 
-    return (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) ||
-           (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
+    bool result =
+        (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) ||
+        (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
+
+#ifndef NDEBUG
+    assert(result == adjacent(a->triangle, b->triangle));
+#endif
+    return result;
 }
 
 bool incident(const VertexPtr vertex, const FacetPtr facet) {

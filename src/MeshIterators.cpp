@@ -5,7 +5,8 @@
  *      Author: andy
  */
 
-#include <MxCell.h>
+#include "MxCell.h"
+#include <iostream>
 
 static bool commonCell(const TrianglePtr a, const TrianglePtr b) {
     assert(a->cells[0] && a->cells[1] && b->cells[0] && b->cells[1]);
@@ -63,16 +64,29 @@ EdgeTriangles::iterator EdgeTriangles::end() const {
     return EdgeTriangleIterator(triangles, triangles.size());
 }
 
-EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) {
+static Edge tri_to_edge(const TrianglePtr startTri, int index) {
     assert(index >= 0 && index <= 3);
     VertexPtr a = startTri->vertices[index];
     VertexPtr b = startTri->vertices[(index+1)%3];
+    return {{a, b}};
+}
 
-    for(TrianglePtr ta : a->triangles()) {
-        if(incident(ta, b)) {
+EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) :
+        EdgeTriangles{tri_to_edge(startTri, index)} {
+}
+
+
+EdgeTriangles::EdgeTriangles(const Edge& edge) {
+
+    assert(edge[0] && edge[1]);
+
+    for(TrianglePtr ta : edge[0]->triangles()) {
+        if(incident(ta, edge[1])) {
             triangles.push_back(ta);
         }
     }
+    
+    static int ctr = 0;
 
     // TODO: TOTAL FUCKING HACK
     // we desperately need to come up with a cleaner way of representing
@@ -83,14 +97,30 @@ EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) {
     // need to sort the radial triangles, so each tri shares a cell with the next one.
     for(int i = 0; (i + 1) < triangles.size(); ++i) {
         if(commonCell(triangles[i], triangles[i+1])) continue;
+        
+        ctr++;
 
+        // if we get here, that means that that triangles[i] and triangles[i+1]
+        // do not share a common cell, so we need to find the common cell with
+        // triangles[i], and stick it in the triangles[i+1] slot.
         for(uint j = i + 2; j < triangles.size(); ++j) {
             if(commonCell(triangles[i], triangles[j])) {
                 std::swap(triangles[i+1], triangles[j]);
             }
         }
-
+        
+#ifndef NDEBUG
+        if(!commonCell(triangles[i], triangles[i+1])) {
+            for(int k = 0; k < triangles.size(); ++k) {
+                
+                std::cout << "tri[" << k << "], cells: {" <<
+                triangles[k]->cells[0]->id << "," <<
+                triangles[k]->cells[1]->id << "}" << std::endl;
+            }
+            std::cout << "foo" << std::endl;
+        }
         assert(commonCell(triangles[i], triangles[i+1]));
+#endif
     }
 }
 
@@ -127,4 +157,8 @@ EdgeFacets::const_iterator EdgeFacets::end() const {
 
 EdgeFacets::EdgeFacets(const TrianglePtr startTri,
 		const std::array<VertexPtr, 2>& edge) {
+}
+
+size_t EdgeTriangles::size() const {
+    return triangles.size();
 }
