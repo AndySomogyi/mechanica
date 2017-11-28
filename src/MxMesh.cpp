@@ -301,7 +301,7 @@ bool MxMesh::validateTriangles() {
     bool result = true;
     for(int i = 0; i < triangles.size(); ++i) {
         TrianglePtr tri = triangles[i];
-        result &= tri->validate();
+        result &= tri->isValid();
     }
     return true;
 }
@@ -330,3 +330,13 @@ bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
     return true;
 }
 
+void MxMesh::markEdge(const Edge& edge) {
+    for(TrianglePtr tri : triangles) {
+        tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
+    }
+}
+
+void MxMesh::markTriangle(const TrianglePtr tri) {
+    makeTrianglesTransparent();
+    tri->color = Magnum::Color4::red();
+}

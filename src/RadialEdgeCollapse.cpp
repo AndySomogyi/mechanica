@@ -8,6 +8,7 @@
 #include "RadialEdgeCollapse.h"
 #include "MxMesh.h"
 #include <iostream>
+#include <set>
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -16,6 +17,17 @@
 #else
 #include <alloca.h>
 #endif
+
+MeshOperations *ops = nullptr;
+MeshPtr mesh = nullptr;
+
+static void markEdge(const Edge& edge) {
+    EdgeTriangles triangles(edge);
+
+    for(TrianglePtr tri : triangles) {
+        tri->color = Magnum::Color4::green();
+    }
+}
 
 
 /**
@@ -74,6 +86,9 @@ static int collapseStr = 0;
  * and bottom triangle neighbors are not themselves connected.
  */
 static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge& edge2) {
+
+    assert(tri->isValid());
+
     for(int i = 0; i < 2; ++i) {
         if(!tri->cells[i]->isRoot()) {
 
@@ -98,6 +113,25 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             assert(adjacent(p1, &tri->partialTriangles[i]));
             assert(adjacent(p2, &tri->partialTriangles[i]));
 
+            bool ptAdj = adjacent(p1, p2);
+            bool triAdj = adjacent(p1->triangle, p2->triangle);
+
+            if(ptAdj != triAdj) {
+                mesh->makeTrianglesTransparent();
+                ops->shouldStop = true;
+                tri->color = Magnum::Color4::red();
+                p1->triangle->color = Magnum::Color4{0, 1, 0, 0.2};
+                p2->triangle->color = Magnum::Color4{0, 0, 1, 0.2};
+                
+                for(int i = 0; i < 3; ++i) {
+                    //p1->neighbors[i]->triangle->color = Magnum::Color4{0, 1, 0, 0.2};
+                    //p2->neighbors[i]->triangle->color = Magnum::Color4{0, 0, 1, 0.2};
+                }
+                
+                tri->color = Magnum::Color4{1, 0, 0, 1};
+                return mx_error(E_FAIL, "partial tri not same adj as tri");
+            }
+
             if (adjacent(p1, p2)) {
                 return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
             }
@@ -105,6 +139,78 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
     }
     return S_OK;
 };
+
+
+/**
+ * Determine if this radial edge meets the link condition.
+ *
+ * In a triangular mesh, the *star* of a vertex v is the is the set of triangles
+ * and edges that are incident to v. The link of a vertex is the frontier of the
+ * star.
+ */
+static HRESULT radialLinkCondition(const Edge& edge, const EdgeTriangles& triangles) {
+
+    // when we look at the link of the edge vertices, if the triangle incident
+    // to the edge is a radial triangle, we don't bother looking at it's
+    // vertices because each vertex is either already in the edge link, or
+    // is one of the edge vertices.
+    std::set<TrianglePtr> radialTriangles;
+
+    std::set<VertexPtr> edgeLink;
+
+    for(TrianglePtr tri : triangles) {
+        radialTriangles.insert(tri);
+
+        // find the apex vertex, the edge link is the set of all apex verticies
+        for(int i = 0; i < 3; ++i) {
+            if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
+                edgeLink.insert(tri->vertices[i]);
+                break;
+            }
+        }
+    }
+
+    // any vertex contained within the link of each vertex will already
+    // be in the link of the edge, so we don't bother inserting them.
+    std::set<VertexPtr> leftLink;
+
+    for(TrianglePtr tri : edge[0]->triangles()) {
+
+        // if the triangle is a radial triangle, ignore it.
+        if(radialTriangles.find(tri) != radialTriangles.end()) {
+            continue;
+        }
+
+        for(int i = 0; i < 3; ++i) {
+            if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
+                if(edgeLink.find(tri->vertices[i]) == edgeLink.end()) {
+                    leftLink.insert(tri->vertices[i]);
+                }
+                break;
+            }
+        }
+    }
+
+    for(TrianglePtr tri : edge[1]->triangles()) {
+        if(radialTriangles.find(tri) != radialTriangles.end()) {
+            continue;
+        }
+
+        for(int i = 0; i < 3; ++i) {
+            if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
+                if(leftLink.find(tri->vertices[i]) != leftLink.end() &&
+                   edgeLink.find(tri->vertices[i]) == edgeLink.end()) {
+                    markEdge(edge);
+                    return mx_error(E_FAIL, "edge triangle violates condition, can't perform edge collapse");
+                }
+            }
+        }
+    }
+
+    return S_OK;
+}
+
+
 
 /**
  * Check all of the incident triangles to this vertex, and check if moving
@@ -654,6 +760,9 @@ bool RadialEdgeCollapse::equals(const Edge& e) const {
 HRESULT RadialEdgeCollapse::newApply() {
     HRESULT res;
 
+    ::mesh = this->mesh;
+    ops = &mesh->meshOperations;
+
     // all of the cells that are incident to this edge, will need to notify
     // all of them that the topology has changed.
     std::set<CellPtr> cells;
@@ -687,6 +796,10 @@ HRESULT RadialEdgeCollapse::newApply() {
     // now check if we can topologically perform this operation
 
     EdgeTriangles edgeTri{edge};
+
+    if((res = radialLinkCondition(edge, edgeTri)) != S_OK) {
+        return res;
+    }
 
     const uint edgeTriSize = edgeTri.size();
 
@@ -779,10 +892,17 @@ HRESULT RadialEdgeCollapse::newApply() {
     for(int i = 0; i < dtri.size(); ++i) {
         TrianglePtr tri = dtri[i];
         testTriangle(tri);
-        assert(tri->validate());
+        //assert(tri->validate());
+
+        for(int i = 0; i < 3; ++i) {
+            EdgeTriangles et{{{tri->vertices[i], tri->vertices[(i+1)%3]}}};
+            if(!et.isValid()) {
+                ops->stop({{tri->vertices[i], tri->vertices[(i+1)%3]}});
+            }
+        }
     }
 
-    //mesh->validateTriangles();
+    mesh->validateTriangles();
 #endif
 
     return S_OK;
@@ -790,6 +910,6 @@ HRESULT RadialEdgeCollapse::newApply() {
 
 
 HRESULT RadialEdgeCollapse::apply() {
-    return oldApply();
+    return newApply();
 }
 

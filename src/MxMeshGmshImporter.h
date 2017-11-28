@@ -32,10 +32,10 @@ class MxMeshGmshImporter {
 public:
 
     MxMeshGmshImporter(MxMesh& mesh, float density = 1.0) :
-        mesh{mesh}, density{density} {};
+        mesh{mesh}, density{density}, cellId{mesh.rootCell()->id + 1} {};
 
     MxMeshGmshImporter(MxMesh& mesh, const ElementCellTypeHandler &handler, float density = 1.0) :
-        mesh{mesh}, density{density}, elementCellTypeHandler{handler} {};
+        mesh{mesh}, density{density}, cellId{mesh.rootCell()->id + 1}, elementCellTypeHandler{handler} {};
 
     HRESULT read(const std::string &path);
 

@@ -9,6 +9,7 @@
 #define SRC_MXTRIANGLE_H_
 
 #include "MxMeshCore.h"
+#include "Magnum/Math/Color.h"
 
 
 struct MxPartialTriangleType : MxType {
@@ -282,14 +283,13 @@ struct MxTriangle : MxObject {
      */
     HRESULT positionsChanged();
 
-    bool isConnected();
+    bool isConnected() const;
 
-    bool validate();
-
-
-    bool isValid();
+    bool isValid() const;
 
     float alpha = 0.5;
+
+    Magnum::Color4 color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
 };
 
 namespace Magnum { namespace Math {

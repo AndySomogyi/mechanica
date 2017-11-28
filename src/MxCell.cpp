@@ -48,17 +48,29 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
     for(uint i = 0; i < boundary.size() && ptr < vertexCount * stride + (uchar*)buffer; ++i, ptr += 3 * stride) {
 
 
-        const MxTriangle &face = *(boundary[i])->triangle;
+        const MxTriangle &tri = *(boundary[i])->triangle;
         VertexAttribute *attrs = (VertexAttribute*)ptr;
-        attrs[0].position = face.vertices[0]->position;
-        attrs[0].color = (type) ? type->color : Color4::yellow();
-        attrs[0].color[3] = face.alpha;
-        attrs[1].position = face.vertices[1]->position;
-        attrs[1].color = (type) ? type->color : Color4::green();
-        attrs[1].color[3] = face.alpha;
-        attrs[2].position = face.vertices[2]->position;
-        attrs[2].color = (type) ? type->color : Color4::blue();
-        attrs[2].color[3] = face.alpha;
+
+        Color4 color;
+        if(tri.color[3] > 0) {
+            color = tri.color;
+        }
+        else if (type) {
+            color = type->color;
+            color[3] = tri.alpha;
+        }
+        else {
+            color = Color4::yellow();
+        }
+        attrs[0].position = tri.vertices[0]->position;
+        attrs[0].color = color;
+
+        attrs[1].position = tri.vertices[1]->position;
+        attrs[1].color = color;
+
+        attrs[2].position = tri.vertices[2]->position;
+        attrs[2].color = color;
+
     }
 }
 

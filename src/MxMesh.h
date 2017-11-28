@@ -273,6 +273,7 @@ struct MxMesh  {
      */
     void makeTrianglesTransparent() {
         for (TrianglePtr tri : triangles) {
+            tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
             tri->alpha = 0.0;
         }
     }
@@ -284,6 +285,10 @@ struct MxMesh  {
     float getLongCutoff() { return meshOperations.getLongCutoff(); }
     void setLongCutoff(float val) { meshOperations.setLongCutoff(val); }
 
+    void markEdge(const Edge& edge);
+
+    void markTriangle(const TrianglePtr tri);
+
 private:
 
     bool validateVertex(const VertexPtr v);
@@ -291,8 +296,6 @@ private:
     bool validateVertices();
 
     bool validateTriangles();
-
-    bool validateEnquedEdges();
 
     bool validateTriangle(const TrianglePtr tri);
 

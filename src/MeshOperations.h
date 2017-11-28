@@ -125,11 +125,14 @@ struct MeshOperations {
 
     void setLongCutoff(float);
 
+
+#ifndef NDEBUG
+    void stop(const Edge& edge);
+    bool shouldStop = false;
+#endif
+
+
     ~MeshOperations();
-
-
-
-
 
 private:
 

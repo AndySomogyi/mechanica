@@ -15,6 +15,8 @@
 #include <iostream>
 
 
+
+
 /**
  * The std *_heap functions produce a max heap. We need the lowest energy items
  * first, so flip the compare op here.
@@ -34,6 +36,10 @@ MeshOperations::MeshOperations(MeshPtr _mesh, float _shortCutoff,
 
 HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBegin,
         TriangleContainer::const_iterator triEnd) {
+
+#ifndef NDEBUG
+    if(shouldStop) return S_OK;
+#endif
 
     for(auto iter = triBegin; iter != triEnd; ++iter) {
         const TrianglePtr tri = *iter;
@@ -121,7 +127,11 @@ HRESULT MeshOperations::apply() {
     HRESULT res = S_OK;
 
     while((op = pop()) != nullptr) {
+#ifndef NDEBUG
+        if(!shouldStop)  res = op->apply();
+#else
         res = op->apply();
+#endif
         // TODO, log the failed operation somehow.
         delete op;
     }
@@ -174,3 +184,33 @@ MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge) {
 
 MeshOperations::~MeshOperations() {
 }
+
+#ifndef NDEBUG
+
+void MeshOperations::stop(const Edge& edge) {
+    shouldStop = true;
+
+    /*
+    mesh->makeTrianglesTransparent();
+    shouldStop = true;
+
+    for(TrianglePtr tri : edge[0]->triangles()) {
+        tri->color = Magnum::Color4::green();
+        tri->color[3] = 0.4;
+    }
+    for(TrianglePtr tri : edge[1]->triangles()) {
+        tri->color = Magnum::Color4::yellow();
+        tri->color[3] = 0.4;
+    }
+    */
+
+    mesh->makeTrianglesTransparent();
+
+    for(TrianglePtr tri : EdgeTriangles(edge)) {
+        tri->color = Magnum::Color4::yellow();
+        tri->color[3] = 1;
+    }
+
+
+}
+#endif

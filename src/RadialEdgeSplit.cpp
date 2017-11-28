@@ -14,7 +14,7 @@ RadialEdgeSplit::RadialEdgeSplit(MeshPtr mesh, float _longCutoff, const Edge& _e
     MeshOperation{mesh}, longCutoff{_longCutoff}, edge{_edge} {
 
     float range = mesh->edgeSplitStochasticAsymmetry / 2;
-    uniformDist = std::uniform_real_distribution<float>(-range, range);
+    uniformDist = std::uniform_real_distribution<float>(0,0);
 }
 
 bool RadialEdgeSplit::applicable(const Edge& e) {
@@ -55,7 +55,7 @@ HRESULT RadialEdgeSplit::apply() {
     for(uint i = 0; i < triangles.size(); ++i)
     {
         TrianglePtr tri = triangles[i];
-        std::cout << "tri[" << i << "], cell[0]:" << tri->cells[0] << ", cell[1]:" << tri->cells[1] << std::endl;
+        std::cout << "Radial Edge Split: tri[" << i << "], cell[0]:" << tri->cells[0] << ", cell[1]:" << tri->cells[1] << std::endl;
     }
 
     for(uint i = 0; i < triangles.size(); ++i)
@@ -211,15 +211,15 @@ HRESULT RadialEdgeSplit::apply() {
     }
 
     for(TrianglePtr tri : edge[0]->triangles()) {
-        assert(tri->validate());
+        assert(tri->isValid());
     }
 
     for(TrianglePtr tri : edge[1]->triangles()) {
-        assert(tri->validate());
+        assert(tri->isValid());
     }
 
 
-    mesh->validate();
+    mesh->validateTriangles();
 #endif
 
     return S_OK;

@@ -82,6 +82,10 @@ public:
 
     explicit EdgeTriangles() {};
 
+#ifndef NDEBUG
+    bool isValid();
+#endif
+
 private:
     std::vector<TrianglePtr> triangles;
     friend class EdgeTriangleIterator;

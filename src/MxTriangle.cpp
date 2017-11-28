@@ -7,6 +7,7 @@
 
 #include "MxTriangle.h"
 #include "MxCell.h"
+#include <iostream>
 
 
 int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
@@ -99,27 +100,36 @@ HRESULT MxTriangle::positionsChanged() {
 }
 
 
-bool MxTriangle::isConnected() {
+bool MxTriangle::isConnected() const {
 
     for(int i = 0; i < 2; ++i) {
 
         if(cells[i]->isRoot()) continue;
 
-        PTrianglePtr t = &partialTriangles[i];
+        // TODO: HACK fix the constness.
+
+        const PTrianglePtr t = const_cast<PTrianglePtr>(&partialTriangles[i]);
+
+        bool padj0 = adjacent(t, t->neighbors[0]);
+        bool padj1 = adjacent(t, t->neighbors[1]);
+        bool padj2 = adjacent(t, t->neighbors[2]);
+        bool padj = padj0 && padj1 && padj2;
 
         // check pointers
-        if (!adjacent(t, t->neighbors[0]) ||
-            !adjacent(t, t->neighbors[1]) ||
-            !adjacent(t, t->neighbors[2])) {
+        if (!padj) {
+            std::cout << "error, partial triangles neighbors not adjacent to this triangle" << std::endl;
             return false;
         }
 
         assert(this == t->triangle);
 
         // check vertices
-        if (!adjacent(this, t->neighbors[0]->triangle) ||
-            !adjacent(this, t->neighbors[1]->triangle) ||
-            !adjacent(this, t->neighbors[2]->triangle)) {
+        bool tadj0 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[0]->triangle);
+        bool tadj1 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[1]->triangle);
+        bool tadj2 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[2]->triangle);
+
+        if(!(tadj0 && tadj1 && tadj2)) {
+            std::cout << "error, partial triangle neighbor triangle not adjacent to this triangle" << std::endl;
             return false;
         }
     }
@@ -127,23 +137,15 @@ bool MxTriangle::isConnected() {
 
 }
 
-bool MxTriangle::isValid() {
-    return facet &&
-            contains(facet->triangles, this) &&
-            cells[0] && incident(this, cells[0]) &&
-            cells[1] && incident(this, cells[1]) &&
-            isConnected() &&
-            area > 0 && aspectRatio > 0 && mass > 0;
-}
 
-bool MxTriangle::validate() {
+bool MxTriangle::isValid() const  {
     for(int c = 0; c < 2; ++c) {
-        PTrianglePtr pt =  &partialTriangles[c];
+        const PTrianglePtr pt =  const_cast<PTrianglePtr>(&partialTriangles[c]);
         assert(cells[c]);
         if(!cells[c]->isRoot()) {
             for(int i = 0; i < 3; ++i) {
                 assert(pt->neighbors[i]);
-                assert(adjacent(this, pt->neighbors[i]->triangle));
+                assert(adjacent(const_cast<TrianglePtr>(this), pt->neighbors[i]->triangle));
             }
         }
     }
@@ -151,13 +153,14 @@ bool MxTriangle::validate() {
     for(int i = 0; i < 3; ++i) {
         EdgeTriangles e{{{vertices[i], vertices[(i+1)%3]}}};
         assert(e.size() > 0);
+        assert(e.isValid());
     }
 
 
     return facet &&
             contains(facet->triangles, this) &&
-            cells[0] && incident(this, cells[0]) &&
-            cells[1] && incident(this, cells[1]) &&
+            cells[0] && incident(const_cast<TrianglePtr>(this), cells[0]) &&
+            cells[1] && incident(const_cast<TrianglePtr>(this), cells[1]) &&
             cells[0] != cells[1] &&
             isConnected() &&
             area > 0 && aspectRatio > 0 && mass > 0;

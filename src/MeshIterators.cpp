@@ -7,6 +7,7 @@
 
 #include "MxCell.h"
 #include <iostream>
+#include <set>
 
 static bool commonCell(const TrianglePtr a, const TrianglePtr b) {
     assert(a->cells[0] && a->cells[1] && b->cells[0] && b->cells[1]);
@@ -47,12 +48,12 @@ EdgeTriangleIterator EdgeTriangleIterator::operator --(int) {
 }
 
 bool EdgeTriangleIterator::operator ==(
-		const EdgeTriangleIterator& rhs) {
+        const EdgeTriangleIterator& rhs) {
     return index == rhs.index && &triangles == &rhs.triangles;
 }
 
 bool EdgeTriangleIterator::operator !=(
-		const EdgeTriangleIterator& rhs) {
+        const EdgeTriangleIterator& rhs) {
     return index != rhs.index || &triangles != &rhs.triangles;
 }
 
@@ -85,8 +86,10 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
             triangles.push_back(ta);
         }
     }
-    
+
+#ifndef NDEBUG
     static int ctr = 0;
+#endif
 
     // TODO: TOTAL FUCKING HACK
     // we desperately need to come up with a cleaner way of representing
@@ -97,7 +100,7 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
     // need to sort the radial triangles, so each tri shares a cell with the next one.
     for(int i = 0; (i + 1) < triangles.size(); ++i) {
         if(commonCell(triangles[i], triangles[i+1])) continue;
-        
+
         ctr++;
 
         // if we get here, that means that that triangles[i] and triangles[i+1]
@@ -108,11 +111,11 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
                 std::swap(triangles[i+1], triangles[j]);
             }
         }
-        
+
 #ifndef NDEBUG
         if(!commonCell(triangles[i], triangles[i+1])) {
             for(int k = 0; k < triangles.size(); ++k) {
-                
+
                 std::cout << "tri[" << k << "], cells: {" <<
                 triangles[k]->cells[0]->id << "," <<
                 triangles[k]->cells[1]->id << "}" << std::endl;
@@ -156,9 +159,30 @@ EdgeFacets::const_iterator EdgeFacets::end() const {
 }
 
 EdgeFacets::EdgeFacets(const TrianglePtr startTri,
-		const std::array<VertexPtr, 2>& edge) {
+        const std::array<VertexPtr, 2>& edge) {
 }
 
 size_t EdgeTriangles::size() const {
     return triangles.size();
 }
+
+#ifndef NDEBUG
+bool EdgeTriangles::isValid() {
+    std::set<CellPtr> cells;
+    for(TrianglePtr tri : triangles) {
+        for(int i = 0; i < 2; ++i) {
+            if(tri->cells[i]) {
+                cells.insert(tri->cells[i]);
+            } else {
+                std::cout << "triangle has null cell" << std::endl;
+                return false;
+            }
+        }
+    }
+    bool result = cells.size() == triangles.size();
+    if(!result) {
+        std::cout << "cell count different than triangle count" << std::endl;
+    }
+    return true;
+}
+#endif

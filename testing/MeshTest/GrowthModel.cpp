@@ -14,14 +14,14 @@
 static struct RedCellType : MxCellType
 {
     RedCellType() {
-        color = Color4{1.0f, 0.0f, 0.0f, 0.5f};
+        color = Color4{1.0f, 0.0f, 0.0f, 0.1f};
     }
 } redCellType;
 
 static struct BlueCellType : MxCellType
 {
     BlueCellType() {
-        color = Color4{0.0f, 0.0f, 1.0f, 0.5f};
+        color = Color4{0.0f, 0.0f, 1.0f, 0.1f};
     };
 } blueCellType;
 
@@ -29,9 +29,7 @@ GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
 
-    
-
-    
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -51,12 +49,10 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.1;
     minTargetVolume = 0.005;
     maxTargetVolume = 0.2;
-    
+    */
 
-     
+
     
-    
-    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -67,7 +63,7 @@ GrowthModel::GrowthModel()  {
         }
     };
     mesh->setShortCutoff(0.3);
-    mesh->setLongCutoff(0.5);
+    mesh->setLongCutoff(0.4);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.1;
@@ -76,9 +72,9 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.6;
     minTargetVolume = 0.005;
     maxTargetVolume = 1.5;
-     
-     
-    */
+    
+
+
 
 
 

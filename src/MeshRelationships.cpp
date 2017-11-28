@@ -54,7 +54,7 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
         (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
 
 #ifndef NDEBUG
-    assert(result == adjacent(a->triangle, b->triangle));
+    //assert(result == adjacent(a->triangle, b->triangle));
 #endif
     return result;
 }
