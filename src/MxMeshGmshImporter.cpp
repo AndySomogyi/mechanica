@@ -267,7 +267,6 @@ void MxMeshGmshImporter::createTriangleForCell(
     }
     else {
         tri = mesh.createTriangle(nullptr, verts);
-        tri->id = triId++;
     }
 
     assert(tri);
@@ -288,7 +287,6 @@ void MxMeshGmshImporter::createTriangleForFacet(
 
     // creates a new triangle based on the winding order of the vertices.
     tri = mesh.createTriangle(nullptr, verts);
-    tri->id = triId++;
 
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);

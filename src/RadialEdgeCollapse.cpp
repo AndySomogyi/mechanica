@@ -7,6 +7,7 @@
 
 #include "RadialEdgeCollapse.h"
 #include "MxMesh.h"
+#include "MxDebug.h"
 #include <iostream>
 #include <set>
 
@@ -35,9 +36,6 @@ static void markEdge(const Edge& edge) {
     }
 }
 
-void setMeshOpDebugMode(uint c) {
-    std::cout << "char: " << (char)c << std::endl;
-}
 
 
 /**
@@ -49,10 +47,82 @@ void setMeshOpDebugMode(uint c) {
 struct RadialTriangle {
     TrianglePtr tri = nullptr;
     VertexPtr apex = nullptr;
-    EdgeTriangles leftTriangles;
-    EdgeTriangles rightTriangles;
+    std::vector<TrianglePtr> leftTriangles;
+    std::vector<TrianglePtr> rightTriangles;
 
 };
+
+std::vector<RadialTriangle> gtri;
+
+static void debugTriangle(RadialTriangle &rt) {
+
+    mesh->makeTrianglesTransparent();
+
+    rt.tri->color = Magnum::Color4{1, 1, 0, 1};
+
+    std::cout << "id{" << rt.tri->id << "}, cells:{" << rt.tri->cells[0]->id << ", " << rt.tri->cells[1]->id << "}," << std::endl <<
+       "\tpos{" <<
+        rt.tri->vertices[0]->position << ", " <<
+        rt.tri->vertices[1]->position << ", " <<
+        rt.tri->vertices[2]->position << "}" << std::endl;
+
+    int i = 0;
+    for(TrianglePtr tri : rt.leftTriangles) {
+        tri->color = Magnum::Color4::green();
+        std::cout << "left tri :" << i << ", id{" << tri->id << "}, cells:{" << tri->cells[0]->id << ", " << tri->cells[1]->id << "}," << std::endl
+        << "\tpos{" <<
+        tri->vertices[0]->position << ", " <<
+        tri->vertices[1]->position << ", " <<
+        tri->vertices[2]->position << "}" << std::endl;
+        ++i;
+    }
+
+    i = 0;
+    for(TrianglePtr tri : rt.rightTriangles) {
+        tri->color = Magnum::Color4::red();
+        std::cout << "right tri:" << i << ", id{" << tri->id << "}, cells:{" << tri->cells[0]->id << ", " << tri->cells[1]->id << "}," << std::endl
+        << "\tpos{" <<
+        tri->vertices[0]->position << ", " <<
+        tri->vertices[1]->position << ", " <<
+        tri->vertices[2]->position << "}" << std::endl;
+        ++i;
+    }
+
+}
+
+void setMeshOpDebugMode(uint c) {
+
+    switch (c) {
+        case '0':
+            std::cout << "radial tri 0: ";
+            debugTriangle(gtri[0]);
+            break;
+        case '1':
+            std::cout << "radial tri 1: ";
+            debugTriangle(gtri[1]);
+            break;
+        case '2':
+            std::cout << "radial tri 2: ";
+            debugTriangle(gtri[2]);
+            break;
+        case 'a':
+            mesh->makeTrianglesTransparent();
+            gtri[0].tri->color = Magnum::Color4{1, 1, 0, 1};
+            break;
+        case 'b':
+            mesh->makeTrianglesTransparent();
+            gtri[1].tri->color = Magnum::Color4{1, 1, 0, 1};
+            break;
+        case 'c':
+            mesh->makeTrianglesTransparent();
+            gtri[2].tri->color = Magnum::Color4{1, 1, 0, 1};
+            break;
+        default:
+            break;
+    }
+    std::cout << "char: " << (char)c << std::endl;
+}
+
 
 
 RadialEdgeCollapse::RadialEdgeCollapse(MeshPtr mesh, float _shortCutoff, const Edge& _edge) :
@@ -88,8 +158,6 @@ static void testTriangle(const TrianglePtr tri) {
     assert(tri->cells[0] && tri->cells[1]);
 }
 
-static int collapseStr = 0;
-
 
 /**
  * is this configuration topologically safe to reconnect. This check that the top
@@ -122,11 +190,11 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             assert(p2 != &tri->partialTriangles[i]);
             assert(adjacent(p1, &tri->partialTriangles[i]));
             assert(adjacent(p2, &tri->partialTriangles[i]));
-            
-            if(ctr == 81) {
+
+            //if(ctr == 81) {
                 //p1->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
                 //p2->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
-            }
+            //}
 
             bool ptAdj = adjacent(p1, p2);
             bool triAdj = adjacent(p1->triangle, p2->triangle);
@@ -138,6 +206,34 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
     }
     return S_OK;
 };
+
+static HRESULT checkTrapezoid(const std::vector<RadialTriangle> &rt) {
+
+    std::set<const TrianglePtr> tris;
+
+    for(const RadialTriangle& t : rt) {
+        for(const TrianglePtr tri : t.leftTriangles) {
+            if (tris.find(tri) == tris.end()) {
+                tris.insert(tri);
+            } else {
+                return mx_error(E_FAIL, "trapezoid edge collapse not supported yet");
+            }
+        }
+
+        for(const TrianglePtr tri : t.rightTriangles) {
+            if (tris.find(tri) == tris.end()) {
+                tris.insert(tri);
+            } else {
+                return mx_error(E_FAIL, "trapezoid edge collapse not supported yet");
+            }
+        }
+
+    }
+
+
+
+    return S_OK;
+}
 
 
 /**
@@ -407,8 +503,6 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
         const VertexPtr vsrc, const VertexPtr vdest, const Edge& edge,
         const Vector3 &pos) {
 
-    collapseStr++;
-
     // Move the material from this triangle to it's four connected
     // surface partial triangles that belong to the upper and lower
     // cell surfaces
@@ -463,6 +557,7 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
 static HRESULT classifyRadialTriangle(TrianglePtr tri,
         const Edge& edge, const Vector3 &pos, RadialTriangle &res) {
 
+
     res.tri = tri;
 
     for(int i = 0; i < 3; ++i) {
@@ -472,9 +567,65 @@ static HRESULT classifyRadialTriangle(TrianglePtr tri,
     }
 
     assert(res.apex);
+    assert(incident(tri,edge));
+    assert(incident(tri, {{edge[0], res.apex}}));
+    assert(incident(tri, {{edge[1], res.apex}}));
 
-    res.leftTriangles = EdgeTriangles{{{edge[0], res.apex}}};
-    res.rightTriangles = EdgeTriangles{{{edge[1], res.apex}}};
+
+    if(ctr == 81) {
+        std::cout << "foo" << std::endl;
+    }
+
+    assert(res.apex);
+
+    EdgeTriangles leftTriangles{{{edge[0], res.apex}}};
+    EdgeTriangles rightTriangles{{{edge[1], res.apex}}};
+
+    assert(leftTriangles.size() >= 2);
+    assert(rightTriangles.size() >= 2);
+    res.leftTriangles.resize(leftTriangles.size() - 1);
+    res.rightTriangles.resize(rightTriangles.size() - 1);
+
+    {
+        int triIndx = 0;
+        for(TrianglePtr t : leftTriangles) {
+            if (t != tri) {
+                res.leftTriangles[triIndx++] = t;
+            }
+        }
+
+        triIndx = 0;
+        for(TrianglePtr t : rightTriangles) {
+            if (t != tri) {
+                res.rightTriangles[triIndx++] = t;
+            }
+        }
+    }
+    
+    /*
+
+    std::cout << "leftTriSize: " << res.leftTriangles.size() << std::endl;
+    for(int i = 0; i < res.leftTriangles.size(); ++i) {
+        for(int j = 0; j < 2; ++j) {
+            for(int k = 0; k < 2; ++k) {
+                std::cout << "leftTri[" << i << "].ptri[" << j << "] adj to tri.ptri[" << k << "]: " <<
+                adjacent(&res.leftTriangles[i]->partialTriangles[j], &tri->partialTriangles[k]) << std::endl;
+            }
+        }
+    }
+
+    std::cout << "rightTriSize: " << res.rightTriangles.size() << std::endl;
+    for(int i = 0; i < res.rightTriangles.size(); ++i) {
+        for(int j = 0; j < 2; ++j) {
+            for(int k = 0; k < 2; ++k) {
+                std::cout << "rightTri[" << i << "].ptri[" << j << "] adj to tri.ptri[" << k << "]: " <<
+                adjacent(&res.rightTriangles[i]->partialTriangles[j], &tri->partialTriangles[k]) << std::endl;
+            }
+        }
+    }
+     
+     */
+
 
     // check if a geometry move would invert any adjacent triangles
     for(TrianglePtr t : res.leftTriangles) {
@@ -498,8 +649,6 @@ static HRESULT classifyRadialTriangle(TrianglePtr tri,
 HRESULT RadialEdgeCollapse::oldApply() {
 
     HRESULT res;
-
-    collapseStr++;
 
     TrianglePtr t1 = nullptr, t2 = nullptr;
 
@@ -756,16 +905,19 @@ bool RadialEdgeCollapse::equals(const Edge& e) const {
            (e[0] == edge[1] && e[1] == edge[0]);
 }
 
+
+
 HRESULT RadialEdgeCollapse::newApply() {
-    ctr++;
     HRESULT res;
-    
+
+    ctr++;
+
     if(ctr == 81) {
         std::cout << "foo" << std::endl;
         ops->stop(edge);
         e = edge;
     }
-    
+
 
 
     ::mesh = this->mesh;
@@ -826,20 +978,48 @@ HRESULT RadialEdgeCollapse::newApply() {
             i += 1;
         }
     }
-    
+
+    if((res = checkTrapezoid(triangles)) != S_OK) {
+        return res;
+    }
+
     //for(int i = 0; i < edgeTriSize; ++i) {
     //    for(TrianglePtr tri : triangles[i].leftTriangles) {
-            
+
     //    }
    // }
-    
+
+/*
+
     if(ctr == 81) {
+
+        gtri = triangles;
+
+
         triangles[0].tri->color = Magnum::Color4{0, 0, 0, 1};
         triangles[1].tri->color = Magnum::Color4{1, 1, 0, 1};
         triangles[2].tri->color = Magnum::Color4{0, 1, 0, 1};
-        
+
+        for(int i = 0; i < 3; ++i) {
+            std::cout << "tri:" << i << ", cells:{"
+            << triangles[i].tri->cells[0]->id << ", " << triangles[i].tri->cells[1]->id << "}" << std::endl;
+        }
+
+
+        mesh->makeTrianglesTransparent();
+
+        for(TrianglePtr tri : triangles[2].leftTriangles) {
+            tri->color = Magnum::Color4::green();
+        }
+
+        for(TrianglePtr tri : triangles[2].rightTriangles) {
+            tri->color = Magnum::Color4::red();
+        }
+
         return E_FAIL;
     }
+ */
+
 
     // source and destination vertices, where we detach and attach one side of edge to.
     VertexPtr vsrc = nullptr, vdest = nullptr;

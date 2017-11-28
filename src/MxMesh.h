@@ -309,6 +309,13 @@ private:
 
     CellPtr _rootCell;
 
+    /**
+     * vertex ids are monotonically increasing.
+     */
+    uint vertexId = 0;
+
+    uint triangleId = 0;
+
     friend struct MxVertex;
     friend struct MxTriangle;
     friend struct MxFacet;

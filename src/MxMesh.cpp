@@ -273,6 +273,7 @@ TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
         const std::array<VertexPtr, 3>& verts) {
 
     TrianglePtr tri = new MxTriangle{type, verts};
+    tri->id = triangleId++;
     triangles.push_back(tri);
 
     assert(valid(tri));
