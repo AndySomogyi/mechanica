@@ -14,14 +14,14 @@
 static struct RedCellType : MxCellType
 {
     RedCellType() {
-        color = Color4{1.0f, 0.0f, 0.0f, 0.1f};
+        color = Color4{1.0f, 0.0f, 0.0f, 0.08f};
     }
 } redCellType;
 
 static struct BlueCellType : MxCellType
 {
     BlueCellType() {
-        color = Color4{0.0f, 0.0f, 1.0f, 0.1f};
+        color = Color4{0.0f, 0.0f, 1.0f, 0.08f};
     };
 } blueCellType;
 

@@ -161,4 +161,6 @@ private:
 
 };
 
+void setMeshOpDebugMode(uint c);
+
 #endif /* SRC_MESHOPERATIONS_H_ */

@@ -1,4 +1,5 @@
 #include "MeshTest.h"
+#include "MeshOperations.h"
 
 
 #include "Magnum/Version.h"
@@ -39,11 +40,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
 }
 
+
 static void window_refresh_callback(GLFWwindow* window)
 {
     MeshTest *foo = (MeshTest*)glfwGetWindowUserPointer(window);
     foo->draw();
 }
+
+static void char_callback(GLFWwindow *window, unsigned int c) {
+    ::setMeshOpDebugMode(c);
+    window_refresh_callback(window);
+}
+
 
 static void window_close_callback(GLFWwindow* window)
 {
@@ -131,6 +139,8 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
     glfwSetCursorPosCallback(window, cursor_position_callback);
 
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    
+    glfwSetCharCallback(window, char_callback);
 
 
     //glfwSetFramebufferSizeCallback(_window, staticViewportEvent);

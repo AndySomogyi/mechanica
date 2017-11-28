@@ -52,6 +52,8 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b);
  */
 bool incident(const TrianglePtr tri, const Edge&);
 
+bool adjacent(const VertexPtr v1, const VertexPtr v2);
+
 
 /**
  * Is the given partial triangle pt incident to the edge formed

@@ -204,11 +204,12 @@ void MeshOperations::stop(const Edge& edge) {
     }
     */
 
-    mesh->makeTrianglesTransparent();
+    //mesh->makeTrianglesTransparent();
 
     for(TrianglePtr tri : EdgeTriangles(edge)) {
-        tri->color = Magnum::Color4::yellow();
-        tri->color[3] = 1;
+        //tri->color = Magnum::Color4{1, 1, 0, 1};
+        //tri->color[3] = 1;
+        tri->alpha = 1;
     }
 
 

@@ -21,12 +21,22 @@
 MeshOperations *ops = nullptr;
 MeshPtr mesh = nullptr;
 
+
+static Edge e;
+
+static int ctr = 0;
+
+
 static void markEdge(const Edge& edge) {
     EdgeTriangles triangles(edge);
 
     for(TrianglePtr tri : triangles) {
         tri->color = Magnum::Color4::green();
     }
+}
+
+void setMeshOpDebugMode(uint c) {
+    std::cout << "char: " << (char)c << std::endl;
 }
 
 
@@ -112,25 +122,14 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             assert(p2 != &tri->partialTriangles[i]);
             assert(adjacent(p1, &tri->partialTriangles[i]));
             assert(adjacent(p2, &tri->partialTriangles[i]));
+            
+            if(ctr == 81) {
+                //p1->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
+                //p2->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
+            }
 
             bool ptAdj = adjacent(p1, p2);
             bool triAdj = adjacent(p1->triangle, p2->triangle);
-
-            if(ptAdj != triAdj) {
-                mesh->makeTrianglesTransparent();
-                ops->shouldStop = true;
-                tri->color = Magnum::Color4::red();
-                p1->triangle->color = Magnum::Color4{0, 1, 0, 0.2};
-                p2->triangle->color = Magnum::Color4{0, 0, 1, 0.2};
-                
-                for(int i = 0; i < 3; ++i) {
-                    //p1->neighbors[i]->triangle->color = Magnum::Color4{0, 1, 0, 0.2};
-                    //p2->neighbors[i]->triangle->color = Magnum::Color4{0, 0, 1, 0.2};
-                }
-                
-                tri->color = Magnum::Color4{1, 0, 0, 1};
-                return mx_error(E_FAIL, "partial tri not same adj as tri");
-            }
 
             if (adjacent(p1, p2)) {
                 return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
@@ -758,7 +757,16 @@ bool RadialEdgeCollapse::equals(const Edge& e) const {
 }
 
 HRESULT RadialEdgeCollapse::newApply() {
+    ctr++;
     HRESULT res;
+    
+    if(ctr == 81) {
+        std::cout << "foo" << std::endl;
+        ops->stop(edge);
+        e = edge;
+    }
+    
+
 
     ::mesh = this->mesh;
     ops = &mesh->meshOperations;
@@ -817,6 +825,20 @@ HRESULT RadialEdgeCollapse::newApply() {
             }
             i += 1;
         }
+    }
+    
+    //for(int i = 0; i < edgeTriSize; ++i) {
+    //    for(TrianglePtr tri : triangles[i].leftTriangles) {
+            
+    //    }
+   // }
+    
+    if(ctr == 81) {
+        triangles[0].tri->color = Magnum::Color4{0, 0, 0, 1};
+        triangles[1].tri->color = Magnum::Color4{1, 1, 0, 1};
+        triangles[2].tri->color = Magnum::Color4{0, 1, 0, 1};
+        
+        return E_FAIL;
     }
 
     // source and destination vertices, where we detach and attach one side of edge to.

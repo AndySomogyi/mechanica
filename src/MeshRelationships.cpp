@@ -54,7 +54,7 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
         (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
 
 #ifndef NDEBUG
-    //assert(result == adjacent(a->triangle, b->triangle));
+    if(result) assert(adjacent(a->triangle, b->triangle));
 #endif
     return result;
 }
@@ -267,4 +267,21 @@ int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
 }
 
 int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex) {
+}
+
+bool adjacent(const VertexPtr v1, const VertexPtr v2) {
+    if(v1->triangles().size() < v2->triangles().size()) {
+        for(TrianglePtr tri : v1->triangles()) {
+            if(incident(tri, v2)) {
+                return true;
+            }
+        }
+    } else {
+        for(TrianglePtr tri : v2->triangles()) {
+            if(incident(tri, v1)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
