@@ -126,6 +126,8 @@ HRESULT MeshOperations::apply() {
     MeshOperation *op;
     HRESULT res = S_OK;
 
+    if(debugMode) return S_OK;
+
     while((op = pop()) != nullptr) {
 #ifndef NDEBUG
         if(!shouldStop)  res = op->apply();
@@ -215,3 +217,34 @@ void MeshOperations::stop(const Edge& edge) {
 
 }
 #endif
+
+void MeshOperations::setDebugMode(bool val) {
+    debugMode = val;
+    std::cout << "setting debug mode: " << debugMode << std::endl;
+    if(pendingDebugOp) {
+        pendingDebugOp->apply();
+        delete pendingDebugOp;
+        pendingDebugOp = nullptr;
+    }
+    if(debugMode) {
+        pendingDebugOp = pop();
+        if(pendingDebugOp) pendingDebugOp->mark();
+    }
+}
+
+HRESULT MeshOperations::debugStep() {
+
+    MeshOperation *op;
+    HRESULT res = S_OK;
+
+    if(pendingDebugOp) {
+        std::cout << "debug step " << debugCnt++ << std::endl;
+        res = pendingDebugOp->apply();
+        delete pendingDebugOp;
+    }
+
+    pendingDebugOp = pop();
+    if(pendingDebugOp) pendingDebugOp->mark();
+
+    return res;
+}

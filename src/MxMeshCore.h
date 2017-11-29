@@ -111,6 +111,8 @@ struct MxVertex {
 
     HRESULT appendTriangle(TrianglePtr);
 
+    uint id{0};
+
 private:
      // one to many relationship of vertex -> triangles
     Triangles _triangles;

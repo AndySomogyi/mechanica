@@ -106,6 +106,8 @@ struct RadialEdgeSplit : MeshOperation {
 
     virtual bool equals(const Edge& e) const;
 
+    virtual void mark() const;
+
 private:
 
     std::default_random_engine randEngine;

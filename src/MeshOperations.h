@@ -55,6 +55,11 @@ struct MeshOperation {
 
     virtual bool equals(const Edge& e) const = 0;
 
+    /**
+     * mark the edge, for debug purposes
+     */
+    virtual void mark() const = 0;
+
 
     bool  operator<(const MeshOperation& other) const {
         return energy() < other.energy();
@@ -125,11 +130,23 @@ struct MeshOperations {
 
     void setLongCutoff(float);
 
+    void setDebugMode(bool);
+
+    HRESULT debugStep();
+
+
+
 
 #ifndef NDEBUG
     void stop(const Edge& edge);
     bool shouldStop = false;
 #endif
+
+    bool debugMode{false};
+
+    int debugCnt = 0;
+
+    MeshOperation *pendingDebugOp{nullptr};
 
 
     ~MeshOperations();

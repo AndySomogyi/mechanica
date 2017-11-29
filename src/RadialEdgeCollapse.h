@@ -39,6 +39,8 @@ struct RadialEdgeCollapse : MeshOperation {
 
     virtual bool equals(const Edge& e) const;
 
+    virtual void mark() const;
+
 private:
     float shortCutoff;
     Edge edge;

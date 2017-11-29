@@ -22,9 +22,8 @@
 MeshOperations *ops = nullptr;
 MeshPtr mesh = nullptr;
 
-
+static bool haveDebugObj = false;
 static Edge e;
-
 static int ctr = 0;
 
 
@@ -94,30 +93,37 @@ void setMeshOpDebugMode(uint c) {
 
     switch (c) {
         case '0':
+            if(!haveDebugObj) return;
             std::cout << "radial tri 0: ";
             debugTriangle(gtri[0]);
             break;
         case '1':
+            if(!haveDebugObj) return;
             std::cout << "radial tri 1: ";
             debugTriangle(gtri[1]);
             break;
         case '2':
+            if(!haveDebugObj) return;
             std::cout << "radial tri 2: ";
             debugTriangle(gtri[2]);
             break;
         case 'a':
+            if(!haveDebugObj) return;
             mesh->makeTrianglesTransparent();
             gtri[0].tri->color = Magnum::Color4{1, 1, 0, 1};
             break;
         case 'b':
+            if(!haveDebugObj) return;
             mesh->makeTrianglesTransparent();
             gtri[1].tri->color = Magnum::Color4{1, 1, 0, 1};
             break;
         case 'c':
+            if(!haveDebugObj) return;
             mesh->makeTrianglesTransparent();
             gtri[2].tri->color = Magnum::Color4{1, 1, 0, 1};
             break;
         case 'e':
+            if(!haveDebugObj) return;
             mesh->makeTrianglesTransparent();
             gtri[0].tri->color = Magnum::Color4{1, 1, 0, 1};
             gtri[1].tri->color = Magnum::Color4{1, 1, 0, 1};
@@ -128,6 +134,15 @@ void setMeshOpDebugMode(uint c) {
                 tri->color[3] = 0;
                 tri->alpha = 0.3;
             }
+            break;
+        case 'd':
+            ops->setDebugMode(true);
+            break;
+        case 'o':
+            ops->setDebugMode(false);
+            break;
+        case 's':
+            ops->debugStep();
             break;
     }
     std::cout << "char: " << (char)c << std::endl;
@@ -991,11 +1006,17 @@ HRESULT RadialEdgeCollapse::newApply() {
     HRESULT res;
 
     ctr++;
+    
+    std::cout << "collapsing radial edge {" << edge[0]->id << ", " << edge[1]->id << "}" << std::endl;
 
     if(ctr == 81) {
         std::cout << "foo" << std::endl;
         ops->stop(edge);
         e = edge;
+    }
+    
+    if(edge[0]->id == 10 && edge[1]->id == 58) {
+        std::cout << "should not go here" << std::endl;
     }
 
     ::mesh = this->mesh;
@@ -1095,7 +1116,7 @@ HRESULT RadialEdgeCollapse::newApply() {
 
         return E_FAIL;
     }
- 
+
 
 
     // source and destination vertices, where we detach and attach one side of edge to.
@@ -1192,3 +1213,18 @@ HRESULT RadialEdgeCollapse::apply() {
     return newApply();
 }
 
+void RadialEdgeCollapse::mark() const {
+
+    std::cout << "marking radial edge collapse edge {" << edge[0]->id << ", " << edge[1]->id << "}" << std::endl;
+
+    for(TrianglePtr tri : mesh->triangles) {
+        tri->color[3] = 0;
+        tri->alpha = 0.3;
+    }
+
+    EdgeTriangles triangles(edge);
+
+    for(TrianglePtr tri : triangles) {
+        tri->color = Magnum::Color4::yellow();
+    }
+}

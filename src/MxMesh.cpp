@@ -28,6 +28,7 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
     VertexPtr v = new MxVertex{0., 0., pos};
+    v->id = ++vertexId;
     vertices.push_back(v);
     assert(valid(v));
     return v;

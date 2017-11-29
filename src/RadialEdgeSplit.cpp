@@ -246,3 +246,18 @@ bool RadialEdgeSplit::equals(const Edge& e) const {
     return (e[0] == edge[0] && e[1] == edge[1]) ||
            (e[0] == edge[1] && e[1] == edge[0]);
 }
+
+void RadialEdgeSplit::mark() const {
+        std::cout << "marking radial edge split edge {" << edge[0]->id << ", " << edge[1]->id << "}" << std::endl;
+
+    for(TrianglePtr tri : mesh->triangles) {
+        tri->color[3] = 0;
+        tri->alpha = 0.3;
+    }
+
+    EdgeTriangles triangles(edge);
+
+    for(TrianglePtr tri : triangles) {
+        tri->color = Magnum::Color4{1, 1, 0, 1};
+    }
+}
