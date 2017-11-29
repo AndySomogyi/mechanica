@@ -117,7 +117,17 @@ void setMeshOpDebugMode(uint c) {
             mesh->makeTrianglesTransparent();
             gtri[2].tri->color = Magnum::Color4{1, 1, 0, 1};
             break;
-        default:
+        case 'e':
+            mesh->makeTrianglesTransparent();
+            gtri[0].tri->color = Magnum::Color4{1, 1, 0, 1};
+            gtri[1].tri->color = Magnum::Color4{1, 1, 0, 1};
+            gtri[2].tri->color = Magnum::Color4{1, 1, 0, 1};
+            break;
+        case 'n':
+            for(TrianglePtr tri : mesh->triangles) {
+                tri->color[3] = 0;
+                tri->alpha = 0.3;
+            }
             break;
     }
     std::cout << "char: " << (char)c << std::endl;
@@ -345,7 +355,7 @@ static HRESULT canTriangleVertexBeMoved(const TrianglePtr tri,
  * and reconnect the two outer neighboring partial triangles with each other.
  * do this for both sides of the triangle.
  */
-static void reconnectPartialTriangles(TrianglePtr tri, const Edge& edge1, const Edge& edge2) {
+static void oldReconnectPartialTriangles(TrianglePtr tri, const Edge& edge1, const Edge& edge2) {
     for(int i = 0; i < 2; ++i) {
         if(!tri->cells[i]->isRoot()) {
 
@@ -446,6 +456,76 @@ static void reconnectPartialTriangles(PTrianglePtr center,
 
     pLeft->mass += leftFrac * center->mass;
     pRight->mass += rightFrac * center->mass;
+};
+
+/**
+ * Remove the partial triangles pointers from the given center
+ * partial triangle. Reconnects the remaining partial triangles
+ * to each other.
+ *
+ * Takes the material on the center partial triangle, and moves it to the
+ * two neighboring partial triangles that remain.
+ *
+ * Works even in the case where we are collapsing a tetrahedron. The
+ * material gets moved to the two neighboring partial triangles, and
+ * then, in a later step, these partial triangles get deleted,
+ * and their material gets moved down to neighbors that remain.
+ *
+ * @param
+ *     center: the partial triangle to keep
+ *     edge: the edge that is being collapsed, edge[0] is the
+ *           left vertex, edge[1] is the right.
+ *     leftFrac: fraction of triangle area on the left side of split
+ *     rightTrac: same thing
+ *     apex: the apex vertex
+ */
+static void reconnectPartialTriangles(RadialTriangle& radialTri,
+        const Edge& edge, float leftFrac,
+        float rightFrac) {
+
+    VertexPtr apex = radialTri.apex;
+
+
+    for(int i = 0; i < 2; ++i) {
+
+        PTrianglePtr center = &radialTri.tri->partialTriangles[i];
+
+        // first find the two remaining partial triangles, the left and right ones.
+        PTrianglePtr pLeft = nullptr, pRight = nullptr;
+
+        assert(incident(center, edge));
+        assert(incident(center, {{edge[0], apex}}));
+        assert(incident(center, {{edge[1], apex}}));
+
+        for(int j = 0; j < 3; ++j) {
+            PTrianglePtr pn = center->neighbors[j];
+            if(!pn) {
+                continue;
+            }
+
+            if(incident(pn, {{edge[0], apex}})) {
+                pLeft = pn;
+                continue;
+            }
+            if(incident(pn, {{edge[1], apex}})) {
+                pRight = pn;
+                continue;
+            }
+        }
+
+        assert(pLeft && pRight);
+
+        assert(!adjacent(pLeft, pRight));
+
+        disconnect_partial_triangles(center, pLeft);
+        disconnect_partial_triangles(center, pRight);
+        connect_partial_triangles(pLeft, pRight);
+        assert(center->unboundNeighborCount() >= 2);
+
+        pLeft->mass += leftFrac * center->mass;
+        pRight->mass += rightFrac * center->mass;
+
+    }
 };
 
 static void moveMaterial(const EdgeTriangles& leftTri,
@@ -601,7 +681,7 @@ static HRESULT classifyRadialTriangle(TrianglePtr tri,
             }
         }
     }
-    
+
     /*
 
     std::cout << "leftTriSize: " << res.leftTriangles.size() << std::endl;
@@ -623,7 +703,7 @@ static HRESULT classifyRadialTriangle(TrianglePtr tri,
             }
         }
     }
-     
+
      */
 
 
@@ -781,8 +861,8 @@ HRESULT RadialEdgeCollapse::oldApply() {
 #endif
 
     // disconnect the partial triangle pointers.
-    reconnectPartialTriangles(t1, {{e.a, c}}, {{e.b, c}});
-    reconnectPartialTriangles(t2, {{e.a, d}}, {{e.b, d}});
+    oldReconnectPartialTriangles(t1, {{e.a, c}}, {{e.b, c}});
+    oldReconnectPartialTriangles(t2, {{e.a, d}}, {{e.b, d}});
 
     VertexPtr vsrc = nullptr, vdest = nullptr;
 
@@ -918,8 +998,6 @@ HRESULT RadialEdgeCollapse::newApply() {
         e = edge;
     }
 
-
-
     ::mesh = this->mesh;
     ops = &mesh->meshOperations;
 
@@ -979,9 +1057,9 @@ HRESULT RadialEdgeCollapse::newApply() {
         }
     }
 
-    if((res = checkTrapezoid(triangles)) != S_OK) {
-        return res;
-    }
+    //if((res = checkTrapezoid(triangles)) != S_OK) {
+    //    return res;
+    //}
 
     //for(int i = 0; i < edgeTriSize; ++i) {
     //    for(TrianglePtr tri : triangles[i].leftTriangles) {
@@ -989,7 +1067,6 @@ HRESULT RadialEdgeCollapse::newApply() {
     //    }
    // }
 
-/*
 
     if(ctr == 81) {
 
@@ -1018,7 +1095,7 @@ HRESULT RadialEdgeCollapse::newApply() {
 
         return E_FAIL;
     }
- */
+ 
 
 
     // source and destination vertices, where we detach and attach one side of edge to.
