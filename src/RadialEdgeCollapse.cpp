@@ -232,35 +232,6 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
     return S_OK;
 };
 
-static HRESULT checkTrapezoid(const std::vector<RadialTriangle> &rt) {
-
-    std::set<const TrianglePtr> tris;
-
-    for(const RadialTriangle& t : rt) {
-        for(const TrianglePtr tri : t.leftTriangles) {
-            if (tris.find(tri) == tris.end()) {
-                tris.insert(tri);
-            } else {
-                return mx_error(E_FAIL, "trapezoid edge collapse not supported yet");
-            }
-        }
-
-        for(const TrianglePtr tri : t.rightTriangles) {
-            if (tris.find(tri) == tris.end()) {
-                tris.insert(tri);
-            } else {
-                return mx_error(E_FAIL, "trapezoid edge collapse not supported yet");
-            }
-        }
-
-    }
-
-
-
-    return S_OK;
-}
-
-
 /**
  * Determine if this radial edge meets the link condition.
  *
@@ -301,12 +272,15 @@ static HRESULT radialLinkCondition(const Edge& edge, const EdgeTriangles& triang
             continue;
         }
 
+        // need to check EVERY vertex of the triangle, as a triangle can be attached
+        // to the edge endpoint via one vertex, but it still has two remaining
+        // vertices that can connect with triangles from the other edge
+        // endpoint.
         for(int i = 0; i < 3; ++i) {
             if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
                 if(edgeLink.find(tri->vertices[i]) == edgeLink.end()) {
                     leftLink.insert(tri->vertices[i]);
                 }
-                break;
             }
         }
     }
@@ -1009,16 +983,6 @@ HRESULT RadialEdgeCollapse::newApply() {
     
     std::cout << "collapsing radial edge {" << edge[0]->id << ", " << edge[1]->id << "}" << std::endl;
 
-    if(ctr == 81) {
-        std::cout << "foo" << std::endl;
-        ops->stop(edge);
-        e = edge;
-    }
-    
-    if(edge[0]->id == 10 && edge[1]->id == 58) {
-        std::cout << "should not go here" << std::endl;
-    }
-
     ::mesh = this->mesh;
     ops = &mesh->meshOperations;
 
@@ -1077,47 +1041,6 @@ HRESULT RadialEdgeCollapse::newApply() {
             i += 1;
         }
     }
-
-    //if((res = checkTrapezoid(triangles)) != S_OK) {
-    //    return res;
-    //}
-
-    //for(int i = 0; i < edgeTriSize; ++i) {
-    //    for(TrianglePtr tri : triangles[i].leftTriangles) {
-
-    //    }
-   // }
-
-
-    if(ctr == 81) {
-
-        gtri = triangles;
-
-
-        triangles[0].tri->color = Magnum::Color4{0, 0, 0, 1};
-        triangles[1].tri->color = Magnum::Color4{1, 1, 0, 1};
-        triangles[2].tri->color = Magnum::Color4{0, 1, 0, 1};
-
-        for(int i = 0; i < 3; ++i) {
-            std::cout << "tri:" << i << ", cells:{"
-            << triangles[i].tri->cells[0]->id << ", " << triangles[i].tri->cells[1]->id << "}" << std::endl;
-        }
-
-
-        mesh->makeTrianglesTransparent();
-
-        for(TrianglePtr tri : triangles[2].leftTriangles) {
-            tri->color = Magnum::Color4::green();
-        }
-
-        for(TrianglePtr tri : triangles[2].rightTriangles) {
-            tri->color = Magnum::Color4::red();
-        }
-
-        return E_FAIL;
-    }
-
-
 
     // source and destination vertices, where we detach and attach one side of edge to.
     VertexPtr vsrc = nullptr, vdest = nullptr;
