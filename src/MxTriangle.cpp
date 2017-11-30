@@ -93,7 +93,7 @@ HRESULT MxTriangle::positionsChanged() {
     // event -- we're mass conserving.
     for(int i = 0; i < 3; ++i) {
         vertices[i]->area += area / 3.;
-        vertices[i]->mass += mass / 3.;
+        vertices[i]->mass += getMass() / 3.;
     }
 
     return S_OK;
@@ -156,12 +156,21 @@ bool MxTriangle::isValid() const  {
         assert(e.isValid());
     }
 
+    for(int i = 0; i < 2; ++i) {
+        if(cells[i]->isRoot()) {
+            assert(partialTriangles[i].mass == 0.);
+        } else {
+            isfinite(partialTriangles[i].mass ) && partialTriangles[i].mass  > 0;
+        }
+    }
 
     return facet &&
             contains(facet->triangles, this) &&
             cells[0] && incident(const_cast<TrianglePtr>(this), cells[0]) &&
             cells[1] && incident(const_cast<TrianglePtr>(this), cells[1]) &&
-            cells[0] != cells[1] &&
             isConnected() &&
-            area > 0 && aspectRatio > 0 && mass > 0;
+            isfinite(area) && area > 0 &&
+            isfinite(aspectRatio) && aspectRatio > 0 &&
+            isfinite(getMass()) && getMass() > 0 &&
+            isfinite(normal.length()) ;
 }

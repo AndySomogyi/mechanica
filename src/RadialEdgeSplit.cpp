@@ -52,11 +52,14 @@ HRESULT RadialEdgeSplit::apply() {
     TrianglePtr firstNewTri = nullptr;
     TrianglePtr prevNewTri = nullptr;
 
+    std::cout << "splitting radial edge {" << edge[0]->id << ", " << edge[1]->id << "} {" << std::endl;
     for(uint i = 0; i < triangles.size(); ++i)
     {
         TrianglePtr tri = triangles[i];
-        std::cout << "Radial Edge Split: tri[" << i << "], cell[0]:" << tri->cells[0] << ", cell[1]:" << tri->cells[1] << std::endl;
+        std::cout << "\ttriangle[" << i << "]:" << tri->id << ", cell[0]:" <<
+                tri->cells[0]->id << ", cell[1]:" << tri->cells[1]->id << std::endl;
     }
+    std::cout << "}" << std::endl;
 
     for(uint i = 0; i < triangles.size(); ++i)
     {
@@ -151,20 +154,30 @@ HRESULT RadialEdgeSplit::apply() {
         assert(incident(nt, {{edge[1], outer}}));
         assert(!incident(tri, {{edge[1], outer}}));
 
+#ifndef NDEBUG
+        for(int i = 0; i < 2; ++i) {
+            if(tri->cells[i]->isRoot()) {
+                assert(tri->partialTriangles[i].mass == 0.);
+            } else {
+                assert(isfinite(tri->partialTriangles[i].mass) && tri->partialTriangles[i].mass  > 0);
+            }
+        }
+#endif
+
 
         // split the mass according to area
-        nt->mass = nt->area / (nt->area + tri->area) * tri->mass;
-        tri->mass = tri->area / (nt->area + tri->area) * tri->mass;
+        for(int i = 0; i < 2; ++i) {
+            nt->partialTriangles[i].mass = nt->area / (nt->area + tri->area) * tri->partialTriangles[i].mass;
+            tri->partialTriangles[i].mass = tri->area / (nt->area + tri->area) * tri->partialTriangles[i].mass;
+        }
+
+        assert(isfinite(nt->getMass()) && nt->getMass() > 0);
+        assert(isfinite(tri->getMass()) && tri->getMass() > 0);
 
         if(i == 0) {
             firstNewTri = nt;
             prevNewTri = nt;
         } else {
-            #ifndef NDEBUG
-            if (ctr >= 109 && triangles.size() >= 4) {
-                std::cout << "boom" << std::endl;
-            }
-            #endif
             connect_triangle_partial_triangles(nt, prevNewTri);
             prevNewTri = nt;
         }
@@ -174,10 +187,6 @@ HRESULT RadialEdgeSplit::apply() {
     // manifold edge, only 2 new triangles, which already got
     // connected above.
     if(triangles.size() > 2) {
-        if(triangles.size() >= 4) {
-            std::cout << "root cell: " << mesh->rootCell() << std::endl;
-            std::cout << "boom" << std::endl;
-        }
         connect_triangle_partial_triangles(firstNewTri, prevNewTri);
     }
 

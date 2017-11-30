@@ -89,7 +89,17 @@ struct MxPartialTriangle : MxObject {
     std::array<MxPartialTriangle*, 3> neighbors;
 
 
-    float mass;
+    /**
+     * The triangle is the fundamental material unit in Mechanica. All material
+     * properties are associated with the triangle. The vertex mass / area
+     * values are determined FROM the triangle. Only set the triangle mass,
+     * as the triangle will calculate the vertex mass from the triangle mass.
+     *
+     * The mass of a triangle can vary, depending on the density and amount
+     * of attached scalar quantities. Mass is the weighted average of the
+     * attached scalar quantity densities times the area.
+     */
+    float mass = 0;
 
     /**
      * A contiguous sequence of scalar attributes, who's time evolution is
@@ -144,18 +154,6 @@ struct MxTriangle : MxObject {
      * non-normalized normal vector is normal * area.
      */
     float area = 0.;
-
-    /**
-     * The triangle is the fundamental material unit in Mechanica. All material
-     * properties are associated with the triangle. The vertex mass / area
-     * values are determined FROM the triangle. Only set the triangle mass,
-     * as the triangle will calculate the vertex mass from the triangle mass.
-     *
-     * The mass of a triangle can vary, depending on the density and amount
-     * of attached scalar quantities. Mass is the weighted average of the
-     * attached scalar quantity densities times the area.
-     */
-    float mass = 0.;
 
     /**
      * Normalized normal vector (magnitude is triangle area), oriented away from
@@ -290,6 +288,14 @@ struct MxTriangle : MxObject {
     float alpha = 0.5;
 
     Magnum::Color4 color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
+
+    inline float getMass() const { return partialTriangles[0].mass + partialTriangles[1].mass; };
+
+    void setMassForCell(float val, CellPtr cell) {
+        assert(cell == cells[0] || cell == cells[1]);
+        uint cellId = cell == cells[0] ? 0 : 1;
+        partialTriangles[cellId].mass = val;
+    }
 };
 
 namespace Magnum { namespace Math {

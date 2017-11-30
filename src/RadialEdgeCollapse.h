@@ -44,9 +44,6 @@ struct RadialEdgeCollapse : MeshOperation {
 private:
     float shortCutoff;
     Edge edge;
-
-    HRESULT newApply();
-    HRESULT oldApply();
 };
 
 

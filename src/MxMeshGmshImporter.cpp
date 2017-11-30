@@ -152,6 +152,13 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     assert(cell.manifold() && "Cell is not manifold");
 
+    for(PTrianglePtr pt : cell.boundary) {
+        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
+                                                 pt->triangle->vertices[1]->position,
+                                                 pt->triangle->vertices[2]->position);
+        pt->mass = area * density;
+    }
+
     assert(cell.positionsChanged() == S_OK);
 }
 
@@ -252,6 +259,13 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
 
     assert(cell->manifold() && "Cell is not manifold");
 
+    for(PTrianglePtr pt : cell->boundary) {
+        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
+                                                 pt->triangle->vertices[1]->position,
+                                                 pt->triangle->vertices[2]->position);
+        pt->mass = area * density;
+    }
+
     assert(mesh.valid(cell));
 
     assert(cell->positionsChanged() == S_OK);
@@ -272,8 +286,6 @@ void MxMeshGmshImporter::createTriangleForCell(
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
 
-    tri->mass = density * tri->area;
-
     Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
     float orientation = Math::dot(meshNorm, tri->normal);
     cell->appendChild(tri, orientation > 0 ? 0 : 1);
@@ -291,7 +303,6 @@ void MxMeshGmshImporter::createTriangleForFacet(
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
 
-    tri->mass = density * tri->area;
 
     facet->appendChild(tri);
 }
