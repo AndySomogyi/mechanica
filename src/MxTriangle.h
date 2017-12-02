@@ -296,6 +296,20 @@ struct MxTriangle : MxObject {
         uint cellId = cell == cells[0] ? 0 : 1;
         partialTriangles[cellId].mass = val;
     }
+
+    /**
+     * Finds the next triangle in a triangle fan centered at Vertex vert.
+     * The next triangle will be attached to the given cell.
+     *
+     * @param vert: The triangle fan center vertex
+     * @param cell: Which side of the triangle where to choose the next triangle
+     * @param prev: The previous triangle. May be null, if so, returns the first
+     *              triangle that's incident to vert and cell.
+     * @retruns:    The next triangle. May return null if this triangle is not
+     *              adjacent to either vert of cell.
+     */
+    TrianglePtr nextTriangleInFan(CVertexPtr vert,
+            CCellPtr cell, CTrianglePtr prev) const;
 };
 
 namespace Magnum { namespace Math {

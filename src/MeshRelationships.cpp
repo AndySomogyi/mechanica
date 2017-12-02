@@ -8,11 +8,11 @@
 #include <MeshRelationships.h>
 #include <algorithm>
 
-bool incident(const TrianglePtr t, const CellPtr c) {
+bool incident(CTrianglePtr t, CCellPtr c) {
     return t->cells[0] == c || t->cells[1] == c;
 }
 
-bool adjacent(const TrianglePtr a, const TrianglePtr b) {
+bool adjacent(CTrianglePtr a, CTrianglePtr b) {
     if(a == b) {
         return false;
     }
@@ -39,12 +39,12 @@ bool adjacent(const TrianglePtr a, const TrianglePtr b) {
     return false;
 }
 
-bool incident(const FacetPtr facet, const CellPtr cell) {
+bool incident(CFacetPtr facet, CCellPtr cell) {
     assert(facet);
     return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
 }
 
-bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
+bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
     if (!a || !b || a == b) {
         return false;
     }
@@ -59,9 +59,9 @@ bool adjacent(const PTrianglePtr a, const PTrianglePtr b) {
     return result;
 }
 
-bool incident(const VertexPtr vertex, const FacetPtr facet) {
-    return contains(vertex->facets(), facet);
-}
+//bool incident(CVertexPtr vertex, CFacetPtr facet) {
+//    return contains(vertex->facets(), facet);
+//}
 
 void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
     // check to see that triangles share adjacent vertices.
@@ -143,7 +143,7 @@ void disconnect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
     }
 }
 
-bool incident(const TrianglePtr tri, const VertexPtr v) {
+bool incident(CTrianglePtr tri, CVertexPtr v) {
     assert(tri);
     return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
 }
@@ -170,11 +170,11 @@ void disconnect(PTrianglePtr pt, const Edge& edge) {
 }
 */
 
-bool incident(const PTrianglePtr pt, const Edge& edge) {
+bool incident(CPTrianglePtr pt, const Edge& edge) {
     return incident(pt->triangle, edge);
 }
 
-bool incident(const TrianglePtr tri, const std::array<VertexPtr, 2>& edge) {
+bool incident(CTrianglePtr tri, const std::array<VertexPtr, 2>& edge) {
     return incident(tri, edge[0]) && incident(tri, edge[1]);
 }
 
@@ -194,7 +194,7 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const std::array<VertexPtr, 2>& e
 
 }
 
-bool incident(const PTrianglePtr tri, const VertexPtr v) {
+bool incident(CPTrianglePtr tri, CVertexPtr v) {
     return incident(tri->triangle, v);
 }
 
@@ -269,7 +269,7 @@ int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
 int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex) {
 }
 
-bool adjacent(const VertexPtr v1, const VertexPtr v2) {
+bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     if(v1->triangles().size() < v2->triangles().size()) {
         for(TrianglePtr tri : v1->triangles()) {
             if(incident(tri, v2)) {

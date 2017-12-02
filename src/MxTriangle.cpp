@@ -174,3 +174,32 @@ bool MxTriangle::isValid() const  {
             isfinite(getMass()) && getMass() > 0 &&
             isfinite(normal.length()) ;
 }
+
+TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
+        CCellPtr cell, CTrianglePtr prev) const {
+    const MxPartialTriangle *pt = (cell == cells[0]) ? &partialTriangles[0] :
+            (cell == cells[1]) ? &partialTriangles[1] : nullptr;
+
+    if(!pt) return nullptr;
+
+    if(!prev) {
+        for(uint i = 0; i < 3; ++i) {
+           if (incident(pt->neighbors[i], vert)) {
+               return pt->triangle;
+           }
+        }
+    }
+    else {
+        const MxPartialTriangle *prevPt = (cell == prev->cells[0]) ? &prev->partialTriangles[0] :
+                (cell == prev->cells[1]) ? &prev->partialTriangles[1] : nullptr;
+
+        if(!prevPt) return nullptr;
+
+        for(uint i = 0; i < 3; ++i) {
+           if (pt->neighbors[i] != prevPt && incident(pt->neighbors[i], vert)) {
+               return pt->neighbors[i]->triangle;
+           }
+        }
+    }
+    return nullptr;
+}

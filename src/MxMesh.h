@@ -20,7 +20,6 @@
 
 
 #include "MxCell.h"
-#include "MxEdge.h"
 #include "MeshOperations.h"
 
 

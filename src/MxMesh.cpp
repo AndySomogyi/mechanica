@@ -328,7 +328,7 @@ bool MxMesh::validate() {
 }
 
 bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
-    MxEdge e(a, b);
+    EdgeTriangles e{{{a, b}}};
     return true;
 }
 

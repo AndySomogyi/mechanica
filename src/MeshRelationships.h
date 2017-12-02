@@ -10,49 +10,43 @@
 
 #include "MxCell.h"
 
-bool adjacent(const TrianglePtr a, const TrianglePtr b);
+bool adjacent(CTrianglePtr a, CTrianglePtr b);
 
-bool incident(const TrianglePtr t, const CellPtr c);
+bool incident(CTrianglePtr t, CCellPtr c);
 
-inline bool incident(const CellPtr c, const TrianglePtr t ) {
+inline bool incident(CCellPtr c, CTrianglePtr t ) {
     return incident(t, c);
 }
 
-bool incident(const TrianglePtr tri, const VertexPtr v);
+bool incident(CTrianglePtr tri, CVertexPtr v);
 
-inline bool incident(const VertexPtr v, const TrianglePtr tri) {
+inline bool incident(CVertexPtr v, CTrianglePtr tri) {
     return incident(tri, v);
 }
 
-bool incident(const PTrianglePtr tri, const VertexPtr v);
+bool incident(CPTrianglePtr tri, CVertexPtr v);
 
-inline bool incident(const VertexPtr v, const PTrianglePtr tri) {
+inline bool incident(CVertexPtr v, CPTrianglePtr tri) {
     return incident(tri, v);
 }
 
 
-bool incident(const FacetPtr facet, const CellPtr cell);
+bool incident(CFacetPtr facet, CCellPtr cell);
 
-inline bool incident(const CellPtr cell, const FacetPtr facet) {
+inline bool incident(CCellPtr cell, CFacetPtr facet) {
     return incident(facet, cell);
 }
 
-bool incident(const VertexPtr vertex, const FacetPtr facet);
-
-inline bool incident(const FacetPtr facet, const VertexPtr vertex) {
-    return incident(vertex, facet);
-}
-
-bool adjacent(const PTrianglePtr a, const PTrianglePtr b);
+bool adjacent(CPTrianglePtr a, CPTrianglePtr b);
 
 /**
  * Is the given triangle tri incident to the edge formed
  * by vertices a and b. The partial triangle incident if the
  * it is incident to both vertices a and b.
  */
-bool incident(const TrianglePtr tri, const Edge&);
+bool incident(CTrianglePtr tri, const Edge&);
 
-bool adjacent(const VertexPtr v1, const VertexPtr v2);
+bool adjacent(CVertexPtr v1, CVertexPtr v2);
 
 
 /**
@@ -61,7 +55,7 @@ bool adjacent(const VertexPtr v1, const VertexPtr v2);
  * triangle that the partial triangle is attached to is incident to
  * this edge.
  */
-bool incident(const PTrianglePtr pt, const Edge&);
+bool incident(CPTrianglePtr pt, const Edge&);
 
 /**
  * Connects the pointers of a pair of triangles. Searches through the

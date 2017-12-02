@@ -9,8 +9,6 @@
 #define SRC_MESHOPERATIONS_H_
 
 #include "MxMeshCore.h"
-#include "MxEdge.h"
-
 #include <random>
 
 /**
@@ -28,10 +26,9 @@
  */
 
 
-
 struct MeshOperation {
 
-    MeshOperation(MeshPtr _mesh) : mesh{_mesh} {};
+    MeshOperation(MeshPtr _mesh);
 
     /**
      * Apply this operation
@@ -69,6 +66,7 @@ struct MeshOperation {
 
 protected:
     MeshPtr mesh;
+    struct MeshOperations *ops;
 };
 
 

@@ -83,12 +83,13 @@ set(SRC
   LangevinPropagator.cpp
   MeshIterators.cpp
   ScalarField.cpp
-  MxEdge.cpp
   MeshRelationships.cpp
   MeshOperations.cpp
   EdgeFlip.cpp
   RadialEdgeSplit.cpp
   RadialEdgeCollapse.cpp
+  ConeSplit.cpp
+  RadialEdgeFlip.cpp
   stochastic_rk.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -136,12 +137,13 @@ set(HEADERS
   LangevinPropagator.h
   MeshIterators.h
   ScalarField.h
-  MxEdge.h
   MeshRelationships.h
   MeshOperations.h
   EdgeFlip.h
   RadialEdgeSplit.h
   RadialEdgeCollapse.h
+  ConeSplit.h
+  RadialEdgeFlip.h
   stochastic_rk.h
   )
 

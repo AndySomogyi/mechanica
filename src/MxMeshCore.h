@@ -40,26 +40,32 @@ using namespace Magnum;
 
 struct MxVertex;
 typedef MxVertex* VertexPtr;
+typedef const MxVertex *CVertexPtr;
 
 typedef std::array<VertexPtr, 3> VertexIndices;
 
 struct MxTriangle;
 typedef MxTriangle *TrianglePtr;
+typedef const MxTriangle *CTrianglePtr;
 
 
 struct MxPartialTriangle;
 typedef MxPartialTriangle *PTrianglePtr;
+typedef const MxPartialTriangle *CPTrianglePtr;
 
 typedef std::array<PTrianglePtr, 3> PartialTriangles;
 
 struct MxCell;
 typedef MxCell *CellPtr;
+typedef const MxCell *CCellPtr;
 
 struct MxFacet;
 typedef MxFacet *FacetPtr;
+typedef const MxFacet *CFacetPtr;
 
 struct MxMesh;
 typedef MxMesh *MeshPtr;
+typedef const MxMesh *CMeshPtr;
 
 // triangle container in the main mesh
 typedef std::vector<TrianglePtr> TriangleContainer;
@@ -102,8 +108,7 @@ struct MxVertex {
      // one to many relationship of vertex -> triangles
     const Triangles &triangles() const {return _triangles;}
 
-
-    const Facets &facets() const {return _facets;}
+    const std::vector<CellPtr> &cells() const { return _cells; }
 
     std::set<VertexPtr> link() const;
 
@@ -117,10 +122,10 @@ private:
      // one to many relationship of vertex -> triangles
     Triangles _triangles;
 
-        // one to many relationship of vertex -> facets
-     Facets _facets;
+        // one to many relationship of vertex -> cells
+    std::vector<CellPtr> _cells;
 
-    void rebuildFacets();
+    void rebuildCells();
 };
 
 struct MxVertexAttribute {

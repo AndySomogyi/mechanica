@@ -29,7 +29,7 @@ GrowthModel::GrowthModel()  {
 
     mesh = new MxMesh();
 
-    
+
     /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
@@ -50,13 +50,13 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.1;
     minTargetVolume = 0.005;
     maxTargetVolume = 0.2;
-    
+
     */
-    
 
 
-    
-    
+
+
+
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -76,9 +76,9 @@ GrowthModel::GrowthModel()  {
     targetVolume = 0.6;
     minTargetVolume = 0.005;
     maxTargetVolume = 1.5;
-    
-    
-     
+
+
+
 
 
 
@@ -215,34 +215,4 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 void GrowthModel::testEdges() {
 
     return;
-
-    /*
-    for(int i = 0; i < mesh->cells.size(); ++i) {
-        if(i % 2) {
-            mesh->cells[i]->render = true;
-        } else {
-            mesh->cells[i]->render = false;
-        }
-    }
-     */
-
-    for (auto tri : mesh->triangles) {
-        tri->alpha = 0.001;
-    }
-
-
-    for (auto tri : mesh->triangles) {
-
-        for(int i = 0; i < 3; ++i) {
-            MxEdge e{tri->vertices[i], tri->vertices[(i+1)%3]};
-            auto triangles = e.radialTriangles();
-
-
-            for(auto tri : triangles) {
-                if(triangles.size() >= 4)
-                    tri->alpha = 0.3;
-            }
-        }
-    }
-
 }
