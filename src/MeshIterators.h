@@ -8,6 +8,7 @@
 #ifndef SRC_MESHITERATORS_H_
 #define SRC_MESHITERATORS_H_
 
+#include "MxMeshCore.h"
 #include <cstddef>
 #include <array>
 
@@ -93,130 +94,70 @@ private:
 
 
 
-
-
-
-
-
 /**
- * Enumerates all of the triangles that share an edge.
+ * Enumerate all of the triangles that belong to a cone (a set of triangles
+ * belonging to a single cell surface centered at a vertex).
  */
-class EdgeFacetIterator {
+class ConeTriangleIterator {
 public:
     // Iterator traits, previously from std::iterator.
-    using value_type = FacetPtr;
+    using value_type = TrianglePtr;
     using difference_type = std::ptrdiff_t;
-    using pointer = FacetPtr*;
-    using reference = FacetPtr&;
-    using iterator_category = std::bidirectional_iterator_tag;
-
-    // Default constructible.
-    EdgeFacetIterator() = default;
-    explicit EdgeFacetIterator(const class EdgeFacets &edgeStar);
-
-    // Dereferencable.
-    reference operator*() const;
-
-    // Pre- and post-incrementable.
-    EdgeTriangleIterator& operator++();
-    EdgeTriangleIterator operator++(int);
-
-    // Pre- and post-decrementable.
-    EdgeTriangleIterator& operator--();
-    EdgeTriangleIterator operator--(int);
-
-    // Equality / inequality.
-    bool operator==(const EdgeFacetIterator& rhs);
-    bool operator!=(const EdgeFacetIterator& rhs);
-
-private:
-
-};
-
-class EdgeFacets {
-public:
-  using value_type = FacetPtr;
-
-
-
-public:
-
-  using const_iterator = EdgeFacetIterator;
-
-  const_iterator begin() const;
-
-  const_iterator end() const;
-
-  explicit EdgeFacets(const TrianglePtr startTri, const std::array<VertexPtr, 2> &edge);
-};
-
-
-
-#if 0
-
-/**
- * Enumerates all of the triangles that share an edge.
- */
-class VertexTrianglesIterator {
-public:
-    // Iterator traits, previously from std::iterator.
-    using value_type = MxTriangle;
-    using difference_type = std::ptrdiff_t;
-    using pointer = MxTriangle*;
-    using reference = MxTriangle&;
+    using pointer = TrianglePtr*;
+    using reference = TrianglePtr&;
     using iterator_category = std::forward_iterator_tag;
 
-    // Default constructVertexTrianglesIteratorlesIterator() = delete;
-    VertexTrianglesIterator(MxMesh *mesh, VertexTriangleIndx vertexTriangleId);
+    // Default constructible.
+    ConeTriangleIterator() = delete;
 
     // Dereferencable.
-    reference operator*() const;
+    value_type operator*() const;
 
-    // Pre- and post-incrementable.
-    VertexTrianglesIterator& operator++();
-    VertexTrianglesIterator operator++(int);
+    // pre-incrementable.
+    ConeTriangleIterator& operator++();
 
-    // Pre- and post-decrementable.
-    VertexTrianglesIterator& operator--();
-    VertexTrianglesIterator operator--(int);
+    // post increment
+    ConeTriangleIterator operator++(int);
+
 
     // Equality / inequality.
-    bool operator==(const VertexTrianglesIterator& rhs);
-    bool operator!=(const VertexTrianglesIterator& rhs);
+    bool operator==(const ConeTriangleIterator& rhs);
+    bool operator!=(const ConeTriangleIterator& rhs);
 
 private:
 
-    MxMesh *mesh;
-    MxVertexTriangle vertexTriangle;
+    ConeTriangleIterator(TrianglePtr _curr, TrianglePtr _prev, class ConeTriangles const *tri);
+
+    TrianglePtr curr;
+    TrianglePtr prev;
+    class ConeTriangles const *cone;
+    friend class ConeTriangles;
 };
 
-
-class VertexTriangles {
+/**
+ */
+class ConeTriangles {
 public:
+    using value_type = TrianglePtr;
 
-    using iterator = VertexTrianglesIterator;
+    using iterator = ConeTriangleIterator;
 
-    iterator begin() const {
-        return iterator{mesh, startId};
-    }
+    iterator begin() const;
 
-    iterator end() const {
-        return iterator{nullptr, 0};
-    }
+    iterator end() const;
 
-    explicit VertexTriangles(MxMesh* mesh, const MxVertex& vertex) :
-        mesh{mesh}, startId{vertex.trianglesId} {}
+    size_t size() const;
+
+    explicit ConeTriangles(VertexPtr *vertex, CCellPtr *cell);
 
 private:
-    MxMesh *mesh;
-    VertexTriangleIndx startId;
+
+    TrianglePtr first;
+    VertexPtr center;
+    CCellPtr cell;
+
+    friend class ConeTriangleIterator;
 };
-
-inline VertexTriangles triangles(MxMesh *mesh, const MxVertex &vertex) {
-    return VertexTriangles{mesh, vertex};
-}
-
-#endif
 
 
 

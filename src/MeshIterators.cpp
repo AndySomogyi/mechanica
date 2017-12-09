@@ -128,39 +128,6 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
 }
 
 
-EdgeFacetIterator::EdgeFacetIterator(const class EdgeFacets& edgeStar) {
-}
-
-EdgeFacetIterator::reference EdgeFacetIterator::operator *() const {
-}
-
-EdgeTriangleIterator& EdgeFacetIterator::operator ++() {
-}
-
-EdgeTriangleIterator EdgeFacetIterator::operator ++(int int1) {
-}
-
-EdgeTriangleIterator& EdgeFacetIterator::operator --() {
-}
-
-EdgeTriangleIterator EdgeFacetIterator::operator --(int int1) {
-}
-
-bool EdgeFacetIterator::operator ==(const EdgeFacetIterator& rhs) {
-}
-
-bool EdgeFacetIterator::operator !=(const EdgeFacetIterator& rhs) {
-}
-
-EdgeFacets::const_iterator EdgeFacets::begin() const {
-}
-
-EdgeFacets::const_iterator EdgeFacets::end() const {
-}
-
-EdgeFacets::EdgeFacets(const TrianglePtr startTri,
-        const std::array<VertexPtr, 2>& edge) {
-}
 
 size_t EdgeTriangles::size() const {
     return triangles.size();
@@ -185,4 +152,48 @@ bool EdgeTriangles::isValid() {
     }
     return true;
 }
+
+ConeTriangleIterator::value_type ConeTriangleIterator::operator *() const {
+    return curr;
+}
+
+// pre-increment
+ConeTriangleIterator& ConeTriangleIterator::operator ++() {
+    TrianglePtr next = curr->nextTriangleInFan(cone->center, cone->cell, curr);
+    prev = curr;
+    curr = next;
+    return *this;
+}
+
+// post-increment
+ConeTriangleIterator ConeTriangleIterator::operator ++(int) {
+    ConeTriangleIterator ret = *this;
+    ++(*this);
+    return ret;
+}
+
+bool ConeTriangleIterator::operator ==(const ConeTriangleIterator& rhs) {
+    return curr == rhs.curr && prev == rhs.prev;
+}
+
+bool ConeTriangleIterator::operator !=(const ConeTriangleIterator& rhs) {
+    return curr != rhs.curr || prev != rhs.prev;
+}
+
+ConeTriangleIterator::ConeTriangleIterator(TrianglePtr _curr,
+        TrianglePtr _prev, const class ConeTriangles* _cone) :
+    curr{_curr}, prev{_prev}, cone{_cone} {
+}
+
+ConeTriangles::iterator ConeTriangles::begin() const {
+    return ConeTriangleIterator(first, nullptr, this);
+}
+
+ConeTriangles::iterator ConeTriangles::end() const {
+}
+
+ConeTriangles::ConeTriangles(VertexPtr* vertex, CCellPtr* cell) {
+}
+
+
 #endif

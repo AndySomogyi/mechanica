@@ -90,6 +90,7 @@ set(SRC
   RadialEdgeCollapse.cpp
   ConeSplit.cpp
   RadialEdgeFlip.cpp
+  DifferentialGeometry.cpp
   stochastic_rk.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -144,6 +145,7 @@ set(HEADERS
   RadialEdgeCollapse.h
   ConeSplit.h
   RadialEdgeFlip.h
+  DifferentialGeometry.h
   stochastic_rk.h
   )
 
