@@ -197,17 +197,6 @@ struct MxMesh  {
     TrianglePtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
     /**
-     * Searches for a facet joining cells a and b, returns if found. null otherwise.
-     */
-    FacetPtr findFacet(CellPtr a, CellPtr b);
-
-    /**
-     * Creates a new facet of the given facet type. The new facet is added
-     * to the mesh facet list, but the caller must add the facets to the cells.
-     */
-    FacetPtr createFacet(MxFacetType *type);
-
-    /**
      * Creates a new triangle for the given three vertices.
      *
      * returns a new, orphaned triangle.
@@ -238,12 +227,6 @@ struct MxMesh  {
 
     HRESULT deleteTriangle(TrianglePtr tri);
 
-    /**
-     * Find a facet that contains two triangles and matches the
-     * given 4 vertices.
-     */
-    FacetPtr findFacet(const std::array<VertexPtr, 4>& verts);
-
     bool valid(TrianglePtr p);
 
     bool valid(CellPtr c);
@@ -259,7 +242,6 @@ struct MxMesh  {
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
-    std::deque<FacetPtr> facets;
 
     /**
      * random percent of difference from true center of split

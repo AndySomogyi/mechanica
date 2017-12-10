@@ -66,6 +66,8 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
     {
         bindAttributeLocation(Position::Location, "position");
 
+        bindAttributeLocation(Normal::Location, "normal");
+
         #if !defined(MAGNUM_TARGET_GLES) || defined(MAGNUM_TARGET_GLES2)
         #ifndef MAGNUM_TARGET_GLES
         if(!Context::current().isVersionSupported(Version::GL310))

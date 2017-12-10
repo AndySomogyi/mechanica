@@ -31,12 +31,6 @@ inline bool incident(CVertexPtr v, CPTrianglePtr tri) {
 }
 
 
-bool incident(CFacetPtr facet, CCellPtr cell);
-
-inline bool incident(CCellPtr cell, CFacetPtr facet) {
-    return incident(facet, cell);
-}
-
 bool adjacent(CPTrianglePtr a, CPTrianglePtr b);
 
 /**

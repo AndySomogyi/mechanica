@@ -100,41 +100,7 @@ MxMesh::MxMesh() :
     _rootCell = createCell();
 }
 
-FacetPtr MxMesh::findFacet(CellPtr a, CellPtr b) {
-    for(auto facet : a->facets) {
-        if (incident(facet, b)) {
-            return facet;
-        }
-    }
-    return nullptr;
-}
 
-FacetPtr MxMesh::createFacet(MxFacetType* type) {
-    FacetPtr facet = new MxFacet{type, this, {{nullptr, nullptr}}};
-    facets.push_back(facet);
-    return facet;
-}
-
-FacetPtr MxMesh::findFacet(const std::array<VertexPtr, 4>& verts) {
-    for(FacetPtr facet : facets) {
-        if(facet->triangles.size() != 2) continue;
-
-        // each triangle has to be incident to two vertices.
-
-        bool inc = true;
-        for(TrianglePtr tri : facet->triangles) {
-            int incCnt = 0;
-            for(VertexPtr vert : verts) {
-                if(incident(tri, vert)) {
-                    incCnt += 1;
-                }
-            }
-            inc &= (incCnt == 3);
-        }
-        if(inc) return facet;
-    }
-    return nullptr;
-}
 
 HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
@@ -163,9 +129,7 @@ HRESULT MxMesh::deleteTriangle(TrianglePtr tri) {
     for(CellPtr cell : cells) {
         assert(!incident(cell, tri));
     }
-    for(FacetPtr facet : facets) {
-        assert(!contains(facet->triangles, tri));
-    }
+
 #endif
     return S_OK;
 }
@@ -255,11 +219,6 @@ HRESULT MxMesh::positionsChanged() {
         return result;
     }
 
-    for(FacetPtr facet : facets) {
-        if((result = facet->positionsChanged() != S_OK)) {
-            return result;
-        }
-    }
 
     for(CellPtr cell : cells) {
         if((result = cell->positionsChanged() != S_OK)) {

@@ -16,7 +16,6 @@
 #include <Magnum/Math/Vector3.h>
 #include "MxMeshCore.h"
 #include "MxTriangle.h"
-#include "MxFacet.h"
 #include "MeshIterators.h"
 #include "MeshRelationships.h"
 
@@ -90,13 +89,6 @@ struct MxCell : MxObject, MxMeshNode {
      * the closed set of faces that define the boundary of this cell
      */
     std::vector<struct MxPartialTriangle*> boundary;
-
-    /**
-     * A cell has one of more facets. Each facet defines a shared 2D region
-     * of space between two different cells. If one cell is completely contained
-     * within another cell, then it has one facet.
-     */
-    std::vector<FacetPtr> facets;
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state
@@ -187,10 +179,6 @@ struct MxCell : MxObject, MxMeshNode {
      */
     HRESULT removeChild(TrianglePtr tri);
 
-    HRESULT removeChild(FacetPtr);
-
-    HRESULT appendChild(FacetPtr);
-
     /**
      * Inform the cell that the topology changed (change in vertex or triangle
      * number or connectivity).
@@ -251,6 +239,7 @@ private:
 struct VertexAttribute
 {
     Magnum::Vector3 position;
+    Magnum::Vector3 normal;
     Magnum::Color4 color;
 };
 

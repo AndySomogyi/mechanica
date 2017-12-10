@@ -31,11 +31,9 @@ int MxTriangle::matchVertexIndices(const std::array<VertexPtr, 3> &indices) {
 MxTriangle::MxTriangle(MxTriangleType* type,
         const std::array<VertexPtr, 3>& verts,
         const std::array<CellPtr, 2>& cells,
-        const std::array<MxPartialTriangleType*, 2>& partTriTypes,
-        FacetPtr facet) :
+        const std::array<MxPartialTriangleType*, 2>& partTriTypes) :
             MxObject{type}, vertices{verts}, cells{cells},
-            partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}},
-            facet{facet} {
+            partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
 
     // connect this triangle to the vertex tri lists
     for(VertexPtr vert : verts) {
@@ -164,8 +162,7 @@ bool MxTriangle::isValid() const  {
         }
     }
 
-    return facet &&
-            contains(facet->triangles, this) &&
+    return
             cells[0] && incident(const_cast<TrianglePtr>(this), cells[0]) &&
             cells[1] && incident(const_cast<TrianglePtr>(this), cells[1]) &&
             isConnected() &&

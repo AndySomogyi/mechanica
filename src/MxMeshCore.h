@@ -59,10 +59,6 @@ struct MxCell;
 typedef MxCell *CellPtr;
 typedef const MxCell *CCellPtr;
 
-struct MxFacet;
-typedef MxFacet *FacetPtr;
-typedef const MxFacet *CFacetPtr;
-
 struct MxMesh;
 typedef MxMesh *MeshPtr;
 typedef const MxMesh *CMeshPtr;
@@ -72,8 +68,6 @@ typedef std::vector<TrianglePtr> TriangleContainer;
 
 // triangle container for the vertices
 typedef std::vector<TrianglePtr> Triangles;
-
-typedef std::vector<FacetPtr> Facets;
 
 
 struct MxMeshNode {

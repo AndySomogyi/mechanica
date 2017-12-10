@@ -166,7 +166,7 @@ HRESULT MagnumCellRenderer::invalidate() {
 
     mesh.setCount(cell->faceCount() * 3)
             .setPrimitive(MeshPrimitive::Triangles)
-            .addVertexBuffer(vertexBuffer, 0, ShaderProgram::Position{}, ShaderProgram::Color{});
+            .addVertexBuffer(vertexBuffer, 0, ShaderProgram::Position{}, ShaderProgram::Normal{}, ShaderProgram::Color{});
             //.setIndexBuffer(obj.indexBuffer, 0, Mesh::IndexType::UnsignedInt);
 
     return S_OK;

@@ -39,11 +39,6 @@ bool adjacent(CTrianglePtr a, CTrianglePtr b) {
     return false;
 }
 
-bool incident(CFacetPtr facet, CCellPtr cell) {
-    assert(facet);
-    return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
-}
-
 bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
     if (!a || !b || a == b) {
         return false;
@@ -59,9 +54,6 @@ bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
     return result;
 }
 
-//bool incident(CVertexPtr vertex, CFacetPtr facet) {
-//    return contains(vertex->facets(), facet);
-//}
 
 void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
     // check to see that triangles share adjacent vertices.

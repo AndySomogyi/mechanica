@@ -40,6 +40,24 @@ public:
     HRESULT read(const std::string &path);
 
 private:
+
+    /**
+     * The side of a square.
+     */
+    struct Quadrilateral {
+        std::array<TrianglePtr, 2> triangles;
+        std::array<CellPtr, 2> cells;
+    };
+
+    std::vector<Quadrilateral> quads;
+
+    Quadrilateral *findQuad(const std::array<VertexPtr, 4> &verts);
+
+    Quadrilateral *createQuad() {
+        quads.push_back(Quadrilateral{});
+        return &quads.back();
+    }
+
     // keep track of original Gmsh vertex indices, and the new indices in
     // the MxMesh
     std::unordered_map<int, VertexPtr> vertexMap;
@@ -71,14 +89,19 @@ private:
      * it here. If the face does not exist, then by definition, none of the triangles
      * that make up that face must exist.
      */
-    void createTriangleForFacet(const std::array<VertexPtr, 3> &verts, FacetPtr facet);
+    void createTriangleForQuad(const std::array<VertexPtr, 3> &verts, Quadrilateral *quad);
 
     /**
      * Add a square facet with the given vertices in CCW order.
      */
-    void addSquareFacet(MxCell &cell, const std::array<VertexPtr, 4> &verts);
+    void addQuadToCell(MxCell &cell, const std::array<VertexPtr, 4> &verts);
 
     MxCell *createCell(Gmsh::ElementType, int id);
+
+    static bool quadIncident(const Quadrilateral *facet, CCellPtr cell) {
+        assert(facet);
+        return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
+    }
 
     MxMesh &mesh;
     Gmsh::Mesh gmsh;

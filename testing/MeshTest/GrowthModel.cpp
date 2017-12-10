@@ -156,31 +156,31 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     float diff =  - cell->area;
     //float diff = -0.35;
 
-    for(auto f: cell->facets) {
-        for(auto tri : f->triangles) {
+    for(auto pt: cell->boundary) {
 
-            assert(tri->area > 0);
+        TrianglePtr tri = pt->triangle;
 
+        assert(tri->area > 0);
 
-            //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
+        //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
 
-            Vector3 dir[3];
-            float len[3];
-            float totLen = 0;
-            for(int v = 0; v < 3; ++v) {
-                dir[v] = tri->vertices[v]->position - tri->centroid;
-                //dir[v] = ((tri->vertices[v]->position - tri->vertices[(v+1)%3]->position) +
-                //          (tri->vertices[v]->position - tri->vertices[(v+2)%3]->position)) / 2;
-                len[v] = dir[v].length();
-                //dir[v] = dir[v].normalized();
-                totLen += len[v];
-            }
-
-            for(int v = 0; v < 3; ++v) {
-                //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-                tri->vertices[v]->force +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            }
+        Vector3 dir[3];
+        float len[3];
+        float totLen = 0;
+        for(int v = 0; v < 3; ++v) {
+            dir[v] = tri->vertices[v]->position - tri->centroid;
+            //dir[v] = ((tri->vertices[v]->position - tri->vertices[(v+1)%3]->position) +
+            //          (tri->vertices[v]->position - tri->vertices[(v+2)%3]->position)) / 2;
+            len[v] = dir[v].length();
+            //dir[v] = dir[v].normalized();
+            totLen += len[v];
         }
+
+        for(int v = 0; v < 3; ++v) {
+            //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
+            tri->vertices[v]->force +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+        }
+
     }
     return S_OK;
 }
@@ -197,17 +197,15 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 
     float diff = targetVolume - cell->volume;
 
-    for(auto f: cell->facets) {
-        for(auto tri : f->triangles) {
+    for(auto pt: cell->boundary) {
+        TrianglePtr tri = pt->triangle;
 
-            Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
+        Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
 
-            for(int v = 0; v < 3; ++v) {
-                tri->vertices[v]->force +=  force;
-            }
+        for(int v = 0; v < 3; ++v) {
+            tri->vertices[v]->force +=  force;
         }
     }
-
 
     return S_OK;
 }

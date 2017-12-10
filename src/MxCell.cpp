@@ -123,85 +123,12 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
         pt->neighbors[i] = nullptr;
     }
 
-    // remove the triangle from the facets. If the facet size is
-    // zero, remove the facet from both incident cells.
     remove(boundary, pt);
-    FacetPtr facet = tri->facet;
-    if(facet) {
-        facet->removeChild(tri);
-        if(facet->triangles.size() == 0) {
-            remove(facets, facet);
-            int otherIndex = index == 0 ? 1 : 0;
-            if(tri->cells[otherIndex]) {
-                remove(tri->cells[otherIndex]->facets, facet);
-            }
-        }
-    }
-    tri->facet = nullptr;
 
     return S_OK;
 }
 
-HRESULT MxCell::removeChild(FacetPtr facet) {
-    HRESULT result;
-    if(facet->cells[0] != this &&
-       facet->cells[1] != this &&
-       !contains(facets, facet)) {
-            return mx_error(E_FAIL, "facet not attached to this cell");
-    }
 
-    int index;
-
-    if(facet->cells[0] == this) {
-        index = 0;
-    } else if (facet->cells[1] == this) {
-        index = 1;
-    } else {
-        return mx_error(E_FAIL, "facet does not belong to this cell");
-    }
-
-    facet->cells[index] = nullptr;
-    remove(facets, facet);
-
-    for(TrianglePtr tri : facet->triangles) {
-        if((result = removeTriangleFromFacet(tri, index)) != S_OK) {
-            return result;
-        }
-    }
-
-    return S_OK;
-}
-
-HRESULT MxCell::appendChild(FacetPtr facet) {
-    HRESULT result;
-
-    if(facet->cells[0] == this ||
-       facet->cells[1] == this ||
-       contains(facets, facet)) {
-        return mx_error(E_FAIL, "facet already attached to this cell");
-    }
-
-    int index;
-
-    if(facet->cells[0] == nullptr) {
-        index = 0;
-    } else if (facet->cells[1] == nullptr) {
-        index = 1;
-    } else {
-        return mx_error(E_FAIL, "facet belongs to two cells already");
-    }
-
-    facet->cells[index] = this;
-    facets.push_back(facet);
-
-    for(TrianglePtr tri : facet->triangles) {
-        if((result = appendTriangleFromFacet(tri, index)) != S_OK) {
-            return result;
-        }
-    }
-
-    return S_OK;
-}
 
 /* POV mesh format:
 mesh2 {
@@ -285,28 +212,6 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
         // adds the tri to it.
         mesh->rootCell()->appendChild(tri, otherIndex);
         assert(tri->cells[otherIndex] == mesh->rootCell());
-    } else {
-        // the facet we connect the triangle to.
-        FacetPtr facet = nullptr;
-
-        // look first to see if we're connected by a facet.
-        for(auto f : facets) {
-            if (incident(f, tri->cells[otherIndex])) {
-                facet = f;
-                break;
-            }
-        }
-
-        // not connected, make a new facet that connects this cell and the other
-        if (facet == nullptr) {
-            facet = mesh->createFacet(nullptr);
-            facet->cells = {{this, tri->cells[otherIndex]}};
-            facets.push_back(facet);
-            tri->cells[otherIndex]->facets.push_back(facet);
-        }
-
-        // add the tri to the facet
-        facet->appendChild(tri);
     }
 
     std::cout << "tri" << ", {" << tri->vertices[0]->position;
@@ -349,31 +254,31 @@ HRESULT MxCell::positionsChanged() {
     centroid = Vector3{0., 0., 0.};
     int ntri = 0;
 
-    for(auto f : facets) {
-        for (auto tri : f->triangles) {
-            //std::cout << ntri << std::endl;
-            //std::cout << "\t" << tri->cellNormal(this) << ", " << tri->centroid << std::endl;
-            //std::cout << "\t" << tri->vertices[0]->position << ", "
-            //                  << tri->vertices[1]->position << ", "
-            //                  << tri->vertices[2]->position << std::endl;
+    for(auto pt : boundary) {
+        TrianglePtr tri = pt->triangle;
+        //std::cout << ntri << std::endl;
+        //std::cout << "\t" << tri->cellNormal(this) << ", " << tri->centroid << std::endl;
+        //std::cout << "\t" << tri->vertices[0]->position << ", "
+        //                  << tri->vertices[1]->position << ", "
+        //                  << tri->vertices[2]->position << std::endl;
 
-            ntri += 1;
-            centroid += tri->centroid;
-            area += tri->area;
-            float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
+        ntri += 1;
+        centroid += tri->centroid;
+        area += tri->area;
+        float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
 
-            //if(volumeContr < 0) {
-            //    std::cout << "root: " << (mesh->rootCell() == this) <<
-            //    ", normal: " << tri->normal << ", cell normal: " << tri->cellNormal(this) <<
-            //    ", centroid: " << tri->centroid <<
-            //    ", vol contr: "  << volumeContr << std::endl;
-            //}
+        //if(volumeContr < 0) {
+        //    std::cout << "root: " << (mesh->rootCell() == this) <<
+        //    ", normal: " << tri->normal << ", cell normal: " << tri->cellNormal(this) <<
+        //    ", centroid: " << tri->centroid <<
+        //    ", vol contr: "  << volumeContr << std::endl;
+        //}
 
-            float a = tri->area * Math::dot(tri->normal, tri->centroid);
-            float b = tri->area * Math::dot(-tri->normal, tri->centroid);
+        float a = tri->area * Math::dot(tri->normal, tri->centroid);
+        float b = tri->area * Math::dot(-tri->normal, tri->centroid);
 
-            volume += volumeContr;
-        }
+        volume += volumeContr;
+
     }
     volume /= 3.;
     centroid /= (float)ntri;

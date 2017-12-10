@@ -16,8 +16,34 @@ using Gmsh::ElementType;
 
 typedef VertexIndices VI;
 
+
+
+
 static inline Magnum::Vector3 makeVertex(const double pos[]) {
     return Vector3{float(pos[0]), float(pos[1]), float(pos[2])};
+}
+
+MxMeshGmshImporter::Quadrilateral* MxMeshGmshImporter::findQuad(
+        const std::array<VertexPtr, 4>& verts) {
+
+    for(Quadrilateral &quad : quads) {
+        if(!quad.triangles[0] || !quad.triangles[1]) continue;
+
+        // each triangle has to be incident to two vertices.
+
+        bool inc = true;
+        for(TrianglePtr tri : quad.triangles) {
+            int incCnt = 0;
+            for(VertexPtr vert : verts) {
+                if(::incident(tri, vert)) {
+                    incCnt += 1;
+                }
+            }
+            inc &= (incCnt == 3);
+        }
+        if(inc) return &quad;
+    }
+    return nullptr;
 }
 
 MxCell *MxMeshGmshImporter::createCell(Gmsh::ElementType type, int id) {
@@ -138,17 +164,17 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     }
 
     // top face, vertices {2,3,7,6}
-    addSquareFacet(cell, {{vertexIds[2], vertexIds[3], vertexIds[7], vertexIds[6]}});
+    addQuadToCell(cell, {{vertexIds[2], vertexIds[3], vertexIds[7], vertexIds[6]}});
 
-    addSquareFacet(cell, {{vertexIds[7], vertexIds[3], vertexIds[0], vertexIds[4]}});
+    addQuadToCell(cell, {{vertexIds[7], vertexIds[3], vertexIds[0], vertexIds[4]}});
 
-    addSquareFacet(cell, {{vertexIds[6], vertexIds[7], vertexIds[4], vertexIds[5]}});
+    addQuadToCell(cell, {{vertexIds[6], vertexIds[7], vertexIds[4], vertexIds[5]}});
 
-    addSquareFacet(cell, {{vertexIds[2], vertexIds[6], vertexIds[5], vertexIds[1]}});
+    addQuadToCell(cell, {{vertexIds[2], vertexIds[6], vertexIds[5], vertexIds[1]}});
 
-    addSquareFacet(cell, {{vertexIds[3], vertexIds[2], vertexIds[1], vertexIds[0]}});
+    addQuadToCell(cell, {{vertexIds[3], vertexIds[2], vertexIds[1], vertexIds[0]}});
 
-    addSquareFacet(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
+    addQuadToCell(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
     assert(cell.manifold() && "Cell is not manifold");
 
@@ -162,23 +188,35 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     assert(cell.positionsChanged() == S_OK);
 }
 
-void MxMeshGmshImporter::addSquareFacet(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
+void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
 
     assert(mesh.valid(verts[0]));
     assert(mesh.valid(verts[1]));
     assert(mesh.valid(verts[2]));
     assert(mesh.valid(verts[3]));
 
-    FacetPtr facet = mesh.findFacet(verts);
+    Quadrilateral *quad = findQuad(verts);
 
-    if(facet) {
-        if(incident(facet, mesh.rootCell())) {
-            mesh.rootCell()->removeChild(facet);
+    if(quad) {
+        assert(quad->cells[0] != mesh.rootCell());
+
+        if(quad->cells[1] == mesh.rootCell()) {
+            assert(quad->cells[0]);
+            for(TrianglePtr tri : quad->triangles) {
+                if(tri) {
+                    mesh.rootCell()->removeChild(tri);
+                }
+            }
         }
-        assert(facet->cells[0] == nullptr || facet->cells[1] == nullptr);
+
+        for(TrianglePtr tri : quad->triangles) {
+            cell.appendChild(tri, 1);
+        }
+        quad->cells[1] = &cell;
+
     } else {
 
-        facet = mesh.createFacet(nullptr);
+        quad = createQuad();
 
         float ne = (verts[0]->position - verts[2]->position).length();
         float nw = (verts[1]->position - verts[3]->position).length();
@@ -188,23 +226,26 @@ void MxMeshGmshImporter::addSquareFacet(MxCell& cell, const std::array<VertexPtr
             assert(Math::dot(
                    Math::normal(verts[0]->position, verts[1]->position, verts[2]->position),
                    Math::normal(verts[2]->position, verts[3]->position, verts[0]->position)) > 0);
-                createTriangleForFacet(VI{{verts[0], verts[1], verts[2]}}, facet);
-                createTriangleForFacet(VI{{verts[2], verts[3], verts[0]}}, facet);
+                createTriangleForQuad(VI{{verts[0], verts[1], verts[2]}}, quad);
+                createTriangleForQuad(VI{{verts[2], verts[3], verts[0]}}, quad);
         } else {
             assert(Math::dot(
                    Math::normal(verts[1]->position, verts[2]->position, verts[3]->position),
                    Math::normal(verts[3]->position, verts[0]->position, verts[1]->position)) > 0);
-                createTriangleForFacet(VI{{verts[1], verts[2], verts[3]}}, facet);
-                createTriangleForFacet(VI{{verts[3], verts[0], verts[1]}}, facet);
+                createTriangleForQuad(VI{{verts[1], verts[2], verts[3]}}, quad);
+                createTriangleForQuad(VI{{verts[3], verts[0], verts[1]}}, quad);
+        }
+
+        quad->cells[0] = &cell;
+        quad->cells[1] = mesh.rootCell();
+
+        // appending a triangle to a cell, where the other side of the triangle is
+        // not attached to a cell gets the triangle attached to the root on the
+        // other side. Bad design, TODO: fix this.
+        for(TrianglePtr tri : quad->triangles) {
+            quad->cells[0]->appendChild(tri, 0);
         }
     }
-
-    cell.appendChild(facet);
-    if(facet->cells[1] == nullptr) {
-        mesh.rootCell()->appendChild(facet);
-    }
-
-    assert(facet->cells[0] && facet->cells[1]);
 }
 
 
@@ -253,9 +294,9 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     createTriangleForCell(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}}, cell);
     createTriangleForCell(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}}, cell);
 
-    addSquareFacet(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
-    addSquareFacet(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
-    addSquareFacet(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
+    addQuadToCell(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
+    addQuadToCell(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
+    addQuadToCell(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
 
     assert(cell->manifold() && "Cell is not manifold");
 
@@ -275,7 +316,7 @@ void MxMeshGmshImporter::createTriangleForCell(
         const std::array<VertexPtr, 3>& verts, CellPtr cell) {
     TrianglePtr tri = mesh.findTriangle(verts);
     if(tri) {
-        if(incident(tri, mesh.rootCell())) {
+        if(::incident(tri, mesh.rootCell())) {
             assert(mesh.rootCell()->removeChild(tri) == S_OK);
         }
     }
@@ -291,8 +332,8 @@ void MxMeshGmshImporter::createTriangleForCell(
     cell->appendChild(tri, orientation > 0 ? 0 : 1);
 }
 
-void MxMeshGmshImporter::createTriangleForFacet(
-        const std::array<VertexPtr, 3>& verts, FacetPtr facet) {
+void MxMeshGmshImporter::createTriangleForQuad(
+        const std::array<VertexPtr, 3>& verts,  MxMeshGmshImporter::Quadrilateral *quad) {
     TrianglePtr tri = mesh.findTriangle(verts);
 
     assert(tri == nullptr && "triangle already exists when creating facet");
@@ -303,6 +344,13 @@ void MxMeshGmshImporter::createTriangleForFacet(
     assert(tri);
     assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
 
-
-    facet->appendChild(tri);
+    if(!quad->triangles[0]) {
+        quad->triangles[0] = tri;
+    }
+    else if (!quad->triangles[1]) {
+        quad->triangles[1] = tri;
+    }
+    else {
+        assert(0 && "quadrilateral already has two triangles");
+    }
 }

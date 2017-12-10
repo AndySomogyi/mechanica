@@ -51,7 +51,6 @@ set(SRC
   MxMeshCore.cpp
   MxMesh.cpp
   MxTriangle.cpp
-  MxFacet.cpp
   MxModule.cpp
   MxSimulator.cpp
   MxTestCube.cpp
@@ -107,7 +106,6 @@ set(HEADERS
   MxMeshCore.h
   MxMesh.h
   MxTriangle.h
-  MxFacet.h
   MxModule.h
   MxSimulator.h
   MxTestCube.h

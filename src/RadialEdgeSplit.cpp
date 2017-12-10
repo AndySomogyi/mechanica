@@ -107,11 +107,6 @@ HRESULT RadialEdgeSplit::apply() {
         // in the same direction as the existing one
         assert(Math::dot(nt->normal, tri->normal) >= 0);
 
-
-        if(tri->facet) {
-            tri->facet->appendChild(nt);
-        }
-
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
         disconnect_triangle_vertex(tri, edge[1]);
