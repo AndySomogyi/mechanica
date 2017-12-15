@@ -34,6 +34,8 @@ struct MagnumCellRenderer : MxCellRenderer {
     virtual ~MagnumCellRenderer();
 };
 
+Magnum::Color4 jetColorMap(float val, float minVal, float maxVal);
+
 
 
 /**

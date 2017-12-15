@@ -107,6 +107,8 @@ struct MxPartialTriangle : MxObject {
      */
     MxReal *scalarFields;
 
+    std::array<float, 3> vertexAttr;
+
     int unboundNeighborCount() {
         int count = 0;
         for(int i = 0; i < 3; ++i) {
@@ -207,6 +209,13 @@ struct MxTriangle : MxObject {
      */
     std::array<MxPartialTriangle, 2> partialTriangles;
 
+    /**
+     * The total force excreted by this triangle onto the three
+     * incident vertices. This force is a contribution from both of the
+     * incident cells.
+     */
+    std::array<Magnum::Vector3, 3> force;
+
     uint32_t id;
 
     /**
@@ -295,11 +304,23 @@ struct MxTriangle : MxObject {
      * Finds the next triangle in a triangle fan centered at Vertex vert.
      * The next triangle will be attached to the given cell.
      *
+     *  // get the first triangle
+     *  TrianglePtr first = getTheFirstTriangleSomehow();
+     *  // the loop triangle
+     *  TrianglePtr tri = first;
+     *  // keep track of the previous triangle
+     *  TrianglePtr prev = nullptr;
+     *  do {
+     *      TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
+     *      prev = tri;
+     *      tri = next;
+     *  } while(tri && tri != first);
+     *
      * @param vert: The triangle fan center vertex
      * @param cell: Which side of the triangle where to choose the next triangle
      * @param prev: The previous triangle. May be null, if so, returns the first
      *              triangle that's incident to vert and cell.
-     * @retruns:    The next triangle. May return null if this triangle is not
+     * @return:    The next triangle. May return null if this triangle is not
      *              adjacent to either vert of cell.
      */
     TrianglePtr nextTriangleInFan(CVertexPtr vert,

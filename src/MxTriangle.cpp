@@ -179,10 +179,12 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
 
     if(!pt) return nullptr;
 
+    // if we don't have a prev triangle, just grab the first
+    // triangle we find.
     if(!prev) {
         for(uint i = 0; i < 3; ++i) {
            if (incident(pt->neighbors[i], vert)) {
-               return pt->triangle;
+               return pt->neighbors[i]->triangle;
            }
         }
     }

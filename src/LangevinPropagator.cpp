@@ -8,6 +8,7 @@
 #include <LangevinPropagator.h>
 #include <MxModel.h>
 #include "stochastic_rk.h"
+#include <iostream>
 
 LangevinPropagator::LangevinPropagator(MxModel* m) :
     model{m}, mesh{m->mesh} {
@@ -38,13 +39,17 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
 
         assert(v->mass > 0 && v->area > 0);
 
-        float len = v->force.length();
-        float tmp = len / v->mass;
-        int tri = v->triangles().size();
-        float a = v->force.length() / v->mass;
+        Magnum::Vector3 force;
 
-        v->position = v->position + dt * v->force / v->mass;
-
+        for(CTrianglePtr tri : v->triangles()) {
+            for(int j = 0; j < 3; ++j) {
+                if(tri->vertices[j] == v) {
+                    force += tri->force[j];
+                }
+            }
+        }
+        
+        v->position = v->position + dt * force / v->mass;
     }
 
     return S_OK;

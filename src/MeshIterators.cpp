@@ -101,7 +101,9 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
     for(int i = 0; (i + 1) < triangles.size(); ++i) {
         if(commonCell(triangles[i], triangles[i+1])) continue;
 
+#ifndef NDEBUG
         ctr++;
+#endif
 
         // if we get here, that means that that triangles[i] and triangles[i+1]
         // do not share a common cell, so we need to find the common cell with
@@ -152,48 +154,4 @@ bool EdgeTriangles::isValid() {
     }
     return true;
 }
-
-ConeTriangleIterator::value_type ConeTriangleIterator::operator *() const {
-    return curr;
-}
-
-// pre-increment
-ConeTriangleIterator& ConeTriangleIterator::operator ++() {
-    TrianglePtr next = curr->nextTriangleInFan(cone->center, cone->cell, curr);
-    prev = curr;
-    curr = next;
-    return *this;
-}
-
-// post-increment
-ConeTriangleIterator ConeTriangleIterator::operator ++(int) {
-    ConeTriangleIterator ret = *this;
-    ++(*this);
-    return ret;
-}
-
-bool ConeTriangleIterator::operator ==(const ConeTriangleIterator& rhs) {
-    return curr == rhs.curr && prev == rhs.prev;
-}
-
-bool ConeTriangleIterator::operator !=(const ConeTriangleIterator& rhs) {
-    return curr != rhs.curr || prev != rhs.prev;
-}
-
-ConeTriangleIterator::ConeTriangleIterator(TrianglePtr _curr,
-        TrianglePtr _prev, const class ConeTriangles* _cone) :
-    curr{_curr}, prev{_prev}, cone{_cone} {
-}
-
-ConeTriangles::iterator ConeTriangles::begin() const {
-    return ConeTriangleIterator(first, nullptr, this);
-}
-
-ConeTriangles::iterator ConeTriangles::end() const {
-}
-
-ConeTriangles::ConeTriangles(VertexPtr* vertex, CCellPtr* cell) {
-}
-
-
 #endif

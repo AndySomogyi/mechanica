@@ -9,6 +9,7 @@
 #include <MxMeshGmshImporter.h>
 #include <MxDebug.h>
 #include <iostream>
+#include "MxMeshVoronoiImporter.h"
 
 
 static struct RedCellType : MxCellType
@@ -25,89 +26,14 @@ static struct BlueCellType : MxCellType
     };
 } blueCellType;
 
+
+
 GrowthModel::GrowthModel()  {
 
-    mesh = new MxMesh();
+    //loadMonodisperseVoronoiModel();
+    loadSimpleSheetModel();
 
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-        }
-    };
-    mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.1);
-    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-    minTargetArea = 0.001;
-    targetArea = 0.3;
-    maxTargetArea = 0.5;
-
-    targetVolume = 0.1;
-    minTargetVolume = 0.005;
-    maxTargetVolume = 0.2;
-
-    */
-
-
-
-
-
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-        }
-    };
-    mesh->setShortCutoff(0.1);
-    mesh->setLongCutoff(0.2);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
-    minTargetArea = 0.001;
-    targetArea = 0.1;
-    maxTargetArea = 2;
-
-    targetVolume = 0.6;
-    minTargetVolume = 0.005;
-    maxTargetVolume = 1.5;
-
-
-
-
-
-
-
-
-
-    //importer.read("/Users/andy/src/mechanica/testing/MeshTest/flatcube.msh");
-
-/*
-    // cube
-
-
-
-
-    MxMeshGmshImporter importer{*mesh, [](Gmsh::ElementType, int id) {return nullptr;}};
-    mesh->shortCutoff = 0;
-    mesh->longCutoff = 0.6;
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
-    minTargetArea = 0.1;
-    targetArea = 6.0;
-    maxTargetArea = 15;
-
-    targetVolume = 1.5;
-    minTargetVolume = 0.5;
-    maxTargetVolume = 25.0;
- */
-
-     testEdges();
-
+    testEdges();
 }
 
 //const float targetArea = 0.45;
@@ -124,11 +50,11 @@ HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
     testEdges();
 
 
-    for(VertexPtr vert : mesh->vertices) {
-        vert->force = Vector3{};
+    for(TrianglePtr tri : mesh->triangles) {
+        tri->force[0] = Vector3{};
+        tri->force[1] = Vector3{};
+        tri->force[2] = Vector3{};
     }
-
-
 
     for(CellPtr cell : mesh->cells) {
         if((result = cellAreaForce(cell)) != S_OK) {
@@ -178,7 +104,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
         for(int v = 0; v < 3; ++v) {
             //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-            tri->vertices[v]->force +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+            tri->force[v] +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
         }
 
     }
@@ -203,7 +129,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
 
         for(int v = 0; v < 3; ++v) {
-            tri->vertices[v]->force +=  force;
+            tri->force[v] +=  force;
         }
     }
 
@@ -213,4 +139,91 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 void GrowthModel::testEdges() {
 
     return;
+}
+
+void GrowthModel::loadSheetModel() {
+    mesh = new MxMesh();
+
+    MxMeshGmshImporter importer{*mesh,
+        [](Gmsh::ElementType, int id) {
+            if((id % 2) == 0) {
+                return (MxCellType*)&redCellType;
+            } else {
+                return (MxCellType*)&blueCellType;
+            }
+        }
+    };
+
+    mesh->setShortCutoff(0);
+    mesh->setLongCutoff(0.1);
+    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    minTargetArea = 0.001;
+    targetArea = 0.3;
+    maxTargetArea = 0.5;
+
+    targetVolume = 0.1;
+    minTargetVolume = 0.005;
+    maxTargetVolume = 0.2;
+}
+
+void GrowthModel::loadSimpleSheetModel() {
+    mesh = new MxMesh();
+
+
+
+    MxMeshGmshImporter importer{*mesh,
+        [](Gmsh::ElementType, int id) {
+            if((id % 2) == 0) {
+                return (MxCellType*)&redCellType;
+            } else {
+                return (MxCellType*)&blueCellType;
+            }
+        }
+    };
+
+    mesh->setShortCutoff(0.1);
+    mesh->setLongCutoff(0.2);
+    importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
+    minTargetArea = 0.001;
+    targetArea = 0.1;
+    maxTargetArea = 2;
+
+    targetVolume = 0.6;
+    minTargetVolume = 0.005;
+    maxTargetVolume = 1.5;
+
+}
+
+void GrowthModel::loadCubeModel() {
+
+    mesh = new MxMesh();
+
+    MxMeshGmshImporter importer{*mesh,
+        [](Gmsh::ElementType, int id) {
+            if((id % 2) == 0) {
+                return (MxCellType*)&redCellType;
+            } else {
+                return (MxCellType*)&blueCellType;
+            }
+        }
+    };
+
+    mesh->setShortCutoff(0);
+    mesh->setLongCutoff(0.6);
+    importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
+    minTargetArea = 0.1;
+    targetArea = 6.0;
+    maxTargetArea = 15;
+
+    targetVolume = 1.5;
+    minTargetVolume = 0.5;
+    maxTargetVolume = 25.0;
+}
+
+void GrowthModel::loadMonodisperseVoronoiModel() {
+    mesh = new MxMesh();
+
+    MxMeshVoronoiImporter importer(*mesh);
+
+    importer.monodisperse();
 }

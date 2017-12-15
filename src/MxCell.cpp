@@ -14,6 +14,8 @@
 
 
 #include "MxDebug.h"
+#include "DifferentialGeometry.h"
+#include "MxMeshRenderer.h"
 
 bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {
   return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
@@ -51,25 +53,38 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
         const MxTriangle &tri = *(boundary[i])->triangle;
         VertexAttribute *attrs = (VertexAttribute*)ptr;
 
-        Color4 color;
-        if(tri.color[3] > 0) {
-            color = tri.color;
+        if(true) {
+            for(int i = 0; i < 3; ++i) {
+                attrs[i].color = jetColorMap(
+                    tri.vertices[i]->attr,
+                    MxVertex::minForceDivergence,
+                    MxVertex::maxForceDivergence
+                );
+                attrs[i].color[3] = tri.alpha;
+            }
         }
-        else if (type) {
-            color = type->color;
-            color[3] = tri.alpha;
-        }
+        
         else {
-            color = Color4::yellow();
+            Color4 color;
+            if(tri.color[3] > 0) {
+                color = tri.color;
+            }
+            else if (type) {
+                color = type->color;
+                color[3] = tri.alpha;
+            }
+            else {
+                color = Color4::yellow();
+            }
+            attrs[0].color = color;
+            attrs[1].color = color;
+            attrs[2].color = color;
         }
+        
         attrs[0].position = tri.vertices[0]->position;
-        attrs[0].color = color;
-
         attrs[1].position = tri.vertices[1]->position;
-        attrs[1].color = color;
-
         attrs[2].position = tri.vertices[2]->position;
-        attrs[2].color = color;
+        
 
     }
 }
@@ -256,41 +271,27 @@ HRESULT MxCell::positionsChanged() {
 
     for(auto pt : boundary) {
         TrianglePtr tri = pt->triangle;
-        //std::cout << ntri << std::endl;
-        //std::cout << "\t" << tri->cellNormal(this) << ", " << tri->centroid << std::endl;
-        //std::cout << "\t" << tri->vertices[0]->position << ", "
-        //                  << tri->vertices[1]->position << ", "
-        //                  << tri->vertices[2]->position << std::endl;
 
         ntri += 1;
         centroid += tri->centroid;
         area += tri->area;
         float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
 
-        //if(volumeContr < 0) {
-        //    std::cout << "root: " << (mesh->rootCell() == this) <<
-        //    ", normal: " << tri->normal << ", cell normal: " << tri->cellNormal(this) <<
-        //    ", centroid: " << tri->centroid <<
-        //    ", vol contr: "  << volumeContr << std::endl;
-        //}
 
         float a = tri->area * Math::dot(tri->normal, tri->centroid);
         float b = tri->area * Math::dot(-tri->normal, tri->centroid);
 
         volume += volumeContr;
 
+        //for(int i = 0; i < 3; ++i) {
+        //    float gaussian = 0;
+        //    float mean = 0;
+        //    discreteCurvature(this, tri->vertices[i], &mean, &gaussian);
+        //    pt->vertexAttr[i] = mean;
+        //}
     }
     volume /= 3.;
     centroid /= (float)ntri;
-
-    #ifndef NDEBUG
-    if(mesh->rootCell() != this) {
-        //assert(volume >= 0);
-    }
-    //std::cout << "cell " << this->ob_refcnt <<
-    //", volume: " << volume << ", area: " << area << ", root: " <<
-    //(mesh->rootCell() == this) <<std::endl;
-    #endif
 
     return S_OK;
 }

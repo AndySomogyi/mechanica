@@ -40,8 +40,17 @@ struct MeshTest {
 
     Magnum::Matrix4 transformation, projection;
     Magnum::Vector2 previousMousePosition;
+
+    Magnum::Matrix4 rotation;
+
+    Vector3 centerShift;
+
+
     Color4 color; // = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
     Vector3 center;
+
+    // distance from camera, move by mouse
+    float distance = -3;
 
     GrowthModel *model = nullptr;
 
@@ -53,9 +62,9 @@ struct MeshTest {
 
     explicit MeshTest();
     explicit MeshTest(const Configuration& configuration);
-    
+
     void reset();
-    
+
     void step(float dt);
 
     void draw();

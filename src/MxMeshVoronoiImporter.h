@@ -16,6 +16,10 @@
 class MxMeshVoronoiImporter {
 public:
 
+     MxMeshVoronoiImporter(MxMesh& mesh, float density = 1.0) :
+        mesh{mesh}, density{density}, cellId{mesh.rootCell()->id + 1} {};
+
+
     /** The class constructor sets up the geometry of container.
      * \param[in] (ax_,bx_) the minimum and maximum x coordinates.
      * \param[in] (ay_,by_) the minimum and maximum y coordinates.
@@ -28,23 +32,42 @@ public:
      * \param[in] init_mem the initial memory allocation for each block. */
     //container::container(double ax_,double bx_,double ay_,double by_,double az_,double bz_,
     //    int nx_,int ny_,int nz_,bool xperiodic_,bool yperiodic_,bool zperiodic_,int init_mem)
-    static bool readFile(const std::string& path, const Magnum::Vector3 &min,
+    bool readFile(const std::string& path, const Magnum::Vector3 &min,
             const Magnum::Vector3 &max, const Magnum::Vector3i &n,
-            const std::array<bool, 3> periodic, MxMesh& mesh);
+            const std::array<bool, 3> periodic);
 
-    static bool testing(const std::string& path, const Magnum::Vector3 &min,
+    bool testing(const std::string& path, const Magnum::Vector3 &min,
                 const Magnum::Vector3 &max, const Magnum::Vector3i &n,
-                const std::array<bool, 3> periodic, MxMesh& mesh);
+                const std::array<bool, 3> periodic);
 
-    static bool random(uint numPts, const Magnum::Vector3 &min,
+    bool random(uint numPts, const Magnum::Vector3 &min,
                 const Magnum::Vector3 &max, const Magnum::Vector3i &n,
-                const std::array<bool, 3> periodic, MxMesh& mesh);
+                const std::array<bool, 3> periodic);
 
 
-    static bool monodisperse(MxMesh& mesh);
+    bool monodisperse();
 
-    static bool irregular(MxMesh& mesh);
+    bool irregular(MxMesh& mesh);
 
+private:
+
+    MxMesh &mesh;
+
+    const float density;
+
+    uint32_t triId = 0;
+
+    uint32_t cellId = 0;
+
+       /**
+     * Search for an existing triangle, if so, attach it to the cell. If not, create
+     * a new triangle, and attach it to the cell.
+     */
+    void createTriangleForCell(const std::array<VertexPtr, 3> &verts, CellPtr cell);
+
+
+    template<typename T>
+    friend bool pack(MxMeshVoronoiImporter& voro, T& container);
 
 };
 

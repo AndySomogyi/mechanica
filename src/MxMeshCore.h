@@ -36,6 +36,10 @@ void remove(Container& cont, const Value& val) {
 }
 
 
+using Vector3 = Magnum::Vector3;
+using Color4 = Magnum::Color4;
+
+
 using namespace Magnum;
 
 struct MxVertex;
@@ -92,12 +96,16 @@ struct MxVertex {
 
     float area = 0;
 
+    static float minForceDivergence;
+    static float maxForceDivergence;
+
     MxVertex(float mass, float area, const Magnum::Vector3 &pos) :
         mass{mass}, area{area}, position{pos} {};
 
     Magnum::Vector3 position;
     Magnum::Vector3 velocity;
-    Magnum::Vector3 force;
+
+    float attr = 0;
 
      // one to many relationship of vertex -> triangles
     const Triangles &triangles() const {return _triangles;}

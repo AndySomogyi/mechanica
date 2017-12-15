@@ -36,9 +36,9 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-}
+//static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+//{
+//}
 
 
 static void window_refresh_callback(GLFWwindow* window)
@@ -53,8 +53,20 @@ static void char_callback(GLFWwindow *window, unsigned int c) {
 }
 
 
-static void window_close_callback(GLFWwindow* window)
+//static void window_close_callback(GLFWwindow* window)
+//{
+//}
+
+
+// The callback function receives two-dimensional scroll offsets.
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    std::cout << "scroll offset : (" << xoffset << ", " << yoffset << ")" << std::endl;
+
+    MeshTest *foo = (MeshTest*)glfwGetWindowUserPointer(window);
+
+    foo->centerShift[2] -= 0.1 * yoffset;
+    foo->draw();
 }
 
 
@@ -139,8 +151,10 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
     glfwSetCursorPosCallback(window, cursor_position_callback);
 
     glfwSetMouseButtonCallback(window, mouse_button_callback);
-    
+
     glfwSetCharCallback(window, char_callback);
+
+    glfwSetScrollCallback(window, scroll_callback);
 
 
     //glfwSetFramebufferSizeCallback(_window, staticViewportEvent);
@@ -222,13 +236,10 @@ void MeshTest::draw() {
                      Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(),
                     0.01f, 100.0f);
 
-    //* Matrix4::translation(Vector3::zAxis(-10.0f));
-
 
     renderer->setProjectionMatrix(projection);
 
-    Matrix4 mat = Matrix4::translation({0.0f, 0.0f, -3.0f}) *
-        transformation  * Matrix4::translation(-center);
+    Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
 
     renderer->setViewMatrix(mat);
 
@@ -243,22 +254,29 @@ void MeshTest::draw() {
     glfwSwapBuffers(window);
 }
 
-void MeshTest::mouseMove(double xpos, double ypos)
-{
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) return;
+void MeshTest::mouseMove(double xpos, double ypos) {
 
     Vector2 pos{(float)xpos, (float)ypos};
 
     const Vector2 delta = 3.0f *
-            Vector2{pos - previousMousePosition} /
-            Vector2{defaultFramebuffer.viewport().size()};
-
-    transformation =
-        Matrix4::rotationX(Rad{delta.y()}) *
-        transformation *
-        Matrix4::rotationY(Rad{delta.x()});
+    Vector2{pos - previousMousePosition} /
+    Vector2{defaultFramebuffer.viewport().size()};
 
     previousMousePosition = pos;
+
+    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+
+    rotation =
+        rotation *
+        Matrix4::rotationX(Rad{delta.y()}) *
+        Matrix4::rotationY(Rad{delta.x()}) ;
+    }
+
+    else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+
+        centerShift = centerShift + Vector3{{delta.x(), -delta.y(), 0.f}};
+    }
+
     draw();
 }
 

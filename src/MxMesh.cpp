@@ -7,9 +7,10 @@
 
 
 #include "MxDebug.h"
-#include <MxMesh.h>
+#include "MxMesh.h"
 #include <Magnum/Math/Math.h>
 #include "MagnumExternal/Optional/optional.hpp"
+#include "DifferentialGeometry.h"
 
 #include <deque>
 #include <limits>
@@ -201,6 +202,9 @@ MxMesh::~MxMesh() {
 HRESULT MxMesh::positionsChanged() {
     HRESULT result = E_FAIL;
 
+    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
+    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
+
     for(VertexPtr v : vertices) {
         v->mass = 0;
         v->area = 0;
@@ -223,6 +227,16 @@ HRESULT MxMesh::positionsChanged() {
     for(CellPtr cell : cells) {
         if((result = cell->positionsChanged() != S_OK)) {
             return result;
+        }
+    }
+
+    for(VertexPtr v : vertices) {
+        v->attr = forceDivergence(v);
+        if(v->attr > MxVertex::maxForceDivergence) {
+            MxVertex::maxForceDivergence = v->attr;
+        }
+        if(v->attr < MxVertex::minForceDivergence) {
+            MxVertex::minForceDivergence = v->attr;
         }
     }
 

@@ -8,6 +8,9 @@
 #include "MxMeshCore.h"
 #include "MxTriangle.h"
 
+float MxVertex::minForceDivergence;
+float MxVertex::maxForceDivergence;
+
 std::set<VertexPtr> MxVertex::link() const {
     std::set<VertexPtr> lnk;
 

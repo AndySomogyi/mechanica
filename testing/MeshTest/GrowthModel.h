@@ -33,6 +33,15 @@ struct GrowthModel : public MxModel {
     float targetVolume;
 
     void testEdges();
+
+
+    void loadSheetModel();
+
+    void loadSimpleSheetModel();
+
+    void loadCubeModel();
+
+    void loadMonodisperseVoronoiModel();
 };
 
 

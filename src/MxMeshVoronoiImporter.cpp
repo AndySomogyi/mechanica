@@ -34,7 +34,7 @@ const int Keep = 10000;
  */
 
 template<typename T>
-static bool pack(T& container, MxMesh& mesh) {
+bool pack(MxMeshVoronoiImporter& imp, T& container) {
 
 
     std::vector<double> vertices;
@@ -48,7 +48,7 @@ static bool pack(T& container, MxMesh& mesh) {
     if(vl.start()) do {
         if(container.compute_cell(c,vl)) {
 
-            if (i != 3) continue;
+            //if (i != 3) continue;
 
             // the center of the voronoi cell, should be same as the
             // inserted particle location.
@@ -66,17 +66,17 @@ static bool pack(T& container, MxMesh& mesh) {
 
             for (int j = 0; j < indices.size(); ++j) {
                 int k = indices[j];
-                newInd[j] = mesh.createVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
+                newInd[j] = imp.mesh.createVertex({float(vertices[3*k]), float(vertices[3*k+1]), float(vertices[3*k+2])});
             }
 
             // allocate first in the cells vector, then we write directly to that memory block,
             // avoid copy
-            CellPtr cell = mesh.createCell();
+            CellPtr cell = imp.mesh.createCell();
 
             // add the faces to the cell, then sort out the connectivity
-            for(int i = 0; i < newInd.size(); i+=3) {
-                //MxPartialFace pf = {{uint(newInd[i]), uint(newInd[i+1]), uint(newInd[i+2])}};
-                //cell.boundary.push_back(pf);
+            for(int j = 0; j < newInd.size(); j+=3) {
+                std::array<VertexPtr, 3> triInd = {{newInd[j], newInd[j+1], newInd[j+2]}};
+                imp.createTriangleForCell(triInd, cell);
             }
 
             std::cout << "The cell...\n";
@@ -132,8 +132,7 @@ static OptMeshData3D  readPoints(const std::string& path) {
 
 bool MxMeshVoronoiImporter::testing(const std::string& path,
         const Magnum::Vector3& min, const Magnum::Vector3& max,
-        const Magnum::Vector3i& n, const std::array<bool, 3> periodic,
-        MxMesh& mesh)
+        const Magnum::Vector3i& n, const std::array<bool, 3> periodic)
 {
     auto meshData = readPoints(path);
 
@@ -267,8 +266,7 @@ bool MxMeshVoronoiImporter::testing(const std::string& path,
 
 bool MxMeshVoronoiImporter::readFile(const std::string& path,
         const Magnum::Vector3& min, const Magnum::Vector3& max,
-        const Magnum::Vector3i& n, const std::array<bool, 3> periodic,
-        MxMesh& mesh)
+        const Magnum::Vector3i& n, const std::array<bool, 3> periodic)
 {
     auto meshData = readPoints(path);
 
@@ -282,7 +280,7 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
         n[0], n[1], n[2], periodic[0], periodic[1], periodic[2], 50);
 
 
-    return pack(container, mesh);
+    return pack(*this, container);
 }
 
 #include <random>
@@ -291,7 +289,7 @@ bool MxMeshVoronoiImporter::readFile(const std::string& path,
 
 bool MxMeshVoronoiImporter::random(uint numPts, const Magnum::Vector3& min,
         const Magnum::Vector3& max, const Magnum::Vector3i& n,
-        const std::array<bool, 3> periodic, MxMesh& mesh) {
+        const std::array<bool, 3> periodic) {
 
 
     //container::container(double ax_,double bx_,double ay_,double by_,double az_,double bz_,
@@ -310,10 +308,10 @@ bool MxMeshVoronoiImporter::random(uint numPts, const Magnum::Vector3& min,
         container.put(i++, xRand(eng), yRand(eng), zRand(eng));
     }
 
-    return pack(container, mesh);
+    return pack(*this, container);
 }
 
-bool MxMeshVoronoiImporter::monodisperse(MxMesh& mesh) {
+bool MxMeshVoronoiImporter::monodisperse() {
     // Set up constants for the container geometry
     const double x_min=-3,x_max=3;
     const double y_min=-3,y_max=3;
@@ -339,7 +337,7 @@ bool MxMeshVoronoiImporter::monodisperse(MxMesh& mesh) {
     std::vector<int> indices;
     std::vector<int> newInd;
 
-    return pack(container, mesh);
+    return pack(*this, container);
 
 }
 
@@ -408,7 +406,28 @@ bool MxMeshVoronoiImporter::irregular(MxMesh& mesh) {
     con.draw_particles_pov("irregular_p.pov");
     con.draw_cells_pov("irregular_v.pov");
 
-    return pack(con, mesh);
+    return pack(*this, con);
+}
+
+
+void MxMeshVoronoiImporter::createTriangleForCell(
+        const std::array<VertexPtr, 3>& verts, CellPtr cell) {
+    TrianglePtr tri = mesh.findTriangle(verts);
+    if(tri) {
+        if(::incident(tri, mesh.rootCell())) {
+            assert(mesh.rootCell()->removeChild(tri) == S_OK);
+        }
+    }
+    else {
+        tri = mesh.createTriangle(nullptr, verts);
+    }
+
+    assert(tri);
+    assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
+
+    Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
+    float orientation = Math::dot(meshNorm, tri->normal);
+    cell->appendChild(tri, orientation > 0 ? 0 : 1);
 }
 
 
