@@ -325,6 +325,24 @@ struct MxTriangle : MxObject {
      */
     TrianglePtr nextTriangleInFan(CVertexPtr vert,
             CCellPtr cell, CTrianglePtr prev) const;
+
+    /**
+     * Finds the next triangle in a radial edge.
+     *
+     * The prev parameter is needed to determine the shared edge.
+     *
+     * @param prev: The previous triangle, must not be null
+     *
+     * @returns: the next triangle, or null if prev is not adjacent to this triangle.
+     */
+    TrianglePtr nextTriangleInRing(CTrianglePtr prev) const;
+
+    /**
+     * Finds the first triangle that is adjacent to this triangle
+     * via the given pair of vertices. If either of the vertices are not
+     * incident to this triangle, returns null.
+     */
+    TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
 };
 
 namespace Magnum { namespace Math {

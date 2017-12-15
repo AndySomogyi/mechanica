@@ -76,10 +76,42 @@ EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) :
         EdgeTriangles{tri_to_edge(startTri, index)} {
 }
 
+#define NEW_EDGE_ITERATOR
+
 
 EdgeTriangles::EdgeTriangles(const Edge& edge) {
 
     assert(edge[0] && edge[1]);
+
+#ifdef NEW_EDGE_ITERATOR
+
+    TrianglePtr first = nullptr, prev = nullptr, tri = nullptr;
+
+    for(TrianglePtr ta : edge[0]->triangles()) {
+        if(incident(ta, edge[1])) {
+            first = ta;
+            triangles.push_back(first);
+            break;
+        }
+    }
+
+    tri = first->adjacentTriangleForEdge(edge[0], edge[1]);
+    prev = first;
+
+    assert(tri);
+    assert(tri != first);
+
+    do {
+        triangles.push_back(tri);
+        TrianglePtr next = tri->nextTriangleInRing(prev);
+        prev = tri;
+        tri = next;
+    } while(tri != first);
+
+
+
+
+#else
 
     for(TrianglePtr ta : edge[0]->triangles()) {
         if(incident(ta, edge[1])) {
@@ -127,6 +159,8 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
         assert(commonCell(triangles[i], triangles[i+1]));
 #endif
     }
+
+#endif //  NEW_EDGE_ITERATOR
 }
 
 

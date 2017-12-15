@@ -202,3 +202,51 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
     }
     return nullptr;
 }
+
+TrianglePtr MxTriangle::nextTriangleInRing(CTrianglePtr prev) const {
+    assert(prev);
+    CVertexPtr v1 = nullptr, v2 = nullptr;
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            if(!v1 && prev->vertices[i] == vertices[j]) {
+                v1 = prev->vertices[i];
+                break;
+            }
+            if(!v2 && prev->vertices[i] == vertices[j]) {
+                v2 = prev->vertices[i];
+                break;
+            }
+        }
+        if(v1 && v2) break;
+    }
+
+    if(!v1 || !v2) return nullptr;
+
+    int otherIndex = (prev->cells[0] == cells[0] || prev->cells[1] == cells[0]) ? 1 : 0;
+
+    for(int i = 0; i < 3; ++i) {
+        assert(partialTriangles[otherIndex].neighbors[i]);
+        TrianglePtr tri = partialTriangles[otherIndex].neighbors[i]->triangle;
+        assert(tri);
+        assert(tri != prev);
+        if(incident(tri, v1) && incident(tri, v2)) {
+            return tri;
+        }
+    }
+
+    assert(0 && "could not find other triangle in ring, partial face pointers probably wrong");
+    return nullptr;
+}
+
+TrianglePtr MxTriangle::adjacentTriangleForEdge(CVertexPtr v1,
+        CVertexPtr v2) const {
+    for(int i = 0; i < 3; ++i) {
+        assert(partialTriangles[0].neighbors[i]);
+        TrianglePtr tri = partialTriangles[0].neighbors[i]->triangle;
+        assert(tri);
+        if(incident(tri, v1) && incident(tri, v2)) {
+            return tri;
+        }
+    }
+    return nullptr;
+}
