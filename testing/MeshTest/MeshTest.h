@@ -43,7 +43,7 @@ struct MeshTest {
 
     Magnum::Matrix4 rotation;
 
-    Vector3 centerShift;
+    Vector3 centerShift{0., 0., -3};
 
 
     Color4 color; // = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
