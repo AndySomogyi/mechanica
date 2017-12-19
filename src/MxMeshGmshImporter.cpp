@@ -195,17 +195,25 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
     assert(mesh.valid(verts[2]));
     assert(mesh.valid(verts[3]));
 
+    // Look for an existing quad. If one exists, then it's face[0] will be attached
+    // to the previous cell, and it's face[1] will be attached to the root. If the
+    // face[1] is attached to some other cell besides root, that means that there's
+    // something wrong with out mesh processig algo as we're trying to attach a new
+    // cell to a face that's allready used by two existing cells, both of which
+    // are not root.
     Quadrilateral *quad = findQuad(verts);
 
     if(quad) {
-        assert(quad->cells[0] != mesh.rootCell());
+        assert(quad->cells[0] && quad->cells[0] != mesh.rootCell());
+        assert(quad->cells[1] == mesh.rootCell());
 
-        if(quad->cells[1] == mesh.rootCell()) {
-            assert(quad->cells[0]);
-            for(TrianglePtr tri : quad->triangles) {
-                if(tri) {
-                    mesh.rootCell()->removeChild(tri);
-                }
+        for(TrianglePtr tri : quad->triangles) {
+            if(tri) {
+                mesh.rootCell()->removeChild(tri);
+                assert(!tri->cells[1]);
+                assert(!tri->partialTriangles[1].neighbors[0] &&
+                       !tri->partialTriangles[1].neighbors[1] &&
+                       !tri->partialTriangles[1].neighbors[2]);
             }
         }
 
@@ -243,7 +251,9 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
         // not attached to a cell gets the triangle attached to the root on the
         // other side. Bad design, TODO: fix this.
         for(TrianglePtr tri : quad->triangles) {
-            quad->cells[0]->appendChild(tri, 0);
+            for(int i = 0; i < 2; ++i) {
+                quad->cells[i]->appendChild(tri, i);
+            }
         }
     }
 }

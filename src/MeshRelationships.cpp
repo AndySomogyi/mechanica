@@ -8,11 +8,51 @@
 #include <MeshRelationships.h>
 #include <algorithm>
 
+/**
+ * Replace an adjacent triangle of tri at index edgeIndx with n.
+ *
+ * If the triangle slot is not-empty, the triangle that it points to
+ * gets it's neighbor slots set to null.
+ *
+ * If the base triangle, tri is already attached to an existing
+ * triangle where the new triangle will go, there are two posibilities.
+ *
+ * a: this is a manifold edge, where only two triangles share the edge.
+ *
+ * b: this is a radial edge, where more than two triangles share the edge.
+ */
+static int connect_triangle(TrianglePtr tri,  int edge, int tcell, int ncell, TrianglePtr n) {
+    int result = 0;
+    if(tri->adjTriangles[tcell][edge]) {
+        TrianglePtr o = tri->adjTriangles[tcell][edge];
+        VertexPtr v1 = tri->vertices[edge];
+        VertexPtr v2 = tri->vertices[(edge+1)%3];
+        int oi = o->adjacentEdgeIndex(v1, v2);
+        assert(oi >= 0);
+        int ocell = (o->cells[0] == tri->cells[tcell]) ? 0 : 1;
+
+        TrianglePtr ot = tri->partialTriangles[tcell].neighbors[edge]->triangle;
+        assert(ot == o);
+        assert(o->adjTriangles[ocell][oi] == tri);
+        assert(o->partialTriangles[ocell].neighbors[oi]->triangle == tri);
+        bool b1 = o->partialTriangles[ocell].neighbors[oi] == &tri->partialTriangles[0];
+        bool b2 = o->partialTriangles[ocell].neighbors[oi] == &tri->partialTriangles[1];
+        assert(o->partialTriangles[ocell].neighbors[oi] == &tri->partialTriangles[tcell]);
+        o->adjTriangles[ocell][oi] = nullptr;
+        o->partialTriangles[ocell].neighbors[oi] = nullptr;
+        result = 1;
+    }
+    tri->adjTriangles[tcell][edge] = n;
+    tri->partialTriangles[tcell].neighbors[edge] = &n->partialTriangles[ncell];
+    return result;
+}
+
+
 bool incident(CTrianglePtr t, CCellPtr c) {
     return t->cells[0] == c || t->cells[1] == c;
 }
 
-bool adjacent(CTrianglePtr a, CTrianglePtr b) {
+bool adjacent_vertices(CTrianglePtr a, CTrianglePtr b) {
     if(a == b) {
         return false;
     }
@@ -49,7 +89,7 @@ bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
         (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
 
 #ifndef NDEBUG
-    if(result) assert(adjacent(a->triangle, b->triangle));
+    if(result) assert(adjacent_vertices(a->triangle, b->triangle));
 #endif
     return result;
 }
@@ -57,7 +97,7 @@ bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
 
 void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
     // check to see that triangles share adjacent vertices.
-    assert(adjacent(a, b));
+    assert(adjacent_vertices(a, b));
 
     #ifndef NDEBUG
     int conCnt = 0;
@@ -97,6 +137,13 @@ void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
 void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
     assert(a->triangle != b->triangle && "partial triangles are on the same triangle");
 
+#ifdef NEW_TRIANGLE_ADJ
+
+    int result = connect_triangles(a->triangle, b->triangle);
+    assert(result >= 0);
+
+#else
+
     assert((!a->neighbors[0] || !a->neighbors[1] || !a->neighbors[2])
            && "connecting partial face without empty slots");
     assert((!b->neighbors[0] || !b->neighbors[1] || !b->neighbors[2])
@@ -117,6 +164,7 @@ void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
             break;
         }
     }
+#endif
 }
 
 void disconnect_partial_triangles(PTrianglePtr a, PTrianglePtr b) {
@@ -183,6 +231,30 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const std::array<VertexPtr, 2>& e
         }
     }
     assert(0 && "partial triangle is not adjacent to given edge");
+
+}
+
+void reconnect_triangles(TrianglePtr o, TrianglePtr n, const std::array<VertexPtr, 2>& edge) {
+
+    int oi = o->adjacentEdgeIndex(edge[0], edge[1]);
+    int ni = n->adjacentEdgeIndex(edge[0], edge[1]);
+
+    assert(oi >= 0 && ni >= 0);
+
+    /*
+
+    for(uint i = 0; i < 3; ++i) {
+        if(o->neighbors[i] &&
+           o->neighbors[i]->triangle &&
+           incident(o->neighbors[i]->triangle, edge)) {
+            PTrianglePtr adj = o->neighbors[i];
+            disconnect_partial_triangles(o, adj);
+            connect_partial_triangles(n, adj);
+            return;
+        }
+    }
+    assert(0 && "partial triangle is not adjacent to given edge");
+    */
 
 }
 
@@ -276,4 +348,63 @@ bool adjacent(CVertexPtr v1, CVertexPtr v2) {
         }
     }
     return false;
+}
+
+
+
+int connect_triangles(TrianglePtr a, TrianglePtr b) {
+    // the shared vertices
+    VertexPtr v1 = nullptr, v2 = nullptr;
+
+    int result = -1;
+
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            if(!v1 && a->vertices[i] == b->vertices[j]) {
+                v1 = a->vertices[i];
+            }
+            else if(!v2 && a->vertices[i] == b->vertices[j]) {
+                v2 = a->vertices[i];
+            }
+            if(v1 && v2) { break; }
+        }
+        if(v1 && v2) { break; }
+    }
+
+    if(!v1 || !v2) { return -1; }
+
+    assert(v1 != v2);
+
+    int ai = a->adjacentEdgeIndex(v1, v2);
+
+    int bi = b->adjacentEdgeIndex(v1, v2);
+
+    assert(ai >= 0 && bi >= 0);
+
+    if(a->cells[0] == b->cells[0]) {
+        result = connect_triangle(a, ai, 0, 0, b);
+        result |= connect_triangle(b, bi, 0, 0, a);
+        assert(a->cells[0] != b->cells[1]);
+        assert(a->cells[1] != b->cells[0]);
+    }
+    if(a->cells[0] == b->cells[1]) {
+        result = connect_triangle(a, ai, 0, 1, b);
+        result |= connect_triangle(b, bi, 1, 0, a);
+        assert(a->cells[0] != b->cells[0]);
+        assert(a->cells[1] != b->cells[1]);
+    }
+    if(a->cells[1] == b->cells[0]) {
+        result = connect_triangle(a, ai, 1, 0, b);
+        result |= connect_triangle(b, bi, 0, 1, a);
+        assert(a->cells[0] != b->cells[0]);
+        assert(a->cells[1] != b->cells[1]);
+    }
+    if(a->cells[1] == b->cells[1]) {
+        result = connect_triangle(a, ai, 1, 1, b);
+        result |= connect_triangle(b, bi, 1, 1, a);
+        assert(a->cells[0] != b->cells[1]);
+        assert(a->cells[1] != b->cells[0]);
+    }
+
+    return result;
 }

@@ -42,8 +42,6 @@ HRESULT RadialEdgeSplit::apply() {
     std::vector<TrianglePtr> newTriangles;
 #endif
 
-    ctr += 1;
-
     // new vertex at the center of this edge
     Vector3 center = (edge[0]->position + edge[1]->position) / 2.;
     center = center + (edge[1]->position - edge[1]->position) * uniformDist(randEngine);
@@ -123,13 +121,44 @@ HRESULT RadialEdgeSplit::apply() {
         assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
 
         // makes sure that new and old tri share an edge.
-        assert(adjacent(tri, nt));
+        assert(adjacent_vertices(tri, nt));
 
         // removes the edge[1] - outer edge connection connection from the old
         // triangle and replaces it with the new triangle,
         // manually add the partial triangles to the cell
+
+#ifdef NEW_TRIANGLE_ADJ
+
+
+        // find the triangle neighboring at the upper outside of the
+        // radial triangle, and re-attach that to the new triangle, nt
+        // which becomes the new upper half of the radial edge.
+        int adjIndx = tri->adjacentEdgeIndex(edge[1], outer);
+        assert(adjIndx >= 0);
+        connect_triangles(tri->adjTriangles[0][adjIndx], nt);
+        if(tri->adjTriangles[0][adjIndx] != tri->adjTriangles[1][adjIndx]) {
+            connect_triangles(tri->adjTriangles[1][adjIndx], nt);
+        }
+        connect_triangles(tri, nt);
+
+        for(int i = 0; i < 2; ++i) {
+            tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
+            if(tri->cells[i]->renderer) {
+                tri->cells[i]->renderer->invalidate();
+            }
+        }
+
+#else
         for(uint i = 0; i < 2; ++i) {
             if(tri->cells[i] != mesh->rootCell()) {
+
+                ctr++;
+
+                std::cout << "ctr:: " << ctr << std::endl;
+
+                if(ctr == 5) {
+                    std::cout << "foo\n";
+                }
 
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
@@ -145,6 +174,7 @@ HRESULT RadialEdgeSplit::apply() {
                 }
             }
         }
+#endif
 
         assert(incident(nt, {{edge[1], outer}}));
         assert(!incident(tri, {{edge[1], outer}}));
@@ -173,7 +203,7 @@ HRESULT RadialEdgeSplit::apply() {
             firstNewTri = nt;
             prevNewTri = nt;
         } else {
-            connect_triangle_partial_triangles(nt, prevNewTri);
+            connect_triangles(nt, prevNewTri);
             prevNewTri = nt;
         }
     }
@@ -182,7 +212,7 @@ HRESULT RadialEdgeSplit::apply() {
     // manifold edge, only 2 new triangles, which already got
     // connected above.
     if(triangles.size() > 2) {
-        connect_triangle_partial_triangles(firstNewTri, prevNewTri);
+        connect_triangles(firstNewTri, prevNewTri);
     }
 
 

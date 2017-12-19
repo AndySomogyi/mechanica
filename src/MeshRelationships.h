@@ -10,7 +10,12 @@
 
 #include "MxCell.h"
 
-bool adjacent(CTrianglePtr a, CTrianglePtr b);
+
+/**
+ * Are these two triangles adjacent by their vertices, i.e.
+ * do these triangles have a pair of vertices in common.
+ */
+bool adjacent_vertices(CTrianglePtr a, CTrianglePtr b);
 
 bool incident(CTrianglePtr t, CCellPtr c);
 
@@ -107,6 +112,15 @@ void disconnect_partial_triangles(PTrianglePtr a, PTrianglePtr b);
 void reconnect(PTrianglePtr o, PTrianglePtr n, const Edge&);
 
 /**
+ * Disconnects a triangle from triangle o that is adjacent triangle o
+ * through the edge formed by vertices a and b,
+ * and connects the new triangle n in its' place. The
+ * old triangle o now has at least one open triangle
+ * neighbor slot.
+ */
+void reconnect_triangles(TrianglePtr o, TrianglePtr n, const Edge&);
+
+/**
  * disconnects a vertex from a triangle, and sets the triangle's
  * vertex slot that pointed to the vertex to null.
  *
@@ -135,6 +149,36 @@ void connect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 int radialedge_connect_triangle(TrianglePtr tri, int edgeIndex);
 
 int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex);
+
+
+/**
+ * Connects two triangles in a manifold surface. The triangles
+ * must have their cells and vertices set.
+ *
+ * If the triangles are not adjacent (they do not share any
+ * neighboring vertices), returns failure.
+ *
+ * Fixes up the the radial edge pointers.
+ *
+ * Connects the adjTriangles and partial triangles of each triangle.
+ *
+ * Successful results:
+ *     * The triangles share an edge, and adjTriangles is null,
+ *       connects these pointers.
+ *     * Triangles share an edge, but adjTriangles is not null,
+ *       so sets adjTriangles to the current pair.
+ *
+ * Fail results:
+ *     * triangles do not share an edge.
+ */
+HRESULT connect_triangles(TrianglePtr a, TrianglePtr b);
+
+/**
+ * Disconnects the triangle the given cell. Finds all the adjacent triangles
+ * on this cell side, and clears this triangles adjacent points, and all the
+ * adjacent pointers of the triangles that are adjacent to this cell.
+ */
+HRESULT disconnect_triangle_from_cell(TrianglePtr tri, CCellPtr cell);
 
 
 

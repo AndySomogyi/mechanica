@@ -44,7 +44,7 @@ MxTriangle::MxTriangle(MxTriangleType* type,
     positionsChanged();
 }
 
-int MxTriangle::adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const {
+int MxTriangle::adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const {
     for(int i = 0; i < 3; ++i) {
         if((vertices[i] == a && vertices[(i+1)%3] == b) ||
            (vertices[i] == b && vertices[(i+1)%3] == a)) {
@@ -122,9 +122,9 @@ bool MxTriangle::isConnected() const {
         assert(this == t->triangle);
 
         // check vertices
-        bool tadj0 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[0]->triangle);
-        bool tadj1 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[1]->triangle);
-        bool tadj2 = adjacent(const_cast<TrianglePtr>(this), t->neighbors[2]->triangle);
+        bool tadj0 = adjacent_vertices(const_cast<TrianglePtr>(this), t->neighbors[0]->triangle);
+        bool tadj1 = adjacent_vertices(const_cast<TrianglePtr>(this), t->neighbors[1]->triangle);
+        bool tadj2 = adjacent_vertices(const_cast<TrianglePtr>(this), t->neighbors[2]->triangle);
 
         if(!(tadj0 && tadj1 && tadj2)) {
             std::cout << "error, partial triangle neighbor triangle not adjacent to this triangle" << std::endl;
@@ -143,7 +143,7 @@ bool MxTriangle::isValid() const  {
         if(!cells[c]->isRoot()) {
             for(int i = 0; i < 3; ++i) {
                 assert(pt->neighbors[i]);
-                assert(adjacent(const_cast<TrianglePtr>(this), pt->neighbors[i]->triangle));
+                assert(adjacent_vertices(const_cast<TrianglePtr>(this), pt->neighbors[i]->triangle));
             }
         }
     }

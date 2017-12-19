@@ -230,7 +230,7 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             //}
 
             bool ptAdj = adjacent(p1, p2);
-            bool triAdj = adjacent(p1->triangle, p2->triangle);
+            bool triAdj = adjacent_vertices(p1->triangle, p2->triangle);
 
             if (adjacent(p1, p2)) {
                 return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");

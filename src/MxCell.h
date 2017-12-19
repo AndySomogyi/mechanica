@@ -226,9 +226,7 @@ struct MxCell : MxObject, MxMeshNode {
     bool render = true;
 
 private:
-    HRESULT appendTriangleFromFacet(TrianglePtr tri, int index);
 
-    HRESULT removeTriangleFromFacet(TrianglePtr tri, int index);
 };
 
 

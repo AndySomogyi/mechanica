@@ -76,14 +76,14 @@ EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) :
         EdgeTriangles{tri_to_edge(startTri, index)} {
 }
 
-#define NEW_EDGE_ITERATOR
+
 
 
 EdgeTriangles::EdgeTriangles(const Edge& edge) {
 
     assert(edge[0] && edge[1]);
 
-#ifdef NEW_EDGE_ITERATOR
+#ifdef NEW_EDGE_TRIANGLE
 
     TrianglePtr first = nullptr, prev = nullptr, tri = nullptr;
 

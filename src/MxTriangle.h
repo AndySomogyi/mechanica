@@ -11,6 +11,8 @@
 #include "MxMeshCore.h"
 #include "Magnum/Math/Color.h"
 
+#define NEW_TRIANGLE_ADJ
+
 
 struct MxPartialTriangleType : MxType {
 
@@ -201,6 +203,10 @@ struct MxTriangle : MxObject {
      */
     std::array<TrianglePtr, 3> edgeRing;
 
+
+    std::array<std::array<TrianglePtr, 3>, 2> adjTriangles =
+        {{{{nullptr, nullptr, nullptr}}, {{nullptr, nullptr, nullptr}}}};
+
     /**
      * indices of the two partial triangles that are attached to this triangle.
      * The mesh contains a set of partial triangles.
@@ -254,6 +260,7 @@ struct MxTriangle : MxObject {
     MxTriangle() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
+        adjTriangles {{{{nullptr, nullptr, nullptr}}, {{nullptr, nullptr, nullptr}}}},
         partialTriangles {{
             {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
             {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
@@ -273,9 +280,13 @@ struct MxTriangle : MxObject {
      * If vertices[0] == a and vertices[1] == b or vertices[1] == a and vertices[0] == b,
      * then the edge is in the zero position, and so forth.
      *
+     * If these pair of vertices are in vertex positions [0], [1], then
+     * the edge index is 0, if positions are [1], [2], then edge index is 1,
+     * and if positions are [2], [0], then index is 2.
+     *
      * If the edge does not match, then returns a -1.
      */
-    int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
+    int adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const;
 
 
     /**

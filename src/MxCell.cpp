@@ -34,9 +34,9 @@ bool MxCell::manifold() const {
         }
 
         // check vertices
-        if (!adjacent(t->triangle, t->neighbors[0]->triangle) ||
-            !adjacent(t->triangle, t->neighbors[1]->triangle) ||
-            !adjacent(t->triangle, t->neighbors[2]->triangle)) {
+        if (!adjacent_vertices(t->triangle, t->neighbors[0]->triangle) ||
+            !adjacent_vertices(t->triangle, t->neighbors[1]->triangle) ||
+            !adjacent_vertices(t->triangle, t->neighbors[2]->triangle)) {
             return false;
         }
     }
@@ -63,7 +63,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
                 attrs[i].color[3] = tri.alpha;
             }
         }
-        
+
         else {
             Color4 color;
             if(tri.color[3] > 0) {
@@ -80,11 +80,11 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
             attrs[1].color = color;
             attrs[2].color = color;
         }
-        
+
         attrs[0].position = tri.vertices[0]->position;
         attrs[1].position = tri.vertices[1]->position;
         attrs[2].position = tri.vertices[2]->position;
-        
+
 
     }
 }
@@ -222,35 +222,40 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
     // facet, if no facet, that means that this is a new fact between this cell, and
     // the other cell the triangle is attached to.
 
-    if(tri->cells[otherIndex] == nullptr) {
-        // this creates a facet between root and this cell (if not exists), and
-        // adds the tri to it.
-        mesh->rootCell()->appendChild(tri, otherIndex);
-        assert(tri->cells[otherIndex] == mesh->rootCell());
-    }
+    //if(tri->cells[otherIndex] == nullptr) {
+    //    // this creates a facet between root and this cell (if not exists), and
+    //    // adds the tri to it.
+    //    mesh->rootCell()->appendChild(tri, otherIndex);
+    //    assert(tri->cells[otherIndex] == mesh->rootCell());
+    //}
 
-    std::cout << "tri" << ", {" << tri->vertices[0]->position;
-    std::cout << ", " << tri->vertices[1]->position;
-    std::cout << ", " << tri->vertices[2]->position;
-    std::cout << "}" << std::endl;
+    std::cout << "appendChild{cellId:" << id << ", index:" << index << std::endl <<
+    "\ttri:{" << tri->vertices[0]->id;
+    std::cout << ", " << tri->vertices[1]->id;
+    std::cout << ", " << tri->vertices[2]->id;
+    std::cout << "}," << std::endl;
+    
+    std::cout << "\tboundary:{" << std::endl;
 
     for(int i = 0; i < boundary.size(); ++i) {
         auto pt = boundary[i];
-        std::cout << i << ", {" << pt->triangle->vertices[0]->position;
-        std::cout << ", " << pt->triangle->vertices[1]->position;
-        std::cout << ", " << pt->triangle->vertices[2]->position;
+        std::cout << "\t\tindex:" << i << ", pos:{" << pt->triangle->vertices[0]->id;
+        std::cout << ", " << pt->triangle->vertices[1]->id;
+        std::cout << ", " << pt->triangle->vertices[2]->id;
         std::cout << "}" << std::endl;
     }
+    
+    std::cout << "\t}" << std::endl << "}" << std::endl;
 
-    if(this == mesh->rootCell()) {
-        return S_OK;
-    }
+    //if(this == mesh->rootCell()) {
+    //    return S_OK;
+    //}
 
     // scan through the list of partial triangles, and connect whichever ones share
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
+            if(adjacent_vertices(pt->triangle, tri)) {
                 connect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
@@ -300,61 +305,6 @@ bool MxCell::isRoot() const {
     return this == mesh->rootCell();
 }
 
-HRESULT MxCell::appendTriangleFromFacet(TrianglePtr tri, int index) {
-    if(tri->cells[0] == this || tri->cells[1] == this) {
-        return mx_error(E_FAIL, "triangle is already attached to this cell");
-    }
-
-    if (index != 0 && index != 1) {
-        return mx_error(E_FAIL, "invalid index argument");
-    }
-
-    if (tri->cells[index] != nullptr) {
-        return mx_error(E_FAIL, "triangle is already attached to a cell at the specified index");
-    }
-
-    if (tri->partialTriangles[index].neighbors[0] ||
-        tri->partialTriangles[index].neighbors[1] ||
-        tri->partialTriangles[index].neighbors[2]) {
-        return mx_error(E_FAIL, "triangle partial triangles already connected");
-    }
-
-    tri->cells[index] = this;
-
-    std::cout << "tri" << ", {" << tri->vertices[0]->position;
-    std::cout << ", " << tri->vertices[1]->position;
-    std::cout << ", " << tri->vertices[2]->position;
-    std::cout << "}" << std::endl;
-
-    for(int i = 0; i < boundary.size(); ++i) {
-        auto pt = boundary[i];
-        std::cout << i << ", {" << pt->triangle->vertices[0]->position;
-        std::cout << ", " << pt->triangle->vertices[1]->position;
-        std::cout << ", " << pt->triangle->vertices[2]->position;
-        std::cout << "}" << std::endl;
-    }
-
-    if(this == mesh->rootCell()) {
-        return S_OK;
-    }
-
-    // scan through the list of partial triangles, and connect whichever ones share
-    // an edge with the given triangle.
-    for(MxPartialTriangle *pt : boundary) {
-        for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
-                connect_partial_triangles(pt, &tri->partialTriangles[index]);
-                assert(adjacent(pt, &tri->partialTriangles[index]));
-                break;
-            }
-        }
-    }
-
-    boundary.push_back(&tri->partialTriangles[index]);
-
-    return S_OK;
-}
-
 HRESULT MxCell::topologyChanged() {
     if(renderer) {
         renderer->invalidate();
@@ -362,35 +312,4 @@ HRESULT MxCell::topologyChanged() {
     return S_OK;
 }
 
-HRESULT MxCell::removeTriangleFromFacet(TrianglePtr tri, int index) {
 
-    if (index != 0 && index != 1) {
-        return mx_error(E_FAIL, "invalid index argument");
-    }
-
-    if(tri->cells[index] != this) {
-        return mx_error(E_FAIL, "triangle is not attached to this cell");
-    }
-
-    tri->cells[index] = nullptr;
-
-    if(this == mesh->rootCell()) {
-        return S_OK;
-    }
-
-    // scan through the list of partial triangles, and connect whichever ones share
-    // an edge with the given triangle.
-    for(MxPartialTriangle *pt : boundary) {
-        for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
-                disconnect_partial_triangles(pt, &tri->partialTriangles[index]);
-                assert(!adjacent(pt, &tri->partialTriangles[index]));
-                break;
-            }
-        }
-    }
-
-    remove(boundary, &tri->partialTriangles[index]);
-
-    return S_OK;
-}
