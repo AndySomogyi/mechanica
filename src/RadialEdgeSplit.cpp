@@ -142,7 +142,8 @@ HRESULT RadialEdgeSplit::apply() {
         connect_triangles(tri, nt);
 
         for(int i = 0; i < 2; ++i) {
-            tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
+            // new triangle forms boundary for both cells in the tri
+            tri->cells[i]->boundary.push_back(nt);
             if(tri->cells[i]->renderer) {
                 tri->cells[i]->renderer->invalidate();
             }

@@ -83,15 +83,7 @@ bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
     if (!a || !b || a == b) {
         return false;
     }
-
-    bool result =
-        (a->neighbors[0] == b || a->neighbors[1] == b || a->neighbors[2] == b) ||
-        (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
-
-#ifndef NDEBUG
-    if(result) assert(adjacent_vertices(a->triangle, b->triangle));
-#endif
-    return result;
+    return adjacent_vertices(a->triangle, b->triangle);
 }
 
 
@@ -350,7 +342,46 @@ bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     return false;
 }
 
+static inline bool _directional_adjacent_pointers(CTrianglePtr a, CTrianglePtr b, int cellIndex) {
+    for(int i = 0; i < 3; ++i) {
+        if(a->adjTriangles[cellIndex][i] == b) {
+            return true;
+        }
+    }
+    return false;
+}
 
+bool adjacent_pointers(CTrianglePtr a, CTrianglePtr b, int cellIndex) {
+    bool result;
+    if(cellIndex == 0) {
+        result = _directional_adjacent_pointers(a, b, 0);
+#ifndef NDEBUG
+        assert(result == _directional_adjacent_pointers(b, a, 0));
+#endif
+        return result;
+    }
+    else if(cellIndex == 1) {
+        result = _directional_adjacent_pointers(a, b, 1);
+#ifndef NDEBUG
+        assert(result == _directional_adjacent_pointers(b, a, 1));
+#endif
+        return result;
+    }
+    else {
+#ifndef NDEBUG
+        return _directional_adjacent_pointers(a, b, 0) ||
+            _directional_adjacent_pointers(a, b, 1);
+#else
+        bool r0 = _directional_adjacent_pointers(a, b, 0);
+        assert(r0 == _directional_adjacent_pointers(b, a, 0));
+        
+        bool r1 = _directional_adjacent_pointers(a, b, 1);
+        assert(r1 == _directional_adjacent_pointers(b, a, 1));
+        
+        return r0 || r1;
+#endif
+    }
+}
 
 int connect_triangles(TrianglePtr a, TrianglePtr b) {
     // the shared vertices
@@ -407,4 +438,10 @@ int connect_triangles(TrianglePtr a, TrianglePtr b) {
     }
 
     return result;
+}
+
+HRESULT disconnect_triangle_from_cell(TrianglePtr tri, CCellPtr cell) {
+}
+
+HRESULT disconnect_triangles(TrianglePtr a, TrianglePtr b, int cell) {
 }

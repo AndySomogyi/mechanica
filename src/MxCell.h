@@ -88,7 +88,7 @@ struct MxCell : MxObject, MxMeshNode {
     /**
      * the closed set of faces that define the boundary of this cell
      */
-    std::vector<struct MxPartialTriangle*> boundary;
+    std::vector<TrianglePtr> boundary;
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state

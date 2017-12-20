@@ -24,19 +24,13 @@ bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex 
 
 bool MxCell::manifold() const {
 
-    for(auto t : boundary) {
+    for(auto tri : boundary) {
+        int indx = tri->cellIndex(this);
 
         // check pointers
-        if (!adjacent(t, t->neighbors[0]) ||
-            !adjacent(t, t->neighbors[1]) ||
-            !adjacent(t, t->neighbors[2])) {
-            return false;
-        }
-
-        // check vertices
-        if (!adjacent_vertices(t->triangle, t->neighbors[0]->triangle) ||
-            !adjacent_vertices(t->triangle, t->neighbors[1]->triangle) ||
-            !adjacent_vertices(t->triangle, t->neighbors[2]->triangle)) {
+        if (!adjacent_vertices(tri, tri->adjTriangles[indx][0]) ||
+            !adjacent_vertices(tri, tri->adjTriangles[indx][1]) ||
+            !adjacent_vertices(tri, tri->adjTriangles[indx][2])) {
             return false;
         }
     }
@@ -50,7 +44,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
     for(uint i = 0; i < boundary.size() && ptr < vertexCount * stride + (uchar*)buffer; ++i, ptr += 3 * stride) {
 
 
-        const MxTriangle &tri = *(boundary[i])->triangle;
+        const MxTriangle &tri = *boundary[i];
         VertexAttribute *attrs = (VertexAttribute*)ptr;
 
         if(true) {
@@ -108,7 +102,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 void MxCell::dump() {
 
     for (uint i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &ti = *boundary[i]->triangle;
+        const MxTriangle &ti = *boundary[i];
 
         std::cout << "face[" << i << "] {" << std::endl;
         //std::cout << "vertices:" << ti.vertices << std::endl;
@@ -122,23 +116,15 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
         return mx_error(E_FAIL, "triangle does not belong to this cell");
     }
 
-    int index = tri->cells[0] == this ? 0 : 1;
+    int index = tri->cellIndex(this);
 
-    tri->cells[index] = nullptr;
-
-    PTrianglePtr pt = &tri->partialTriangles[index];
-
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            if(pt->neighbors[i] && pt->neighbors[i]->neighbors[j] == pt) {
-                pt->neighbors[i]->neighbors[j] = nullptr;
-                break;
-            }
-        }
-        pt->neighbors[i] = nullptr;
+    if(index < 0) {
+        return mx_error(E_FAIL, "triangle does not belong to this cell");
     }
 
-    remove(boundary, pt);
+    disconnect_triangle_from_cell(tri, this);
+
+    remove(boundary, tri);
 
     return S_OK;
 }
@@ -174,7 +160,7 @@ void MxCell::writePOV(std::ostream& out) {
     out << "face_indices {" << std::endl;
     out << boundary.size()  << std::endl;
     for (int i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &face = *boundary[i]->triangle;
+        const MxTriangle &face = *boundary[i];
         //out << face.vertices << std::endl;
         //auto &pf = boundary[i];
         //for (int j = 0; j < 3; ++j) {
@@ -200,9 +186,9 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
         return mx_error(E_FAIL, "triangle is already attached to a cell at the specified index");
     }
 
-    if (tri->partialTriangles[index].neighbors[0] ||
-        tri->partialTriangles[index].neighbors[1] ||
-        tri->partialTriangles[index].neighbors[2]) {
+    if (tri->adjTriangles[index][0] ||
+        tri->adjTriangles[index][1] ||
+        tri->adjTriangles[index][2]) {
         return mx_error(E_FAIL, "triangle partial triangles already connected");
     }
 
@@ -234,17 +220,18 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
     std::cout << ", " << tri->vertices[1]->id;
     std::cout << ", " << tri->vertices[2]->id;
     std::cout << "}," << std::endl;
-    
+
     std::cout << "\tboundary:{" << std::endl;
 
+
     for(int i = 0; i < boundary.size(); ++i) {
-        auto pt = boundary[i];
-        std::cout << "\t\tindex:" << i << ", pos:{" << pt->triangle->vertices[0]->id;
-        std::cout << ", " << pt->triangle->vertices[1]->id;
-        std::cout << ", " << pt->triangle->vertices[2]->id;
+        auto bt = boundary[i];
+        std::cout << "\t\tindex:" << i << ", pos:{" << bt->vertices[0]->id;
+        std::cout << ", " << bt->vertices[1]->id;
+        std::cout << ", " << bt->vertices[2]->id;
         std::cout << "}" << std::endl;
     }
-    
+
     std::cout << "\t}" << std::endl << "}" << std::endl;
 
     //if(this == mesh->rootCell()) {
@@ -253,17 +240,17 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
 
     // scan through the list of partial triangles, and connect whichever ones share
     // an edge with the given triangle.
-    for(MxPartialTriangle *pt : boundary) {
+    for(TrianglePtr bt : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent_vertices(pt->triangle, tri)) {
-                connect_partial_triangles(pt, &tri->partialTriangles[index]);
-                assert(adjacent(pt, &tri->partialTriangles[index]));
+            if(adjacent_vertices(bt, tri)) {
+                connect_triangles(bt, tri);
+                assert(adjacent_pointers(bt, tri, index));
                 break;
             }
         }
     }
 
-    boundary.push_back(&tri->partialTriangles[index]);
+    boundary.push_back(tri);
 
     return S_OK;
 }
@@ -274,8 +261,7 @@ HRESULT MxCell::positionsChanged() {
     centroid = Vector3{0., 0., 0.};
     int ntri = 0;
 
-    for(auto pt : boundary) {
-        TrianglePtr tri = pt->triangle;
+    for(auto tri : boundary) {
 
         ntri += 1;
         centroid += tri->centroid;

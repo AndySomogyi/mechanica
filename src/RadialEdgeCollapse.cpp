@@ -367,48 +367,53 @@ static HRESULT canTriangleVertexBeMoved(const TrianglePtr tri,
  *     rightTrac: same thing
  *     apex: the apex vertex
  */
-static void reconnectPartialTriangles(PTrianglePtr center,
+static void reconnectTriangles(TrianglePtr center,
         const Edge& edge, float leftFrac,
         float rightFrac, VertexPtr apex ) {
 
-    // first find the two remaining partial triangles, the left and right ones.
-    PTrianglePtr pLeft = nullptr, pRight = nullptr;
+    for(int cell = 0; cell < 2; ++cell) {
 
-    assert(incident(center, edge));
-    assert(incident(center, {{edge[0], apex}}));
-    assert(incident(center, {{edge[1], apex}}));
+        // first find the two remaining partial triangles, the left and right ones.
+        TrianglePtr pLeft = nullptr, pRight = nullptr;
 
-    for(int j = 0; j < 3; ++j) {
-        PTrianglePtr pn = center->neighbors[j];
-        if(!pn) {
-            continue;
+        assert(incident(center, edge));
+        assert(incident(center, {{edge[0], apex}}));
+        assert(incident(center, {{edge[1], apex}}));
+
+
+
+        for(int j = 0; j < 3; ++j) {
+            TrianglePtr pn = center->adjTriangles[cell][j];
+            if(!pn) {
+                continue;
+            }
+
+            if(incident(pn, {{edge[0], apex}})) {
+                pLeft = pn;
+                continue;
+            }
+            if(incident(pn, {{edge[1], apex}})) {
+                pRight = pn;
+                continue;
+            }
         }
 
-        if(incident(pn, {{edge[0], apex}})) {
-            pLeft = pn;
-            continue;
-        }
-        if(incident(pn, {{edge[1], apex}})) {
-            pRight = pn;
-            continue;
-        }
+        assert(pLeft && pRight);
+
+        assert(!adjacent_pointers(pLeft, pRight, cell));
+
+        disconnect_triangles(center, pLeft, cell);
+        disconnect_triangles(center, pRight, cell);
+        connect_triangles(pLeft, pRight);
+        assert(center->unboundNeighborCount(cell) >= 2);
+
+        assert(isfinite(leftFrac) && leftFrac > 0);
+        assert(isfinite(rightFrac) && rightFrac > 0);
+        assert(isfinite(center->mass[cell]) && center->mass[cell] > 0);
+
+        pLeft->mass[cell] += leftFrac * center->mass[cell];
+        pRight->mass[cell] += rightFrac * center->mass[cell];
     }
-
-    assert(pLeft && pRight);
-
-    assert(!adjacent(pLeft, pRight));
-
-    disconnect_partial_triangles(center, pLeft);
-    disconnect_partial_triangles(center, pRight);
-    connect_partial_triangles(pLeft, pRight);
-    assert(center->unboundNeighborCount() >= 2);
-
-    assert(isfinite(leftFrac) && leftFrac > 0);
-    assert(isfinite(rightFrac) && rightFrac > 0);
-    assert(isfinite(center->mass) && center->mass > 0);
-
-    pLeft->mass += leftFrac * center->mass;
-    pRight->mass += rightFrac * center->mass;
 };
 
 /**
@@ -455,13 +460,8 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
 
     // Reconnect the partial triangles. This function performs the
     // partial triangle material moving.
-    for(int i = 0; i < 2; ++i) {
-        if(!rt.tri->cells[i]->isRoot()) {
-            reconnectPartialTriangles(&rt.tri->partialTriangles[i],
-                    edge, leftArea / totalArea, rightArea / totalArea,
-                    rt.apex);
-        }
-    }
+    reconnectTriangles(rt.tri, edge, leftArea / totalArea, rightArea / totalArea, rt.apex);
+
 
     disconnect_triangle_vertex(rt.tri, edge[0]);
     disconnect_triangle_vertex(rt.tri, edge[1]);

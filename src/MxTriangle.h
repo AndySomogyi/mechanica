@@ -224,6 +224,8 @@ struct MxTriangle : MxObject {
 
     uint32_t id;
 
+    std::array<float, 2> mass;
+
     /**
      * does this triangle match the given set of vertex
      * indices.
@@ -250,6 +252,10 @@ struct MxTriangle : MxObject {
         assert(cell == cells[0] || cell == cells[1]);
         float dir = cell == cells[0] ? 1.0 : -1.0;
         return dir * normal;
+    }
+
+    inline int cellIndex(CCellPtr cell) const {
+        return (cell == cells[0]) ? 0 : ((cell == cells[1]) ? 1 : -1);
     }
 
     /**
@@ -354,6 +360,21 @@ struct MxTriangle : MxObject {
      * incident to this triangle, returns null.
      */
     TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
+
+    int unboundNeighborCount(const CellPtr cell) const {
+        return unboundNeighborCount(cellIndex(cell));
+    }
+
+
+    int unboundNeighborCount(int cell) const {
+        int count = 0;
+        for(int i = 0; i < 3; ++i) {
+            if(adjTriangles[cell][i] == nullptr) {
+                count += 1;
+            }
+        }
+        return count;
+    }
 };
 
 namespace Magnum { namespace Math {

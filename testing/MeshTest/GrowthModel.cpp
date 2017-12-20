@@ -82,9 +82,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     float diff =  - cell->area;
     //float diff = -0.35;
 
-    for(auto pt: cell->boundary) {
-
-        TrianglePtr tri = pt->triangle;
+    for(auto tri: cell->boundary) {
 
         assert(tri->area > 0);
 
@@ -123,8 +121,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 
     float diff = targetVolume - cell->volume;
 
-    for(auto pt: cell->boundary) {
-        TrianglePtr tri = pt->triangle;
+    for(auto tri: cell->boundary) {
 
         Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
 

@@ -148,8 +148,8 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[8];
-    MxCell &cell = *createCell(Gmsh::ElementType::Hexahedron, val.id);
-    cell.id = cellId++;
+    CellPtr cell = createCell(Gmsh::ElementType::Hexahedron, val.id);
+    cell->id = cellId++;
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -176,19 +176,19 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     addQuadToCell(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
-    assert(cell.manifold() && "Cell is not manifold");
+    assert(cell->manifold() && "Cell is not manifold");
 
-    for(PTrianglePtr pt : cell.boundary) {
-        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
-                                                 pt->triangle->vertices[1]->position,
-                                                 pt->triangle->vertices[2]->position);
-        pt->mass = area * density;
+    for(TrianglePtr tri : cell->boundary) {
+        float area = Magnum::Math::triangle_area(tri->vertices[0]->position,
+                                                 tri->vertices[1]->position,
+                                                 tri->vertices[2]->position);
+        tri->mass[tri->cellIndex(cell)] = area * density;
     }
 
-    assert(cell.positionsChanged() == S_OK);
+    assert(cell->positionsChanged() == S_OK);
 }
 
-void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
+void MxMeshGmshImporter::addQuadToCell(CellPtr cell, const std::array<VertexPtr, 4>& verts) {
 
     assert(mesh.valid(verts[0]));
     assert(mesh.valid(verts[1]));
@@ -218,9 +218,9 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
         }
 
         for(TrianglePtr tri : quad->triangles) {
-            cell.appendChild(tri, 1);
+            cell->appendChild(tri, 1);
         }
-        quad->cells[1] = &cell;
+        quad->cells[1] = cell;
 
     } else {
 
@@ -244,7 +244,7 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
                 createTriangleForQuad(VI{{verts[3], verts[0], verts[1]}}, quad);
         }
 
-        quad->cells[0] = &cell;
+        quad->cells[0] = cell;
         quad->cells[1] = mesh.rootCell();
 
         // appending a triangle to a cell, where the other side of the triangle is
@@ -304,17 +304,17 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     createTriangleForCell(VI{{vertexIds[0], vertexIds[2], vertexIds[1]}}, cell);
     createTriangleForCell(VI{{vertexIds[3], vertexIds[4], vertexIds[5]}}, cell);
 
-    addQuadToCell(*cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
-    addQuadToCell(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
-    addQuadToCell(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
+    addQuadToCell(cell, {{vertexIds[5], vertexIds[4], vertexIds[1], vertexIds[2]}});
+    addQuadToCell(cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
+    addQuadToCell(cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
 
     assert(cell->manifold() && "Cell is not manifold");
 
-    for(PTrianglePtr pt : cell->boundary) {
-        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
-                                                 pt->triangle->vertices[1]->position,
-                                                 pt->triangle->vertices[2]->position);
-        pt->mass = area * density;
+    for(TrianglePtr tri : cell->boundary) {
+        float area = Magnum::Math::triangle_area(tri->vertices[0]->position,
+                                                 tri->vertices[1]->position,
+                                                 tri->vertices[2]->position);
+        tri->mass[tri->cellIndex(cell)] = area * density;
     }
 
     assert(mesh.valid(cell));

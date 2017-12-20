@@ -38,6 +38,8 @@ inline bool incident(CVertexPtr v, CPTrianglePtr tri) {
 
 bool adjacent(CPTrianglePtr a, CPTrianglePtr b);
 
+bool adjacent_pointers(CTrianglePtr a, CTrianglePtr b, int cellIndex);
+
 /**
  * Is the given triangle tri incident to the edge formed
  * by vertices a and b. The partial triangle incident if the
@@ -162,6 +164,17 @@ int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex);
  *
  * Connects the adjTriangles and partial triangles of each triangle.
  *
+ * If the triangles have both their adj pointers empty, then they
+ * are simply connected to form a manifold pair.
+ *
+ * one triangle might be already connected, and the other other
+ * might not be connected (adj pointers empty). In this case, we
+ * look for the adj triangle on the edge, and look at it's cells.
+ * this could form a valid T configuration, where the existing pair
+ * of triangles have 
+ 
+ 
+ *
  * Successful results:
  *     * The triangles share an edge, and adjTriangles is null,
  *       connects these pointers.
@@ -179,6 +192,12 @@ HRESULT connect_triangles(TrianglePtr a, TrianglePtr b);
  * adjacent pointers of the triangles that are adjacent to this cell.
  */
 HRESULT disconnect_triangle_from_cell(TrianglePtr tri, CCellPtr cell);
+
+
+/**
+ * Disconnects the adjacent triangle pointers from the pair of cells.
+ */
+HRESULT disconnect_triangles(TrianglePtr a, TrianglePtr b, int cell=-1);
 
 
 

@@ -94,7 +94,7 @@ private:
     /**
      * Add a square facet with the given vertices in CCW order.
      */
-    void addQuadToCell(MxCell &cell, const std::array<VertexPtr, 4> &verts);
+    void addQuadToCell(CellPtr cell, const std::array<VertexPtr, 4> &verts);
 
     MxCell *createCell(Gmsh::ElementType, int id);
 

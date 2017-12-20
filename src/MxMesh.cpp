@@ -170,7 +170,7 @@ bool MxMesh::valid(CellPtr c) {
         return false;
     }
 
-    for(PTrianglePtr p : c->boundary) {
+    for(TrianglePtr p : c->boundary) {
         if(!valid(p)) {
             return false;
         }
@@ -216,12 +216,16 @@ HRESULT MxMesh::positionsChanged() {
         }
     }
 
+    /*
+
     if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
         return result;
     }
     if((result = meshOperations.apply()) != S_OK) {
         return result;
     }
+
+    */
 
 
     for(CellPtr cell : cells) {
