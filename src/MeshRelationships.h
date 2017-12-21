@@ -10,7 +10,12 @@
 
 #include "MxCell.h"
 
-bool adjacent(CTrianglePtr a, CTrianglePtr b);
+/**
+ * Determines if a pair of triangles share a pair of vertices that
+ * form a common edge. Note, this does NOT check the pointer relationships
+ * only that the triangles share two vertices.
+ */
+bool adjacent_triangle_vertices(CTrianglePtr a, CTrianglePtr b);
 
 bool incident(CTrianglePtr t, CCellPtr c);
 
@@ -114,6 +119,11 @@ void reconnect(PTrianglePtr o, PTrianglePtr n, const Edge&);
  * two triangles that were disconnected.
  */
 void disconnect_triangle_vertex(TrianglePtr tri, VertexPtr v);
+
+/**
+ * replaces the o vertex with the v vertex.
+ */
+HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v);
 
 void connect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 

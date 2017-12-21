@@ -275,7 +275,7 @@ struct MxTriangle : MxObject {
      *
      * If the edge does not match, then returns a -1.
      */
-    int adjacentEdgeIndex(const VertexPtr a, const VertexPtr b) const;
+    int adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const;
 
 
     /**

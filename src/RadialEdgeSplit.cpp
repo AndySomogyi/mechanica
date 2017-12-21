@@ -123,7 +123,7 @@ HRESULT RadialEdgeSplit::apply() {
         assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
 
         // makes sure that new and old tri share an edge.
-        assert(adjacent(tri, nt));
+        assert(adjacent_triangle_vertices(tri, nt));
 
         // removes the edge[1] - outer edge connection connection from the old
         // triangle and replaces it with the new triangle,

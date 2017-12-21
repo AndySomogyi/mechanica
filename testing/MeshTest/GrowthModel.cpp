@@ -31,7 +31,8 @@ static struct BlueCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
+    //loadSimpleSheetModel();
+    loadSheetModel();
 
     testEdges();
 }

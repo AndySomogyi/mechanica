@@ -34,9 +34,9 @@ bool MxCell::manifold() const {
         }
 
         // check vertices
-        if (!adjacent(t->triangle, t->neighbors[0]->triangle) ||
-            !adjacent(t->triangle, t->neighbors[1]->triangle) ||
-            !adjacent(t->triangle, t->neighbors[2]->triangle)) {
+        if (!adjacent_triangle_vertices(t->triangle, t->neighbors[0]->triangle) ||
+            !adjacent_triangle_vertices(t->triangle, t->neighbors[1]->triangle) ||
+            !adjacent_triangle_vertices(t->triangle, t->neighbors[2]->triangle)) {
             return false;
         }
     }
@@ -250,7 +250,7 @@ HRESULT MxCell::appendChild(TrianglePtr tri, int index) {
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
+            if(adjacent_triangle_vertices(pt->triangle, tri)) {
                 connect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
@@ -342,7 +342,7 @@ HRESULT MxCell::appendTriangleFromFacet(TrianglePtr tri, int index) {
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
+            if(adjacent_triangle_vertices(pt->triangle, tri)) {
                 connect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(adjacent(pt, &tri->partialTriangles[index]));
                 break;
@@ -382,7 +382,7 @@ HRESULT MxCell::removeTriangleFromFacet(TrianglePtr tri, int index) {
     // an edge with the given triangle.
     for(MxPartialTriangle *pt : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent(pt->triangle, tri)) {
+            if(adjacent_triangle_vertices(pt->triangle, tri)) {
                 disconnect_partial_triangles(pt, &tri->partialTriangles[index]);
                 assert(!adjacent(pt, &tri->partialTriangles[index]));
                 break;

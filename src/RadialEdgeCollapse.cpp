@@ -230,7 +230,7 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             //}
 
             bool ptAdj = adjacent(p1, p2);
-            bool triAdj = adjacent(p1->triangle, p2->triangle);
+            bool triAdj = adjacent_triangle_vertices(p1->triangle, p2->triangle);
 
             if (adjacent(p1, p2)) {
                 return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
@@ -360,7 +360,7 @@ static HRESULT canTriangleVertexBeMoved(const TrianglePtr tri,
  * and their material gets moved down to neighbors that remain.
  *
  * @param
- *     center: the partial triangle to keep
+ *     center: the partial triangle that's being removed.
  *     edge: the edge that is being collapsed, edge[0] is the
  *           left vertex, edge[1] is the right.
  *     leftFrac: fraction of triangle area on the left side of split
@@ -368,40 +368,35 @@ static HRESULT canTriangleVertexBeMoved(const TrianglePtr tri,
  *     apex: the apex vertex
  */
 static void reconnectPartialTriangles(PTrianglePtr center,
-        const Edge& edge, float leftFrac,
+        VertexPtr vsrc, VertexPtr vdest, float leftFrac,
         float rightFrac, VertexPtr apex ) {
 
     // first find the two remaining partial triangles, the left and right ones.
     PTrianglePtr pLeft = nullptr, pRight = nullptr;
 
-    assert(incident(center, edge));
-    assert(incident(center, {{edge[0], apex}}));
-    assert(incident(center, {{edge[1], apex}}));
+    assert(incident(center, {{vsrc, vdest}}));
+    assert(incident(center, {{vsrc, apex}}));
+    assert(incident(center, {{vdest, apex}}));
 
-    for(int j = 0; j < 3; ++j) {
-        PTrianglePtr pn = center->neighbors[j];
-        if(!pn) {
-            continue;
-        }
+    int l = center->triangle->adjacentEdgeIndex(apex, vsrc);
+    int r = center->triangle->adjacentEdgeIndex(apex, vdest);
 
-        if(incident(pn, {{edge[0], apex}})) {
-            pLeft = pn;
-            continue;
-        }
-        if(incident(pn, {{edge[1], apex}})) {
-            pRight = pn;
-            continue;
-        }
-    }
+    assert(l >= 0 && r >= 0);
+
+    pLeft = center->neighbors[l];
+    pRight = center->neighbors[r];
 
     assert(pLeft && pRight);
-
+    assert(incident(pLeft->triangle, {{apex, vsrc}}));
+    assert(incident(pRight->triangle, {{apex, vdest}}));
     assert(!adjacent(pLeft, pRight));
 
     disconnect_partial_triangles(center, pLeft);
     disconnect_partial_triangles(center, pRight);
-    connect_partial_triangles(pLeft, pRight);
+
     assert(center->unboundNeighborCount() >= 2);
+    assert(pLeft->unboundNeighborCount() == 1);
+    assert(pRight->unboundNeighborCount() == 1);
 
     assert(isfinite(leftFrac) && leftFrac > 0);
     assert(isfinite(rightFrac) && rightFrac > 0);
@@ -409,6 +404,15 @@ static void reconnectPartialTriangles(PTrianglePtr center,
 
     pLeft->mass += leftFrac * center->mass;
     pRight->mass += rightFrac * center->mass;
+
+    for(int i = 0; i < 3; ++i) {
+        if(pLeft->neighbors[i] == nullptr) {
+            pLeft->neighbors[i] = pRight;
+        }
+        if(pRight->neighbors[i] == nullptr) {
+            pRight->neighbors[i] = pLeft;
+        }
+    }
 };
 
 /**
@@ -435,21 +439,20 @@ static void reconnectPartialTriangles(PTrianglePtr center,
  *       to the new center position.
  */
 static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
-        const VertexPtr vsrc, const VertexPtr vdest, const Edge& edge,
-        const Vector3 &pos) {
+        const VertexPtr vsrc, const VertexPtr vdest, const Vector3 &pos) {
 
     // Move the material from this triangle to it's four connected
     // surface partial triangles that belong to the upper and lower
     // cell surfaces
-    float leftArea = Magnum::Math::triangle_area(edge[0]->position,
+    float leftArea = Magnum::Math::triangle_area(vsrc->position,
             rt.apex->position, pos);
-    float rightArea = Magnum::Math::triangle_area(edge[1]->position,
+    float rightArea = Magnum::Math::triangle_area(vdest->position,
             rt.apex->position, pos);
 
     // need to calculate area here, because the area in the triangle
     // has not been updated yet.
-    float totalArea = Magnum::Math::triangle_area(edge[0]->position,
-            edge[1]->position, rt.apex->position);
+    float totalArea = Magnum::Math::triangle_area(vsrc->position,
+            vdest->position, rt.apex->position);
 
     assert(leftArea > 0 && rightArea > 0);
 
@@ -458,13 +461,13 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
     for(int i = 0; i < 2; ++i) {
         if(!rt.tri->cells[i]->isRoot()) {
             reconnectPartialTriangles(&rt.tri->partialTriangles[i],
-                    edge, leftArea / totalArea, rightArea / totalArea,
+                    vsrc, vdest, leftArea / totalArea, rightArea / totalArea,
                     rt.apex);
         }
     }
 
-    disconnect_triangle_vertex(rt.tri, edge[0]);
-    disconnect_triangle_vertex(rt.tri, edge[1]);
+    disconnect_triangle_vertex(rt.tri, vsrc);
+    disconnect_triangle_vertex(rt.tri, vdest);
     disconnect_triangle_vertex(rt.tri, rt.apex);
 
     assert(rt.tri->vertices[0] == nullptr &&
@@ -695,7 +698,7 @@ HRESULT RadialEdgeCollapse::apply() {
     // collapse the radial edge triangle. This also removes the
     // triangle from both the edge vertices, and deletes the triangle.
     for(uint i = 0; i < edgeTriSize; ++i) {
-        res = collapseTriangleOnEdge(mesh, triangles[i], vsrc, vdest, edge, pos);
+        res = collapseTriangleOnEdge(mesh, triangles[i], vsrc, vdest, pos);
         assert(res == S_OK);
     }
 
