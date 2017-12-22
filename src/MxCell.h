@@ -82,8 +82,8 @@ struct MxCellType : MxType {
  */
 struct MxCell : MxObject, MxMeshNode {
 
-    MxCell(MxCellType *type, MeshPtr msh, MxReal *stateVector) :
-        MxObject{type}, MxMeshNode{msh}, stateVector{stateVector} {};
+    MxCell(uint id, MxCellType *type, MeshPtr msh, MxReal *stateVector) :
+        MxObject{type}, MxMeshNode{msh, id}, stateVector{stateVector} {};
 
     /**
      * the closed set of faces that define the boundary of this cell
@@ -105,6 +105,8 @@ struct MxCell : MxObject, MxMeshNode {
      * boundary in non-manifold.
      */
     bool manifold() const;
+
+    bool isValid() const;
 
 
     /**
@@ -162,7 +164,7 @@ struct MxCell : MxObject, MxMeshNode {
      * triangle winding is backwards, and must go in the MxTriangle::cells[1] slot. Must
      * go in the correct slot so the normal gets correctly calculated.
      */
-    HRESULT appendChild(TrianglePtr tri, int index);
+    HRESULT appendChild(PTrianglePtr tri);
 
 
     /**
@@ -219,16 +221,12 @@ struct MxCell : MxObject, MxMeshNode {
 
     Vector3 centroid = {0., 0., 0.};
 
-    uint32_t id = 0;
-
     MxCellRenderer *renderer = nullptr;
 
     bool render = true;
 
 private:
-    HRESULT appendTriangleFromFacet(TrianglePtr tri, int index);
 
-    HRESULT removeTriangleFromFacet(TrianglePtr tri, int index);
 };
 
 

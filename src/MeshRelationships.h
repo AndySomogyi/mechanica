@@ -17,6 +17,8 @@
  */
 bool adjacent_triangle_vertices(CTrianglePtr a, CTrianglePtr b);
 
+bool adjacent_triangle_pointers(CTrianglePtr a, CTrianglePtr b);
+
 bool incident(CTrianglePtr t, CCellPtr c);
 
 inline bool incident(CCellPtr c, CTrianglePtr t ) {

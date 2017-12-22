@@ -103,6 +103,12 @@ private:
         return facet && (facet->cells[0] == cell || facet->cells[1] == cell);
     }
 
+    /**
+     * Look over all of the new triangles, and those that are not connected
+     * on both sides, connect the empty side to the root cell.
+     */
+    void addUnclaimedPartialTrianglesToRoot();
+
     MxMesh &mesh;
     Gmsh::Mesh gmsh;
 

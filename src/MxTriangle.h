@@ -10,6 +10,7 @@
 
 #include "MxMeshCore.h"
 #include "Magnum/Math/Color.h"
+#include <iostream>
 
 
 struct MxPartialTriangleType : MxType {
@@ -118,6 +119,8 @@ struct MxPartialTriangle : MxObject {
         }
         return count;
     }
+
+    bool isValid() const;
 };
 
 
@@ -144,6 +147,8 @@ struct MxTriangleType : MxType {
  *     *
  */
 struct MxTriangle : MxObject {
+
+    const uint id;
 
     /**
      * The triangle aspect ratio for the three corner vertex positions of a triangle.
@@ -216,8 +221,6 @@ struct MxTriangle : MxObject {
      */
     std::array<Magnum::Vector3, 3> force;
 
-    uint32_t id;
-
     /**
      * does this triangle match the given set of vertex
      * indices.
@@ -262,7 +265,7 @@ struct MxTriangle : MxObject {
     {}
 
 
-    MxTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
+    MxTriangle(uint _id, MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
             const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
             const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}});
 
@@ -324,8 +327,38 @@ struct MxTriangle : MxObject {
      *              adjacent to either vert of cell.
      */
     TrianglePtr nextTriangleInFan(CVertexPtr vert,
-            CCellPtr cell, CTrianglePtr prev) const;
+                                  CCellPtr cell, CTrianglePtr prev) const;
+
+    /**
+     * Finds the next triangle in a radial edge.
+     *
+     * The prev parameter is needed to determine the shared edge.
+     *
+     * Find this triangle's partial triangle which has a neighboring
+     * partial triangle who's triangle pointer is the previous triangle.
+     * This tells us the index of the partial triangle that is adjacent
+     * to one of the previous triangle's partial triangles. To find the
+     * next triangle, grab the this triangle's opposite partial triangle.
+     * Then that partial triangle's neighbor in the same index slot is
+     * oriented towards the same vertex pair. The next triangle is then
+     * the triangle pointed to by this neighboring partial triangle.
+     *
+     * @param prev: The previous triangle, must not be null
+     *
+     * @returns: the next triangle, or null if prev is not adjacent to this triangle.
+     */
+    TrianglePtr nextTriangleInRing(CTrianglePtr prev) const;
+
+    /**
+     * Finds the first triangle that is adjacent to this triangle
+     * via the given pair of vertices. If either of the vertices are not
+     * incident to this triangle, returns null.
+     */
+    TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
+
 };
+
+std::ostream& operator<<(std::ostream& os, CTrianglePtr tri);
 
 namespace Magnum { namespace Math {
 

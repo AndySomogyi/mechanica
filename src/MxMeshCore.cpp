@@ -7,6 +7,7 @@
 
 #include "MxMeshCore.h"
 #include "MxTriangle.h"
+#include "MxDebug.h"
 
 float MxVertex::minForceDivergence;
 float MxVertex::maxForceDivergence;
@@ -51,4 +52,10 @@ void MxVertex::rebuildCells() {
             _cells.push_back(tri->cells[1]);
         }
     }
+}
+
+std::ostream& operator <<(std::ostream& os, CVertexPtr v)
+{
+    os << "{id:" << v->id << ", pos:" << v->position << "}";
+    return os;
 }

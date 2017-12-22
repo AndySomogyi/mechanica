@@ -427,7 +427,11 @@ void MxMeshVoronoiImporter::createTriangleForCell(
 
     Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
     float orientation = Math::dot(meshNorm, tri->normal);
-    cell->appendChild(tri, orientation > 0 ? 0 : 1);
+
+    int cellIndx = orientation > 0 ? 0 : 1;
+    int rootIndx = (cellIndx+1)%2;
+    cell->appendChild(&tri->partialTriangles[cellIndx]);
+    mesh.rootCell()->appendChild(&tri->partialTriangles[rootIndx]);
 }
 
 

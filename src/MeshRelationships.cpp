@@ -14,9 +14,6 @@ bool incident(CTrianglePtr t, CCellPtr c) {
 }
 
 bool adjacent_triangle_vertices(CTrianglePtr a, CTrianglePtr b) {
-    if(a == b) {
-        return false;
-    }
 
     for(int k = 0; k < 3; ++k) {
         if ((a->vertices[0] == b->vertices[k] &&
@@ -60,39 +57,14 @@ void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
     // check to see that triangles share adjacent vertices.
     assert(adjacent_triangle_vertices(a, b));
 
-    #ifndef NDEBUG
-    int conCnt = 0;
-    int rootCnt = 0;
-    #endif
-
     // hook up the partial triangles on the correct cell sides.
     for(uint i = 0; i < 2; ++i) {
-        // don't connect root facing ptris.
-        // in non-debug mode, we never hit the inner loop if
-        // a[i] is the root cell.
-        #ifdef NDEBUG
-        if(a->cells[i]->isRoot()) continue;
-        #endif
-
         for(uint j = 0; j < 2; ++j) {
             if(a->cells[i] == b->cells[j]) {
-                #ifndef NDEBUG
-                if(a->cells[i]->isRoot()) {
-                    rootCnt++;
-                    continue;
-                }
-                #endif
                 connect_partial_triangles(&a->partialTriangles[i], &b->partialTriangles[j]);
-                #ifndef NDEBUG
-                conCnt++;
-                #endif
             }
         }
     }
-
-    #ifndef NDEBUG
-    assert(rootCnt > 0 || conCnt > 0);
-    #endif
 }
 
 typedef std::array<int, 2> EdgeIndx;
@@ -103,16 +75,7 @@ inline EdgeIndx adjacent_edge_indx(CPTrianglePtr a, CPTrianglePtr b) {
     EdgeIndx result;
 
     VertexPtr v1 = nullptr, v2 = nullptr;
-    
-    /*
-    for(int i = 0; i < 3; ++i) {
-        std::cout << "a." << i << ":" << a->triangle->vertices[i]->id << std::endl;
-    }
 
-    for(int i = 0; i < 3; ++i) {
-        std::cout << "b." << i << ":" << b->triangle->vertices[i]->id << std::endl;
-    }
-     */
 
     for(int i = 0; i < 3  && (v1 == nullptr || v2 == nullptr); ++i) {
         for(int j = 0; j < 3 && (v1 == nullptr || v2 == nullptr); ++j) {
@@ -171,28 +134,6 @@ bool incident(CTrianglePtr tri, CVertexPtr v) {
     return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
 }
 
-/*
-void disconnect(TrianglePtr tri, const Edge& edge) {
-    assert(incident(tri, edge[0]));
-    assert(incident(tri, edge[1]));
-    if(!tri->cells[0]->isRoot()) { disconnect(&tri->partialTriangles[0], edge); }
-    if(!tri->cells[1]->isRoot()) { disconnect(&tri->partialTriangles[1], edge); }
-}
-
-void disconnect(PTrianglePtr pt, const Edge& edge) {
-    for(uint i = 0; i < 3; ++i) {
-        if(pt->neighbors[i] &&
-           pt->neighbors[i]->triangle &&
-           incident(pt->neighbors[i]->triangle, edge[0]) &&
-           incident(pt->neighbors[i]->triangle, edge[1])) {
-            disconnect(pt, pt->neighbors[i]);
-            return;
-        }
-    }
-    assert(0 && "partial triangle is not adjacent to given edge");
-}
-*/
-
 bool incident(CPTrianglePtr pt, const Edge& edge) {
     return incident(pt->triangle, edge);
 }
@@ -233,17 +174,6 @@ void disconnect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
     }
 
     assert(0 && "triangle did not match vertex");
-
-    /*
-    for(uint i = 0; i < 2; ++i) {
-        for(uint j = 0; j < 3; ++j) {
-            if(tri->partialTriangles[i].neighbors[j] &&
-                    incident(tri->partialTriangles[i].neighbors[j], v)) {
-                disconnect(&tri->partialTriangles[i], tri->partialTriangles[i].neighbors[j]);
-            }
-        }
-    }
-    */
 }
 
 void connect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
@@ -278,15 +208,6 @@ int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
         t = t->edgeRing[edgeIndx];
     } while(t != ringTri);
 
-
-    //for(TrianglePtr t = ringTri; t )
-
-
-
-
-
-
-
 }
 
 HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v) {
@@ -314,6 +235,19 @@ bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     } else {
         for(TrianglePtr tri : v2->triangles()) {
             if(incident(tri, v1)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool adjacent_triangle_pointers(CTrianglePtr a, CTrianglePtr b)
+{
+    for(int i = 0; i < 2; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            if(a->partialTriangles[i].neighbors[j] &&
+               a->partialTriangles[i].neighbors[j]->triangle == b) {
                 return true;
             }
         }

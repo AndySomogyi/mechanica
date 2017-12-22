@@ -19,7 +19,6 @@ static bool commonCell(const TrianglePtr a, const TrianglePtr b) {
 
 
 
-
 EdgeTriangleIterator::value_type EdgeTriangleIterator::operator *() const {
     TrianglePtr tri = triangles[index];
     return tri;
@@ -76,10 +75,54 @@ EdgeTriangles::EdgeTriangles(const TrianglePtr startTri, int index) :
         EdgeTriangles{tri_to_edge(startTri, index)} {
 }
 
+#define NEW_EDGE_TRIANGLE
+
+
 
 EdgeTriangles::EdgeTriangles(const Edge& edge) {
 
     assert(edge[0] && edge[1]);
+
+#ifdef NEW_EDGE_TRIANGLE
+
+    TrianglePtr first = nullptr, prev = nullptr, tri = nullptr;
+
+    for(TrianglePtr ta : edge[0]->triangles()) {
+        if(incident(ta, edge[1])) {
+            first = ta;
+            triangles.push_back(first);
+            break;
+        }
+    }
+
+    tri = first->adjacentTriangleForEdge(edge[0], edge[1]);
+    prev = first;
+
+    assert(tri);
+    assert(tri != first);
+
+    do {
+        triangles.push_back(tri);
+        TrianglePtr next = tri->nextTriangleInRing(prev);
+        assert(next);
+        prev = tri;
+        tri = next;
+    } while(tri != first);
+    
+#ifndef NDEBUG
+    for(int i = 0; i < triangles.size(); ++i) {
+        TrianglePtr tri = triangles[i];
+        assert(incident(tri, edge));
+        if(i+1 < triangles.size()) {
+            assert(commonCell(triangles[i], triangles[i+1]));
+        }
+    }
+#endif
+
+
+
+
+#else
 
     for(TrianglePtr ta : edge[0]->triangles()) {
         if(incident(ta, edge[1])) {
@@ -127,6 +170,8 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
         assert(commonCell(triangles[i], triangles[i+1]));
 #endif
     }
+
+#endif //  NEW_EDGE_ITERATOR
 }
 
 

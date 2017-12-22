@@ -53,12 +53,13 @@ HRESULT RadialEdgeSplit::apply() {
     TrianglePtr prevNewTri = nullptr;
 
     std::cout << "splitting radial edge {" << edge[0]->id << ", " << edge[1]->id << "} {" << std::endl;
+#ifdef NOISY
     for(uint i = 0; i < triangles.size(); ++i)
     {
         TrianglePtr tri = triangles[i];
-        std::cout << "\ttriangle[" << i << "]:" << tri->id << ", cell[0]:" <<
-                tri->cells[0]->id << ", cell[1]:" << tri->cells[1]->id << std::endl;
+        std::cout << tri << std::endl;
     }
+#endif
     std::cout << "}" << std::endl;
 
     for(uint i = 0; i < triangles.size(); ++i)
@@ -129,8 +130,6 @@ HRESULT RadialEdgeSplit::apply() {
         // triangle and replaces it with the new triangle,
         // manually add the partial triangles to the cell
         for(uint i = 0; i < 2; ++i) {
-            if(tri->cells[i] != mesh->rootCell()) {
-
                 assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
                 assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
                 reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge[1], outer}});
@@ -143,21 +142,15 @@ HRESULT RadialEdgeSplit::apply() {
                 if(tri->cells[i]->renderer) {
                     tri->cells[i]->renderer->invalidate();
                 }
-            }
         }
+
+#ifdef NOISY
+        std::cout << "nt:" << nt << std::endl;
+        std::cout << "tri:" << tri << std::endl;
+#endif
 
         assert(incident(nt, {{edge[1], outer}}));
         assert(!incident(tri, {{edge[1], outer}}));
-
-#ifndef NDEBUG
-        for(int i = 0; i < 2; ++i) {
-            if(tri->cells[i]->isRoot()) {
-                assert(tri->partialTriangles[i].mass == 0.);
-            } else {
-                assert(isfinite(tri->partialTriangles[i].mass) && tri->partialTriangles[i].mass  > 0);
-            }
-        }
-#endif
 
 
         // split the mass according to area
@@ -190,6 +183,7 @@ HRESULT RadialEdgeSplit::apply() {
 #ifndef NDEBUG
     for(uint t = 0; t < newTriangles.size(); ++t) {
         TrianglePtr nt = newTriangles[t];
+        std::cout << nt;
         assert(nt->isValid());
         for(uint i = 0; i < 2; ++i) {
             if(nt->cells[i] != mesh->rootCell()) {

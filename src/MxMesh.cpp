@@ -36,9 +36,8 @@ VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
 }
 
 CellPtr MxMesh::createCell(MxCellType *type) {
-    CellPtr cell = new MxCell{type, this, nullptr};
+    CellPtr cell = new MxCell{(uint)cells.size(), type, this, nullptr};
     cells.push_back(cell);
-    cell->ob_refcnt = cells.size() - 1;
     return cell;
 }
 
@@ -216,12 +215,15 @@ HRESULT MxMesh::positionsChanged() {
         }
     }
 
+
+
     if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
         return result;
     }
     if((result = meshOperations.apply()) != S_OK) {
         return result;
     }
+
 
 
     for(CellPtr cell : cells) {
@@ -246,8 +248,8 @@ HRESULT MxMesh::positionsChanged() {
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
         const std::array<VertexPtr, 3>& verts) {
 
-    TrianglePtr tri = new MxTriangle{type, verts};
-    tri->id = triangleId++;
+    TrianglePtr tri = new MxTriangle{(uint)triangles.size(), type, verts};
+
     triangles.push_back(tri);
 
     assert(valid(tri));

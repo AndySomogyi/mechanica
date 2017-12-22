@@ -15,6 +15,7 @@
 #include <set>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
+#include <iostream>
 
 
 namespace Magnum {
@@ -75,7 +76,9 @@ typedef std::vector<TrianglePtr> Triangles;
 
 
 struct MxMeshNode {
-    MxMeshNode(MeshPtr m) : mesh{m} {};
+    MxMeshNode(MeshPtr m, uint _id) : id{_id}, mesh{m} {};
+
+    const uint id;
 
 protected:
     MeshPtr mesh;
@@ -129,6 +132,10 @@ private:
 
     void rebuildCells();
 };
+
+std::ostream& operator<<(std::ostream& os, CVertexPtr v);
+
+
 
 struct MxVertexAttribute {
 

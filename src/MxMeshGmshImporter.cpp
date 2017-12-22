@@ -71,6 +71,14 @@ HRESULT MxMeshGmshImporter::read(const std::string& path) {
         }
     }
 
+    addUnclaimedPartialTrianglesToRoot();
+
+#ifndef NDEBUG
+    for(TrianglePtr tri : mesh.triangles) {
+        assert(tri->isValid());
+    }
+#endif
+
     return mesh.positionsChanged();
 }
 
@@ -149,7 +157,6 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
     // node indices mapping in the MxMesh vertices.
     VertexPtr vertexIds[8];
     MxCell &cell = *createCell(Gmsh::ElementType::Hexahedron, val.id);
-    cell.id = cellId++;
 
     //for (auto i : gmsh.nodes) {
     //    std::cout << "node id: " << i.first;
@@ -176,7 +183,8 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     addQuadToCell(cell, {{vertexIds[5], vertexIds[4], vertexIds[0], vertexIds[1]}});
 
-    assert(cell.manifold() && "Cell is not manifold");
+
+    assert(cell.isValid());
 
     for(PTrianglePtr pt : cell.boundary) {
         float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
@@ -198,10 +206,14 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
     Quadrilateral *quad = findQuad(verts);
 
     if(quad) {
+
+        // the 0 side should be attached a previously created cell if found.
         assert(quad->cells[0] != mesh.rootCell());
 
-        if(quad->cells[1] == mesh.rootCell()) {
+        if(quad->cells[1]) {
+            assert(quad->cells[1] == mesh.rootCell());
             assert(quad->cells[0]);
+
             for(TrianglePtr tri : quad->triangles) {
                 if(tri) {
                     mesh.rootCell()->removeChild(tri);
@@ -209,8 +221,10 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
             }
         }
 
+        // the 0 side belongs to a previous cell, but the 1 side is free,
+        // so attach the 1 side to new cell.
         for(TrianglePtr tri : quad->triangles) {
-            cell.appendChild(tri, 1);
+            cell.appendChild(&tri->partialTriangles[1]);
         }
         quad->cells[1] = &cell;
 
@@ -237,13 +251,11 @@ void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr,
         }
 
         quad->cells[0] = &cell;
-        quad->cells[1] = mesh.rootCell();
 
-        // appending a triangle to a cell, where the other side of the triangle is
-        // not attached to a cell gets the triangle attached to the root on the
-        // other side. Bad design, TODO: fix this.
+        // new quads get attached to the new cell on the 0 side, hook up the
+        // root cell later.
         for(TrianglePtr tri : quad->triangles) {
-            quad->cells[0]->appendChild(tri, 0);
+            quad->cells[0]->appendChild(&tri->partialTriangles[0]);
         }
     }
 }
@@ -298,7 +310,6 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     addQuadToCell(*cell, {{vertexIds[4], vertexIds[3], vertexIds[0], vertexIds[1]}});
     addQuadToCell(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
 
-    assert(cell->manifold() && "Cell is not manifold");
 
     for(PTrianglePtr pt : cell->boundary) {
         float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
@@ -316,9 +327,8 @@ void MxMeshGmshImporter::createTriangleForCell(
         const std::array<VertexPtr, 3>& verts, CellPtr cell) {
     TrianglePtr tri = mesh.findTriangle(verts);
     if(tri) {
-        if(::incident(tri, mesh.rootCell())) {
-            assert(mesh.rootCell()->removeChild(tri) == S_OK);
-        }
+        assert((tri->cells[0] != nullptr || tri->cells[1] != nullptr)
+                && "found triangle that's connected on both sides");
     }
     else {
         tri = mesh.createTriangle(nullptr, verts);
@@ -329,7 +339,9 @@ void MxMeshGmshImporter::createTriangleForCell(
 
     Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
     float orientation = Math::dot(meshNorm, tri->normal);
-    cell->appendChild(tri, orientation > 0 ? 0 : 1);
+
+    int cellIndx = orientation > 0 ? 0 : 1;
+    cell->appendChild(&tri->partialTriangles[cellIndx]);
 }
 
 void MxMeshGmshImporter::createTriangleForQuad(
@@ -353,4 +365,15 @@ void MxMeshGmshImporter::createTriangleForQuad(
     else {
         assert(0 && "quadrilateral already has two triangles");
     }
+}
+
+void MxMeshGmshImporter::addUnclaimedPartialTrianglesToRoot()
+{
+    for(TrianglePtr tri : mesh.triangles) {
+        assert(tri->cells[0]);
+        if(!tri->cells[1]) {
+            mesh.rootCell()->appendChild(&tri->partialTriangles[1]);
+        }
+    }
+    assert(mesh.rootCell()->isValid());
 }

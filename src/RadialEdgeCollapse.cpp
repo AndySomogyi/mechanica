@@ -224,14 +224,6 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
             assert(adjacent(p1, &tri->partialTriangles[i]));
             assert(adjacent(p2, &tri->partialTriangles[i]));
 
-            //if(ctr == 81) {
-                //p1->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
-                //p2->triangle->color = Magnum::Color4{1, 0, 0, 0.6};
-            //}
-
-            bool ptAdj = adjacent(p1, p2);
-            bool triAdj = adjacent_triangle_vertices(p1->triangle, p2->triangle);
-
             if (adjacent(p1, p2)) {
                 return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
             }
@@ -400,7 +392,7 @@ static void reconnectPartialTriangles(PTrianglePtr center,
 
     assert(isfinite(leftFrac) && leftFrac > 0);
     assert(isfinite(rightFrac) && rightFrac > 0);
-    assert(isfinite(center->mass) && center->mass > 0);
+    //assert(isfinite(center->mass) && center->mass > 0);
 
     pLeft->mass += leftFrac * center->mass;
     pRight->mass += rightFrac * center->mass;
@@ -459,11 +451,9 @@ static HRESULT collapseTriangleOnEdge(MeshPtr mesh, RadialTriangle &rt,
     // Reconnect the partial triangles. This function performs the
     // partial triangle material moving.
     for(int i = 0; i < 2; ++i) {
-        if(!rt.tri->cells[i]->isRoot()) {
-            reconnectPartialTriangles(&rt.tri->partialTriangles[i],
-                    vsrc, vdest, leftArea / totalArea, rightArea / totalArea,
-                    rt.apex);
-        }
+        reconnectPartialTriangles(&rt.tri->partialTriangles[i],
+                vsrc, vdest, leftArea / totalArea, rightArea / totalArea,
+                rt.apex);
     }
 
     disconnect_triangle_vertex(rt.tri, vsrc);
@@ -509,10 +499,6 @@ static HRESULT classifyRadialTriangle(TrianglePtr tri,
     assert(incident(tri, {{edge[0], res.apex}}));
     assert(incident(tri, {{edge[1], res.apex}}));
 
-
-    if(ctr == 81) {
-        std::cout << "foo" << std::endl;
-    }
 
     assert(res.apex);
 
@@ -615,15 +601,18 @@ HRESULT RadialEdgeCollapse::apply() {
 
     std::cout << "collapsing radial edge {" << edge[0]->id << ", " << edge[1]->id << "}" << std::endl;
 
-#ifndef NDEBUG
+#ifdef NOISY
+    std::cout << "Edge[0]:" << std::endl;
     for(TrianglePtr tri : edge[0]->triangles()) {
         assert(tri->isValid());
+        std::cout << tri << std::endl;
     }
 
+    std::cout << "Edge[1]:" << std::endl;
     for(TrianglePtr tri : edge[1]->triangles()) {
         assert(tri->isValid());
+        std::cout << tri << std::endl;
     }
-
 #endif
 
     ::mesh = this->mesh;
@@ -662,6 +651,14 @@ HRESULT RadialEdgeCollapse::apply() {
     // now check if we can topologically perform this operation
 
     EdgeTriangles edgeTri{edge};
+
+#ifdef NOISY
+    std::cout << "edge triangles:" << std::endl;
+    for(auto tri : edgeTri) {
+        std::cout << tri << std::endl;
+    }
+    std::cout << "doing it..." << std::endl;
+#endif
 
     if((res = radialLinkCondition(edge, edgeTri)) != S_OK) {
         return res;
@@ -725,9 +722,8 @@ HRESULT RadialEdgeCollapse::apply() {
     }
 #endif
 
-    for(TrianglePtr tri : srcTriangles) {
 
-        testTriangle(tri);
+    for(TrianglePtr tri : srcTriangles) {
 
         // side effect of removing triangle from vertex tri list.
         disconnect_triangle_vertex(tri, vsrc);
@@ -738,9 +734,20 @@ HRESULT RadialEdgeCollapse::apply() {
         assert(tri->cells[0] && tri->cells[1]);
 
         tri->positionsChanged();
-
-        testTriangle(tri);
     }
+
+#ifndef NDEBUG
+    bool badTri = false;
+    for(TrianglePtr tri : vdest->triangles()) {
+        if(!tri->isValid()) {
+            std::cout << "bad triangle" << tri << std::endl;
+            badTri = true;
+        }
+    }
+    assert(!badTri);
+#endif
+
+
 
     // done with the src vertex
     assert(vsrc->triangles().size() == 0);
@@ -749,7 +756,7 @@ HRESULT RadialEdgeCollapse::apply() {
     // notify the attached cells that the topology has changed
     for(CellPtr cell : cells)
     {
-        assert(cell->manifold());
+        assert(cell->isValid());
         cell->topologyChanged();
     }
 
