@@ -32,9 +32,41 @@ static int ctr = 0;
  */
 
 HRESULT RadialEdgeSplit::apply() {
+    std::cout << "splitting radial edge {" << edge[0]->id << ", " << edge[1]->id << "} {" << std::endl;
+
     EdgeTriangles e{edge};
 
     std::vector<TrianglePtr> triangles(e.begin(), e.end());
+
+    /**
+     * Find the common cell between a pair of triangles. If there are only
+     * two trianges, the 0'th common tri will be the cell that's on the
+     * 0 side of the 0'th triangle, and the common cell will be on the
+     * 1 side of the 1st triangle.
+     */
+    auto commonCell = [this, &triangles] (int indx) -> CCellPtr {
+        if(triangles.size() == 2) {
+            assert(indx == 0 || indx == 1);
+            return triangles[0]->cells[indx];
+        }
+        
+        // wrap negative index around to end of array
+        const int size = triangles.size();
+        int prevIndx = ((indx-1)%size+size)%size;
+        
+        CTrianglePtr tri = triangles[indx];
+        CTrianglePtr prevTri = triangles[prevIndx];
+        
+        for(int i = 0; i < 2; ++i) {
+            for(int j = 0; j < 3; ++j) {
+                if(tri->partialTriangles[i].neighbors[j]->triangle == prevTri) {
+                    return tri->cells[i];
+                }
+            }
+        }
+        assert(0 && "something really bad happened");
+        return nullptr;
+    };
 
     assert(triangles.size() >= 2);
 
@@ -43,6 +75,14 @@ HRESULT RadialEdgeSplit::apply() {
 #endif
 
     ctr += 1;
+    std::cout << "ctr:" << ctr << std::endl;
+    if(ctr >= 616) {
+        std::cout << "p" << std::endl;
+        int t = 0;
+        for(TrianglePtr tri : e) {
+            std::cout << "triangle[" << t++ << "] to split: " << tri << std::endl;
+        }
+    }
 
     // new vertex at the center of this edge
     Vector3 center = (edge[0]->position + edge[1]->position) / 2.;
@@ -52,7 +92,6 @@ HRESULT RadialEdgeSplit::apply() {
     TrianglePtr firstNewTri = nullptr;
     TrianglePtr prevNewTri = nullptr;
 
-    std::cout << "splitting radial edge {" << edge[0]->id << ", " << edge[1]->id << "} {" << std::endl;
 #ifdef NOISY
     for(uint i = 0; i < triangles.size(); ++i)
     {
@@ -103,7 +142,6 @@ HRESULT RadialEdgeSplit::apply() {
 #ifndef NDEBUG
         newTriangles.push_back(nt);
 #endif
-
         // make damned sure the winding is correct and the new triangle points
         // in the same direction as the existing one
         assert(Math::dot(nt->normal, tri->normal) >= 0);
@@ -130,24 +168,19 @@ HRESULT RadialEdgeSplit::apply() {
         // triangle and replaces it with the new triangle,
         // manually add the partial triangles to the cell
         for(uint i = 0; i < 2; ++i) {
-                assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
-                assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
-                reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge[1], outer}});
-                assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
-                assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
-                connect_partial_triangles(&tri->partialTriangles[i], &nt->partialTriangles[i]);
-                assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
-                assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
-                tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
-                if(tri->cells[i]->renderer) {
-                    tri->cells[i]->renderer->invalidate();
-                }
+            assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+            assert(nt->partialTriangles[i].unboundNeighborCount() == 3);
+            reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge[1], outer}});
+            assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
+            assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
+            connect_partial_triangles(&tri->partialTriangles[i], &nt->partialTriangles[i]);
+            assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
+            assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
+            tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
+            if(tri->cells[i]->renderer) {
+                tri->cells[i]->renderer->invalidate();
+            }
         }
-
-#ifdef NOISY
-        std::cout << "nt:" << nt << std::endl;
-        std::cout << "tri:" << tri << std::endl;
-#endif
 
         assert(incident(nt, {{edge[1], outer}}));
         assert(!incident(tri, {{edge[1], outer}}));
@@ -166,20 +199,17 @@ HRESULT RadialEdgeSplit::apply() {
             firstNewTri = nt;
             prevNewTri = nt;
         } else {
-            connect_triangle_partial_triangles(nt, prevNewTri);
+            assert(adjacent_triangle_vertices(nt, prevNewTri));
+            connect_triangle_partial_triangles(nt, prevNewTri, commonCell(i));
             prevNewTri = nt;
         }
     }
 
-    // connect the first and last new triangles. If this is a
-    // manifold edge, only 2 new triangles, which already got
-    // connected above.
-    if(triangles.size() > 2) {
-        connect_triangle_partial_triangles(firstNewTri, prevNewTri);
-    }
-
-
-
+    // connect the first and last new triangles. If this edge has two triangles,
+    // one side of the triangles was connected in the above loop, and this connects
+    // the other side.
+    connect_triangle_partial_triangles(firstNewTri, prevNewTri, commonCell(0));
+    
 #ifndef NDEBUG
     for(uint t = 0; t < newTriangles.size(); ++t) {
         TrianglePtr nt = newTriangles[t];

@@ -195,38 +195,37 @@ static void testTriangle(const TrianglePtr tri) {
 /**
  * is this configuration topologically safe to reconnect. This check that the top
  * and bottom triangle neighbors are not themselves connected.
+ *
+ * This basically prevents collapse of a trapezoid down to a triangle.
  */
 static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge& edge2) {
 
     assert(tri->isValid());
 
     for(int i = 0; i < 2; ++i) {
-        if(!tri->cells[i]->isRoot()) {
+        PTrianglePtr p1 = nullptr, p2 = nullptr;
 
-            PTrianglePtr p1 = nullptr, p2 = nullptr;
-
-            for(int j = 0; j < 3; ++j) {
-                PTrianglePtr pn = tri->partialTriangles[i].neighbors[j];
-                if(incident(pn, edge1)) {
-                    p1 = pn;
-                    continue;
-                }
-                if(incident(pn, edge2)) {
-                    p2 = pn;
-                    continue;
-                }
+        for(int j = 0; j < 3; ++j) {
+            PTrianglePtr pn = tri->partialTriangles[i].neighbors[j];
+            if(incident(pn, edge1)) {
+                p1 = pn;
+                continue;
             }
-
-            assert(p1 && p2);
-            assert(p1 != p2);
-            assert(p1 != &tri->partialTriangles[i]);
-            assert(p2 != &tri->partialTriangles[i]);
-            assert(adjacent(p1, &tri->partialTriangles[i]));
-            assert(adjacent(p2, &tri->partialTriangles[i]));
-
-            if (adjacent(p1, p2)) {
-                return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
+            if(incident(pn, edge2)) {
+                p2 = pn;
+                continue;
             }
+        }
+
+        assert(p1 && p2);
+        assert(p1 != p2);
+        assert(p1 != &tri->partialTriangles[i]);
+        assert(p2 != &tri->partialTriangles[i]);
+        assert(adjacent(p1, &tri->partialTriangles[i]));
+        assert(adjacent(p2, &tri->partialTriangles[i]));
+
+        if (adjacent(p1, p2)) {
+            return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
         }
     }
     return S_OK;

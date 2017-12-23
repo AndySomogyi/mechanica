@@ -62,8 +62,12 @@ bool incident(CPTrianglePtr pt, const Edge&);
  * Connects the pointers of a pair of triangles. Searches through the
  * partial triangle relationships for empty pointer slots and hooks up
  * the neighbor pointers.
+ *
+ * If cell is null, this will find the adjacent partial triangles based
+ * on the shared edge and the shared cells. If cell is not null, this will only
+ * connect the partial triangles on the side that's connected to the given cell.
  */
-void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b);
+void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b, CCellPtr cell = nullptr);
 
 /**
  * Connects the pointers of a pair of partial triangles. Searches

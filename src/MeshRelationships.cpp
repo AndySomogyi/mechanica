@@ -53,18 +53,43 @@ bool adjacent(CPTrianglePtr a, CPTrianglePtr b) {
 }
 
 
-void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b) {
+void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b, CCellPtr cell) {
     // check to see that triangles share adjacent vertices.
     assert(adjacent_triangle_vertices(a, b));
 
-    // hook up the partial triangles on the correct cell sides.
-    for(uint i = 0; i < 2; ++i) {
-        for(uint j = 0; j < 2; ++j) {
-            if(a->cells[i] == b->cells[j]) {
-                connect_partial_triangles(&a->partialTriangles[i], &b->partialTriangles[j]);
+#ifndef NDEBUG
+    bool found = false;
+#endif
+
+    if(cell) {
+        // hook up the partial triangles on the correct cell sides.
+        for(uint i = 0; i < 2; ++i) {
+            for(uint j = 0; j < 2; ++j) {
+                if(cell == a->cells[i] && cell == b->cells[j]) {
+                    connect_partial_triangles(&a->partialTriangles[i], &b->partialTriangles[j]);
+#ifndef NDEBUG
+                    found = true;
+#endif
+
+                }
+            }
+        }
+
+    }
+    else {
+        // hook up the partial triangles on the correct cell sides.
+        for(uint i = 0; i < 2; ++i) {
+            for(uint j = 0; j < 2; ++j) {
+                if(a->cells[i] == b->cells[j]) {
+                    connect_partial_triangles(&a->partialTriangles[i], &b->partialTriangles[j]);
+#ifndef NDEBUG
+                    found = true;
+#endif
+                }
             }
         }
     }
+    assert(found);
 }
 
 typedef std::array<int, 2> EdgeIndx;
