@@ -12,6 +12,7 @@
 #include "RadialEdgeCollapse.h"
 #include "ConeSplit.h"
 #include "RadialEdgeFlip.h"
+#include "VertexSplit.h"
 #include <algorithm>
 #include <limits>
 #include <iostream>
@@ -61,10 +62,13 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 
         Edge edge = {{tri->vertices[minIndx], tri->vertices[(minIndx+1)%3]}};
 
+        MeshOperation *meshOpp;
+
         if(minEdge < shortCutoff &&
-                findMatchingOperation(edge) == nullptr &&
-                RadialEdgeCollapse::applicable(edge)) {
-            push(new RadialEdgeCollapse(mesh, shortCutoff, edge));
+           findMatchingOperation(edge) == nullptr &&
+           (meshOpp = RadialEdgeCollapse::create(mesh, shortCutoff, edge)) != nullptr)
+        {
+            push(meshOpp);
         }
 
         else {

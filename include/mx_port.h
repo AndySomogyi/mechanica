@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#ifndef _INCLUDE_MX_IMPORT_H_
-#define _INCLUDE_MX_IMPORT_H_
+#ifndef _INCLUDE_MX_PORT_H_
+#define _INCLUDE_MX_PORT_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -110,22 +110,101 @@ typedef size_t         Mx_ssize_t;
 
 
 #ifndef WIN32
-typedef uint32_t HRESULT;
 
-#define S_OK	             0x00000000 //  Operation successful
+
+/**
+ * Mechanica return code, same as Windows.
+ *
+ * To test an HRESULT value, use the FAILED and SUCCEEDED macros.
+
+ * The high-order bit in the HRESULT or SCODE indicates whether the
+ * return value represents success or failure.
+ * If set to 0, SEVERITY_SUCCESS, the value indicates success.
+ * If set to 1, SEVERITY_ERROR, it indicates failure.
+ *
+ * The facility field indicates from bits 26-16 is the system
+ * service responsible for the error. The FACILITY_ITF = 4 is used for most status codes
+ * returned from interface methods. The actual meaning of the
+ * error is defined by the interface. That is, two HRESULTs with
+ * exactly the same 32-bit value returned from two different
+ * interfaces might have different meanings.
+ *
+ * The code field from bits 15-0 is the application defined error
+ * code.
+ */
+typedef int32_t HRESULT;
+
+#define S_OK             0x00000000 // Operation successful
 #define E_ABORT          0x80004004 // Operation aborted
-#define E_ACCESSDENIED   0x80070005 // General access denied error	
+#define E_ACCESSDENIED   0x80070005 // General access denied error
 #define E_FAIL           0x80004005 // Unspecified failure
-#define E_HANDLE         0x80070006 // Handle that is not valid	
-#define E_INVALIDARG     0x80070057 // One or more arguments are not valid	
+#define E_HANDLE         0x80070006 // Handle that is not valid
+#define E_INVALIDARG     0x80070057 // One or more arguments are not valid
 #define E_NOINTERFACE    0x80004002 // No such interface supported
 #define E_NOTIMPL        0x80004001 // Not implemented
 #define E_OUTOFMEMORY    0x8007000E // Failed to allocate necessary memory
-#define E_POINTER        0x80004003 // Pointer that is not valid	
+#define E_POINTER        0x80004003 // Pointer that is not valid
 #define E_UNEXPECTED     0x8000FFFF // Unexpected failure
+
+
+/**
+ * Provides a generic test for success on any status value.
+ * Parameters:
+ * hr: The status code. A non-negative number indicates success.
+ * Return value: TRUE if hr represents a success status value;
+ * otherwise, FALSE.
+ */
+#define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+
+/**
+ * Creates an HRESULT value from its component pieces.
+ * Parameters
+ * sev: The severity.
+ * fac: The facility.
+ * code: The code.
+ * Return value: The HRESULT value.
+ *
+ * Note   Calling MAKE_HRESULT for S_OK verification carries a
+ * performance penalty. You should not routinely use MAKE_HRESULT
+ * for successful results.
+ */
+#define MAKE_HRESULT(sev,fac,code) \
+    static_cast<HRESULT>((static_cast<uint32_t>(sev)<<31) | (static_cast<uint32_t>(fac)<<16) | (static_cast<uint32_t>(code)))
+
+/**
+ * Extracts the code portion of the specified HRESULT.
+ * Parameters:
+ * hr: The HRESULT value.
+ * Return value: The code.
+ */
+#define HRESULT_CODE(hr)    ((hr) & 0xFFFF)
+
+/**
+ * Extracts the facility of the specified HRESULT.
+ * Parameters:
+ * hr: The HRESULT value.
+ * Return value: The facility.
+ */
+#define HRESULT_FACILITY(hr)  (((hr) >> 16) & 0x1fff)
+
+/**
+ * Extracts the severity field of the specified HRESULT.
+ * Parameters:
+ * hr: The HRESULT.
+ * Return value: The severity field.
+ */
+#define HRESULT_SEVERITY(hr)  (((hr) >> 31) & 0x1)
+
+
 #endif
 
+/**
+ * Error code faculties for Mechanica errors.
+ */
+#define FACULTY_MESH 10
+#define FACULTY_MESHOPERATION 11
 
-#endif /* _INCLUDE_CA_IMPORT_H_ */
+
+#endif /* _INCLUDE_MX_PORT_H_ */
 
 

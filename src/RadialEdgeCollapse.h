@@ -15,7 +15,7 @@ struct RadialEdgeCollapse : MeshOperation {
 
     RadialEdgeCollapse(MeshPtr, float shortCutoff, const Edge&);
 
-    static bool applicable(const Edge& e);
+    static MeshOperation *create(MeshPtr mesh, float shortCutoff, const Edge& e);
 
     /**
      * Apply this operation

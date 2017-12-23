@@ -155,9 +155,9 @@ RadialEdgeCollapse::RadialEdgeCollapse(MeshPtr mesh, float _shortCutoff, const E
 {
 }
 
-bool RadialEdgeCollapse::applicable(const Edge& _e) {
+MeshOperation *RadialEdgeCollapse::create(MeshPtr mesh, float shortCutoff, const Edge& _e) {
 
-    return true;
+    return new RadialEdgeCollapse(mesh, shortCutoff, _e);
 
     /*
     MxEdge edge{_e};

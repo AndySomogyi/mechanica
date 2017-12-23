@@ -235,6 +235,13 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
+    /**
+     * Notify the mesh that the valence count on this vertex has changed.
+     * This may enqueue the vertex in the operation queue so that edges or
+     * cells can be removed and attached elsewhere.
+     */
+    HRESULT valenceChanged(CVertexPtr v);
+
     bool validate();
 
     CellPtr rootCell() const {return _rootCell;};

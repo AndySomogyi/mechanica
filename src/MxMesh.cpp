@@ -252,7 +252,7 @@ TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
 
     triangles.push_back(tri);
 
-    assert(valid(tri));
+    //assert(tri->isValid());
 
     return tri;
 }

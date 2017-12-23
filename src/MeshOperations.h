@@ -24,8 +24,6 @@
  *
  * * factory operation, given a triangle or edge, create a new operation.
  */
-
-
 struct MeshOperation {
 
     MeshOperation(MeshPtr _mesh);
@@ -63,6 +61,17 @@ struct MeshOperation {
     }
 
     virtual ~MeshOperation() {};
+
+
+
+    enum Codes : HRESULT {
+        /**
+         * The operation failed, but it should be retried the next time,
+         * and not removed from the queue.
+         */
+        RETRY = MAKE_HRESULT(1, FACULTY_MESHOPERATION, 1)
+    };
+
 
 protected:
     MeshPtr mesh;
