@@ -101,8 +101,8 @@ HRESULT VertexSplit::apply()
     // find the cell with the max force
     CCellPtr cell = maxForceCell(vertex);
     
-    //HRESULT result = splitVertex(mesh, vertex, cell);
-    HRESULT result = S_OK;
+    HRESULT result = splitVertex(mesh, vertex, cell);
+    //HRESULT result = S_OK;
     
 #ifndef NDEBUG
     for(CellPtr cell : cells) {
@@ -357,6 +357,13 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
 
     ta1->partialTriangles[ta1_ci].neighbors[ta1_ti] = &newTriangle->partialTriangles[1];
     newTriangle->partialTriangles[1].neighbors[tn_ta] = &ta1->partialTriangles[ta1_ci];
+
+    for(int i = 0; i < 2; ++i) {
+        newTriangle->cells[i]->boundary.push_back(&newTriangle->partialTriangles[i]);
+        if(newTriangle->cells[i]->renderer) {
+            newTriangle->cells[i]->renderer->invalidate();
+        }
+    }
 
     //disconnect_triangle_vertex(t0, centerVertex);
     //disconnect_triangle_vertex(t1, centerVertex);
