@@ -279,3 +279,12 @@ bool adjacent_triangle_pointers(CTrianglePtr a, CTrianglePtr b)
     }
     return false;
 }
+
+HRESULT connect_triangle_cell(TrianglePtr tri, CellPtr cell, int index) {
+    assert(!tri->cells[index]);
+    tri->cells[index] = cell;
+    for(VertexPtr v : tri->vertices) {
+        v->triangleCellChanged(tri);
+    }
+    return S_OK;
+}

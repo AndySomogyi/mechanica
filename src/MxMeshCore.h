@@ -124,6 +124,11 @@ struct MxVertex {
     HRESULT appendTriangle(TrianglePtr);
 
     /**
+     * Inform the vertex that the cell of an attached triangle was changed.
+     */
+    HRESULT triangleCellChanged(TrianglePtr tri);
+
+    /**
      * Find the first triangle that is incident to the given cell.
      * If no triangle is incident, returns null.
      */

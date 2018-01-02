@@ -38,6 +38,7 @@ MeshOperations::MeshOperations(MeshPtr _mesh, float _shortCutoff,
 
 HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBegin,
         TriangleContainer::const_iterator triEnd) {
+    return S_OK;
 
 #ifndef NDEBUG
     if(shouldStop) return S_OK;

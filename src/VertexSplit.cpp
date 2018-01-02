@@ -60,20 +60,22 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr center,
 
 
 
+static int vertexSplitId = 0;
 /**
  * Locating the next and previous skeletal vertices.
  *
  * Definition: a skeletal edge is an edge that's shared between three or more cells.
  */
-
-
 VertexSplit::VertexSplit(MeshPtr _mesh, VertexPtr _vertex) :
-    vertex{_vertex}, MeshOperation(_mesh)
+    MeshOperation(_mesh), vertex{_vertex}, id{vertexSplitId++}
 {
 }
 
+
 MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
 {
+    if (vertexSplitId > 0) return nullptr;
+    
     int size = v->cells().size();
 
     if(size > 4 || (size > 3 && isSkeletalVertex(v))) {
@@ -168,11 +170,12 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
 
     // new vertex is at centroid of fan
     // TODO prob better at mean pos between center and centroid.
-    VertexPtr newVertex = mesh->createVertex(centroidTriangleFan(center, fan));
+    Vector3 fanCentroid = centroidTriangleFan(center, fan);
+    VertexPtr newVertex = mesh->createVertex(((3. * center->position) + fanCentroid) / 4.);
 
-    for(int i = 0; i < fan.size()-1; ++i) {
+    for(int i = 0; i < fan.size(); ++i) {
         TrianglePtr t0 = fan[i];
-        TrianglePtr t1 = fan[i+1];
+        TrianglePtr t1 = fan[(i+1)%fan.size()];
         
         assert(incident(t0, center));
         assert(incident(t1, center));
@@ -298,6 +301,7 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     for(VertexPtr v : t0->vertices) {
         if(v != centerVertex && incident(v, t1)) {
             frontierVertex = v;
+            break;
         }
     }
     assert(frontierVertex);

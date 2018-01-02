@@ -50,6 +50,8 @@ private:
     VertexSplit(MeshPtr, VertexPtr);
 
     VertexPtr vertex;
+    
+    const int id = 0;
 };
 
 #endif /* SRC_VERTEXSPLIT_H_ */

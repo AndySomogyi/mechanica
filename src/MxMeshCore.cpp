@@ -83,3 +83,18 @@ MeshPtr MxVertex::mesh()
     }
     return nullptr;
 }
+
+HRESULT MxVertex::triangleCellChanged(TrianglePtr tri) {
+
+    MeshPtr m = mesh();
+
+    rebuildCells();
+
+    if(!m) {
+        m = mesh();
+    }
+
+    if(m) m->valenceChanged(this);
+
+    return S_OK;
+}

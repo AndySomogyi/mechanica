@@ -78,6 +78,13 @@ void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b, CCellPtr c
 void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b);
 
 /**
+ * Connects a triangle with a cell.
+ *
+ * The triangle
+ */
+HRESULT connect_triangle_cell(TrianglePtr tri, CellPtr cell, int index);
+
+/**
  * Disconnects a pair of partial triangles, finds the adjacent
  * neighbor pointer and sets them both to null.
  */

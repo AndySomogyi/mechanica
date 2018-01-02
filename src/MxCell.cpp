@@ -124,7 +124,9 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
 
     int index = tri->cells[0] == this ? 0 : 1;
 
-    tri->cells[index] = nullptr;
+    connect_triangle_cell(tri, nullptr, index);
+    //tri->cells[index] = nullptr;
+
 
     PTrianglePtr pt = &tri->partialTriangles[index];
 
@@ -212,7 +214,8 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
         return mx_error(E_FAIL, "partial triangle neighbors already connected");
     }
 
-    pt->triangle->cells[ptIndx] = this;
+    connect_triangle_cell(pt->triangle, this, ptIndx);
+    //pt->triangle->cells[ptIndx] = this;
 
     std::cout << __PRETTY_FUNCTION__ << "{"
         << "\triangle:{id:" << pt->triangle->id
