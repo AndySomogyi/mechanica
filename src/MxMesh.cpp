@@ -317,3 +317,19 @@ void MxMesh::markTriangle(const TrianglePtr tri) {
     makeTrianglesTransparent();
     tri->color = Magnum::Color4::red();
 }
+
+HRESULT MxMesh::valenceChanged(VertexPtr v)
+{
+    return meshOperations.valenceChanged(v);
+}
+
+TrianglePtr MxMesh::createTriangle(const std::array<CellPtr, 2> &cells,
+        const std::array<VertexPtr, 3> &verts)
+{
+
+    TrianglePtr tri = new MxTriangle{(uint)triangles.size(), nullptr, verts, cells};
+
+    triangles.push_back(tri);
+
+    return tri;
+}

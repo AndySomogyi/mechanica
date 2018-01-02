@@ -33,14 +33,14 @@ float RadialEdgeFlip::energy() const {
 /**
  * does this operation depend on this triangle?
  */
-bool RadialEdgeFlip::depends(const TrianglePtr) const {
+bool RadialEdgeFlip::depends(CTrianglePtr) const {
     return false;
 }
 
 /**
  * does this operation depend on this vertex?
  */
-bool RadialEdgeFlip::depends(const VertexPtr) const {
+bool RadialEdgeFlip::depends(CVertexPtr) const {
     return false;
 }
 

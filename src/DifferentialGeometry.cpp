@@ -114,7 +114,7 @@ float forceDivergence(CVertexPtr v) {
     for(CTrianglePtr tri : v->triangles()) {
         for(int i = 0; i < 3; ++i) {
             if(tri->vertices[i] == v) {
-                force = tri->force[i];
+                force = tri->force(i);
                 break;
             }
         }
@@ -122,4 +122,155 @@ float forceDivergence(CVertexPtr v) {
         //areaSum += tri->area;
     }
     return forceSum;
+}
+
+static float max3(float a, float b, float c )
+{
+   float max = ( a < b ) ? b : a;
+   return ( ( max < c ) ? c : max );
+}
+
+
+
+// Constructs a plane from a collection of points
+// so that the summed squared distance to all points is minimzized
+HRESULT planeFromPoints(const std::vector<CVertexPtr> &pts, Vector3 &normal, Vector3 &point)  {
+
+    int n = pts.size();
+    if(n < 3) {
+        return mx_error(E_FAIL, "At least three points required");
+    }
+
+
+    Vector3 sum = Vector3{0.0f, 0.0f, 0.0f};
+    for(CVertexPtr vert : pts) {
+        sum += vert->position;
+    }
+
+    Vector3 centroid = sum * (1.0 / n);
+
+    // Calc full 3x3 covariance matrix, excluding symmetries:
+    float xx = 0.0, xy = 0.0, xz = 0.0;
+    float yy = 0.0, yz = 0.0, zz = 0.0;
+
+    for(CVertexPtr vert : pts) {
+        Vector3 p = vert->position;
+        Vector3 r = p - centroid;
+        xx += r.x() * r.x();
+        xy += r.x() * r.y();
+        xz += r.x() * r.z();
+        yy += r.y() * r.y();
+        yz += r.y() * r.z();
+        zz += r.z() * r.z();
+    }
+
+    float det_x = yy*zz - yz*yz;
+    float det_y = xx*zz - xz*xz;
+    float det_z = xx*yy - xy*xy;
+
+    float det_max = max3(det_x, det_y, det_z);
+
+    if(det_max <= 0.) {
+        return mx_error(E_FAIL,  "The points don't span a plane");
+    }
+
+    // Pick path with best conditioning:
+    Vector3 dir;
+    if (det_max == det_x) {
+        dir = Vector3{
+            det_x,
+            xz*yz - xy*zz,
+            xy*yz - xz*yy,
+        };
+    }
+    else if (det_max == det_y) {
+        dir = Vector3{
+            xz*yz - xy*zz,
+            det_y,
+            xy*xz - yz*xx,
+        };
+    } else {
+        dir = Vector3{
+            xy*yz - xz*yy,
+            xy*xz - yz*xx,
+            det_z,
+        };
+    };
+
+    normal = dir.normalized();
+    point = centroid;
+
+    return S_OK;
+}
+
+Vector3 centroid(const std::vector<CVertexPtr>& pts)
+{
+    Vector3 sum = Vector3{0.0f, 0.0f, 0.0f};
+    for(CVertexPtr vert : pts) {
+        sum += vert->position;
+    }
+
+    return sum * (1.0 / pts.size());
+}
+
+float forceDivergenceForCell(CVertexPtr v, CCellPtr c)
+{
+    Vector3 force;
+    float forceSum = 0;
+    float areaSum = 0;
+
+    // get the first triangle
+    TrianglePtr first = v->triangleForCell(c);
+    // the loop triangle
+    TrianglePtr tri = first;
+    // keep track of the previous triangle
+    TrianglePtr prev = nullptr;
+
+    do {
+        for(int i = 0; i < 3; ++i) {
+            if(tri->vertices[i] == v) {
+                force = tri->partialTriangles[tri->cellIndex(c)].force[i];
+
+                forceSum += Math::dot(force, (tri->centroid - v->position));
+                break;
+            }
+        }
+
+        TrianglePtr next = tri->nextTriangleInFan(v, c, prev);
+        prev = tri;
+        tri = next;
+    } while(tri && tri != first);
+
+    return forceSum;
+}
+
+Vector3 centroidTriangleFan(CVertexPtr center, const std::vector<TrianglePtr>& tri)
+{
+    assert(tri.size() >= 3);
+    CVertexPtr prev = nullptr;
+    for(int j = 0; j < 3; ++j) {
+        if(tri[0]->vertices[j] != center && incident(tri[0]->vertices[j], tri[tri.size()-1])) {
+            prev = tri[0]->vertices[j];
+            break;
+        }
+    }
+    assert(prev);
+
+    Vector3 sum = Vector3{0.0f, 0.0f, 0.0f};
+
+    sum += prev->position;
+
+    for(int i = 1; i < tri.size(); ++i) {
+        CTrianglePtr t = tri[i];
+        for(int j = 0; j < 3; ++j) {
+            if(t->vertices[j] != center && t->vertices[j] != prev) {
+                prev = t->vertices[j];
+                sum += prev->position;
+                break;
+            }
+        }
+
+    }
+
+    return sum * (1.0 / tri.size());
 }

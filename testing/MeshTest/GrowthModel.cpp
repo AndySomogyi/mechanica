@@ -31,8 +31,8 @@ static struct BlueCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
-    loadSheetModel();
+    loadSimpleSheetModel();
+    //loadSheetModel();
 
     testEdges();
 }
@@ -52,9 +52,12 @@ HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
 
 
     for(TrianglePtr tri : mesh->triangles) {
-        tri->force[0] = Vector3{};
-        tri->force[1] = Vector3{};
-        tri->force[2] = Vector3{};
+        tri->partialTriangles[0].force[0] = Vector3{};
+        tri->partialTriangles[0].force[1] = Vector3{};
+        tri->partialTriangles[0].force[2] = Vector3{};
+        tri->partialTriangles[1].force[0] = Vector3{};
+        tri->partialTriangles[1].force[1] = Vector3{};
+        tri->partialTriangles[1].force[2] = Vector3{};
     }
 
     for(CellPtr cell : mesh->cells) {
@@ -105,7 +108,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
         for(int v = 0; v < 3; ++v) {
             //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-            tri->force[v] +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+            pt->force[v] +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
         }
 
     }
@@ -130,7 +133,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
 
         for(int v = 0; v < 3; ++v) {
-            tri->force[v] +=  force;
+            pt->force[v] +=  force;
         }
     }
 

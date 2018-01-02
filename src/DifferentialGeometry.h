@@ -34,6 +34,20 @@ HRESULT discreteCurvature(CCellPtr, CVertexPtr, CTrianglePtr tri,
 
 float forceDivergence(CVertexPtr v);
 
+/**
+ * Calculate a cell's force divergence contribution at a vertex.
+ */
+float forceDivergenceForCell(CVertexPtr v, CCellPtr c);
 
+/**
+ * Constructs a plane from a collection of points
+ * so that the summed squared distance to all points is minimzized
+ */
+HRESULT planeFromPoints(const std::vector<CVertexPtr> &pts, Vector3 &normal, Vector3 &point);
+
+
+Vector3 centroid(const std::vector<CVertexPtr> &pts);
+
+Vector3 centroidTriangleFan(CVertexPtr center, const std::vector<TrianglePtr> &tri);
 
 #endif /* SRC_DIFFERENTIALGEOMETRY_H_ */

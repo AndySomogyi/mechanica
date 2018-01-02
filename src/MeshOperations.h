@@ -41,14 +41,16 @@ struct MeshOperation {
     /**
      * does this operation depend on this triangle?
      */
-    virtual bool depends(const TrianglePtr) const = 0;
+    virtual bool depends(CTrianglePtr) const = 0;
 
     /**
      * does this operation depend on this vertex?
      */
-    virtual bool depends(const VertexPtr) const = 0;
+    virtual bool depends(CVertexPtr) const = 0;
 
     virtual bool equals(const Edge& e) const = 0;
+
+    virtual bool equals(CVertexPtr) const = 0;
 
     /**
      * mark the edge, for debug purposes
@@ -112,12 +114,10 @@ struct MeshOperations {
      */
     HRESULT removeDependentOperations(const TrianglePtr tri);
 
-
     /**
      * a mesh object was deleted, remove any enqueued operations
      * that refer to this obj.
      */
-
     HRESULT removeDependentOperations(const VertexPtr vert);
 
     bool empty() const { return c.empty(); }
@@ -181,7 +181,9 @@ private:
 
     Container::iterator findDependentOperation(Container::iterator start, const VertexPtr);
 
-    MeshOperation *findMatchingOperation(const Edge& edge);
+    MeshOperation *findMatchingOperation(const Edge& edge) ;
+    
+    MeshOperation *findMatchingOperation(CVertexPtr vertex) ;
 
 };
 

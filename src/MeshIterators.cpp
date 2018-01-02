@@ -199,4 +199,31 @@ bool EdgeTriangles::isValid() {
     }
     return true;
 }
+
+std::vector<TrianglePtr> triangleFan(CVertexPtr vert, CCellPtr cell)
+{
+    std::vector<TrianglePtr> fan;
+
+    // get the first triangle
+    TrianglePtr first = vert->triangleForCell(cell);
+
+    if(!first) {
+        return fan;
+    }
+
+    // the loop triangle
+    TrianglePtr tri = first;
+    // keep track of the previous triangle
+    TrianglePtr prev = nullptr;
+    do {
+        assert(incident(tri, vert));
+        fan.push_back(tri);
+        TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
+        prev = tri;
+        tri = next;
+    } while(tri && tri != first);
+
+    return fan;
+}
+
 #endif

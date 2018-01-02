@@ -92,5 +92,10 @@ private:
     friend class EdgeTriangleIterator;
 };
 
+/**
+ * grab all of the triangles in a fan.
+ */
+std::vector<TrianglePtr> triangleFan(CVertexPtr vert, CCellPtr cell);
+
 
 #endif /* SRC_MESHITERATORS_H_ */

@@ -201,7 +201,19 @@ struct MxMesh  {
      *
      * returns a new, orphaned triangle.
      */
-    TrianglePtr createTriangle(MxTriangleType *type, const std::array<VertexPtr, 3> &verts);
+    TrianglePtr createTriangle(MxTriangleType *type,
+            const std::array<VertexPtr, 3> &verts);
+
+    /**
+     * Creates a new triangle for the given three vertices.
+     *
+     * The cells get attaches to each side of the triangles, and the cell types are
+     * used to determine the triangle type.
+     *
+     * returns a new, orphaned triangle.
+     */
+    TrianglePtr createTriangle(const std::array<CellPtr, 2>&,
+            const std::array<VertexPtr, 3>&);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
@@ -240,7 +252,7 @@ struct MxMesh  {
      * This may enqueue the vertex in the operation queue so that edges or
      * cells can be removed and attached elsewhere.
      */
-    HRESULT valenceChanged(CVertexPtr v);
+    HRESULT valenceChanged(VertexPtr v);
 
     bool validate();
 

@@ -102,6 +102,14 @@ struct MxPartialTriangle : MxObject {
      */
     float mass = 0;
 
+
+    /**
+         * The total force excreted by this triangle onto the three
+         * incident vertices. This force is a contribution from both of the
+         * incident cells.
+         */
+        std::array<Magnum::Vector3, 3> force;
+
     /**
      * A contiguous sequence of scalar attributes, who's time evolution is
      * defined by reactions and odes.
@@ -219,7 +227,9 @@ struct MxTriangle : MxObject {
      * incident vertices. This force is a contribution from both of the
      * incident cells.
      */
-    std::array<Magnum::Vector3, 3> force;
+    Vector3 force(int vertexIndx) const {
+        return partialTriangles[0].force[vertexIndx] + partialTriangles[1].force[vertexIndx];
+    }
 
     /**
      * does this triangle match the given set of vertex
@@ -280,6 +290,9 @@ struct MxTriangle : MxObject {
      */
     int adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const;
 
+    inline int cellIndex(CCellPtr cell) const {
+        return (cells[0] == cell) ? 0 : ((cells[1] == cell) ? 1 : -1);
+    }
 
     /**
      * Inform the cell that the vertex positions have changed. Causes the

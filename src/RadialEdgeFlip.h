@@ -29,12 +29,12 @@ struct RadialEdgeFlip : MeshOperation {
     /**
      * does this operation depend on this triangle?
      */
-    virtual bool depends(const TrianglePtr) const;
+    virtual bool depends(CTrianglePtr) const;
 
     /**
      * does this operation depend on this vertex?
      */
-    virtual bool depends(const VertexPtr) const;
+    virtual bool depends(CVertexPtr) const;
 
     virtual bool equals(const Edge& e) const;
 

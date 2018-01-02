@@ -10,14 +10,14 @@
 
 #include "MeshOperations.h"
 
-class VertexSplit : MeshOperation {
-    VertexSplit(MeshPtr, CVertexPtr);
+class VertexSplit : public MeshOperation {
+public:
 
     /**
      * Creates a new vertex split mesh operation if
      * the operation is valid for the given vertex pointer.
      */
-    static MeshOperation *create(CVertexPtr);
+    static MeshOperation *create(MeshPtr mesh, VertexPtr);
 
     /**
      * Apply this operation
@@ -32,20 +32,24 @@ class VertexSplit : MeshOperation {
     /**
      * does this operation depend on this triangle?
      */
-    virtual bool depends(const TrianglePtr) const;
+    virtual bool depends(CTrianglePtr) const;
 
     /**
      * does this operation depend on this vertex?
      */
-    virtual bool depends(const VertexPtr) const;
+    virtual bool depends(CVertexPtr) const;
 
     virtual bool equals(const Edge& e) const;
+    
+    virtual bool equals(CVertexPtr) const;
 
     virtual void mark() const;
 
 private:
 
-    Edge edge;
+    VertexSplit(MeshPtr, VertexPtr);
+
+    VertexPtr vertex;
 };
 
 #endif /* SRC_VERTEXSPLIT_H_ */

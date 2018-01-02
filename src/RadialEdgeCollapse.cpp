@@ -573,7 +573,7 @@ float RadialEdgeCollapse::energy() const {
     return (1 - shortCutoff / Magnum::Math::distance(edge[0]->position, edge[1]->position));
 }
 
-bool RadialEdgeCollapse::depends(const TrianglePtr tri) const {
+bool RadialEdgeCollapse::depends(CTrianglePtr tri) const {
     for(int i = 0; i < 3; ++i) {
         if(equals({{tri->vertices[i], tri->vertices[(i+1)%3]}})) {
             return true;
@@ -582,7 +582,7 @@ bool RadialEdgeCollapse::depends(const TrianglePtr tri) const {
     return false;
 }
 
-bool RadialEdgeCollapse::depends(const VertexPtr v) const {
+bool RadialEdgeCollapse::depends(CVertexPtr v) const {
     return v == edge[0] || v == edge[1];
 }
 
@@ -795,4 +795,9 @@ void RadialEdgeCollapse::mark() const {
     for(TrianglePtr tri : triangles) {
         tri->color = Magnum::Color4::yellow();
     }
+}
+
+bool RadialEdgeCollapse::equals(CVertexPtr) const
+{
+    return false;
 }

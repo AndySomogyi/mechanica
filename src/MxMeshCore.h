@@ -82,6 +82,8 @@ struct MxMeshNode {
 
 protected:
     MeshPtr mesh;
+
+    friend class MxVertex;
 };
 
 struct MxVertex {
@@ -121,16 +123,27 @@ struct MxVertex {
 
     HRESULT appendTriangle(TrianglePtr);
 
+    /**
+     * Find the first triangle that is incident to the given cell.
+     * If no triangle is incident, returns null.
+     */
+    TrianglePtr triangleForCell(CCellPtr cell) const;
+
     uint id{0};
 
 private:
      // one to many relationship of vertex -> triangles
     Triangles _triangles;
 
-        // one to many relationship of vertex -> cells
+    // one to many relationship of vertex -> cells
     std::vector<CellPtr> _cells;
 
     void rebuildCells();
+
+    /**
+     * Get the mesh pointer.
+     */
+    MeshPtr mesh();
 };
 
 std::ostream& operator<<(std::ostream& os, CVertexPtr v);

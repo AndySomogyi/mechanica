@@ -44,10 +44,10 @@ HRESULT ConeSplit::apply() {
 float ConeSplit::energy() const {
 }
 
-bool ConeSplit::depends(const TrianglePtr) const {
+bool ConeSplit::depends(CTrianglePtr) const {
 }
 
-bool ConeSplit::depends(const VertexPtr) const {
+bool ConeSplit::depends(CVertexPtr) const {
 }
 
 bool ConeSplit::equals(const Edge& e) const {

@@ -257,7 +257,7 @@ float RadialEdgeSplit::energy() const {
     return -(Magnum::Math::distance(edge[0]->position, edge[1]->position) - longCutoff);
 }
 
-bool RadialEdgeSplit::depends(const TrianglePtr tri) const {
+bool RadialEdgeSplit::depends(CTrianglePtr tri) const {
     for(int i = 0; i < 3; ++i) {
         if(equals({{tri->vertices[i], tri->vertices[(i+1)%3]}})) {
             return true;
@@ -266,7 +266,7 @@ bool RadialEdgeSplit::depends(const TrianglePtr tri) const {
     return false;
 }
 
-bool RadialEdgeSplit::depends(const VertexPtr v) const {
+bool RadialEdgeSplit::depends(CVertexPtr v) const {
     return v == edge[0] || v == edge[1];
 }
 
@@ -288,4 +288,9 @@ void RadialEdgeSplit::mark() const {
     for(TrianglePtr tri : triangles) {
         tri->color = Magnum::Color4{1, 1, 0, 1};
     }
+}
+
+bool RadialEdgeSplit::equals(CVertexPtr) const
+{
+    return false;
 }

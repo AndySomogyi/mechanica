@@ -86,7 +86,13 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 }
 
 HRESULT MeshOperations::valenceChanged(const VertexPtr vert) {
-    return E_NOTIMPL;
+    MeshOperation *meshOp;
+    if(findMatchingOperation(vert) == nullptr &&
+       (meshOp = VertexSplit::create(mesh, vert)))
+    {
+        push(meshOp);
+    }
+    return S_OK;
 }
 
 HRESULT MeshOperations::removeDependentOperations(const TrianglePtr tri) {
@@ -183,9 +189,15 @@ MeshOperations::Container::iterator MeshOperations::findDependentOperation(
             [vert](const MeshOperation* op)->bool { return op->depends(vert); });
 }
 
-MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge) {
+MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge)  {
     Container::iterator iter = std::find_if(c.begin(), c.end(),
             [edge](const MeshOperation* op)->bool { return op->equals(edge); });
+    return iter != c.end() ? *iter : nullptr;
+}
+
+MeshOperation* MeshOperations::findMatchingOperation(CVertexPtr vertex)  {
+    Container::iterator iter = std::find_if(c.begin(), c.end(),
+                                            [vertex](const MeshOperation* op)->bool { return op->equals(vertex); });
     return iter != c.end() ? *iter : nullptr;
 }
 

@@ -44,7 +44,7 @@ HRESULT LangevinPropagator::eulerStep(MxReal dt) {
         for(CTrianglePtr tri : v->triangles()) {
             for(int j = 0; j < 3; ++j) {
                 if(tri->vertices[j] == v) {
-                    force += tri->force[j];
+                    force += tri->force(j);
                 }
             }
         }
