@@ -14,25 +14,36 @@
 
 static struct RedCellType : MxCellType
 {
-    RedCellType() {
-        color = Color4{1.0f, 0.0f, 0.0f, 0.08f};
+    virtual Magnum::Color4 color(struct MxCell *cell) {
+        return Color4{1.0f, 0.0f, 0.0f, 0.08f};
     }
 } redCellType;
 
 static struct BlueCellType : MxCellType
 {
-    BlueCellType() {
-        color = Color4{0.0f, 0.0f, 1.0f, 0.08f};
-    };
+    virtual Magnum::Color4 color(struct MxCell *cell) {
+        return Color4{0.0f, 0.0f, 1.0f, 0.08f};
+    }
 } blueCellType;
+
+static struct ClearCellType : MxCellType
+{
+    virtual Magnum::Color4 color(struct MxCell *cell) {
+        switch(cell->id) {
+            case 4: return Color4{0.0f, 0.0f, 1.0f, 0.08f};
+            default: return Color4{0.0f, 0.0f, 0.0f, 0.00f};
+        }
+        
+    }
+} clearCellType;
 
 
 
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
-    //loadSheetModel();
+    //loadSimpleSheetModel();
+    loadSheetModel();
 
     testEdges();
 }
@@ -158,8 +169,8 @@ void GrowthModel::loadSheetModel() {
         }
     };
 
-    mesh->setShortCutoff(0.1);
-    mesh->setLongCutoff(0.2);
+    mesh->setShortCutoff(0.05);
+    mesh->setLongCutoff(0.3);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.3;
@@ -177,11 +188,14 @@ void GrowthModel::loadSimpleSheetModel() {
 
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
+            
             if((id % 2) == 0) {
                 return (MxCellType*)&redCellType;
             } else {
                 return (MxCellType*)&blueCellType;
             }
+            
+            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
         }
     };
 

@@ -104,6 +104,15 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
     do {
         triangles.push_back(tri);
         TrianglePtr next = tri->nextTriangleInRing(prev);
+#ifndef NDEBUG
+        if(!next) {
+            std::cout << "error, EdgeTriangles, tri->nextTriangleInRing(prev) -> null, " << std::endl
+            << "tri: " << tri << std::endl
+            << "prev: " << prev << std::endl;
+            tri->nextTriangleInRing(prev);
+            assert(0);
+        }
+#endif
         assert(next);
         prev = tri;
         tri = next;

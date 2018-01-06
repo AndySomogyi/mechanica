@@ -53,7 +53,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
         const MxTriangle &tri = *(boundary[i])->triangle;
         VertexAttribute *attrs = (VertexAttribute*)ptr;
 
-        if(true) {
+        if(false) {
             for(int i = 0; i < 3; ++i) {
                 attrs[i].color = jetColorMap(
                     tri.vertices[i]->attr,
@@ -70,8 +70,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
                 color = tri.color;
             }
             else if (type) {
-                color = type->color;
-                color[3] = tri.alpha;
+                color = type->color(this);
             }
             else {
                 color = Color4::yellow();

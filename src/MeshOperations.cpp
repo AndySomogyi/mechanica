@@ -38,8 +38,7 @@ MeshOperations::MeshOperations(MeshPtr _mesh, float _shortCutoff,
 
 HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBegin,
         TriangleContainer::const_iterator triEnd) {
-    return S_OK;
-
+    
 #ifndef NDEBUG
     if(shouldStop) return S_OK;
 #endif
@@ -88,35 +87,45 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 
 HRESULT MeshOperations::valenceChanged(const VertexPtr vert) {
     MeshOperation *meshOp;
+    HRESULT result = removeDependentOperations(vert);
+
     if(findMatchingOperation(vert) == nullptr &&
        (meshOp = VertexSplit::create(mesh, vert)))
     {
         push(meshOp);
     }
-    return S_OK;
+    return result;
 }
 
 HRESULT MeshOperations::removeDependentOperations(const TrianglePtr tri) {
     Container::iterator iter = c.begin();
+    bool found = false;
     while((iter = findDependentOperation(iter, tri)) != c.end()) {
         MeshOperation *op = *iter;
         delete op;
         c.erase(iter++);
+        found = true;
     }
     // stuff was removed, need to re-order the heap.
-    std::make_heap(c.begin(), c.end(), MeshOperationComp{});
+    if(found) {
+        std::make_heap(c.begin(), c.end(), MeshOperationComp{});
+    }
     return S_OK;
 }
 
 HRESULT MeshOperations::removeDependentOperations(const VertexPtr vert) {
     Container::iterator iter = c.begin();
+    bool found = false;
     while((iter = findDependentOperation(iter, vert)) != c.end()) {
         MeshOperation *op = *iter;
         iter = c.erase(iter);
         delete op;
+        found = true;
     }
     // stuff was removed, need to re-order the heap.
-    std::make_heap(c.begin(), c.end(), MeshOperationComp{});
+    if(found) {
+        std::make_heap(c.begin(), c.end(), MeshOperationComp{});
+    }
     return S_OK;
 }
 

@@ -80,12 +80,13 @@ TrianglePtr MxMesh::findTriangle(const std::array<VertexPtr, 3> &verts) {
     return nullptr;
 }
 
+struct UniverseCellType : MxCellType {
+    virtual Magnum::Color4 color(struct MxCell *cell) {
+        return Color4{0., 0., 0., 0.};
+    }
+};
 
-
-
-
-
-MxCellType universeCellType = {};
+UniverseCellType universeCellType = {};
 
 MxCellType *MxUniverseCell_Type = &universeCellType;
 

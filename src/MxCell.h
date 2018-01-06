@@ -49,7 +49,7 @@ struct MxCellType : MxType {
      * plugable cell renderer object. The cell renderer would likely be a closure of
      * some sort.
      */
-    Magnum::Color4 color;
+    virtual Magnum::Color4 color(struct MxCell *cell) = 0;
 };
 
 

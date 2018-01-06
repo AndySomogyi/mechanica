@@ -23,9 +23,10 @@ std::ostream& operator<<(std::ostream& os, CTrianglePtr tri)
     os << "Triangle {" << std::endl
        << "id:" << tri->id << "," << std::endl
        << "cells:{" << to_string(tri->cells[0]) << "," << to_string(tri->cells[1]) << "}," << std::endl
-       << "vertices:{" << tri->vertices[0] << ", "
-                       << tri->vertices[1] << ", "
-                       << tri->vertices[2] << "}" << std::endl
+       << "vertices:{" << std::endl
+       << "\t" << tri->vertices[0] << ", " << std::endl
+       << "\t" << tri->vertices[1] << ", " << std::endl
+       << "\t" << tri->vertices[2] << "}" << std::endl
        << "neighbors0:{" << to_string(tri->partialTriangles[0].neighbors[0]) << ","
                          << to_string(tri->partialTriangles[0].neighbors[1]) << ","
                          << to_string(tri->partialTriangles[0].neighbors[2]) << "}," << std::endl
@@ -166,39 +167,82 @@ bool MxTriangle::isConnected() const {
 
 bool MxTriangle::isValid() const  {
 
-
     for(int cellId = 0; cellId < 2; ++cellId) {
         for(int adjId = 0; adjId < 3; ++adjId) {
             if(!partialTriangles[cellId].neighbors[adjId]) {
-                std::cout << "error, triId:" << this->id
-                          << ", partialTriangles["
-                          << cellId << "].neighbors["
-                          << adjId << "] is null"
-                          << std::endl;
+                std::cout << "error, triangle:" << this << std::endl
+                        << ", partialTriangles["
+                        << cellId << "].neighbors["
+                        << adjId << "] is null"
+                        << std::endl;
                 return false;
             }
 
             if(!partialTriangles[cellId].neighbors[adjId]->triangle) {
-                std::cout << "error, triId:" << this->id
-                          << ", partialTriangles["
-                          << cellId << "].neighbors["
-                          << adjId << "]->triangle is null"
-                          << std::endl;
+                std::cout << "error, triangle:" << this << std::endl
+                        << ", partialTriangles["
+                        << cellId << "].neighbors["
+                        << adjId << "]->triangle is null"
+                        << std::endl;
                 return false;
             }
 
             if(!adjacent_triangle_vertices(this, partialTriangles[cellId].neighbors[adjId]->triangle)) {
-                std::cout << "error, triId:" << this->id
-                          << ", partialTriangles["
-                          << cellId << "].neighbors["
-                          << adjId << "]->triangle does not have adjacent vertices to this triangle"
-                          << std::endl;
+                std::cout << "error, triangle:" << this << std::endl
+                        << ", partialTriangles["
+                        << cellId << "].neighbors["
+                        << adjId << "]->triangle does not have adjacent vertices to this triangle"
+                        << std::endl;
+                return false;
+            }
+
+            if(!incident(cells[cellId], partialTriangles[cellId].neighbors[adjId]->triangle)) {
+                std::cout << "error, triangle:" << this << std::endl
+                        << ", partialTriangles["
+                        << cellId << "].neighbors["
+                        << adjId << "]->triangle: "
+                        << partialTriangles[cellId].neighbors[adjId]->triangle << std::endl
+                        << "is not incident to cell[" << cellId << "]"
+                        << std::endl
+                        << "this: " << this << std::endl
+                        << "neighbor: " << partialTriangles[cellId].neighbors[adjId]->triangle << std::endl;
+                return false;
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; ++i) {
+        VertexPtr v1 = vertices[i];
+        VertexPtr v2 = vertices[(i+1)%3];
+        int ni = adjacentEdgeIndex(v1, v2);
+        assert(ni == i);
+
+        for(int j = 0; j < 2; ++j) {
+            TrianglePtr tri = partialTriangles[j].neighbors[i]->triangle;
+            if(tri->adjacentEdgeIndex(v1, v2) < 0) {
+                std::cout << "error, triangle:" << this << std::endl
+                        << ", neighbor triangle: " << tri << std::endl
+                        << "at index[cell:" << j << ",nid:" << i
+                        << "], neighbor triangle should be incident to vertices: " << std::endl
+                        << "v1:" << v1 << ", v2: " << v2 << std::endl;
                 return false;
             }
         }
     }
 
     for(int i = 0; i < 2; ++i) {
+        if(!cells[i]) {
+            std::cout << "error, triangle:" << this << std::endl
+                    << ", cell[" << i << "] is null" << std::endl;
+            return false;
+        }
+
+        if(!incident(const_cast<TrianglePtr>(this), cells[i])) {
+            std::cout << "error, triangle:" << this << std::endl
+                    << ", triangle is not incident to cell[" << i << "]" << std::endl;
+            return false;
+        }
+
         if(cells[i]->isRoot()) {
             assert(partialTriangles[i].mass == 0.);
         } else {
@@ -206,14 +250,55 @@ bool MxTriangle::isValid() const  {
         }
     }
 
-    return
-            cells[0] && incident(const_cast<TrianglePtr>(this), cells[0]) &&
-            cells[1] && incident(const_cast<TrianglePtr>(this), cells[1]) &&
-            isConnected() &&
-            isfinite(area) && area > 0 &&
-            isfinite(aspectRatio) && aspectRatio > 0 &&
-            isfinite(getMass()) && getMass() > 0 &&
-            isfinite(normal.length()) ;
+    if(!isConnected()) {
+        std::cout << "error, triangle:" << this << std::endl
+                << " is not connected" << std::endl;
+        return false;
+    }
+
+    if(!isfinite(area)) {
+        std::cout << "error, triangle:" << this << std::endl
+                << ", area is not finite" << std::endl;
+        return false;
+    }
+
+    if(area < 0) {
+        std::cout << "error, triangle:" << this << std::endl
+                << ", area is negative" << std::endl;
+        return false;
+    }
+
+    //if(!isfinite(aspectRatio)) {
+    //    std::cout << "error, triangle:" << this << std::endl
+    //            << ", aspect ratio is not finite" << std::endl;
+    //    return false;
+    //}
+
+    //if(aspectRatio <= 0) {
+    //    std::cout << "error, triangle:" << this << std::endl
+    //            << ", aspect ratio is negative" << std::endl;
+    //    return false;
+    //}
+
+    if(!isfinite(getMass())) {
+        std::cout << "error, triangle:" << this << std::endl
+                << ", mass is not finite" << std::endl;
+        return false;
+    }
+
+    if(getMass() < 0) {
+        std::cout << "error, triangle:" << this << std::endl
+                << ", mass is negative" << std::endl;
+        return false;
+    }
+
+    //if(!isfinite(normal.length())) {
+    //    std::cout << "error, triangle:" << this << std::endl
+    //            << ", normal.length() is not finite" << std::endl;
+    //    return false;
+    //}
+
+    return true;
 }
 
 TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
@@ -254,29 +339,25 @@ static TrianglePtr debugTriangleInRing(CTrianglePtr prev, CTrianglePtr curr)
 
     int cellIndx;
 
-    if(prev->cells[0] == curr->cells[0] || prev->cells[1] == curr->cells[0]) {
-        cellIndx = 0;
-    }
-    else if(prev->cells[0] == curr->cells[1] || prev->cells[1] == curr->cells[1]) {
-        cellIndx = 1;
-    }
-    else {
-        return nullptr;
-    }
-
     int triId = -1;
 
-    for(int i = 0; triId < 0 && i < 3; ++i) {
-        if(curr->partialTriangles[cellIndx].neighbors[i] &&
-           curr->partialTriangles[cellIndx].neighbors[i]->triangle == prev) {
-            triId = i;
-            break;
+    for(cellIndx = 0; cellIndx < 2; ++cellIndx) {
+        for(int i = 0; triId < 0 && i < 3; ++i) {
+            if(curr->partialTriangles[cellIndx].neighbors[i] &&
+               curr->partialTriangles[cellIndx].neighbors[i]->triangle == prev) {
+                triId = i;
+                goto done;
+            }
         }
     }
-
+    
+    done:
+    
     if(triId < 0) {
         return nullptr;
     }
+    
+    assert(curr->cells[cellIndx] == prev->cells[0] || curr->cells[cellIndx] == prev->cells[1]);
 
     int oppoIndx = (cellIndx+1)%2;
     return curr->partialTriangles[oppoIndx].neighbors[triId]->triangle;
@@ -289,29 +370,35 @@ TrianglePtr MxTriangle::nextTriangleInRing(CTrianglePtr prev) const
 
     int cellIndx;
 
-    if(prev->cells[0] == cells[0] || prev->cells[1] == cells[0]) {
-        cellIndx = 0;
-    }
-    else if(prev->cells[0] == cells[1] || prev->cells[1] == cells[1]) {
-        cellIndx = 1;
-    }
-    else {
-        return nullptr;
-    }
+    //if(prev->cells[0] == cells[0] || prev->cells[1] == cells[0]) {
+    //    cellIndx = 0;
+    //}
+    //else if(prev->cells[0] == cells[1] || prev->cells[1] == cells[1]) {
+    //    cellIndx = 1;
+    //}
+    //else {
+    //    return nullptr;
+    //}
 
     int triId = -1;
 
-    for(int i = 0; triId < 0 && i < 3; ++i) {
-        if(partialTriangles[cellIndx].neighbors[i] &&
-           partialTriangles[cellIndx].neighbors[i]->triangle == prev) {
-            triId = i;
-            break;
+    for(cellIndx = 0; cellIndx < 2; ++cellIndx) {
+        for(int i = 0; triId < 0 && i < 3; ++i) {
+            if(partialTriangles[cellIndx].neighbors[i] &&
+               partialTriangles[cellIndx].neighbors[i]->triangle == prev) {
+                triId = i;
+                goto done;
+            }
         }
     }
+    
+  done:
 
     if(triId < 0) {
         return nullptr;
     }
+    
+    assert(cells[cellIndx] == prev->cells[0] || cells[cellIndx] == prev->cells[1]);
 
     int oppoIndx = (cellIndx+1)%2;
 

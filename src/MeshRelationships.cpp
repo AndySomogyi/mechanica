@@ -281,10 +281,15 @@ bool adjacent_triangle_pointers(CTrianglePtr a, CTrianglePtr b)
 }
 
 HRESULT connect_triangle_cell(TrianglePtr tri, CellPtr cell, int index) {
-    assert(!tri->cells[index]);
+#ifndef NDEBUG
+    assert(index == 0 || index == 1);
+    if(cell) assert(!tri->cells[index]);
+#endif
     tri->cells[index] = cell;
     for(VertexPtr v : tri->vertices) {
-        v->triangleCellChanged(tri);
+        if(v) {
+            v->triangleCellChanged(tri);
+        }
     }
     return S_OK;
 }

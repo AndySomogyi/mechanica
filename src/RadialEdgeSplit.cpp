@@ -104,6 +104,7 @@ HRESULT RadialEdgeSplit::apply() {
     for(uint i = 0; i < triangles.size(); ++i)
     {
         TrianglePtr tri = triangles[i];
+        
 
         #ifndef NDEBUG
         float originalArea = tri->area;

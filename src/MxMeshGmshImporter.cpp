@@ -77,6 +77,10 @@ HRESULT MxMeshGmshImporter::read(const std::string& path) {
     for(TrianglePtr tri : mesh.triangles) {
         assert(tri->isValid());
     }
+    
+    for(CellPtr cell : mesh.cells) {
+        assert(cell->isValid());
+    }
 #endif
 
     return mesh.positionsChanged();
