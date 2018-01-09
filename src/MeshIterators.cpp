@@ -202,10 +202,7 @@ bool EdgeTriangles::isValid() {
             }
         }
     }
-    bool result = cells.size() == triangles.size();
-    if(!result) {
-        std::cout << "cell count different than triangle count" << std::endl;
-    }
+
     return true;
 }
 

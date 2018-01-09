@@ -185,6 +185,8 @@ private:
     
     MeshOperation *findMatchingOperation(CVertexPtr vertex) ;
 
+    MeshOperation *currentOp = nullptr;
+
 };
 
 void setMeshOpDebugMode(uint c);

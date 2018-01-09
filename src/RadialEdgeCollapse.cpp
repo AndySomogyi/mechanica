@@ -293,7 +293,7 @@ static HRESULT radialLinkCondition(const Edge& edge, const EdgeTriangles& triang
             if(tri->vertices[i] != edge[0] && tri->vertices[i] != edge[1]) {
                 if(leftLink.find(tri->vertices[i]) != leftLink.end() &&
                    edgeLink.find(tri->vertices[i]) == edgeLink.end()) {
-                    markEdge(edge);
+                    //markEdge(edge);
                     return mx_error(E_FAIL, "edge triangle violates condition, can't perform edge collapse");
                 }
             }

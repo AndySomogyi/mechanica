@@ -312,7 +312,8 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
     // triangle we find.
     if(!prev) {
         for(uint i = 0; i < 3; ++i) {
-            if (incident(pt->neighbors[i], vert)) {
+            // the neighbor might be null
+            if (pt->neighbors[i] && incident(pt->neighbors[i], vert)) {
                 return pt->neighbors[i]->triangle;
             }
         }
@@ -324,7 +325,7 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
         if(!prevPt) return nullptr;
 
         for(uint i = 0; i < 3; ++i) {
-            if (pt->neighbors[i] != prevPt && incident(pt->neighbors[i], vert)) {
+            if (pt->neighbors[i] && pt->neighbors[i] != prevPt && incident(pt->neighbors[i], vert)) {
                 return pt->neighbors[i]->triangle;
             }
         }

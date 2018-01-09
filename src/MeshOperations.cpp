@@ -144,20 +144,22 @@ HRESULT MeshOperations::removeDependentOperations(const VertexPtr vert) {
  * remaining ops.
  */
 HRESULT MeshOperations::apply() {
-    MeshOperation *op;
+
     HRESULT res = S_OK;
 
     if(debugMode) return S_OK;
 
-    while((op = pop()) != nullptr) {
+    while((currentOp = pop()) != nullptr) {
 #ifndef NDEBUG
-        if(!shouldStop)  res = op->apply();
+        if(!shouldStop)  res = currentOp->apply();
 #else
         res = op->apply();
 #endif
         // TODO, log the failed operation somehow.
-        delete op;
+        delete currentOp;
     }
+
+    assert(currentOp == nullptr);
 
     return S_OK;
 }
@@ -208,7 +210,15 @@ MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge)  {
 MeshOperation* MeshOperations::findMatchingOperation(CVertexPtr vertex)  {
     Container::iterator iter = std::find_if(c.begin(), c.end(),
                                             [vertex](const MeshOperation* op)->bool { return op->equals(vertex); });
-    return iter != c.end() ? *iter : nullptr;
+    if(iter != c.end()) {
+        return *iter;
+    }
+    else if (currentOp) {
+        return currentOp->equals(vertex) ? currentOp : nullptr;
+    }
+    else {
+        return nullptr;
+    }
 }
 
 MeshOperations::~MeshOperations() {
