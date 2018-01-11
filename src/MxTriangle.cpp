@@ -191,8 +191,8 @@ bool MxTriangle::isValid() const  {
                 std::cout << "error, triangle:" << this << std::endl
                         << ", partialTriangles["
                         << cellId << "].neighbors["
-                        << adjId << "]->triangle does not have adjacent vertices to this triangle"
-                        << std::endl;
+                        << adjId << "]->triangle does not have adjacent vertices to this triangle" << std::endl
+                        << "offending neighbor: " << partialTriangles[cellId].neighbors[adjId]->triangle << std::endl;
                 return false;
             }
 
@@ -453,8 +453,8 @@ bool MxPartialTriangle::isValid() const
         if(!adjacent_triangle_vertices(triangle, neighbors[adjId]->triangle)) {
             std::cout << "error, partial triangle id:"
                     << triangle->id << "." << id
-                    << ", neighbors[" << adjId << "]->triangle does not have adjacent vertices to this triangle"
-                    << std::endl;
+                    << ", neighbors[" << adjId << "]->triangle does not have adjacent vertices to this triangle, " << std::endl
+                    << "offending neighbor: " << neighbors[adjId]->triangle << std::endl;
             return false;
         }
 

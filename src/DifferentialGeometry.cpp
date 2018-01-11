@@ -274,3 +274,74 @@ Vector3 centroidTriangleFan(CVertexPtr center, const std::vector<TrianglePtr>& t
 
     return sum * (1.0 / tri.size());
 }
+
+float gaussianCurvature(CVertexPtr vert, CCellPtr cell)
+{
+    Vector3 a, b;
+
+    float thetaSum = 0;
+    float areaSum = 0;
+
+    // get the first triangle
+    TrianglePtr first = vert->triangleForCell(cell);
+    // the loop triangle
+    TrianglePtr tri = first;
+    // keep track of the previous triangle
+    TrianglePtr prev = nullptr;
+    do {
+
+
+        // vectors from center to two outside vertices
+        for(int i = 0; i < 3; ++i) {
+            if(tri->vertices[i] == vert) {
+                a = tri->vertices[(i+1)%3]->position - vert->position;
+                b = tri->vertices[(i+2)%3]->position - vert->position;
+                break;
+            }
+        }
+
+        assert(tri->area  > 0);
+
+        float cosTheta = Math::dot(a, b) / (a.length() * b.length());
+        float theta = acos(cosTheta);
+        thetaSum += theta;
+        areaSum += tri->area;
+
+
+        TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
+        prev = tri;
+        tri = next;
+    } while(tri && tri != first);
+
+    assert(thetaSum >= 0. && thetaSum <= 2. * M_PI);
+
+    return (2. * M_PI - thetaSum) / areaSum;
+}
+
+float umbrella(CVertexPtr vert, CCellPtr cell) {
+    Vector3 sum;
+
+    float eSum = 0;
+    
+    // get the first triangle
+    TrianglePtr first = vert->triangleForCell(cell);
+    // the loop triangle
+    TrianglePtr tri = first;
+    // keep track of the previous triangle
+    TrianglePtr prev = nullptr;
+    do {
+
+        Vector3 diff = vert->position - tri->centroid;
+        float e = diff.length();
+        sum += diff / e;
+        eSum += e;
+        
+        
+        TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
+        prev = tri;
+        tri = next;
+    } while(tri && tri != first);
+    
+    return 2. / eSum * sum.length();
+    
+}

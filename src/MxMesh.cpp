@@ -205,6 +205,14 @@ HRESULT MxMesh::positionsChanged() {
     MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
     MxVertex::minForceDivergence = std::numeric_limits<float>::max();
 
+
+    if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
+        return result;
+    }
+    if((result = meshOperations.apply()) != S_OK) {
+        return result;
+    }
+
     for(VertexPtr v : vertices) {
         v->mass = 0;
         v->area = 0;
@@ -215,16 +223,6 @@ HRESULT MxMesh::positionsChanged() {
             return result;
         }
     }
-
-
-
-    if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
-        return result;
-    }
-    if((result = meshOperations.apply()) != S_OK) {
-        return result;
-    }
-
 
 
     for(CellPtr cell : cells) {

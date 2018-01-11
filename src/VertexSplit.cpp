@@ -71,6 +71,8 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr center,
         TrianglePtr t0, TrianglePtr t1, CellPtr c0, CellPtr c1, VertexPtr newVertex,
         TrianglePtr tp);
 
+static int cellValenceCount(CCellPtr cell, CVertexPtr vertex);
+
 
 
 static int vertexSplitId = 0;
@@ -94,10 +96,18 @@ static int nonRootCellCount(CVertexPtr v) {
     return cnt;
 }
 
+static CellPtr shouldSplitVertex(VertexPtr vertex);
+
 
 MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
 {
+    if (shouldSplitVertex(v)) {
+        std::cout << "queued vertex: " << v << std::endl;
+        return new VertexSplit(mesh, v);
+    }
     //if (vertexSplitId > 1) return nullptr;
+    
+    /*
 
     
     int size = v->cells().size();
@@ -120,6 +130,7 @@ MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
             << "lowestValenceCell: " << lowest.cell->id;
         return new VertexSplit(mesh, v);
     }
+     */
 
     return nullptr;
 }
@@ -209,6 +220,8 @@ static bool tracedVerifyVertex(VertexPtr vertex, bool trace)  {
     return true;
 }
 
+static void reconnectPathologicalPTriangles(TrianglePtr ta, int ca_i, TrianglePtr tb, int cb_i);
+
 
 static void verifyVertex(VertexPtr vertex) {
     if(tracedVerifyVertex(vertex, false)) {
@@ -223,10 +236,16 @@ static int cnt = 0;
 
 HRESULT VertexSplit::apply()
 {
-#ifndef NDEBUG
+    CellPtr splitCell = shouldSplitVertex(vertex);
+    if(!splitCell) {
+        return S_OK;
+    }
+    else {
+        std::cout << "VertexSplit::apply(), vertex: " << vertex << std::endl;
+    }
     
+#if 0
 
-    
     for(CellPtr cell : mesh->cells) {
         assert(cell->isValid());
     }
@@ -239,54 +258,19 @@ HRESULT VertexSplit::apply()
             //assert(0);
         }
     }
-    
     //verifyVertex(vertex);
 #endif
     
-    int size = vertex->cells().size();
-    /*
-    if(id > 0) {
-        for(TrianglePtr tri : vertex->triangles()) {
-            if(tri->cells[0]->id == 4 || tri->cells[1]->id == 4) {
-                tri->color = Color4{1.0, 0., 0., 1.0};
-            }
-        }
-        return S_OK;
-    }
-     */
+
     
 #ifndef NDEBUG
     cnt++;
     std::vector<CellPtr> cells = vertex->cells();
 #endif
 
-    if(size <= 3 || (size <= 3 && !sharedCellCount(vertex))) {
-        return S_OK;
-    }
-    
 
-        ValenceCell lowest = lowestValenceCell(vertex);
-        
-        if(lowest.valenceCnt + 1 >= size) {
-            std::cout << "can't split vertex, don't have a low valence count cell" << std::endl;
-            return S_OK;
-        }
     
-    std::cout << "VertexSplit::apply(), vertex: " << vertex << std::endl
-    << "cell count: " << size << ", " << std::endl
-    << "sharedCellCount: " << sharedCellCount(vertex) << std::endl
-    << "nonRootCellCount: " << nonRootCellCount(vertex) << std::endl
-    << "lowestValenceCount: " << lowest.valenceCnt << std::endl
-    << "lowestValenceCell: " << lowest.cell->id << std::endl;
-    
-    if(lowest.valenceCnt <= 1) {
-        std::cout << "hmmm..." << std::endl;
-    }
-
-    // find the cell with the max force
-    //CCellPtr cell = maxForceCell(vertex);
-    
-    HRESULT result = splitVertex(mesh, vertex, lowest.cell);
+    HRESULT result = splitVertex(mesh, vertex, splitCell);
     //HRESULT result = S_OK;
     
 #ifndef NDEBUG
@@ -344,6 +328,11 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     // fan by definition must have at least three triangles
     std::vector<TrianglePtr> fan = triangleFan(center, cell);
     
+    std::cout << "triangle fan" << std::endl;
+    for(int i = 0; i < fan.size(); ++i) {
+        std::cout << "triangle_fan[" << i << "]: " << fan[i] << std::endl;
+    }
+    
     std::vector<TrianglePtr> newTris;
     
 #ifndef NDEBUG
@@ -371,6 +360,8 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     
     float distance = mesh->getShortCutoff() >= 0.001 ? 2 * mesh->getShortCutoff() : 0.002;
     VertexPtr newVertex = mesh->createVertex(center->position + distance * diff.normalized());
+    
+    std::cout << "new vertex: " << newVertex << std::endl;
 
     for(int i = 0; i < fan.size(); ++i) {
         TrianglePtr t0 = fan[i];
@@ -380,21 +371,32 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
         assert(incident(t1, center));
         assert(adjacent_triangle_pointers(t0, t1));
         assert(adjacent_triangle_pointers(t0, t1));
+        
+        int c0_i = t0->cells[0] == cell ? 1 : 0;
+        int c1_i = t1->cells[0] == cell ? 1 : 0;
 
-        CellPtr c0 = t0->cells[0] == cell ? t0->cells[1] : t0->cells[0];
-        CellPtr c1 = t1->cells[0] == cell ? t1->cells[1] : t1->cells[0];
+        CellPtr c0 = t0->cells[c0_i];
+        CellPtr c1 = t1->cells[c1_i];
 
         if(c0 != c1) {
             // splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr center, TrianglePtr t0,
             // TrianglePtr t1, CellPtr c0, CellPtr c1, VertexPtr newVertex, TrianglePtr tp);
             tri = splitEdge(mesh, cell, center, t0, t1, c0, c1, newVertex, tri);
-
+            
             if(!firstNewTri) {
                 firstNewTri = tri;
                 firstTriConnectCell = c0;
             }
             
             newTris.push_back(tri);
+        }
+        
+        // we now know that these triangles belong to the same cell, but could have
+        // a sitiation where they are not connected, deal with it.
+        else if(!adjacent(&t0->partialTriangles[c0_i], &t1->partialTriangles[c1_i])) {
+            assert(c0 == c1);
+            std::cout << "same side partial triangles not adjecent" << std::endl;
+            reconnectPathologicalPTriangles(t0, c0_i, t1, c1_i);
         }
     }
 
@@ -412,11 +414,25 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
             assert(tri->isValid());
         }
     }
+    
+
 
 #ifndef NDEBUG
     for(TrianglePtr tri : mesh->triangles) {
         if(!tri->isValid()) {
             tri->isValid();
+            
+            std::cout << "updated triangle fan" << std::endl;
+            for(int i = 0; i < fan.size(); ++i) {
+                std::cout << "triangle_fan[" << i << "]: " << fan[i] << std::endl;
+            }
+            
+            std::cout << "new triangles" << std::endl;
+            for(int i = 0; i < newTris.size(); ++i) {
+                std::cout << "new tri[" << i << "]: " << newTris[i] << std::endl;
+            }
+            
+            
             assert(0);
         }
         
@@ -452,9 +468,9 @@ static int sharedCellCount(CVertexPtr v0) {
     
     CellSet cells;
     for(CellPtr c : v0->cells()) {
-        if(!c->isRoot()) {
+        //if(!c->isRoot()) {
             cells.insert(c);
-        }
+        //}
     }
     
     int maxCnt = 0;
@@ -485,13 +501,18 @@ static int sharedCellCount(CVertexPtr v0) {
 
 CCellPtr maxForceCell(CVertexPtr v)
 {
-    static int cnt = 0;
-    cnt++;
+    // when a vertex is split, a new vertex will be created that's attached to the
+    // the detaching cell, and this vertex will have cell valence count that's
+    // detaching cell's valence count plus one for the cell itself.
+    const int maxValence = v->cells().size() - 1;
     
     float maxDiv = -std::numeric_limits<float>::max();
     float sumDiv = 0;
     CCellPtr cell = nullptr;
     for(CCellPtr c : v->cells()) {
+        if(cellValenceCount(c, v) >= maxValence) {
+            continue;
+        }
         float d = forceDivergenceForCell(v, c);
         if(d > maxDiv) {
             maxDiv = d;
@@ -504,6 +525,9 @@ CCellPtr maxForceCell(CVertexPtr v)
         cell = nullptr;
         float maxCurv = -std::numeric_limits<float>::max();
         for(CCellPtr c : v->cells()) {
+            if(cellValenceCount(c, v) >= maxValence) {
+                continue;
+            }
             float meanCurv = 0;
             float gaussCurv = 0;
             discreteCurvature(c, v, &meanCurv, &gaussCurv);
@@ -514,8 +538,7 @@ CCellPtr maxForceCell(CVertexPtr v)
         }
 
     }
-    
-    std::cout << "vertex split pull cell: " << cell->id << std::endl;
+
     return cell;
 }
 
@@ -662,6 +685,35 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     return newTriangle;
 }
 
+static int cellValenceCount(CCellPtr cell, CVertexPtr vertex) {
+
+    
+
+        CellSet cells;
+        
+        // get the first triangle
+        TrianglePtr first = vertex->triangleForCell(cell);
+        assert(first);
+        
+        // the loop triangle
+        TrianglePtr tri = first;
+        // keep track of the previous triangle
+        TrianglePtr prev = nullptr;
+        do {
+            assert(tri->cells[0] == cell || tri->cells[1] == cell);
+            CCellPtr otherCell = (tri->cells[0] == cell) ? tri->cells[1] : tri->cells[0];
+            cells.insert(otherCell);
+            
+            TrianglePtr next = tri->nextTriangleInFan(vertex, cell, prev);
+            prev = tri;
+            tri = next;
+        } while(tri && tri != first);
+    
+    return cells.size();
+        
+
+}
+
 static ValenceCell lowestValenceCell(CVertexPtr vertex) {
     ValenceCell result = {nullptr, std::numeric_limits<int>::max()};
 
@@ -694,4 +746,108 @@ static ValenceCell lowestValenceCell(CVertexPtr vertex) {
     }
     assert(result.cell);
     return result;
+}
+
+static CellPtr shouldSplitVertex(VertexPtr v) {
+    
+    const int size = v->cells().size();
+    
+    // no topological advantage to less than 4 splits.
+    // a 3 valence split produces another 3 valence vertex
+    if(size <= 3) {
+        return nullptr;
+    }
+    
+
+    //if(size < 5 && sharedCellCount(v) <= 3) {
+    //    return nullptr;
+    //}
+    
+    CellPtr cell = nullptr;
+    
+    // when a vertex is split, a new vertex will be created that's attached to the
+    // the detaching cell, and this vertex will have cell valence count that's
+    // detaching cell's valence count plus one for the cell itself.
+    const int maxValence = v->cells().size() - 1;
+    
+    float maxCurvature = 0;
+    
+    int valenceCount;
+
+    for(CellPtr c : v->cells()) {
+        if((valenceCount = cellValenceCount(c, v)) >= maxValence) {
+            continue;
+        }
+        float d = umbrella(v, c);
+        if(d > maxCurvature) {
+            maxCurvature = d;
+            cell = c;
+        }
+    }
+    
+    if(cell) {
+        std::cout << "should split vertex: " << v << std::endl
+        << "cell count: " << size << ", " << std::endl
+        << "sharedCellCount: " << sharedCellCount(v) << std::endl
+        << "nonRootCellCount: " << nonRootCellCount(v) << std::endl
+        << "valenceCellCount: " << valenceCount << std::endl
+        << "split cell id: " << cell->id << std::endl
+        << "max curvature: " << maxCurvature << std::endl;
+    }
+
+    return cell;
+}
+
+static void reconnectPathologicalPTriangles(TrianglePtr ta, int ca_i, TrianglePtr tb, int cb_i) {
+    int sharedCell_ai = (ca_i + 1) % 2;
+    int sharedCell_bi = (cb_i + 1) % 2;
+    int neighbor_ai = -1;
+    int neighbor_bi = -1;
+    
+    for(int i = 0; i < 3; ++i) {
+        if(ta->partialTriangles[sharedCell_ai].neighbors[i] == &tb->partialTriangles[sharedCell_bi]) {
+            neighbor_ai = i;
+            break;
+        }
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        if(tb->partialTriangles[sharedCell_bi].neighbors[i] == &ta->partialTriangles[sharedCell_ai]) {
+            neighbor_bi = i;
+            break;
+        }
+    }
+    
+    assert(neighbor_ai >= 0 && neighbor_bi >= 0);
+    
+    PTrianglePtr partTri_a = ta->partialTriangles[ca_i].neighbors[neighbor_ai];
+    PTrianglePtr partTri_b = tb->partialTriangles[cb_i].neighbors[neighbor_bi];
+    
+    int neighborPt_ai = -1;
+    int neighborPt_bi = -1;
+    
+    for(int i = 0; i < 3; ++i) {
+        if(partTri_a->neighbors[i] == &ta->partialTriangles[ca_i]) {
+            neighborPt_ai = i;
+            break;
+        }
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        if(partTri_b->neighbors[i] == &tb->partialTriangles[cb_i]) {
+            neighborPt_bi = i;
+            break;
+        }
+    }
+    
+    assert(neighborPt_ai >= 0 && neighborPt_bi >= 0);
+    assert(partTri_a->neighbors[neighborPt_ai]->triangle == ta);
+    assert(partTri_b->neighbors[neighborPt_bi]->triangle == tb);
+    
+    partTri_a->neighbors[neighborPt_ai] = partTri_b;
+    partTri_b->neighbors[neighborPt_bi] = partTri_a;
+    
+    ta->partialTriangles[ca_i].neighbors[neighbor_ai] = &tb->partialTriangles[cb_i];
+    tb->partialTriangles[cb_i].neighbors[neighbor_bi] = &ta->partialTriangles[ca_i];
+    
 }

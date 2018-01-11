@@ -153,7 +153,7 @@ HRESULT MeshOperations::apply() {
 #ifndef NDEBUG
         if(!shouldStop)  res = currentOp->apply();
 #else
-        res = op->apply();
+        res = currentOp->apply();
 #endif
         // TODO, log the failed operation somehow.
         delete currentOp;
