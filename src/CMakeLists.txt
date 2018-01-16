@@ -87,8 +87,6 @@ set(SRC
   EdgeFlip.cpp
   RadialEdgeSplit.cpp
   RadialEdgeCollapse.cpp
-  ConeSplit.cpp
-  RadialEdgeFlip.cpp
   DifferentialGeometry.cpp
   VertexSplit.cpp
   stochastic_rk.cpp
@@ -142,8 +140,6 @@ set(HEADERS
   EdgeFlip.h
   RadialEdgeSplit.h
   RadialEdgeCollapse.h
-  ConeSplit.h
-  RadialEdgeFlip.h
   DifferentialGeometry.h
   VertexSplit.h
   stochastic_rk.h

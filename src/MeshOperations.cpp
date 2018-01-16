@@ -10,8 +10,6 @@
 #include "EdgeFlip.h"
 #include "RadialEdgeSplit.h"
 #include "RadialEdgeCollapse.h"
-#include "ConeSplit.h"
-#include "RadialEdgeFlip.h"
 #include "VertexSplit.h"
 #include <algorithm>
 #include <limits>

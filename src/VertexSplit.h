@@ -10,7 +10,7 @@
 
 #include "MeshOperations.h"
 
-class VertexSplit : public MeshOperation {
+struct VertexSplit : public MeshOperation {
 public:
 
     /**
