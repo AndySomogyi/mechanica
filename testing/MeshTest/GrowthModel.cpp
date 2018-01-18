@@ -42,8 +42,8 @@ static struct ClearCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
-    loadSheetModel();
+    loadSimpleSheetModel();
+    //loadSheetModel();
 
     testEdges();
 }
