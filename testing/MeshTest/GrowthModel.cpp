@@ -119,7 +119,8 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
         for(int v = 0; v < 3; ++v) {
             //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
-            pt->force[v] +=  5.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+            //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
+            pt->force[v] +=  0.5 * diff * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
         }
 
     }
@@ -140,8 +141,10 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 
     for(auto pt: cell->boundary) {
         TrianglePtr tri = pt->triangle;
+        
+        Vector3 normal = tri->cellNormal(cell);
 
-        Vector3 force = 1.5 * tri->normal * diff * (tri->area / cell->area);
+        Vector3 force = 1.5 * normal * diff * (tri->area / cell->area);
 
         for(int v = 0; v < 3; ++v) {
             pt->force[v] +=  force;
@@ -199,8 +202,9 @@ void GrowthModel::loadSimpleSheetModel() {
         }
     };
 
-    mesh->setShortCutoff(0.1);
-    mesh->setLongCutoff(0.2);
+
+    mesh->setShortCutoff(0.01);
+    mesh->setLongCutoff(0.15);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.1;
@@ -208,7 +212,7 @@ void GrowthModel::loadSimpleSheetModel() {
 
     targetVolume = 0.6;
     minTargetVolume = 0.005;
-    maxTargetVolume = 1.5;
+    maxTargetVolume = 2.0;
 
 }
 

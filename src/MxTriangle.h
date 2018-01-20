@@ -387,6 +387,14 @@ namespace Magnum { namespace Math {
         return Magnum::Math::cross(v2 - v1, v3 - v1);
     }
 
+    inline Vector3<float> normal(const std::array<Vector3<float>, 3> &verts) {
+        return normal(verts[0], verts[1], verts[2]);
+    }
+
+    inline Vector3<float> normal(const std::array<VertexPtr, 3> &verts) {
+        return normal(verts[0]->position, verts[1]->position, verts[2]->position);
+    }
+
     // Nx = UyVz - UzVy
     // Ny = UzVx - UxVz
     // Nz = UxVy - UyVx

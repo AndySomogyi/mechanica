@@ -75,14 +75,6 @@ HRESULT RadialEdgeSplit::apply() {
 #endif
 
     ctr += 1;
-    std::cout << "ctr:" << ctr << std::endl;
-    if(ctr >= 616) {
-        std::cout << "p" << std::endl;
-        int t = 0;
-        for(TrianglePtr tri : e) {
-            std::cout << "triangle[" << t++ << "] to split: " << tri << std::endl;
-        }
-    }
 
     // new vertex at the center of this edge
     Vector3 center = (edge[0]->position + edge[1]->position) / 2.;
@@ -142,10 +134,16 @@ HRESULT RadialEdgeSplit::apply() {
 
 #ifndef NDEBUG
         newTriangles.push_back(nt);
-#endif
+        
+        Vector3 tvec = Math::normal(tri->vertices);
+        Vector3 nvec = Math::normal(nt->vertices);
+
         // make damned sure the winding is correct and the new triangle points
         // in the same direction as the existing one
-        assert(Math::dot(nt->normal, tri->normal) >= 0);
+        float dir = Math::dot(tvec, nvec);
+        assert(dir >= 0);
+#endif
+        
 
         // remove the b vertex from the old triangle, and replace it with the
         // new center vertex
@@ -160,7 +158,7 @@ HRESULT RadialEdgeSplit::apply() {
         assert(Math::dot(nt->normal, tri->normal) >= 0);
 
         // make sure at most 1% difference in new total area and original area.
-        assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
+        // assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
 
         // makes sure that new and old tri share an edge.
         assert(adjacent_triangle_vertices(tri, nt));

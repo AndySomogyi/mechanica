@@ -261,11 +261,6 @@ HRESULT MxCell::positionsChanged() {
         centroid += tri->centroid;
         area += tri->area;
         float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
-
-
-        float a = tri->area * Math::dot(tri->normal, tri->centroid);
-        float b = tri->area * Math::dot(-tri->normal, tri->centroid);
-
         volume += volumeContr;
 
         //for(int i = 0; i < 3; ++i) {
