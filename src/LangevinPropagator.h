@@ -9,8 +9,11 @@
 #define SRC_MESHDAMPEDLANGEVINPROPAGATOR_H_
 
 #include "MxPropagator.h"
+#include "Magnum/Magnum.h"
 
 struct MxModel;
+
+
 
 /**
  * Damped Langevin propagator,
@@ -34,9 +37,29 @@ private:
 
     HRESULT eulerStep(MxReal dt);
 
+    HRESULT rungeKuttaStep(MxReal dt);
+
 
     MxModel *model;
     MxMesh *mesh;
+
+    size_t size = 0;
+    Magnum::Vector3 *positions = nullptr;
+
+    Magnum::Vector3 *posInit = nullptr;
+
+    Magnum::Vector3 *accel = nullptr;
+
+    Magnum::Vector3 *k1 = nullptr;
+    Magnum::Vector3 *k2 = nullptr;
+    Magnum::Vector3 *k3 = nullptr;
+    Magnum::Vector3 *k4 = nullptr;
+
+    float *masses = nullptr;
+
+    void resize();
+
+    size_t timeSteps = 0;
 
 };
 

@@ -248,7 +248,7 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
     return S_OK;
 }
 
-HRESULT MxCell::positionsChanged() {
+HRESULT MxCell::updateDerivedAttributes() {
     area = 0;
     volume = 0;
     centroid = Vector3{0., 0., 0.};
@@ -257,10 +257,12 @@ HRESULT MxCell::positionsChanged() {
     for(auto pt : boundary) {
         TrianglePtr tri = pt->triangle;
 
+        assert(tri->area >= 0);
+
         ntri += 1;
         centroid += tri->centroid;
         area += tri->area;
-        float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
+        float volumeContr = std::abs(tri->area * Math::dot(tri->cellNormal(this), tri->centroid));
         volume += volumeContr;
 
         //for(int i = 0; i < 3; ++i) {
@@ -272,6 +274,14 @@ HRESULT MxCell::positionsChanged() {
     }
     volume /= 3.;
     centroid /= (float)ntri;
+
+    //std::cout << "cell id:" << id << ", volume:" << volume << ", area:" << area << std::endl;
+
+    if(!isRoot() && volume < 0) {
+        for(PTrianglePtr pt : boundary) {
+            pt->triangle->color = Color4{0., 1., 0., 0.3};
+        }
+    }
 
     return S_OK;
 }

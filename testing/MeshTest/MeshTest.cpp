@@ -220,7 +220,12 @@ MeshTest::MeshTest() : MeshTest{Configuration{}}
 
 void MeshTest::step(float dt) {
     propagator->step(dt);
-    draw();
+    
+    if((timeSteps % 5) == 0) {
+        draw();
+    }
+    
+    timeSteps += 1;
 }
 
 void MeshTest::draw() {

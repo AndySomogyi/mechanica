@@ -52,7 +52,11 @@ HRESULT planeFromPoints(const std::vector<CVertexPtr> &pts, Vector3 &normal, Vec
 
 Vector3 centroid(const std::vector<CVertexPtr> &pts);
 
+Vector3 centroid(const std::vector<Vector3> &pts);
+
 Vector3 centroidTriangleFan(CVertexPtr center, const std::vector<TrianglePtr> &tri);
+
+Vector3 normalTriangleFan(CCellPtr cell, const std::vector<TrianglePtr> &tri);
 
 
 

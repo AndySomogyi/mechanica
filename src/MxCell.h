@@ -187,12 +187,11 @@ struct MxCell : MxObject, MxMeshNode {
      */
     HRESULT topologyChanged();
 
-
     /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.
      */
-    HRESULT positionsChanged();
+    HRESULT updateDerivedAttributes();
 
     void dump();
 

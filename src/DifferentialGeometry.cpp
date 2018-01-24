@@ -344,4 +344,25 @@ float umbrella(CVertexPtr vert, CCellPtr cell) {
     
     return 2. / eSum * sum.length();
     
+
 }
+
+Vector3 normalTriangleFan(CCellPtr cell, const std::vector<TrianglePtr>& triFan)
+{
+    Vector3 sum;
+
+    for(const TrianglePtr tri : triFan) {
+        sum += tri->cellNormal(cell) * tri->area;
+    }
+
+    return sum.normalized();
+}
+
+Vector3 centroid(const std::vector<Vector3> &pts) {
+    Vector3 sum;
+    for(const Vector3 &vec : pts) {
+        sum += vec;
+    }
+    return sum / pts.size();
+}
+

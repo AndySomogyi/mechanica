@@ -231,7 +231,27 @@ struct MxMesh  {
      * The mesh will then place them in a set of priority queues (based on distance), and
      * will process all of the offending edges.
      */
-    HRESULT positionsChanged();
+    HRESULT applyMeshOperations();
+
+    /**
+     * Updates the derived triangle and cell attributes, such as normals, volumes, etc...
+     *
+     * This is called when the mesh is initially loaded, or the mesh itself
+     * calls this in response to positions changing.
+     */
+    HRESULT updateDerivedAttributes();
+
+    /**
+     * Set all of the positions in the mesh. This does NOT trigger any mesh update
+     * operations.
+     *
+     * Sets all the positions, and causes the triangles and cells to re-calculate
+     * their attributes such as area, normal, volume, etc...
+     *
+     * May be called with zero len, in this case, the mesh re-calculates the derived
+     *
+     */
+    HRESULT setPositions(uint32_t len, const Vector3 *positions);
 
     VertexPtr createVertex(const Magnum::Vector3 &pos);
 

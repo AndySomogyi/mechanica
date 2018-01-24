@@ -83,7 +83,9 @@ HRESULT MxMeshGmshImporter::read(const std::string& path) {
     }
 #endif
 
-    return mesh.positionsChanged();
+    mesh.updateDerivedAttributes();
+
+    return mesh.applyMeshOperations();
 }
 
 VertexPtr MxMeshGmshImporter::addGmshVertex(const Gmsh::Node& node) {
@@ -197,7 +199,7 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
         pt->mass = area * density;
     }
 
-    assert(cell.positionsChanged() == S_OK);
+    assert(cell.updateDerivedAttributes() == S_OK);
 }
 
 void MxMeshGmshImporter::addQuadToCell(MxCell& cell, const std::array<VertexPtr, 4>& verts) {
@@ -324,7 +326,9 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
 
     assert(mesh.valid(cell));
 
-    assert(cell->positionsChanged() == S_OK);
+    assert(cell->updateDerivedAttributes() == S_OK);
+
+    assert(cell->isValid());
 }
 
 void MxMeshGmshImporter::createTriangleForCell(

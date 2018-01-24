@@ -42,8 +42,8 @@ static struct ClearCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
-    //loadSheetModel();
+    //loadSimpleSheetModel();
+    loadSheetModel();
 
     testEdges();
 }
@@ -55,21 +55,9 @@ GrowthModel::GrowthModel()  {
 
 
 
-HRESULT GrowthModel::calcForce(TrianglePtr* triangles, uint32_t len) {
+HRESULT GrowthModel::calcForce() {
 
     HRESULT result;
-
-    testEdges();
-
-
-    for(TrianglePtr tri : mesh->triangles) {
-        tri->partialTriangles[0].force[0] = Vector3{};
-        tri->partialTriangles[0].force[1] = Vector3{};
-        tri->partialTriangles[0].force[2] = Vector3{};
-        tri->partialTriangles[1].force[0] = Vector3{};
-        tri->partialTriangles[1].force[1] = Vector3{};
-        tri->partialTriangles[1].force[2] = Vector3{};
-    }
 
     for(CellPtr cell : mesh->cells) {
         if((result = cellAreaForce(cell)) != S_OK) {
@@ -101,7 +89,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
         TrianglePtr tri = pt->triangle;
 
-        assert(tri->area > 0);
+        assert(tri->area >= 0);
 
         //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
 
@@ -120,7 +108,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
         for(int v = 0; v < 3; ++v) {
             //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
             //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            pt->force[v] +=  0.5 * diff * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
+            pt->force[v] +=  7.5 * diff * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
         }
 
     }
@@ -136,6 +124,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
     }
 
     assert(cell->area >= 0);
+    //assert(cell->volume > 0);
 
     float diff = targetVolume - cell->volume;
 
@@ -144,7 +133,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         
         Vector3 normal = tri->cellNormal(cell);
 
-        Vector3 force = 1.5 * normal * diff * (tri->area / cell->area);
+        Vector3 force = 1.5 * normal * diff * abs(diff) * (tri->area / cell->area);
 
         for(int v = 0; v < 3; ++v) {
             pt->force[v] +=  force;
@@ -173,15 +162,15 @@ void GrowthModel::loadSheetModel() {
     };
 
     mesh->setShortCutoff(0.05);
-    mesh->setLongCutoff(0.3);
+    mesh->setLongCutoff(0.1);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.001;
     targetArea = 0.3;
     maxTargetArea = 0.5;
 
-    targetVolume = 0.1;
+    targetVolume = 1.2;
     minTargetVolume = 0.005;
-    maxTargetVolume = 0.2;
+    maxTargetVolume = 5.0;
 }
 
 void GrowthModel::loadSimpleSheetModel() {
@@ -248,4 +237,102 @@ void GrowthModel::loadMonodisperseVoronoiModel() {
     MxMeshVoronoiImporter importer(*mesh);
 
     importer.monodisperse();
+}
+
+HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
+{
+    HRESULT result;
+
+    if(len != mesh->vertices.size()) {
+        return E_FAIL;
+    }
+    
+    if(pos) {
+        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
+            return result;
+        }
+    }
+
+    calcForce();
+
+    for(int i = 0; i < mesh->vertices.size(); ++i) {
+        VertexPtr v = mesh->vertices[i];
+
+        assert(v->mass > 0 && v->area > 0);
+
+        for(CTrianglePtr tri : v->triangles()) {
+            for(int j = 0; j < 3; ++j) {
+                if(tri->vertices[j] == v) {
+                    force[i] += tri->force(j);
+                }
+            }
+        }
+    }
+
+
+    return S_OK;
+}
+
+HRESULT GrowthModel::getMasses(float time, uint32_t len, float* masses)
+{
+    if(len != mesh->vertices.size()) {
+        return E_FAIL;
+    }
+
+    for(int i = 0; i < len; ++i) {
+        masses[i] = mesh->vertices[i]->mass;
+    }
+    return S_OK;
+}
+
+HRESULT GrowthModel::getPositions(float time, uint32_t len, Vector3* pos)
+{
+    for(int i = 0; i < len; ++i) {
+        pos[i] = mesh->vertices[i]->position;
+    }
+    return S_OK;
+}
+
+HRESULT GrowthModel::setPositions(float time, uint32_t len, const Vector3* pos)
+{
+    return mesh->setPositions(len, pos);
+}
+
+HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
+        const Vector3* pos, Vector3* acc)
+{
+    HRESULT result;
+
+    if(len != mesh->vertices.size()) {
+        return E_FAIL;
+    }
+
+    if(pos) {
+        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
+            return result;
+        }
+    }
+
+    calcForce();
+
+    for(int i = 0; i < mesh->vertices.size(); ++i) {
+        VertexPtr v = mesh->vertices[i];
+
+        assert(v->mass > 0 && v->area > 0);
+
+        Vector3 force;
+
+        for(CTrianglePtr tri : v->triangles()) {
+            for(int j = 0; j < 3; ++j) {
+                if(tri->vertices[j] == v) {
+                    force += tri->force(j);
+                }
+            }
+        }
+
+        acc[i] = force / v->mass;
+    }
+
+
+    return S_OK;
 }

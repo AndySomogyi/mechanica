@@ -199,12 +199,11 @@ MxMesh::~MxMesh() {
     }
 }
 
-HRESULT MxMesh::positionsChanged() {
+HRESULT MxMesh::applyMeshOperations() {
     HRESULT result = E_FAIL;
 
     MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
     MxVertex::minForceDivergence = std::numeric_limits<float>::max();
-
 
     if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
         return result;
@@ -213,35 +212,7 @@ HRESULT MxMesh::positionsChanged() {
         return result;
     }
 
-    for(VertexPtr v : vertices) {
-        v->mass = 0;
-        v->area = 0;
-    }
-
-    for(TrianglePtr tri : triangles) {
-        if((result = tri->positionsChanged() != S_OK)) {
-            return result;
-        }
-    }
-
-
-    for(CellPtr cell : cells) {
-        if((result = cell->positionsChanged() != S_OK)) {
-            return result;
-        }
-    }
-
-    for(VertexPtr v : vertices) {
-        v->attr = forceDivergence(v);
-        if(v->attr > MxVertex::maxForceDivergence) {
-            MxVertex::maxForceDivergence = v->attr;
-        }
-        if(v->attr < MxVertex::minForceDivergence) {
-            MxVertex::minForceDivergence = v->attr;
-        }
-    }
-
-    return S_OK;
+    return updateDerivedAttributes();
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
@@ -301,6 +272,52 @@ bool MxMesh::validate() {
     return true;
 }
 
+HRESULT MxMesh::updateDerivedAttributes()
+{
+    HRESULT result;
+
+    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
+    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
+
+    for(int i = 0; i < vertices.size(); ++i) {
+        VertexPtr v = vertices[i];
+        v->mass = 0;
+        v->area = 0;
+    }
+
+    for(TrianglePtr tri : triangles) {
+
+        tri->partialTriangles[0].force[0] = Vector3{};
+        tri->partialTriangles[0].force[1] = Vector3{};
+        tri->partialTriangles[0].force[2] = Vector3{};
+        tri->partialTriangles[1].force[0] = Vector3{};
+        tri->partialTriangles[1].force[1] = Vector3{};
+        tri->partialTriangles[1].force[2] = Vector3{};
+
+        if((result = tri->positionsChanged() != S_OK)) {
+            return result;
+        }
+    }
+
+    for(CellPtr cell : cells) {
+        if((result = cell->updateDerivedAttributes() != S_OK)) {
+            return result;
+        }
+    }
+
+    for(VertexPtr v : vertices) {
+        v->attr = forceDivergence(v);
+        if(v->attr > MxVertex::maxForceDivergence) {
+            MxVertex::maxForceDivergence = v->attr;
+        }
+        if(v->attr < MxVertex::minForceDivergence) {
+            MxVertex::minForceDivergence = v->attr;
+        }
+    }
+
+    return S_OK;
+}
+
 bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
     EdgeTriangles e{{{a, b}}};
     return true;
@@ -331,4 +348,51 @@ TrianglePtr MxMesh::createTriangle(const std::array<CellPtr, 2> &cells,
     triangles.push_back(tri);
 
     return tri;
+}
+
+HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
+{
+    HRESULT result;
+
+    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
+    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
+
+    for(int i = 0; i < vertices.size(); ++i) {
+        VertexPtr v = vertices[i];
+        v->mass = 0;
+        v->area = 0;
+        v->position = positions[i];
+    }
+
+    for(TrianglePtr tri : triangles) {
+
+        tri->partialTriangles[0].force[0] = Vector3{};
+        tri->partialTriangles[0].force[1] = Vector3{};
+        tri->partialTriangles[0].force[2] = Vector3{};
+        tri->partialTriangles[1].force[0] = Vector3{};
+        tri->partialTriangles[1].force[1] = Vector3{};
+        tri->partialTriangles[1].force[2] = Vector3{};
+
+        if((result = tri->positionsChanged() != S_OK)) {
+            return result;
+        }
+    }
+
+    for(CellPtr cell : cells) {
+        if((result = cell->updateDerivedAttributes() != S_OK)) {
+            return result;
+        }
+    }
+
+    for(VertexPtr v : vertices) {
+        v->attr = forceDivergence(v);
+        if(v->attr > MxVertex::maxForceDivergence) {
+            MxVertex::maxForceDivergence = v->attr;
+        }
+        if(v->attr < MxVertex::minForceDivergence) {
+            MxVertex::minForceDivergence = v->attr;
+        }
+    }
+
+    return S_OK;
 }

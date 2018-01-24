@@ -73,7 +73,7 @@ static float area(float radius) {
 }
 
 -(IBAction)step:(id)sender {
-    meshTest->step(0.0002);
+    meshTest->step(0.00005);
 }
 
 -(IBAction)stop:(id)sender {
@@ -103,13 +103,13 @@ static float area(float radius) {
     else if (sender == self.shortCutoff)
     {
         meshTest->model->mesh->setShortCutoff(self.shortCutoff.floatValue);
-        meshTest->model->mesh->positionsChanged();
+        meshTest->model->mesh->applyMeshOperations();
         meshTest->draw();
     }
     else if (sender == self.longCutoff)
     {
         meshTest->model->mesh->setLongCutoff(self.longCutoff.floatValue);
-        meshTest->model->mesh->positionsChanged();
+        meshTest->model->mesh->applyMeshOperations();
         meshTest->draw();
     }
     else if (sender == self.volumeVal)

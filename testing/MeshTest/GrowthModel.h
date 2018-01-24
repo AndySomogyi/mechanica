@@ -17,7 +17,7 @@ struct GrowthModel : public MxModel {
     /**
      * Evaluate the force functions,
      */
-    virtual HRESULT calcForce(TrianglePtr* triangles, uint32_t len) ;
+    HRESULT calcForce() ;
 
 
     HRESULT cellAreaForce(CellPtr cell);
@@ -42,6 +42,16 @@ struct GrowthModel : public MxModel {
     void loadCubeModel();
 
     void loadMonodisperseVoronoiModel();
+
+    virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force);
+
+    virtual HRESULT getAccelerations(float time, uint32_t len, const Vector3 *pos, Vector3 *acc);
+
+    virtual HRESULT getMasses(float time, uint32_t len, float *masses);
+
+    virtual HRESULT getPositions(float time, uint32_t len, Vector3 *pos);
+
+    virtual HRESULT setPositions(float time, uint32_t len, const Vector3 *pos);
 };
 
 

@@ -113,6 +113,8 @@ HRESULT MxTriangle::positionsChanged() {
     area = 0.5 * len;
     normal = abnormal / len;
 
+    assert(len > 0);
+
     // average position of 3 position vectors
     centroid = (v1 + v2 + v3) / 3;
 

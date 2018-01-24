@@ -153,6 +153,7 @@ HRESULT MeshOperations::apply() {
 #else
         res = currentOp->apply();
 #endif
+        mesh->updateDerivedAttributes();
         // TODO, log the failed operation somehow.
         delete currentOp;
     }

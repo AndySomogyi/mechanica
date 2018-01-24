@@ -274,6 +274,17 @@ HRESULT VertexSplit::apply()
 
 
     HRESULT result = splitVertex(mesh, vertex, splitCell);
+
+    for(TrianglePtr tri : vertex->triangles()) {
+        tri->positionsChanged();
+    }
+
+    for(CellPtr cell : vertex->cells()) {
+        cell->updateDerivedAttributes();
+    }
+    
+    splitCell->updateDerivedAttributes();
+
     //HRESULT result = S_OK;
 
 #ifndef NDEBUG
@@ -347,8 +358,6 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
         assert(adjacent_triangle_pointers(t0, t1));
         assert(adjacent_triangle_pointers(t0, t1));
     }
-
-
 #endif
 
     TrianglePtr firstNewTri = nullptr;
@@ -356,13 +365,11 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     // which side of the first tri to connect to the last.
     CCellPtr firstTriConnectCell = nullptr;
 
-    // new vertex is at centroid of fan
-    // TODO prob better at mean pos between center and centroid.
-    Vector3 fanCentroid = centroidTriangleFan(center, fan);
-    Vector3 diff = fanCentroid - center->position;
+    // new vertex, push the triangle fan in the opposite direction of it's normal.
 
+    Vector3 fanNormal = normalTriangleFan(cell, fan);
     float distance = mesh->getShortCutoff() >= 0.001 ? 2 * mesh->getShortCutoff() : 0.002;
-    VertexPtr newVertex = mesh->createVertex(center->position + distance * diff.normalized());
+    VertexPtr newVertex = mesh->createVertex(center->position - distance * fanNormal);
 
     std::cout << "new vertex: " << newVertex << std::endl;
 
@@ -395,16 +402,17 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
         }
 
         // we now know that these triangles belong to the same cell, but could have
-        // a sitiation where they are not connected, deal with it.
+        // a situation where they are not connected, deal with it.
         else if(!adjacent(&t0->partialTriangles[c0_i], &t1->partialTriangles[c1_i])) {
             assert(c0 == c1);
-            std::cout << "same side partial triangles not adjecent" << std::endl;
+            std::cout << "same side partial triangles not adjacent" << std::endl;
             reconnectPathologicalPTriangles(t0, c0_i, t1, c1_i);
         }
     }
 
     for(TrianglePtr tri : fan) {
         replaceTriangleVertex(tri, center, newVertex);
+        tri->positionsChanged();
     }
 
     if(newTris.size()) {
@@ -509,7 +517,17 @@ bool VertexSplit::equals(CVertexPtr v) const
 
 
 /**
+ * In a vertex split, all of the triangles attached to the pulled cell's cone
+ * are centered at the center vertex. All of these triangles get disconnected from the
+ * center, and re-attached to a new center that moves a little bit towards the base
+ * of the cone.
  * The t0 and t1 triangles correspond to the c0 and c1 cell sections.
+ *
+ * These two triangles, t0 and t1 are part of the triangle fan that forms the
+ * part of the cell that will be detached section that will pull away. All of the
+ * triangles in this fan will originally are attached to the center vertex. Later,
+ * this center vertex will be removed from all of the triangles in the fan, and
+ * replaced with the new vertex.
  * @param tp: previous triangle
  */
 static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex,
@@ -518,13 +536,25 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
 {
     // the frontier vertex, incident to both triangles
     VertexPtr frontierVertex = nullptr;
-    for(VertexPtr v : t0->vertices) {
+    int t0_frontierIndex = -1;
+    for(int i = 0; i < 3; ++i) {
+        VertexPtr v = t0->vertices[i];
         if(v != centerVertex && incident(v, t1)) {
             frontierVertex = v;
+            t0_frontierIndex = i;
             break;
         }
     }
     assert(frontierVertex);
+
+    int t0_centerIndex = -1;
+    for(int i = 0; i < 3; ++i) {
+        if(t0->vertices[i] == centerVertex) {
+            t0_centerIndex = i;
+            break;
+        }
+    }
+    assert(t0_centerIndex >= 0);
 
     // index of cells in triangles
     int ci0 = t0->cellIndex(c0);
@@ -553,9 +583,62 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     // index of the t0 and t1 triangles from the ta triangle's perspective.
     int ta0_ti = ta0->adjacentEdgeIndex(frontierVertex, centerVertex);
     int ta1_ti = ta1->adjacentEdgeIndex(frontierVertex, centerVertex);
+    
+    /*
 
-    TrianglePtr newTriangle = mesh->createTriangle({{c0, c1}},
-            {{newVertex, centerVertex, frontierVertex}});
+    std::array<VertexPtr, 3> vertices = {{nullptr, nullptr, centerVertex}};
+
+    if(ta0_ci == 0) {
+        if(((t0_frontierIndex+1)%3) == t0_centerIndex) {
+            vertices[0] = frontierVertex;
+            vertices[1] = newVertex;
+        }
+        else if(((t0_centerIndex+1)%3) == t0_frontierIndex) {
+            vertices[0] = newVertex;
+            vertices[1] = frontierVertex;
+        }
+        else {
+            assert(0);
+        }
+    }
+    else {
+        if(((t0_frontierIndex+1)%3) == t0_centerIndex) {
+            vertices[0] = newVertex;
+            vertices[1] = frontierVertex;
+        }
+        else if(((t0_centerIndex+1)%3) == t0_frontierIndex) {
+            vertices[0] = frontierVertex;
+            vertices[1] = newVertex;
+        }
+        else {
+            assert(0);
+        }
+    }
+     
+     */
+    
+    std::array<VertexPtr, 3> vertices = {{newVertex, frontierVertex, centerVertex}};
+    Vector3 triCentroid = (newVertex->position + frontierVertex->position + centerVertex->position) / 3;
+    Vector3 triNormal = Math::normal(vertices);
+    if(Math::dot(triCentroid - c0->centroid, triNormal) < 0) {
+        std::swap(vertices[0], vertices[1]);
+        triCentroid = (newVertex->position + frontierVertex->position + centerVertex->position) / 3;
+        triNormal = Math::normal(vertices);
+        assert(Math::dot(triCentroid - c0->centroid, triNormal) >= 0);
+    }
+
+
+    //TrianglePtr newTriangle = mesh->createTriangle({{c0, c1}},
+    //        {{newVertex, centerVertex, frontierVertex}});
+    TrianglePtr newTriangle = mesh->createTriangle({{c0, c1}}, vertices);
+    
+    auto diff = newTriangle->centroid - c0->centroid;
+    float d = Math::dot(diff, newTriangle->cellNormal(c0));
+    
+    diff = t0->centroid - c0->centroid;
+    auto d2 = Math::dot(diff, t0->cellNormal(c0));
+
+    std::cout << "dir: " << d << ", t0 dir: " << d2 << std::endl;
 
     /*
     std::cout << "newVert:" << newVertex << std::endl;
@@ -574,7 +657,7 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     assert(ta0->partialTriangles[ta0_ci].neighbors[ta0_ti]->triangle == t0);
     assert(ta1->partialTriangles[ta1_ci].neighbors[ta1_ti]->triangle == t1);
 
-    newTriangle->color = Color4{1., 0., 0., 1.};
+    newTriangle->color = Color4{1., 1., 0., 0.5};
 
 
 
