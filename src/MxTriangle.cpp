@@ -73,6 +73,11 @@ MxTriangle::MxTriangle(uint _id, MxTriangleType* type,
     positionsChanged();
 }
 
+/**
+ * Neighbor triangle indexes are related to vertex indexes as
+ * the i'th neighbor triangle shares vertices at indexes i and either i+1
+ * or i-1.
+ */
 int MxTriangle::adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const {
     for(int i = 0; i < 3; ++i) {
         if((vertices[i] == a && vertices[(i+1)%3] == b) ||
@@ -313,12 +318,19 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
     // if we don't have a prev triangle, just grab the first
     // triangle we find.
     if(!prev) {
+        //VertexPtr otherVert = (cell == cells[0]) ? nextVertex(vert) : prevVertex(vert);
+        VertexPtr otherVert = nextVertex(vert);
         for(uint i = 0; i < 3; ++i) {
             // the neighbor might be null
-            if (pt->neighbors[i] && incident(pt->neighbors[i], vert)) {
+            if (pt->neighbors[i] &&
+                incident(pt->neighbors[i], vert) && incident(pt->neighbors[i], otherVert) ) {
                 return pt->neighbors[i]->triangle;
             }
         }
+        return nullptr;
+        //TrianglePtr tri = adjacentTriangleForEdge(vert, nextVertex(vert));
+        //if(tri) { assert(incident(tri, vert));};
+        //return tri;
     }
     else {
         const MxPartialTriangle *prevPt = (cell == prev->cells[0]) ? &prev->partialTriangles[0] :
@@ -488,4 +500,26 @@ bool MxPartialTriangle::isValid() const
     }
 
     return true;
+}
+
+VertexPtr MxTriangle::nextVertex(CVertexPtr vert) const {
+    for(int i=0; i<3; ++i) {
+        if (vertices[i] == vert) {
+            return vertices[(i+1)%3];
+        }
+    }
+    return nullptr;
+}
+
+VertexPtr MxTriangle::prevVertex(CVertexPtr vert) const
+{
+    for(int i=2; i>=0; --i) {
+        if (vertices[i] == vert) {
+            int a = i + 1;
+            // deal with negative modulo.
+            int index = (3 + (a%3)) % 3;
+            return vertices[index];
+        }
+    }
+    return nullptr;
 }

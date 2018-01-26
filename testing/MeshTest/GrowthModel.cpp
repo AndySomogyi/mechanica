@@ -161,10 +161,10 @@ void GrowthModel::loadSheetModel() {
         }
     };
 
-    mesh->setShortCutoff(0.05);
-    mesh->setLongCutoff(0.1);
+    mesh->setShortCutoff(0.02);
+    mesh->setLongCutoff(0.3);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-    minTargetArea = 0.001;
+    minTargetArea = 0.01;
     targetArea = 0.3;
     maxTargetArea = 0.5;
 

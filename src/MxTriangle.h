@@ -294,6 +294,15 @@ struct MxTriangle : MxObject {
         return (cells[0] == cell) ? 0 : ((cells[1] == cell) ? 1 : -1);
     }
 
+    inline int vertexIndex(CVertexPtr vert) const {
+        for(int i = 0; i < 3; ++i) {
+            if(vertices[i] == vert) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.
@@ -368,6 +377,15 @@ struct MxTriangle : MxObject {
      * incident to this triangle, returns null.
      */
     TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
+    
+    
+    /**
+     * Get the next adjacent vertex (in CCW order), if vert
+     * is not incident to this triangle, returns null.
+     */
+    VertexPtr nextVertex(CVertexPtr vert) const;
+
+    VertexPtr prevVertex(CVertexPtr vert) const;
 
 };
 

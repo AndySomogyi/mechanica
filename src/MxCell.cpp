@@ -262,7 +262,7 @@ HRESULT MxCell::updateDerivedAttributes() {
         ntri += 1;
         centroid += tri->centroid;
         area += tri->area;
-        float volumeContr = std::abs(tri->area * Math::dot(tri->cellNormal(this), tri->centroid));
+        float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
         volume += volumeContr;
 
         //for(int i = 0; i < 3; ++i) {
@@ -277,9 +277,14 @@ HRESULT MxCell::updateDerivedAttributes() {
 
     //std::cout << "cell id:" << id << ", volume:" << volume << ", area:" << area << std::endl;
 
-    if(!isRoot() && volume < 0) {
+    if(!isRoot()) {
         for(PTrianglePtr pt : boundary) {
-            pt->triangle->color = Color4{0., 1., 0., 0.3};
+            if(Math::dot(pt->triangle->cellNormal(this), pt->triangle->centroid - centroid) <= 0) {
+                pt->triangle->color = Color4{0., 1., 0., 0.3};
+            }
+            else if (pt->triangle->color == Color4{0., 1., 0., 0.3}) {
+                pt->triangle->color = Color4{0., 0., 0., 0.};
+            }
         }
     }
 
@@ -334,3 +339,5 @@ bool MxCell::isValid() const
 
     return true;
 }
+
+

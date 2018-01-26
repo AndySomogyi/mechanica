@@ -32,7 +32,7 @@ static std::vector<IncidentCell> incidentCells(CVertexPtr vertex);
 /**
  * Splits a vertex in the direction of the cell.
  */
-static HRESULT splitVertex(MeshPtr, VertexPtr, CCellPtr);
+static HRESULT splitVertex(MeshPtr, VertexPtr, CellPtr);
 
 /**
  * determine the largest shared cell count this vertex has with any
@@ -100,6 +100,38 @@ static int nonRootCellCount(CVertexPtr v) {
 }
 
 static CellPtr shouldSplitVertex(VertexPtr vertex);
+
+enum FanOrdering {CW, CCW, INVALID};
+
+static FanOrdering triangleFanOrdering(CTrianglePtr tri, CCellPtr cell, CVertexPtr centerVert, CVertexPtr fanVert) {
+    int cellIndex = tri->cellIndex(cell);
+    int centerIndex = tri->vertexIndex(centerVert);
+    int fanIndex = tri->vertexIndex(fanVert);
+
+    if(cellIndex == 0) {
+        if((centerIndex+1)%3 == fanIndex) {
+            return FanOrdering::CCW;
+        }
+        else if((fanIndex+1)%3 == centerIndex) {
+            return FanOrdering::CW;
+        }
+        else {
+            assert(0 && "invalid triangle ordering");
+        }
+    } else {
+        assert(cellIndex == 1);
+        if((fanIndex+1)%3 == centerIndex) {
+            return FanOrdering::CCW;
+        }
+        else if((centerIndex+1)%3 == fanIndex) {
+            return FanOrdering::CW;
+        }
+        else {
+            assert(0 && "invalid triangle ordering");
+        }
+    }
+    return FanOrdering::INVALID;
+}
 
 
 MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
@@ -235,6 +267,21 @@ static void verifyVertex(VertexPtr vertex) {
     tracedVerifyVertex(vertex, true);
 }
 
+#ifndef NDEBUG
+static void verifyTriangle(TrianglePtr tri) {
+
+    for(int i = 0; i < 2; ++i) {
+        if(!tri->cells[i]->isRoot()) {
+            Vector3 triPos = tri->centroid - tri->cells[i]->centroid;
+            float dir = Math::dot(tri->cellNormal(tri->cells[i]), triPos);
+            if(dir < 0) {
+                std::cout << "Invalid triangle normal direction, tri: " << tri << std::endl;
+            }
+        }
+    }
+}
+#endif
+
 static int cnt = 0;
 
 HRESULT VertexSplit::apply()
@@ -337,7 +384,7 @@ void VertexSplit::mark() const
  * Tasks
  *    1) locate
  */
-static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
+static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
 
     // fan by definition must have at least three triangles
     std::vector<TrianglePtr> fan = triangleFan(center, cell);
@@ -348,6 +395,10 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     }
 
     std::vector<TrianglePtr> newTris;
+    
+    // keep track of cells, need to tell them to update thier attributes when done
+    // changing geomtry.
+    std::set<CellPtr> cells{cell};
 
 #ifndef NDEBUG
     for(int i = 0; i < fan.size()-1; ++i) {
@@ -368,10 +419,15 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     // new vertex, push the triangle fan in the opposite direction of it's normal.
 
     Vector3 fanNormal = normalTriangleFan(cell, fan);
-    float distance = mesh->getShortCutoff() >= 0.001 ? 2 * mesh->getShortCutoff() : 0.002;
+    float distance = mesh->getShortCutoff() >= 0.0001 ? 2 * mesh->getShortCutoff() : 0.0002;
     VertexPtr newVertex = mesh->createVertex(center->position - distance * fanNormal);
-
+    
+#ifndef NDEBUG
+    Vector3 centerPos = center->position - cell->centroid;
+    float fanDir = Math::dot(fanNormal, centerPos);
+    std::cout << "fan dir: " << fanDir << std::endl;
     std::cout << "new vertex: " << newVertex << std::endl;
+#endif
 
     for(int i = 0; i < fan.size(); ++i) {
         TrianglePtr t0 = fan[i];
@@ -387,6 +443,9 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
 
         CellPtr c0 = t0->cells[c0_i];
         CellPtr c1 = t1->cells[c1_i];
+        
+        cells.insert(c0);
+        cells.insert(c1);
 
         if(c0 != c1) {
             // splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr center, TrianglePtr t0,
@@ -411,8 +470,14 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     }
 
     for(TrianglePtr tri : fan) {
+        verifyTriangle(tri);
         replaceTriangleVertex(tri, center, newVertex);
         tri->positionsChanged();
+        verifyTriangle(tri);
+    }
+    
+    for(CellPtr cell : cells) {
+        cell->updateDerivedAttributes();
     }
 
     if(newTris.size()) {
@@ -429,20 +494,22 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
 
 
 #ifndef NDEBUG
+    
+    std::cout << "updated triangle fan" << std::endl;
+    for(int i = 0; i < fan.size(); ++i) {
+        std::cout << "triangle_fan[" << i << "]: " << fan[i] << std::endl;
+        verifyTriangle(fan[i]);
+    }
+    
+    std::cout << "new triangles" << std::endl;
+    for(int i = 0; i < newTris.size(); ++i) {
+        std::cout << "new tri[" << i << "]: " << newTris[i] << std::endl;
+        verifyTriangle(newTris[i]);
+    }
+    
     for(TrianglePtr tri : mesh->triangles) {
         if(!tri->isValid()) {
             tri->isValid();
-
-            std::cout << "updated triangle fan" << std::endl;
-            for(int i = 0; i < fan.size(); ++i) {
-                std::cout << "triangle_fan[" << i << "]: " << fan[i] << std::endl;
-            }
-
-            std::cout << "new triangles" << std::endl;
-            for(int i = 0; i < newTris.size(); ++i) {
-                std::cout << "new tri[" << i << "]: " << newTris[i] << std::endl;
-            }
-
 
             assert(0);
         }
@@ -453,10 +520,6 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
         }
     }
 
-
-
-#endif
-
     std::cout << "finished splitting vertex, center vertex: " << std::endl
     << center << std::endl
     << ", new vertex: " << newVertex << std::endl
@@ -465,6 +528,10 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CCellPtr cell) {
     << ", center vertex: " << center << std::endl
     << ", center vertex cell count: " << center->cells().size() << std::endl
     << ", center vertex shared cell count: " << sharedCellCount(center) << std::endl;
+
+
+#endif
+
 
     return S_OK;
 }
@@ -515,6 +582,27 @@ bool VertexSplit::equals(CVertexPtr v) const
     return vertex == v;
 }
 
+#ifndef NDEBUG
+static bool verifyVertexOrdering(const std::array<VertexPtr, 3> &verts,
+        CCellPtr c0, CCellPtr c1) {
+
+    Vector3 triCentroid = (verts[0]->position + verts[1]->position + verts[2]->position) / 3;
+    Vector3 triNormal = Math::normal(verts);
+    if(!c0->isRoot() && Math::dot(triCentroid - c0->centroid, triNormal) < 0) {
+        std::cout << "bad tri ordering" << std::endl;
+        return false;
+
+    }
+
+    if(!c1->isRoot() && Math::dot(triCentroid - c1->centroid, triNormal) > 0) {
+        std::cout << "bad tri ordering" << std::endl;
+        return false;
+    }
+
+    return true;
+}
+#endif
+
 
 /**
  * In a vertex split, all of the triangles attached to the pulled cell's cone
@@ -528,6 +616,10 @@ bool VertexSplit::equals(CVertexPtr v) const
  * triangles in this fan will originally are attached to the center vertex. Later,
  * this center vertex will be removed from all of the triangles in the fan, and
  * replaced with the new vertex.
+ *
+ * Returns a new triangle that is added as a T to the beween the given t0 and t1
+ * triangles, this new triangle gets added to the cell.
+ *
  * @param tp: previous triangle
  */
 static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex,
@@ -584,48 +676,44 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     int ta0_ti = ta0->adjacentEdgeIndex(frontierVertex, centerVertex);
     int ta1_ti = ta1->adjacentEdgeIndex(frontierVertex, centerVertex);
     
-    /*
-
-    std::array<VertexPtr, 3> vertices = {{nullptr, nullptr, centerVertex}};
-
-    if(ta0_ci == 0) {
-        if(((t0_frontierIndex+1)%3) == t0_centerIndex) {
-            vertices[0] = frontierVertex;
-            vertices[1] = newVertex;
-        }
-        else if(((t0_centerIndex+1)%3) == t0_frontierIndex) {
-            vertices[0] = newVertex;
-            vertices[1] = frontierVertex;
-        }
-        else {
-            assert(0);
-        }
+    // Vertex winding order is CCW, that means that the normal points out, in the
+    // direction of CCW winding, following the right hand rule.
+    // for the normal to piont away from the cell in the zero position,
+    // need vertices would as frontier -> center -> new
+    // The center vertex is the original vertex that's being split. All of the
+    // triangles attached to the fan get pushed inwards towards their
+    // cell center.
+    
+    std::array<VertexPtr, 3> vertices;
+    
+    // triangleFanOrdering(CTrianglePtr tri, CCellPtr cell, CVertexPtr centerVert, CVertexPtr fanVert)
+    if(triangleFanOrdering(t0, c0, centerVertex, frontierVertex) == FanOrdering::CCW) {
+        assert(triangleFanOrdering(t1, c1, centerVertex, frontierVertex) == FanOrdering::CW);
+        vertices = {{centerVertex, frontierVertex, newVertex}};
+        //assert(verifyVertexOrdering(vertices, c0, c1));
     }
     else {
-        if(((t0_frontierIndex+1)%3) == t0_centerIndex) {
-            vertices[0] = newVertex;
-            vertices[1] = frontierVertex;
-        }
-        else if(((t0_centerIndex+1)%3) == t0_frontierIndex) {
-            vertices[0] = frontierVertex;
-            vertices[1] = newVertex;
-        }
-        else {
-            assert(0);
-        }
+        assert(triangleFanOrdering(t0, c0, centerVertex, frontierVertex) == FanOrdering::CW);
+        assert(triangleFanOrdering(t1, c1, centerVertex, frontierVertex) == FanOrdering::CCW);
+        vertices = {{centerVertex, newVertex, frontierVertex}};
+        assert(verifyVertexOrdering(vertices, c0, c1));
     }
-     
-     */
-    
-    std::array<VertexPtr, 3> vertices = {{newVertex, frontierVertex, centerVertex}};
-    Vector3 triCentroid = (newVertex->position + frontierVertex->position + centerVertex->position) / 3;
-    Vector3 triNormal = Math::normal(vertices);
-    if(Math::dot(triCentroid - c0->centroid, triNormal) < 0) {
-        std::swap(vertices[0], vertices[1]);
-        triCentroid = (newVertex->position + frontierVertex->position + centerVertex->position) / 3;
-        triNormal = Math::normal(vertices);
-        assert(Math::dot(triCentroid - c0->centroid, triNormal) >= 0);
+
+
+#ifndef NDEBUG
+    if(tp) {
+        Vector3 triCentroid = (newVertex->position + frontierVertex->position + centerVertex->position) / 3;
+        Vector3 triPos = triCentroid - c0->centroid;
+        Vector3 triNormal = Math::normal(vertices);
+        float dir = Math::dot(triNormal, tp->normal);
+        float cdir = Math::dot(triNormal, triPos);
+        std::cout << "c0 id: " << c0->id << ", prev tri dir: " << dir << ", center dir: " << cdir << std::endl;
+        std::cout << "foo" << std::endl;
+
     }
+#endif
+
+
 
 
     //TrianglePtr newTriangle = mesh->createTriangle({{c0, c1}},
