@@ -66,14 +66,14 @@ static float area(float radius) {
     
     [self.stepTimer invalidate];
     
-    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:0.00005
+    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:0.00001
                               target:self selector:@selector(step:)
                               userInfo:nil repeats:YES];
     self.stepTimer = timer;
 }
 
 -(IBAction)step:(id)sender {
-    meshTest->step(0.00005);
+    meshTest->step(0.00001);
 }
 
 -(IBAction)stop:(id)sender {

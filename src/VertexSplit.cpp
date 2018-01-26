@@ -419,7 +419,7 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
     // new vertex, push the triangle fan in the opposite direction of it's normal.
 
     Vector3 fanNormal = normalTriangleFan(cell, fan);
-    float distance = mesh->getShortCutoff() >= 0.0001 ? 2 * mesh->getShortCutoff() : 0.0002;
+    float distance = mesh->getShortCutoff() >= 0.0001 ? 1.5 * mesh->getShortCutoff() : 0.00015;
     VertexPtr newVertex = mesh->createVertex(center->position - distance * fanNormal);
     
 #ifndef NDEBUG

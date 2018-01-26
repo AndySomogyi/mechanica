@@ -108,7 +108,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
         for(int v = 0; v < 3; ++v) {
             //tri->vertices[v]->force +=  1/3. * diff * (tri->area / cell->area) *  dir[v] / totLen ;
             //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            pt->force[v] +=  7.5 * diff * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
+            pt->force[v] +=  10.5 * diff * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
         }
 
     }
@@ -162,7 +162,7 @@ void GrowthModel::loadSheetModel() {
     };
 
     mesh->setShortCutoff(0.02);
-    mesh->setLongCutoff(0.3);
+    mesh->setLongCutoff(0.12);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     minTargetArea = 0.01;
     targetArea = 0.3;
