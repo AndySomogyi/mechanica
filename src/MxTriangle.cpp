@@ -365,13 +365,13 @@ static TrianglePtr debugTriangleInRing(CTrianglePtr prev, CTrianglePtr curr)
             }
         }
     }
-    
+
     done:
-    
+
     if(triId < 0) {
         return nullptr;
     }
-    
+
     assert(curr->cells[cellIndx] == prev->cells[0] || curr->cells[cellIndx] == prev->cells[1]);
 
     int oppoIndx = (cellIndx+1)%2;
@@ -406,13 +406,13 @@ TrianglePtr MxTriangle::nextTriangleInRing(CTrianglePtr prev) const
             }
         }
     }
-    
+
   done:
 
     if(triId < 0) {
         return nullptr;
     }
-    
+
     assert(cells[cellIndx] == prev->cells[0] || cells[cellIndx] == prev->cells[1]);
 
     int oppoIndx = (cellIndx+1)%2;
@@ -522,4 +522,43 @@ VertexPtr MxTriangle::prevVertex(CVertexPtr vert) const
         }
     }
     return nullptr;
+}
+
+Orientation MxTriangle::orientation() const
+{
+    Orientation o0{Orientation::Invalid}, o1{Orientation::Invalid};
+
+    if(cells[0] && !cells[0]->isRoot()) {
+        Vector3 triPos = centroid - cells[0]->centroid;
+        float dir = Math::dot(normal, triPos);
+        o0 = dir > 0 ? Orientation::Outward : Orientation::Inward;
+    }
+
+    if(cells[1] && !cells[1]->isRoot()) {
+        Vector3 triPos = centroid - cells[1]->centroid;
+        float dir = -1 * Math::dot(normal, triPos);
+        o1 = dir > 0 ? Orientation::Outward : Orientation::Inward;
+    }
+
+    if((o0 == Orientation::Outward || o0 == Orientation::Invalid) &&
+       (o1 == Orientation::Outward || o1 == Orientation::Invalid)) {
+        return Orientation::Outward;
+    }
+
+    if((o0 == Orientation::Inward || o0 == Orientation::Invalid) &&
+       (o1 == Orientation::Inward || o1 == Orientation::Invalid)) {
+        return Orientation::Inward;
+    }
+
+    if((o0 == Orientation::Inward  || o0 == Orientation::Invalid) &&
+       (o1 == Orientation::Outward || o1 == Orientation::Invalid)) {
+        return Orientation::InwardOutward;
+    }
+
+    if((o0 == Orientation::Outward || o0 == Orientation::Invalid) &&
+       (o1 == Orientation::Inward  || o1 == Orientation::Invalid)) {
+        return Orientation::OutwardInward;
+    }
+
+    return Orientation::Invalid;
 }

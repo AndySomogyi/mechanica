@@ -279,10 +279,10 @@ HRESULT MxCell::updateDerivedAttributes() {
 
     if(!isRoot()) {
         for(PTrianglePtr pt : boundary) {
-            if(Math::dot(pt->triangle->cellNormal(this), pt->triangle->centroid - centroid) <= 0) {
+            if(pt->triangle->orientation() != Orientation::Outward) {
                 pt->triangle->color = Color4{0., 1., 0., 0.3};
             }
-            else if (pt->triangle->color == Color4{0., 1., 0., 0.3}) {
+            else if (pt->triangle->color == Color4{0., 1., 0., 0.3} ) {
                 pt->triangle->color = Color4{0., 0., 0., 0.};
             }
         }

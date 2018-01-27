@@ -12,6 +12,10 @@
 #include "Magnum/Math/Color.h"
 #include <iostream>
 
+enum struct Orientation {
+    Inward, Outward, InwardOutward, OutwardInward, Invalid
+};
+
 
 struct MxPartialTriangleType : MxType {
 
@@ -251,6 +255,18 @@ struct MxTriangle : MxObject {
 
 
     /**
+     * Determines the triangle's orientation relative to the cell centroids.
+     *
+     * If the triangle points outwards from both cells, returns Outward. It's
+     * possible that a triangle can be inward for one cell and outward for
+     * the other cell, in say we have one cell protruding into another.
+     *
+     * Does not check the root cell.
+     */
+    Orientation orientation() const;
+
+
+    /**
      * Orient the normal in the correct direction for the given cell.
      */
     inline Vector3 cellNormal(CCellPtr cell) const {
@@ -377,8 +393,8 @@ struct MxTriangle : MxObject {
      * incident to this triangle, returns null.
      */
     TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
-    
-    
+
+
     /**
      * Get the next adjacent vertex (in CCW order), if vert
      * is not incident to this triangle, returns null.
