@@ -14,25 +14,30 @@ typedef unsigned char Byte;
 @property (assign, atomic) NSTimer *stepTimer; 
 @property (assign, nonatomic) IBOutlet NSWindow *window;
 
+@property (assign, nonatomic) IBOutlet NSButton *constantVolumeBtn;
+@property (assign, nonatomic) IBOutlet NSButton *constantPressureBtn;
 
-@property (assign, nonatomic) IBOutlet NSSlider *areaSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *areaMin;
-@property (assign, nonatomic) IBOutlet NSTextField *areaMax;
-@property (assign, nonatomic) IBOutlet NSTextField *areaVal;
 
+@property (assign, nonatomic) IBOutlet NSSlider *pressureSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *pressureMin;
+@property (assign, nonatomic) IBOutlet NSTextField *pressureMax;
+@property (assign, nonatomic) IBOutlet NSTextField *pressureVal;
+
+
+@property (assign, nonatomic) IBOutlet NSSlider *surfaceTensionSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionMin;
+@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionMax;
+@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionVal;
 
 @property (assign, nonatomic) IBOutlet NSSlider *volumeSlider;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeMin;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeMax;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeVal;
 
-@property (assign, nonatomic) IBOutlet NSSlider *radiusSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *radiusMin;
-@property (assign, nonatomic) IBOutlet NSTextField *radiusMax;
-@property (assign, nonatomic) IBOutlet NSTextField *radiusVal;
-
 @property (assign, nonatomic) IBOutlet NSTextField *shortCutoff;
 @property (assign, nonatomic) IBOutlet NSTextField *longCutoff;
+
+@property (assign, nonatomic) IBOutlet NSTextField *volumeLambda;
 
 -(IBAction)run:(id)sender;
 
@@ -43,6 +48,11 @@ typedef unsigned char Byte;
 -(IBAction)reset:(id)sender;
 
 -(IBAction)valueChanged:(id)sender;
+
+-(IBAction)volumeForceClick:(id)sender;
+
+-(void)updateGuiFromModel;
+
 
 
 

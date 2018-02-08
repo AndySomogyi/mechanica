@@ -138,6 +138,7 @@ MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
 {
     if (shouldSplitVertex(v)) {
         std::cout << "queued vertex: " << v << std::endl;
+        
         return new VertexSplit(mesh, v);
     }
     //if (vertexSplitId > 1) return nullptr;
@@ -467,6 +468,10 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
         }
     }
 #else
+    for(TrianglePtr tri : fan) {
+        replaceTriangleVertex(tri, center, newVertex);
+        tri->positionsChanged();
+    }
 #endif
 
 
@@ -482,7 +487,7 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
         for(TrianglePtr tri : newTris) {
             tri->positionsChanged();
             assert(tri->isValid());
-            assert(tri->orientation() == Orientation::Outward);
+            //assert(tri->orientation() == Orientation::Outward);
         }
     }
 
@@ -799,10 +804,8 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
         connect_triangle_partial_triangles(newTriangle, tp, c0);
     }
 
-    /*
-    std::cout << "VertexSplit created new triangle: " << std::endl;
-    std::cout << newTriangle << std::endl;
-     */
+    
+    std::cout << "VertexSplit created new triangle: " << newTriangle << std::endl;
 
     return newTriangle;
 }

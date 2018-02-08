@@ -11,6 +11,12 @@
 #include "MxModel.h"
 
 struct GrowthModel : public MxModel {
+    
+    enum VolumeForce {
+        ConstantVolume, ConstantPressure
+    };
+    
+    VolumeForce volumeForceType = VolumeForce::ConstantVolume;
 
     GrowthModel();
 
@@ -23,14 +29,19 @@ struct GrowthModel : public MxModel {
     HRESULT cellAreaForce(CellPtr cell);
 
     HRESULT cellVolumeForce(CellPtr cell);
-
-    float minTargetArea;
-    float maxTargetArea;
-    float targetArea;
-
+    
     float minTargetVolume;
     float maxTargetVolume;
     float targetVolume;
+    float targetVolumeLambda;
+    
+    float pressure = 0;
+    float pressureMax;
+    float pressureMin;
+    
+    float surfaceTension = 0;
+    float surfaceTensionMax;
+    float surfaceTensionMin;
 
     void testEdges();
 

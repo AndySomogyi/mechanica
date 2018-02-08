@@ -205,6 +205,7 @@ bool EdgeTriangles::isValid() {
 
     return true;
 }
+#endif
 
 std::vector<TrianglePtr> triangleFan(CVertexPtr vert, CCellPtr cell)
 {
@@ -232,4 +233,4 @@ std::vector<TrianglePtr> triangleFan(CVertexPtr vert, CCellPtr cell)
     return fan;
 }
 
-#endif
+
