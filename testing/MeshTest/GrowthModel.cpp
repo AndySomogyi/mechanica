@@ -43,9 +43,9 @@ static struct ClearCellType : MxCellType
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
+    loadSimpleSheetModel();
     //loadSheetModel();
-    loadCubeModel();
+    //loadCubeModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -227,13 +227,13 @@ void GrowthModel::loadSheetModel() {
     pressureMax = 10;
     
     surfaceTensionMin = 0;
-    surfaceTension = 1;
+    surfaceTension = 1.1;
     surfaceTensionMax = 6;
     
     targetVolume = 0.04;
     minTargetVolume = 0.005;
     maxTargetVolume = 0.06;
-    targetVolumeLambda = 500.;
+    targetVolumeLambda = 1.7;
 }
 
 void GrowthModel::loadSimpleSheetModel() {
