@@ -1,22 +1,7 @@
 #import "AppDelegate.h"
 #include <iostream>
-
-static float pressure_from_volume(float volume) {
-    // v = 4/3 pi r ^3
-    // (3/(4 pi) v)^(1/3)
-    
-    return std::cbrt((3. / (4.*M_PI)) * volume);
-}
-
-static float volume(float pressure) {
-    return 4. / 3. * M_PI * pressure * pressure * pressure;
-    
-}
-
-static float surfaceTension(float pressure) {
-    return 1 * M_PI * pressure * pressure;
-}
-
+#include <sstream>
+#include "MxDebug.h"
 
 
 
@@ -28,7 +13,7 @@ static float surfaceTension(float pressure) {
     self->meshTest = new MeshTest();
     
     [self updateGuiFromModel];
-    
+    [self updateGuiStats];
 
 }
 
@@ -48,7 +33,9 @@ static float surfaceTension(float pressure) {
 }
 
 -(IBAction)step:(id)sender {
-    meshTest->step(0.00001);
+    meshTest->step(0.0001);
+    
+    [self updateGuiStats];
 }
 
 -(IBAction)stop:(id)sender {
@@ -60,7 +47,7 @@ static float surfaceTension(float pressure) {
 -(IBAction)reset:(id)sender {
     meshTest->reset();
     [self updateGuiFromModel];
-
+    [self updateGuiStats];
 }
 
 -(IBAction)valueChanged:(id)sender {
@@ -159,6 +146,37 @@ static float surfaceTension(float pressure) {
     self.constantVolumeBtn.state = meshTest->model->volumeForceType == GrowthModel::ConstantVolume ? NSOnState : NSOffState;
     
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda;
+}
+
+-(void)updateGuiStats {
+    CCellPtr cell = meshTest->model->mesh->cells[1];
+    
+    self.centerOfGeometryTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(cell->centroid).c_str()];
+    
+    self.centerOfMassTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(cell->centerOfMass()).c_str()];
+    
+    Vector3 radius = cell->radiusMeanVarianceStdDev();
+    
+    self.radiusTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(radius).c_str()];
+    
+    Matrix3 inertia = cell->momentOfInertia();
+    
+    self.inertiaLxTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(inertia.row(0)).c_str()];
+    
+    self.inertiaLyTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(inertia.row(1)).c_str()];
+    
+    self.inertiaLzTxt.stringValue =
+        [NSString stringWithUTF8String:to_string(inertia.row(2)).c_str()];
+    
+    self.actualVolumeTxt.floatValue = cell->volume;
+    
+    self.areaTxt.floatValue = cell->area;
+    
 }
 
 

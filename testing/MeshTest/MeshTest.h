@@ -12,6 +12,7 @@
 #include <Magnum/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Matrix3.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>

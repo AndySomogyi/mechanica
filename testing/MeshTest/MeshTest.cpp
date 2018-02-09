@@ -219,13 +219,12 @@ MeshTest::MeshTest() : MeshTest{Configuration{}}
 }
 
 void MeshTest::step(float dt) {
-    propagator->step(dt);
-    
-    if((timeSteps % 5) == 0) {
-        draw();
+    float ddt = dt / 10.;
+    for(int i = 0; i < 10; ++i) {
+        propagator->step(dt);
+        dt += ddt;
     }
-    
-    timeSteps += 1;
+    draw();
 }
 
 void MeshTest::draw() {

@@ -14,6 +14,7 @@
 #include <Magnum/Magnum.h>
 #include "Magnum/Math/Color.h"
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Matrix3.h>
 #include "MxMeshCore.h"
 #include "MxTriangle.h"
 #include "MeshIterators.h"
@@ -196,6 +197,12 @@ struct MxCell : MxObject, MxMeshNode {
     void dump();
 
     void writePOV(std::ostream &out);
+
+    Vector3 centerOfMass() const;
+
+    Vector3 radiusMeanVarianceStdDev() const;
+
+    Matrix3 momentOfInertia() const;
 
     /**
      * sum of all of the triangle areas.

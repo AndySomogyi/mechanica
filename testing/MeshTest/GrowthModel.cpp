@@ -44,8 +44,8 @@ GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
     //loadSimpleSheetModel();
-    loadSheetModel();
-    //loadCubeModel();
+    //loadSheetModel();
+    loadCubeModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -166,7 +166,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         float diff = targetVolume - cell->volume;
         
         
-        diff = targetVolumeLambda * diff;
+        diff = (targetVolumeLambda / cell->volume) * diff;
         
         for(auto pt: cell->boundary) {
             TrianglePtr tri = pt->triangle;
@@ -285,7 +285,7 @@ void GrowthModel::loadCubeModel() {
     };
 
     mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.6);
+    mesh->setLongCutoff(0.3);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
     
     pressureMin = 0;
@@ -293,7 +293,7 @@ void GrowthModel::loadCubeModel() {
     pressureMax = 15;
     
     surfaceTensionMin = 0;
-    surfaceTension = 4;
+    surfaceTension = 5;
     surfaceTensionMax = 15;
     
     targetVolume = 0.6;

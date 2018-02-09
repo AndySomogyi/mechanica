@@ -11,6 +11,8 @@
 #include <iostream>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
+#include <Corrade/Utility/Debug.h>
+#include <sstream>
 
 inline std::ostream& operator<<(std::ostream& os, const Magnum::Vector3& vec)
 {
@@ -53,6 +55,14 @@ std::ostream& operator << (std::ostream& stream, const std::array<ArrayType, 4> 
     return stream;
 }
 
+template<typename MagnumType>
+std::string to_string(const MagnumType &val) {
+    std::ostringstream ss;
+    ss << std::fixed;
+    ss.precision(4);
+    ss << val;
+    return ss.str();
+}
 
 
 

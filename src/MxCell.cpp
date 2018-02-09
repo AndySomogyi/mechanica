@@ -11,7 +11,7 @@
 #include <iostream>
 #include <algorithm>
 #include <array>
-
+#include <set>
 
 #include "MxDebug.h"
 #include "DifferentialGeometry.h"
@@ -340,4 +340,90 @@ bool MxCell::isValid() const
     return true;
 }
 
+Vector3 MxCell::centerOfMass() const
+{
+    std::set<VertexPtr> verts;
+    Vector3 sum;
+    float mass = 0;
 
+
+    for(PTrianglePtr pt : boundary) {
+        for(VertexPtr v : pt->triangle->vertices) {
+            if(verts.find(v) == verts.end()) {
+                mass += v->mass;
+                sum += v->mass * v->position;
+                verts.insert(v);
+            }
+        }
+    }
+
+    return sum / mass;
+}
+
+Vector3 MxCell::radiusMeanVarianceStdDev() const
+{
+    int npts = 0;
+    float radius = 0;
+    float variance = 0;
+
+    std::set<VertexPtr> verts;
+    //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
+
+    for(PTrianglePtr pt : boundary) {
+        for(VertexPtr v : pt->triangle->vertices) {
+            if(verts.find(v) == verts.end()) {
+                float x = centroid[0] - v->position[0];
+                float y = centroid[1] - v->position[1];
+                float z = centroid[2] - v->position[2];
+                radius += sqrt(x*x + y*y + z*z);
+                npts += 1;
+                verts.insert(v);
+            }
+        }
+    }
+
+    radius = radius / npts;
+
+    for(VertexPtr v : verts) {
+        float x = centroid[0] - v->position[0];
+        float y = centroid[1] - v->position[1];
+        float z = centroid[2] - v->position[2];
+        float xMu = radius - sqrt(x*x + y*y + z*z);
+        variance += xMu * xMu;
+    }
+
+    variance = variance / npts;
+
+    return {{radius, variance, sqrt(variance)}};
+}
+
+Matrix3 MxCell::momentOfInertia() const
+{
+    Matrix3 inertia;
+
+    std::set<VertexPtr> verts;
+    //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
+
+    for(PTrianglePtr pt : boundary) {
+        for(VertexPtr v : pt->triangle->vertices) {
+            if(verts.find(v) == verts.end()) {
+
+                inertia[0][0]  += v->mass * (centroid[0] * centroid[0]  - v->position[0] * v->position[0]);
+                inertia[0][1]  += v->mass * v->position[0] * v->position[1];
+                inertia[0][2]  += v->mass * v->position[0] * v->position[2];
+
+                inertia[1][0]  += v->mass * v->position[0] * v->position[1];
+                inertia[1][1]  += v->mass * (centroid[1] * centroid[1]  - v->position[1] * v->position[1]);
+                inertia[1][2]  += v->mass * v->position[1] * v->position[2];
+
+                inertia[2][0]  += v->mass * v->position[0] * v->position[2];
+                inertia[2][1]  += v->mass * v->position[1] * v->position[2];
+                inertia[2][2]  += v->mass * (centroid[2] * centroid[2]  - v->position[2] * v->position[2]);
+
+                verts.insert(v);
+            }
+        }
+    }
+
+    return inertia;
+}

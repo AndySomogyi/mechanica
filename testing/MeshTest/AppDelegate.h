@@ -38,6 +38,14 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSTextField *longCutoff;
 
 @property (assign, nonatomic) IBOutlet NSTextField *volumeLambda;
+@property (assign) IBOutlet NSTextField *centerOfGeometryTxt;
+@property (assign) IBOutlet NSTextField *centerOfMassTxt;
+@property (assign) IBOutlet NSTextField *radiusTxt;
+@property (assign) IBOutlet NSTextField *inertiaLxTxt;
+@property (assign) IBOutlet NSTextField *inertiaLyTxt;
+@property (assign) IBOutlet NSTextField *inertiaLzTxt;
+@property (assign) IBOutlet NSTextField *actualVolumeTxt;
+@property (assign) IBOutlet NSTextField *areaTxt;
 
 -(IBAction)run:(id)sender;
 
@@ -52,6 +60,8 @@ typedef unsigned char Byte;
 -(IBAction)volumeForceClick:(id)sender;
 
 -(void)updateGuiFromModel;
+
+-(void)updateGuiStats;
 
 
 
