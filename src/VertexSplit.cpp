@@ -136,6 +136,7 @@ static FanOrdering triangleFanOrdering(CTrianglePtr tri, CCellPtr cell, CVertexP
 
 MeshOperation *VertexSplit::create(MeshPtr mesh, VertexPtr v)
 {
+
     if (shouldSplitVertex(v)) {
         std::cout << "queued vertex: " << v << std::endl;
         
@@ -692,7 +693,7 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
         assert(triangleFanOrdering(t0, c0, centerVertex, frontierVertex) == FanOrdering::CW);
         assert(triangleFanOrdering(t1, c1, centerVertex, frontierVertex) == FanOrdering::CCW);
         vertices = {{centerVertex, newVertex, frontierVertex}};
-        assert(verifyVertexOrdering(vertices, c0, c1));
+        //assert(verifyVertexOrdering(vertices, c0, c1));
     }
 
 

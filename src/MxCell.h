@@ -231,7 +231,17 @@ struct MxCell : MxObject, MxMeshNode {
 
     bool render = true;
 
+    float targetVolume = 0;
+
+    /**
+     * get the value of the volume constraint, i.e. targetVolume - volume.
+     */
+    float volumeConstraint();
+
+    void projectVolumeConstraint();
+
 private:
+
 
 };
 

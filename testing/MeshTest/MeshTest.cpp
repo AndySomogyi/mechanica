@@ -219,11 +219,7 @@ MeshTest::MeshTest() : MeshTest{Configuration{}}
 }
 
 void MeshTest::step(float dt) {
-    float ddt = dt / 10.;
-    for(int i = 0; i < 10; ++i) {
-        propagator->step(dt);
-        dt += ddt;
-    }
+    propagator->step(dt);
     draw();
 }
 

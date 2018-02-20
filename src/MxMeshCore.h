@@ -136,6 +136,14 @@ struct MxVertex {
 
     uint id{0};
 
+    /**
+     * Area weighted vector that's the some area weighted sum of all
+     * incident triangles for the given cell.
+     */
+    Magnum::Vector3 areaWeightedNormal(CCellPtr cell) const;
+
+
+
 private:
      // one to many relationship of vertex -> triangles
     Triangles _triangles;
@@ -149,6 +157,12 @@ private:
      * Get the mesh pointer.
      */
     MeshPtr mesh();
+
+    /**
+     * temporary hack for volume constraint.
+     */
+    Vector3 awc;
+    friend class MxCell;
 };
 
 std::ostream& operator<<(std::ostream& os, CVertexPtr v);

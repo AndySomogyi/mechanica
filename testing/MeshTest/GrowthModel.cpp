@@ -152,6 +152,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
 HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 {
+    return S_OK;
 
     if(mesh->rootCell() == cell) {
         return S_OK;
@@ -217,9 +218,9 @@ void GrowthModel::loadSheetModel() {
         }
     };
 
-    mesh->setShortCutoff(0.02);
+    mesh->setShortCutoff(0.01);
     //mesh->setLongCutoff(0.12);
-    mesh->setLongCutoff(0.15);
+    mesh->setLongCutoff(0.5);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     
     pressureMin = 0;
@@ -227,12 +228,12 @@ void GrowthModel::loadSheetModel() {
     pressureMax = 10;
     
     surfaceTensionMin = 0;
-    surfaceTension = 1.1;
+    surfaceTension = 1.0;
     surfaceTensionMax = 6;
     
-    targetVolume = 0.04;
+    setTargetVolume(0.01);
     minTargetVolume = 0.005;
-    maxTargetVolume = 0.06;
+    maxTargetVolume = 0.05;
     targetVolumeLambda = 1.7;
 }
 
@@ -255,8 +256,8 @@ void GrowthModel::loadSimpleSheetModel() {
     };
 
 
-    mesh->setShortCutoff(0.01);
-    mesh->setLongCutoff(0.45);
+    mesh->setShortCutoff(0.2);
+    mesh->setLongCutoff(0.5);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
 
     pressureMin = 0;
@@ -264,10 +265,10 @@ void GrowthModel::loadSimpleSheetModel() {
     pressureMax = 15;
     
     surfaceTensionMin = 0;
-    surfaceTension = 4;
+    surfaceTension = 3;
     surfaceTensionMax = 15;
     
-    targetVolume = 0.6;
+    setTargetVolume(0.4);
     minTargetVolume = 0.005;
     maxTargetVolume = 10.0;
     targetVolumeLambda = 5.;
@@ -300,6 +301,10 @@ void GrowthModel::loadCubeModel() {
     minTargetVolume = 0.005;
     maxTargetVolume = 10.0;
     targetVolumeLambda = 5.;
+
+    mesh->cells[1]->targetVolume = targetVolume;
+
+
 }
 
 void GrowthModel::loadMonodisperseVoronoiModel() {
@@ -406,4 +411,29 @@ HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
 
 
     return S_OK;
+}
+
+HRESULT GrowthModel::getStateVector(float *stateVector, uint32_t *count)
+{
+    *count = 0;
+    return S_OK;
+}
+
+HRESULT GrowthModel::setStateVector(const float *stateVector)
+{
+    return S_OK;
+}
+
+
+HRESULT GrowthModel::getStateVectorRate(float time, const float *y, float* dydt)
+{
+    return S_OK;
+}
+
+void GrowthModel::setTargetVolume(float tv)
+{
+    targetVolume = tv;
+    for(int i = 0; i < mesh->cells.size(); ++i) {
+        mesh->cells[i]->targetVolume = targetVolume;
+    }
 }

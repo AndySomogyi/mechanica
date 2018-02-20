@@ -357,11 +357,20 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
     MxVertex::minForceDivergence = std::numeric_limits<float>::max();
 
-    for(int i = 0; i < vertices.size(); ++i) {
-        VertexPtr v = vertices[i];
-        v->mass = 0;
-        v->area = 0;
-        v->position = positions[i];
+    if(positions) {
+        for(int i = 0; i < vertices.size(); ++i) {
+            VertexPtr v = vertices[i];
+            v->mass = 0;
+            v->area = 0;
+            v->position = positions[i];
+        }
+    }
+    else {
+        for(int i = 0; i < vertices.size(); ++i) {
+            VertexPtr v = vertices[i];
+            v->mass = 0;
+            v->area = 0;
+        }
     }
 
     for(TrianglePtr tri : triangles) {

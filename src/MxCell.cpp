@@ -427,3 +427,59 @@ Matrix3 MxCell::momentOfInertia() const
 
     return inertia;
 }
+
+float MxCell::volumeConstraint()
+{
+    return volume - targetVolume;
+}
+
+void MxCell::projectVolumeConstraint()
+{
+
+    float c = volumeConstraint();
+
+    float sumWC = 0;
+
+    std::set<VertexPtr> verts;
+
+    for(PTrianglePtr pt : boundary) {
+        TrianglePtr tri = pt->triangle;
+
+        for(VertexPtr v : tri->vertices) {
+            if(verts.find(v) == verts.end()) {
+                verts.insert(v);
+                float w = (1. / v->mass);
+                v->awc = v->areaWeightedNormal(this);
+                sumWC += w * Math::dot(v->awc, v->awc);
+            }
+        }
+    }
+
+    for(VertexPtr v : verts) {
+        v->position -= (1. / v->mass * c) / (sumWC) * v->awc;
+    }
+
+    //for(VertexPtr v : verts) {
+    //    for(TrianglePtr tri : v->_triangles) {
+    //        tri->positionsChanged();
+    //    }
+    //}
+
+    //for(PTrianglePtr pt : boundary) {
+    //    TrianglePtr tri = pt->triangle;
+    //    tri->positionsChanged();
+    //}
+
+    /*
+    std::set<TrianglePtr> tris;
+    for(VertexPtr v : verts) {
+        for(TrianglePtr tri : v->_triangles) {
+            if(tris.find(tri) == tris.end()) {
+                tris.insert(tri);
+                tri->positionsChanged();
+            }
+        }
+    }
+    */
+
+}

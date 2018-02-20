@@ -98,3 +98,18 @@ HRESULT MxVertex::triangleCellChanged(TrianglePtr tri) {
 
     return S_OK;
 }
+
+Magnum::Vector3 MxVertex::areaWeightedNormal(CCellPtr cell) const
+{
+    Vector3 result;
+
+    for(TrianglePtr tri : _triangles) {
+        if(tri->cells[0] == cell) {
+            result +=  1. / 3. * tri->area * tri->normal;
+        }
+        else if(tri->cells[1] == cell) {
+            result += -1. / 3. * tri->area * tri->normal;
+        }
+    }
+    return result;
+}

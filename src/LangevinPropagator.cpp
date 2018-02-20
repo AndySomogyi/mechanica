@@ -23,13 +23,48 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 
     resize();
 
-    if((result = rungeKuttaStep(dt)) != S_OK) {
+    //for(int i = 0; i < 100; ++i) {
+    //    stateVectorStep(dt);
+    //}
+
+    for(int i = 0; i < 10; ++i) {
+    if((result = rungeKuttaStep(dt/10)) != S_OK) {
         return result;
     }
+    }
 
-    if((timeSteps % 15) == 0) {
+    if((timeSteps % 20) == 0) {
         result = mesh->applyMeshOperations();
     }
+
+    float sumError = 0;
+    int iter = 0;
+
+    do {
+        for(int i=1; i < mesh->cells.size(); ++i) {
+            CellPtr cell = mesh->cells[i];
+            float init = cell->volumeConstraint();
+            cell->projectVolumeConstraint();
+            mesh->setPositions(0, 0);
+            float final = cell->volumeConstraint();
+
+
+
+            std::cout << "cell " << cell->id << " volume constraint before/after: " <<
+                    init << "/" << final << std::endl;
+        }
+
+        sumError = 0;
+        iter += 1;
+        for(int i=1; i < mesh->cells.size(); ++i) {
+            CellPtr cell = mesh->cells[i];
+            float error = cell->volumeConstraint();
+            sumError += error * error;
+        }
+
+        std::cout << "constraint iter / sum sqr error: " << iter << "/" << sumError << std::endl;
+
+    } while(iter < 2);
 
     timeSteps += 1;
 
@@ -98,4 +133,54 @@ void LangevinPropagator::resize()
         k3 = (Vector3*)std::realloc(k3, size * sizeof(Vector3));
         k4 = (Vector3*)std::realloc(k4, size * sizeof(Vector3));
     }
+
+    uint32_t ssCount = 0;
+    model->getStateVector(nullptr, &ssCount);
+    if(stateVectorSize != ssCount) {
+        stateVectorSize = ssCount;
+        stateVector = (float*)std::realloc(stateVector, stateVectorSize * sizeof(float));
+        stateVectorInit = (float*)std::realloc(stateVectorInit, stateVectorSize * sizeof(float));
+        stateVectorK1 = (float*)std::realloc(stateVectorK1, stateVectorSize * sizeof(float));
+        stateVectorK2 = (float*)std::realloc(stateVectorK2, stateVectorSize * sizeof(float));
+        stateVectorK3 = (float*)std::realloc(stateVectorK3, stateVectorSize * sizeof(float));
+        stateVectorK4 = (float*)std::realloc(stateVectorK4, stateVectorSize * sizeof(float));
+    }
+}
+
+HRESULT LangevinPropagator::stateVectorStep(MxReal dt)
+{
+    uint32_t count;
+    model->getStateVector(stateVectorInit, &count);
+    model->getStateVectorRate(dt, stateVector, stateVectorK1);
+
+    for(int i = 0; i < count; ++i) {
+        stateVector[i] = stateVectorInit[i] + dt * stateVectorK1[i] / 2.0 ;
+    }
+
+    model->getStateVectorRate(dt, stateVector, stateVectorK2);
+
+    for(int i = 0; i < count; ++i) {
+        stateVector[i] = stateVectorInit[i] + dt * stateVectorK2[i] / 2.0 ;
+    }
+
+    model->getStateVectorRate(dt, stateVector, stateVectorK3);
+
+    for(int i = 0; i < count; ++i) {
+        stateVector[i] = stateVectorInit[i] + dt * stateVectorK3[i];
+    }
+
+    model->getStateVectorRate(dt, stateVector, stateVectorK4);
+
+    for(int i = 0; i < count; ++i) {
+        stateVector[i] = stateVectorInit[i] + dt / 6. * (
+                stateVectorK1[i] +
+                2. * stateVectorK2[i] +
+                2. * stateVectorK3[i] +
+                stateVectorK4[i]
+            );
+    }
+
+    model->setStateVector(stateVector);
+
+    return S_OK;
 }

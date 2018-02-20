@@ -89,12 +89,12 @@
     else if (sender == self.volumeVal)
     {
         self.volumeSlider.floatValue = self.volumeVal.floatValue;
-        meshTest->model->targetVolume = self.volumeVal.floatValue;
+        meshTest->model->setTargetVolume(self.volumeVal.floatValue);
     }
     else if (sender == self.volumeSlider)
     {
         self.volumeVal.floatValue = self.volumeSlider.floatValue;
-        meshTest->model->targetVolume = self.volumeSlider.floatValue;
+        meshTest->model->setTargetVolume(self.volumeSlider.floatValue);
     }
     else if(sender == self.volumeLambda)
     {

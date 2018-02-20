@@ -61,6 +61,17 @@ private:
 
     size_t timeSteps = 0;
 
+    uint32_t stateVectorSize = 0;
+    float *stateVectorInit = nullptr;
+    float *stateVector = nullptr;
+
+    float *stateVectorK1 = nullptr;
+    float *stateVectorK2 = nullptr;
+    float *stateVectorK3 = nullptr;
+    float *stateVectorK4 = nullptr;
+
+    HRESULT stateVectorStep(MxReal dt);
+
 };
 
 #endif /* SRC_MESHDAMPEDLANGEVINPROPAGATOR_H_ */

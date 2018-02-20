@@ -80,6 +80,10 @@ protected:
     struct MeshOperations *ops;
 };
 
+struct MeshOperationFactory {
+
+};
+
 
 
 /**
