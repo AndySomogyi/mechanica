@@ -430,7 +430,7 @@ Matrix3 MxCell::momentOfInertia() const
 
 float MxCell::volumeConstraint()
 {
-    return volume - targetVolume;
+    return 0.05 * (volume - targetVolume);
 }
 
 void MxCell::projectVolumeConstraint()

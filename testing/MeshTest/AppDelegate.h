@@ -46,6 +46,7 @@ typedef unsigned char Byte;
 @property (assign) IBOutlet NSTextField *inertiaLzTxt;
 @property (assign) IBOutlet NSTextField *actualVolumeTxt;
 @property (assign) IBOutlet NSTextField *areaTxt;
+@property (assign) IBOutlet NSTextField *harmonicBondTxt;
 
 -(IBAction)run:(id)sender;
 
@@ -59,9 +60,13 @@ typedef unsigned char Byte;
 
 -(IBAction)volumeForceClick:(id)sender;
 
+-(IBAction)applyMeshOps:(id)sender;
+
 -(void)updateGuiFromModel;
 
 -(void)updateGuiStats;
+
+
 
 
 

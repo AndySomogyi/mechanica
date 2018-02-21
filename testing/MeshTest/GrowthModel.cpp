@@ -38,6 +38,39 @@ static struct ClearCellType : MxCellType
     }
 } clearCellType;
 
+static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
+    std::set<VertexPtr> verts;
+    
+    for(PTrianglePtr pt : c->boundary) {
+        TrianglePtr tri = pt->triangle;
+        
+        for(int i = 0; i < 3; ++i) {
+            if(verts.find(tri->vertices[i]) == verts.end()) {
+                verts.insert(tri->vertices[i]);
+                pt->force[i] += force;
+            }
+        }
+    }
+}
+
+static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
+    
+    float r1 = std::sqrt(c1->area / (4. * M_PI));
+    float r2 = std::sqrt(c2->area / (4. * M_PI));
+    Vector3 dir = c1->centroid - c2->centroid;
+    
+    float len = dir.length();
+    
+    dir = dir / len;
+    
+    Vector3 force = k * (len - 0.5 * (r1 + r2)) * dir;
+    
+    applyForceToAllVertices(c1, -force);
+    applyForceToAllVertices(c2, force);
+}
+
+
+
 
 
 GrowthModel::GrowthModel()  {
@@ -55,6 +88,15 @@ GrowthModel::GrowthModel()  {
         
     }
      */
+    
+    for(int i = 0; i < mesh->cells.size(); ++i) {
+        CellPtr cell = mesh->cells[i];
+        std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
+    }
+    
+    for(int i = 0; i < 10; ++i) {
+        mesh->applyMeshOperations();
+    }
 
     testEdges();
 }
@@ -79,7 +121,11 @@ HRESULT GrowthModel::calcForce() {
             return mx_error(result, "cell volume force");
         }
     }
-
+    
+    centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
+    
+    //centerOfMassForce(mesh->cells[22], mesh->cells[7], 1);
+    
     return S_OK;
 }
 
@@ -152,11 +198,17 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
 HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 {
-    return S_OK;
+    
 
     if(mesh->rootCell() == cell) {
         return S_OK;
     }
+    
+    Vector3 force = -5. * Vector3{0, 0, cell->centroid[2]};
+    
+    applyForceToAllVertices(cell, force);
+    
+    return S_OK;
 
     assert(cell->area >= 0);
     
@@ -218,9 +270,9 @@ void GrowthModel::loadSheetModel() {
         }
     };
 
-    mesh->setShortCutoff(0.01);
+    mesh->setShortCutoff(0);
     //mesh->setLongCutoff(0.12);
-    mesh->setLongCutoff(0.5);
+    mesh->setLongCutoff(0.2);
     importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
     
     pressureMin = 0;
@@ -257,7 +309,7 @@ void GrowthModel::loadSimpleSheetModel() {
 
 
     mesh->setShortCutoff(0.2);
-    mesh->setLongCutoff(0.5);
+    mesh->setLongCutoff(0.7);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
 
     pressureMin = 0;
@@ -265,13 +317,14 @@ void GrowthModel::loadSimpleSheetModel() {
     pressureMax = 15;
     
     surfaceTensionMin = 0;
-    surfaceTension = 3;
+    surfaceTension = 4;
     surfaceTensionMax = 15;
     
     setTargetVolume(0.4);
     minTargetVolume = 0.005;
     maxTargetVolume = 10.0;
     targetVolumeLambda = 5.;
+    harmonicBondStrength = 0;
 
 }
 

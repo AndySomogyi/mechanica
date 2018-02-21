@@ -85,14 +85,14 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 
 HRESULT MeshOperations::valenceChanged(const VertexPtr vert) {
     MeshOperation *meshOp;
-    HRESULT result = removeDependentOperations(vert);
 
     if(findMatchingOperation(vert) == nullptr &&
        (meshOp = VertexSplit::create(mesh, vert)))
     {
+        removeDependentOperations(vert);
         push(meshOp);
     }
-    return result;
+    return S_OK;
 }
 
 HRESULT MeshOperations::removeDependentOperations(const TrianglePtr tri) {

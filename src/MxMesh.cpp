@@ -208,6 +208,11 @@ HRESULT MxMesh::applyMeshOperations() {
     if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
         return result;
     }
+
+    for(VertexPtr vert : vertices) {
+        meshOperations.valenceChanged(vert);
+    }
+
     if((result = meshOperations.apply()) != S_OK) {
         return result;
     }
@@ -336,7 +341,7 @@ void MxMesh::markTriangle(const TrianglePtr tri) {
 
 HRESULT MxMesh::valenceChanged(VertexPtr v)
 {
-    return meshOperations.valenceChanged(v);
+    return S_OK;
 }
 
 TrianglePtr MxMesh::createTriangle(const std::array<CellPtr, 2> &cells,

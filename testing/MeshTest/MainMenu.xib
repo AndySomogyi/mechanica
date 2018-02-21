@@ -658,7 +658,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KH6-ef-9U6">
-                        <rect key="frame" x="223" y="449" width="65" height="25"/>
+                        <rect key="frame" x="215" y="474" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Step" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="eVb-Hq-0Kl">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -669,7 +669,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Wv-7N-25F">
-                        <rect key="frame" x="223" y="419" width="65" height="25"/>
+                        <rect key="frame" x="215" y="444" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Run" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sFA-IX-s4s">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -680,7 +680,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SAw-am-0pe">
-                        <rect key="frame" x="223" y="389" width="65" height="25"/>
+                        <rect key="frame" x="215" y="414" width="65" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Stop" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dOp-n1-i7O">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -691,7 +691,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UUO-wU-AtN">
-                        <rect key="frame" x="300" y="449" width="65" height="25"/>
+                        <rect key="frame" x="292" y="474" width="82" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="roundTextured" title="Reset" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Zf4-aH-F70">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1112,6 +1112,39 @@
                             <action selector="valueChanged:" target="494" id="zyM-JF-qLR"/>
                         </connections>
                     </textField>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="unv-5s-tfs">
+                        <rect key="frame" x="292" y="439" width="82" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="Mesh Ops" bezelStyle="texturedRounded" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="kwI-c3-g2C">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="applyMeshOps:" target="494" id="jgB-yS-12H"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Vvv-Ll-wW3">
+                        <rect key="frame" x="221" y="388" width="101" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Harmonic Force" id="T7Z-xa-cNG">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aeK-A4-bFH">
+                        <rect key="frame" x="373" y="386" width="96" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="Gw9-m6-JJ3">
+                            <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" maximumFractionDigits="3" id="EKL-Nj-UN5"/>
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <action selector="valueChanged:" target="494" id="4XD-Uk-UtG"/>
+                        </connections>
+                    </textField>
                 </subviews>
             </view>
             <point key="canvasLocation" x="-410.5" y="-360"/>
@@ -1124,17 +1157,15 @@
                 <outlet property="centerOfMassTxt" destination="dnP-no-fdO" id="KwX-IK-Wsv"/>
                 <outlet property="constantPressureBtn" destination="AbJ-OL-J7W" id="NeZ-II-8f8"/>
                 <outlet property="constantVolumeBtn" destination="KDS-Wh-yuM" id="f5V-ep-fc2"/>
+                <outlet property="harmonicBondTxt" destination="aeK-A4-bFH" id="xEg-rR-ZdH"/>
                 <outlet property="inertiaLxTxt" destination="PCV-0d-RRP" id="rav-9u-SGY"/>
                 <outlet property="inertiaLyTxt" destination="C0B-Za-3I7" id="S0o-RO-vMa"/>
                 <outlet property="inertiaLzTxt" destination="K6z-Et-xvW" id="p9b-WK-tpx"/>
-                <outlet property="intertiaLyTxt" destination="C0B-Za-3I7" id="a7g-t8-k1C"/>
-                <outlet property="intertiaLzTxt" destination="K6z-Et-xvW" id="im1-Ik-tQV"/>
                 <outlet property="longCutoff" destination="igm-wW-5P9" id="FYK-qa-qEb"/>
                 <outlet property="pressureMax" destination="I4l-vi-GAG" id="WPr-JC-ZBz"/>
                 <outlet property="pressureMin" destination="vzk-eh-v6e" id="J9L-zQ-JdD"/>
                 <outlet property="pressureSlider" destination="Pq6-m3-pFa" id="ZCQ-h9-2ep"/>
                 <outlet property="pressureVal" destination="qPe-fn-aEb" id="Up8-51-f9R"/>
-                <outlet property="radiusMeanTxt" destination="tJG-3w-9Kh" id="0WE-yG-X4t"/>
                 <outlet property="radiusTxt" destination="tJG-3w-9Kh" id="UDR-SE-vu2"/>
                 <outlet property="shortCutoff" destination="BXH-za-c6S" id="2rI-zF-17v"/>
                 <outlet property="surfaceTensionMax" destination="fO2-fh-TET" id="Aiw-Z9-uHV"/>

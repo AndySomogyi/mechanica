@@ -35,6 +35,8 @@ struct GrowthModel : public MxModel {
     float targetVolume;
     float targetVolumeLambda;
     
+    float harmonicBondStrength;
+    
     float pressure = 0;
     float pressureMax;
     float pressureMin;

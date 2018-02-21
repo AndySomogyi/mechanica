@@ -11,6 +11,7 @@
 #include "DifferentialGeometry.h"
 #include <set>
 #include <limits>
+#include "MxDebug.h"
 
 typedef std::set<CCellPtr> CellSet;
 
@@ -408,7 +409,7 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
     // new vertex, push the triangle fan in the opposite direction of it's normal.
 
     Vector3 fanNormal = normalTriangleFan(cell, fan);
-    float distance = mesh->getShortCutoff() >= 0.0001 ? 1.5 * mesh->getShortCutoff() : 0.00015;
+    float distance = mesh->getShortCutoff() >= 0.01 ? 1.5 * mesh->getShortCutoff() : 0.015;
     VertexPtr newVertex = mesh->createVertex(center->position - distance * fanNormal);
 
 #ifndef NDEBUG
@@ -586,7 +587,11 @@ static bool verifyVertexOrdering(const std::array<VertexPtr, 3> &verts,
     Vector3 triCentroid = (verts[0]->position + verts[1]->position + verts[2]->position) / 3;
     Vector3 triNormal = Math::normal(verts);
     if(!c0->isRoot() && Math::dot(triCentroid - c0->centroid, triNormal) < 0) {
-        std::cout << "bad tri ordering" << std::endl;
+        std::cout << "bad tri ordering" << std::endl
+        << "triangle centroid: " << triCentroid << std::endl
+        << "triangle normal: " << triNormal << std::endl
+        << "cell centroid: " << c0->centroid << std::endl
+        << "dot product: " << Math::dot(triCentroid - c0->centroid, triNormal) << std::endl;
         return false;
 
     }

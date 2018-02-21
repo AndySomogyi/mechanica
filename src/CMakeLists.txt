@@ -90,6 +90,7 @@ set(SRC
   DifferentialGeometry.cpp
   VertexSplit.cpp
   stochastic_rk.cpp
+  RadialFaceCollapse.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -143,6 +144,7 @@ set(HEADERS
   DifferentialGeometry.h
   VertexSplit.h
   stochastic_rk.h
+  RadialFaceCollapse.h
   )
 
 

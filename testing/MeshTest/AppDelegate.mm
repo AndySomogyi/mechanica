@@ -100,6 +100,10 @@
     {
         meshTest->model->targetVolumeLambda = self.volumeLambda.floatValue;
     }
+    else if(sender == self.harmonicBondTxt)
+    {
+        meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
+    }
     
     std::cout << "value changed, pressure: " << meshTest->model->pressure
     << ", surface tension: " << meshTest->model->surfaceTension << std::endl;
@@ -146,6 +150,8 @@
     self.constantVolumeBtn.state = meshTest->model->volumeForceType == GrowthModel::ConstantVolume ? NSOnState : NSOffState;
     
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda;
+    
+    self.harmonicBondTxt.floatValue = meshTest->model->harmonicBondStrength;
 }
 
 -(void)updateGuiStats {
@@ -176,6 +182,11 @@
     self.actualVolumeTxt.floatValue = cell->volume;
     
     self.areaTxt.floatValue = cell->area;
+    
+}
+
+-(IBAction)applyMeshOps:(id)sender {
+    meshTest->model->mesh->applyMeshOperations();
     
 }
 
