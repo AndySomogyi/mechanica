@@ -76,9 +76,9 @@ static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
+    //loadSimpleSheetModel();
     //loadSheetModel();
-    //loadCubeModel();
+    loadCubeModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -122,10 +122,13 @@ HRESULT GrowthModel::calcForce() {
         }
     }
     
-    centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
+    if(harmonicBondAIndex >= 0 && harmonicBondBIndex >= 0) {
+        centerOfMassForce(mesh->cells[harmonicBondAIndex],
+                          mesh->cells[harmonicBondBIndex],
+                          harmonicBondStrength);
+    }
     
-    //centerOfMassForce(mesh->cells[22], mesh->cells[7], 1);
-    
+   
     return S_OK;
 }
 
@@ -287,6 +290,9 @@ void GrowthModel::loadSheetModel() {
     minTargetVolume = 0.005;
     maxTargetVolume = 0.05;
     targetVolumeLambda = 1.7;
+    
+    harmonicBondAIndex = 22;
+    harmonicBondBIndex = 7;
 }
 
 void GrowthModel::loadSimpleSheetModel() {
@@ -325,6 +331,9 @@ void GrowthModel::loadSimpleSheetModel() {
     maxTargetVolume = 10.0;
     targetVolumeLambda = 5.;
     harmonicBondStrength = 0;
+    
+    harmonicBondAIndex = 1;
+    harmonicBondBIndex = 3;
 
 }
 
@@ -339,7 +348,7 @@ void GrowthModel::loadCubeModel() {
     };
 
     mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.3);
+    mesh->setLongCutoff(0.6);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
     
     pressureMin = 0;

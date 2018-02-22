@@ -141,6 +141,10 @@ struct MeshOperations {
 
     void setLongCutoff(float);
 
+    void setMinAngleCutoff(float);
+
+    float getMinAngleCuoff()  const { return minAngleCutoff; };
+
     void setDebugMode(bool);
 
     HRESULT debugStep();
@@ -180,6 +184,8 @@ private:
 
     float shortCutoff;
     float longCutoff;
+
+    float minAngleCutoff;
 
     Container::iterator findDependentOperation(Container::iterator start, const TrianglePtr);
 

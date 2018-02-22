@@ -206,6 +206,10 @@ MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge)  {
     return iter != c.end() ? *iter : nullptr;
 }
 
+void MeshOperations::setMinAngleCutoff(float float1)
+{
+}
+
 MeshOperation* MeshOperations::findMatchingOperation(CVertexPtr vertex)  {
     Container::iterator iter = std::find_if(c.begin(), c.end(),
                                             [vertex](const MeshOperation* op)->bool { return op->equals(vertex); });

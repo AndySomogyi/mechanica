@@ -305,6 +305,9 @@ struct MxMesh  {
     float getLongCutoff() { return meshOperations.getLongCutoff(); }
     void setLongCutoff(float val) { meshOperations.setLongCutoff(val); }
 
+    float getMinAngleCutoff() { return meshOperations.getMinAngleCuoff(); }
+    void setMinAngleCutoff(float val) { meshOperations.setMinAngleCutoff(val); }
+
     void markEdge(const Edge& edge);
 
     void markTriangle(const TrianglePtr tri);
