@@ -202,6 +202,13 @@ MxMesh::~MxMesh() {
 HRESULT MxMesh::applyMeshOperations() {
     HRESULT result = E_FAIL;
 
+
+    std::vector<float> masses(cells.size());
+
+    for(int i = 0; i < cells.size(); ++i) {
+        masses[i] = cells[i]->mass();
+    }
+
     MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
     MxVertex::minForceDivergence = std::numeric_limits<float>::max();
 
@@ -217,7 +224,23 @@ HRESULT MxMesh::applyMeshOperations() {
         return result;
     }
 
-    return updateDerivedAttributes();
+    result = updateDerivedAttributes();
+
+
+
+    std::cout << "mass difference: " << std::endl;
+    for(int i = 0; i < cells.size(); ++i) {
+        float deltaMass = cells[i]->mass() - masses[i];
+        std::cout << "cell id: " << cells[i]->id << ", delta mass: " << deltaMass << std::endl;
+
+        if(deltaMass * deltaMass > 0.5) {
+            std::cout << "warning, large mass change, cell " << cells[i]->id << std::endl;
+        }
+    }
+
+    return result;
+
+
 }
 
 TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
@@ -399,6 +422,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     }
 
     for(VertexPtr v : vertices) {
+        v->mass = 0;
         v->attr = forceDivergence(v);
         if(v->attr > MxVertex::maxForceDivergence) {
             MxVertex::maxForceDivergence = v->attr;
@@ -408,5 +432,16 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
         }
     }
 
+    for(TrianglePtr tri : triangles) {
+        tri->partialTriangles[0].mass = tri->cells[0]->_mass * (tri->area / tri->cells[0]->area);
+        tri->partialTriangles[1].mass = tri->cells[1]->_mass * (tri->area / tri->cells[1]->area);
+
+        for(int i = 0; i < 3; ++i) {
+            tri->vertices[i]->mass += tri->getMass() / 3;
+        }
+    }
+
     return S_OK;
 }
+
+

@@ -200,9 +200,13 @@ struct MxCell : MxObject, MxMeshNode {
 
     Vector3 centerOfMass() const;
 
+    float mass() const;
+
     Vector3 radiusMeanVarianceStdDev() const;
 
     Matrix3 momentOfInertia() const;
+
+    void setMass(float mass);
 
     /**
      * sum of all of the triangle areas.
@@ -241,6 +245,10 @@ struct MxCell : MxObject, MxMeshNode {
     void projectVolumeConstraint();
 
 private:
+
+    float _mass = 0;
+
+    friend class MxMesh;
 
 
 };

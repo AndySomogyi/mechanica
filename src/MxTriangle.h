@@ -335,11 +335,11 @@ struct MxTriangle : MxObject {
 
     inline float getMass() const { return partialTriangles[0].mass + partialTriangles[1].mass; };
 
-    void setMassForCell(float val, CellPtr cell) {
-        assert(cell == cells[0] || cell == cells[1]);
-        uint cellId = cell == cells[0] ? 0 : 1;
-        partialTriangles[cellId].mass = val;
-    }
+    //void setMassForCell(float val, CellPtr cell) {
+    //    assert(cell == cells[0] || cell == cells[1]);
+    //    uint cellId = cell == cells[0] ? 0 : 1;
+    //    partialTriangles[cellId].mass = val;
+    //}
 
     /**
      * Finds the next triangle in a triangle fan centered at Vertex vert.

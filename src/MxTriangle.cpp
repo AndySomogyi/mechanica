@@ -125,6 +125,7 @@ HRESULT MxTriangle::positionsChanged() {
 
     // TODO: change vertex mass only in response to some sort of mass change
     // event -- we're mass conserving.
+    // TODO: clean this shit up.. need to store mass at triangles
     for(int i = 0; i < 3; ++i) {
         vertices[i]->area += area / 3.;
         vertices[i]->mass += getMass() / 3.;

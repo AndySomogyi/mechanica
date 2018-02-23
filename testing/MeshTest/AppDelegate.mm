@@ -104,6 +104,14 @@
     {
         meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
     }
+    else if(sender == self.selectedCellTargetVolumeTxt)
+    {
+        meshTest->model->setSelectedCellTargetVolume(self.selectedCellTargetVolumeTxt.floatValue);
+    }
+    else if(sender == self.differentialSurfTensionTxt)
+    {
+        meshTest->model->diffSurfaceTension = self.differentialSurfTensionTxt.floatValue;
+    }
     
     std::cout << "value changed, pressure: " << meshTest->model->pressure
     << ", surface tension: " << meshTest->model->surfaceTension << std::endl;
@@ -152,6 +160,10 @@
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda;
     
     self.harmonicBondTxt.floatValue = meshTest->model->harmonicBondStrength;
+    
+    self.selectedCellTargetVolumeTxt.floatValue = meshTest->model->getSelectedCellTargetVolume();
+    
+    self.differentialSurfTensionTxt.floatValue = meshTest->model->diffSurfaceTension;
 }
 
 -(void)updateGuiStats {

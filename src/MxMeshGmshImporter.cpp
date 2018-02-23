@@ -192,12 +192,15 @@ void MxMeshGmshImporter::addCell(const Gmsh::Hexahedron& val) {
 
     assert(cell.isValid());
 
+    float totalArea = 0;
     for(PTrianglePtr pt : cell.boundary) {
         float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
                                                  pt->triangle->vertices[1]->position,
                                                  pt->triangle->vertices[2]->position);
-        pt->mass = area * density;
+        totalArea += area;
     }
+
+    cell.setMass(totalArea * density);
 
     assert(cell.updateDerivedAttributes() == S_OK);
 }
@@ -317,12 +320,15 @@ void MxMeshGmshImporter::addCell(const Gmsh::Prism& val) {
     addQuadToCell(*cell, {{vertexIds[3], vertexIds[5], vertexIds[2], vertexIds[0]}});
 
 
+    float totalArea = 0;
     for(PTrianglePtr pt : cell->boundary) {
         float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
                                                  pt->triangle->vertices[1]->position,
                                                  pt->triangle->vertices[2]->position);
-        pt->mass = area * density;
+        totalArea += area;
     }
+
+    cell->setMass(totalArea * density);
 
     assert(mesh.valid(cell));
 

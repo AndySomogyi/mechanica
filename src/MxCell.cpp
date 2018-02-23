@@ -483,3 +483,34 @@ void MxCell::projectVolumeConstraint()
     */
 
 }
+
+float MxCell::mass() const
+{
+    float mass = 0;
+
+    for(PTrianglePtr pt : boundary) {
+        mass += pt->mass;
+    }
+
+    return mass;
+}
+
+void MxCell::setMass(float mass)
+{
+    _mass = mass;
+
+    float totalArea = 0;
+    for(PTrianglePtr pt : boundary) {
+        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
+                                                 pt->triangle->vertices[1]->position,
+                                                 pt->triangle->vertices[2]->position);
+        totalArea += area;
+    }
+
+    for(PTrianglePtr pt : boundary) {
+        float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
+                                                 pt->triangle->vertices[1]->position,
+                                                 pt->triangle->vertices[2]->position);
+        pt->mass = _mass * (area / totalArea);
+    }
+}

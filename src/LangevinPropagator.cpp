@@ -34,7 +34,9 @@ HRESULT LangevinPropagator::step(MxReal dt) {
     }
 
     if((timeSteps % 20) == 0) {
+
         result = mesh->applyMeshOperations();
+
     }
 
     float sumError = 0;

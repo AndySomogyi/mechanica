@@ -77,8 +77,9 @@ GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
     //loadSimpleSheetModel();
+    loadTwoModel();
     //loadSheetModel();
-    loadCubeModel();
+    //loadCubeModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -105,7 +106,37 @@ GrowthModel::GrowthModel()  {
 
 //const float targetArea = 2.0;
 
+void GrowthModel::surfaceTensionForce() {
+    
+    for(TrianglePtr tri : mesh->triangles) {
 
+        assert(tri->area >= 0);
+        
+        float surfTension[2] = {0., 0,};
+        
+        for(int i = 0; i < 2; ++i) {
+            if(tri->cells[i]->ob_type == &redCellType || tri->cells[i]->ob_type == &blueCellType) {
+                surfTension[i] += surfaceTension;
+            }
+        }
+        
+        if((tri->cells[0]->ob_type == &redCellType && tri->cells[1]->ob_type == &blueCellType) ||
+           (tri->cells[1]->ob_type == &redCellType && tri->cells[0]->ob_type == &blueCellType)) {
+            surfTension[0] += diffSurfaceTension;
+            surfTension[1] += diffSurfaceTension;
+        }
+        
+        for(int v = 0; v < 3; ++v) {
+            Vector3 p1 = tri->vertices[(v+1)%3]->position;
+            Vector3 p2 = tri->vertices[(v+2)%3]->position;
+            float len = (p1-p2).length();
+            for(int i = 0; i < 2; ++i) {
+                tri->partialTriangles[i].force[v]
+                    -= surfTension[i] * len * (tri->vertices[v]->position - tri->centroid).normalized();
+            }
+        }
+    }
+}
 
 
 HRESULT GrowthModel::calcForce() {
@@ -113,14 +144,16 @@ HRESULT GrowthModel::calcForce() {
     HRESULT result;
 
     for(CellPtr cell : mesh->cells) {
-        if((result = cellAreaForce(cell)) != S_OK) {
-            return mx_error(result, "cell area force");
-        }
+        //if((result = cellAreaForce(cell)) != S_OK) {
+        //    return mx_error(result, "cell area force");
+        //}
 
         if((result = cellVolumeForce(cell)) != S_OK) {
             return mx_error(result, "cell volume force");
         }
     }
+    
+    surfaceTensionForce();
     
     if(harmonicBondAIndex >= 0 && harmonicBondBIndex >= 0) {
         centerOfMassForce(mesh->cells[harmonicBondAIndex],
@@ -133,68 +166,25 @@ HRESULT GrowthModel::calcForce() {
 }
 
 HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
-
     //return S_OK;
-
     if(mesh->rootCell() == cell) {
         return S_OK;
     }
 
     assert(cell->area >= 0);
 
-    float diff =  - cell->area;
-    //float diff = -0.35;
-
     for(auto pt: cell->boundary) {
-
         TrianglePtr tri = pt->triangle;
 
         assert(tri->area >= 0);
         
-        //float areaFraction = tri->area / cell->area;
-
-        //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
-
-        Vector3 dir[3];
-        float len[3];
-        float totLen = 0;
         for(int v = 0; v < 3; ++v) {
-            dir[v] = tri->vertices[v]->position - tri->centroid;
-            //dir[v] = ((tri->vertices[v]->position - tri->vertices[(v+1)%3]->position) +
-            //          (tri->vertices[v]->position - tri->vertices[(v+2)%3]->position)) / 2;
-            len[v] = dir[v].length();
-            //dir[v] = dir[v].normalized();
-            totLen += len[v];
-        }
-        
-        
-
-        for(int v = 0; v < 3; ++v) {
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid).normalized();
             
             Vector3 p1 = tri->vertices[(v+1)%3]->position;
             Vector3 p2 = tri->vertices[(v+2)%3]->position;
             float len = (p1-p2).length();
             pt->force[v] -= surfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid);
-            
-            //for(int i = 0; i < 3; ++i) {
-            //    if(i != v) {
-            //        pt->force[v] -= 0.5 * (tri->vertices[v]->position - tri->vertices[i]->position);
-            //    }
-            //}
-            //pt->force[v] +=  -100 * areaFraction * dir[v] / totLen;
-            //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            // pt->force[v] +=  -30.5 * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
-            //pt->force[v] += -300 * areaFraction * (pt->triangle->vertices[v]->position - pt->triangle->centroid).normalized();
-            
-            //for(int o = 0; o < 3; ++o) {
-            //    if(o != v) {
-            //        pt->force[v] +=  -10.5 * (pt->triangle->vertices[v]->position - pt->triangle->vertices[o]->position);
-            //    }
-            //}
         }
-
     }
     return S_OK;
 }
@@ -334,7 +324,53 @@ void GrowthModel::loadSimpleSheetModel() {
     
     harmonicBondAIndex = 1;
     harmonicBondBIndex = 3;
+    
+    selectedCellIndex = 1;
 
+}
+
+void GrowthModel::loadTwoModel() {
+    mesh = new MxMesh();
+    
+    
+    
+    MxMeshGmshImporter importer{*mesh,
+        [](Gmsh::ElementType, int id) {
+            
+            if((id % 2) == 0) {
+                return (MxCellType*)&redCellType;
+            } else {
+                return (MxCellType*)&blueCellType;
+            }
+            
+            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
+        }
+    };
+    
+    
+    mesh->setShortCutoff(0.2);
+    mesh->setLongCutoff(0.7);
+    importer.read("/Users/andy/src/mechanica/testing/MeshTest/two.msh");
+    
+    pressureMin = 0;
+    pressure = 5;
+    pressureMax = 15;
+    
+    surfaceTensionMin = 0;
+    surfaceTension = 4;
+    surfaceTensionMax = 15;
+    
+    setTargetVolume(0.4);
+    minTargetVolume = 0.005;
+    maxTargetVolume = 10.0;
+    targetVolumeLambda = 5.;
+    harmonicBondStrength = 0;
+    
+    harmonicBondAIndex = 1;
+    harmonicBondBIndex = 2;
+    
+    selectedCellIndex = 1;
+    
 }
 
 void GrowthModel::loadCubeModel() {
@@ -495,7 +531,24 @@ HRESULT GrowthModel::getStateVectorRate(float time, const float *y, float* dydt)
 void GrowthModel::setTargetVolume(float tv)
 {
     targetVolume = tv;
+
     for(int i = 0; i < mesh->cells.size(); ++i) {
         mesh->cells[i]->targetVolume = targetVolume;
+    }
+}
+
+float GrowthModel::getSelectedCellTargetVolume()
+{
+    if(selectedCellIndex >= 0) {
+        return mesh->cells[selectedCellIndex]->targetVolume;
+    }
+    
+    return targetVolume;
+}
+
+void GrowthModel::setSelectedCellTargetVolume(float tv)
+{
+    if(selectedCellIndex >= 0) {
+        mesh->cells[selectedCellIndex]->targetVolume = tv;
     }
 }

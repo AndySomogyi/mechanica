@@ -47,6 +47,10 @@ typedef unsigned char Byte;
 @property (assign) IBOutlet NSTextField *actualVolumeTxt;
 @property (assign) IBOutlet NSTextField *areaTxt;
 @property (assign) IBOutlet NSTextField *harmonicBondTxt;
+@property (assign) IBOutlet NSTextField *selectedCellTargetVolumeTxt;
+@property (assign) IBOutlet NSTextField *differentialSurfTensionTxt;
+
+
 
 -(IBAction)run:(id)sender;
 

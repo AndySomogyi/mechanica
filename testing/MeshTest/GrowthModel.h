@@ -39,6 +39,8 @@ struct GrowthModel : public MxModel {
     int harmonicBondAIndex = -1;
     int harmonicBondBIndex = -1;
     
+    int selectedCellIndex = -1;
+    
     
     float pressure = 0;
     float pressureMax;
@@ -47,13 +49,24 @@ struct GrowthModel : public MxModel {
     float surfaceTension = 0;
     float surfaceTensionMax;
     float surfaceTensionMin;
+    
+    
+    float diffSurfaceTension = 0;
 
     void testEdges();
 
     void setTargetVolume(float targetVolume);
+    
+    float getSelectedCellTargetVolume();
+    
+    void setSelectedCellTargetVolume(float tv);
 
 
     void loadSheetModel();
+    
+    void surfaceTensionForce();
+    
+    void loadTwoModel();
 
     void loadSimpleSheetModel();
 
