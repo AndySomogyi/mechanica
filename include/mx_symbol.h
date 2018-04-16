@@ -88,6 +88,16 @@ MxAPI_FUNC(MxSymbol*) MxSymbol_FromString(MxString *str);
  */
 MxAPI_FUNC(MxString*) MxSymbol_GetString(MxSymbol *sym);
 
+
+/**
+ * Compares two symbols. No error checking is performed. The result is the
+ * same as if the symbol string values were compared.
+ *
+ * result = cmp(o1, o2).
+ */
+int MxSymbol_Cmp(const MxSymbol *o1, const MxSymbol *o2);
+
+
 /**
  * Dotted symbols are a sequence of symbols
  *

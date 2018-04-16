@@ -10,6 +10,7 @@
 #include <MxDebug.h>
 #include <iostream>
 #include "MxMeshVoronoiImporter.h"
+#include "MeshIO.h"
 #include "MeshTest.h"
 
 
@@ -76,9 +77,11 @@ static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
+    //loadSimpleSheetModel();
     //loadSheetModel();
     //loadCubeModel();
+    
+    loadAssImpModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -94,9 +97,9 @@ GrowthModel::GrowthModel()  {
         std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
     }
     
-    for(int i = 0; i < 10; ++i) {
-        mesh->applyMeshOperations();
-    }
+    //for(int i = 0; i < 10; ++i) {
+    //    mesh->applyMeshOperations();
+    //}
 
     testEdges();
 }
@@ -104,6 +107,37 @@ GrowthModel::GrowthModel()  {
 //const float targetArea = 0.45;
 
 //const float targetArea = 2.0;
+
+
+void GrowthModel::loadAssImpModel() {
+    
+    
+    
+    MeshCellTypeHandler handler = [](const char* name, int) {
+            return (MxCellType*)&redCellType;
+    };
+    
+    mesh = MxMesh_FromFile("/Users/andy/cube.obj/hex2.obj", 1.0, handler);
+    
+    mesh->setShortCutoff(0);
+    mesh->setLongCutoff(0.3);
+    
+    pressureMin = 0;
+    pressure = 5;
+    pressureMax = 15;
+    
+    surfaceTensionMin = 0;
+    surfaceTension = 5;
+    surfaceTensionMax = 15;
+    
+    targetVolume = 0.6;
+    minTargetVolume = 0.005;
+    maxTargetVolume = 10.0;
+    targetVolumeLambda = 5.;
+    
+    mesh->cells[1]->targetVolume = targetVolume;
+    
+}
 
 
 

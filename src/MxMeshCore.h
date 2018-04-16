@@ -68,6 +68,9 @@ struct MxMesh;
 typedef MxMesh *MeshPtr;
 typedef const MxMesh *CMeshPtr;
 
+struct MxSkeletalEdge;
+typedef MxSkeletalEdge *SkeletalEdgePtr;
+
 // triangle container in the main mesh
 typedef std::vector<TrianglePtr> TriangleContainer;
 
@@ -86,7 +89,7 @@ protected:
     friend class MxVertex;
 };
 
-struct MxVertex {
+struct MxVertex : MxObject {
     /**
      * The Mechanica vertex does not represent a point mass as in a traditional
      * particle based approach. Rather, the vertex here represents a region of space,
@@ -108,7 +111,7 @@ struct MxVertex {
         mass{mass}, area{area}, position{pos} {};
 
     Magnum::Vector3 position;
-    Magnum::Vector3 velocity;
+    //Magnum::Vector3 velocity;
 
     float attr = 0;
 
@@ -157,6 +160,9 @@ private:
      * Get the mesh pointer.
      */
     MeshPtr mesh();
+
+
+    SkeletalEdgePtr edges[4];
 
     /**
      * temporary hack for volume constraint.

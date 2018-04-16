@@ -91,6 +91,11 @@ set(SRC
   VertexSplit.cpp
   stochastic_rk.cpp
   RadialFaceCollapse.cpp
+  MxSkeletalEdge.cpp
+  MxSkeletalVertex.cpp
+  MxExpression.cpp
+  MeshIO.cpp
+  MxTesselator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -145,6 +150,11 @@ set(HEADERS
   VertexSplit.h
   stochastic_rk.h
   RadialFaceCollapse.h
+  MxSkeletalEdge.h
+  MxSkeletalVertex.h
+  MxExpression.h
+  MeshIO.h
+  MxTesselator.h
   )
 
 
@@ -199,6 +209,7 @@ target_include_directories(mechanica PUBLIC
 #target_link_libraries(mechanica ${OPENGL_LIBRARIES})
 target_link_libraries(mechanica
   ${PYTHON_LIBRARIES}
+  Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders

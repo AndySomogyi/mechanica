@@ -19,6 +19,14 @@
  *
  * Nothing is actually declared to be a MxObject, but every pointer to
  * a Mechanica object can be cast to a MxObject* (and hence a PyObject*).
+ *
+ * The python PyObject is laid out as :
+ *
+ *  struct PyObject {
+ *      int32_t ob_refcnt;
+ *     _typeobject *ob_type;
+ *  }
+ *
  */
 struct MxObject : _object
 {
