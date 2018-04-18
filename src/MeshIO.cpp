@@ -113,13 +113,6 @@ struct ImpVertex {
 };
 
 
-struct ImpFace {
-    bool equals(const aiFace *face) {
-
-    }
-};
-
-
 
 /**
  * Hash:
@@ -141,11 +134,60 @@ struct ImpFace {
 typedef std::unordered_map<aiVector3D, ImpVertex, AiVecHasher> VectorMap;
 
 /**
+ * Looks up the global vertices from a given aiFace.
+ *
+ * Note, the isFace has indices into the vertices of its containing aiMesh, so we
+ * have to map those local vertices to the global ones.
+ */
+static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiMesh* cell,
+        const aiFace *face);
+
+static bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFace **resultFaces, unsigned *nResult);
+
+
+
+
+
+/**
  * importer context.
  */
 struct ImpCtx {
 
 };
+
+
+/**
+ * A single triangulated face
+ */
+struct ImpFace {
+
+
+
+    bool equals(const VectorMap &vecMap, const aiMesh *mesh, const aiFace *face) {
+
+    }
+
+    /**
+     * ids of the global vertices in the MxMesh.
+     */
+    std::vector<VertexPtr> vertices;
+
+    std::vector<TrianglePtr> triangles;
+};
+
+static ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
+        const aiFace *face, const aiMesh *aim, CellPtr cell);
+
+
+/**
+ * A set of faces
+ */
+struct ImpFaceSet {
+
+};
+
+
+
 
 static ImpEdge *findImpEdge(VectorMap &vecMap, const aiMesh *aim, const aiVector3D &v1,
         const aiVector3D &v2) {
@@ -197,6 +239,7 @@ static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
     }
     assert(mesh->rootCell()->isValid());
 }
+
 
 MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler cellTypeHandler)
 {
@@ -280,30 +323,30 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
         CellPtr cell = mesh->createCell(cellTypeHandler(aim->mName.C_Str(), i));
 
+        // these are polygonal faces, each edge in a polygonal face defines a skeletal edge.
+
         for(int j = 0; j < aim->mNumFaces; ++j) {
             aiFace *face = &aim->mFaces[j];
 
-            assert(face->mNumIndices == 3);
+
 
             // enumerate all the faces
-            for(int k = 0; k < face->mNumIndices; ++k) {
-                aiVector3D &v1 = aim->mVertices[k];
-                aiVector3D &v2 = aim->mVertices[(k+1)%face->mNumIndices];
+            //for(int k = 0; k < face->mNumIndices; ++k) {
+            //    aiVector3D &v1 = aim->mVertices[k];
+            //    aiVector3D &v2 = aim->mVertices[(k+1)%face->mNumIndices];/
+//
+  //              ImpEdge *edge = findImpEdge(vecMap, aim, v1, v2);//
+//
+  //              if(edge == nullptr) {
+    //                edge = createImpEdge(vecMap, edges, aim, v1, v2);
+      //          }
+        //    }
 
-                ImpEdge *edge = findImpEdge(vecMap, aim, v1, v2);
+            ImpFace triangulatedFace = triangulatePolygonalFace(mesh, vecMap, face, aim, cell);
 
-                if(edge == nullptr) {
-                    edge = createImpEdge(vecMap, edges, aim, v1, v2);
-                }
-            }
 
-            MxVertex *v0 = vecMap.at(aim->mVertices[face->mIndices[0]]).vert;
-            MxVertex *v1 = vecMap.at(aim->mVertices[face->mIndices[1]]).vert;
-            MxVertex *v2 = vecMap.at(aim->mVertices[face->mIndices[2]]).vert;
+
             
-            std::cout << "creating new triangle: {" << v0 << ", " << v1 << ", " << v2 << "}" << std::endl;
-
-            createTriangleForCell(mesh, {{v0, v1, v2}}, cell);
         }
 
         for(PTrianglePtr pt : cell->boundary) {
@@ -502,65 +545,62 @@ inline bool PointInTriangle2D(const T& p0, const T& p1,const T& p2, const T& pp)
 }
 
 
+
 /**
  * Copied directly from AssImp.
+ *
+ * Accepts a single input face that defines a polygon, and generates a list of triangular faces.
  */
-// Triangulates the given mesh.
-bool TriangulateMesh( aiMesh* pMesh)
+bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFace **resultFaces, unsigned *nResult)
 {
+    *nResult = 0;
     // Now we have aiMesh::mPrimitiveTypes, so this is only here for test cases
-    if (!pMesh->mPrimitiveTypes)    {
-        bool bNeed = false;
-
-        for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
-            const aiFace& face = pMesh->mFaces[a];
-
-            if( face.mNumIndices != 3)  {
-                bNeed = true;
-            }
-        }
-        if (!bNeed)
-            return false;
-    }
-    else if (!(pMesh->mPrimitiveTypes & aiPrimitiveType_POLYGON)) {
-        return false;
-    }
+    //if (!pMesh->mPrimitiveTypes)    {
+    //    bool bNeed = false;
+    //
+    //    for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
+    //        const aiFace& face = pMesh->mFaces[a];
+    //
+    //        if( face.mNumIndices != 3)  {
+    //            bNeed = true;
+    //        }
+    //    }
+    //    if (!bNeed)
+    //        return false;
+    //}
+    //else if (!(pMesh->mPrimitiveTypes & aiPrimitiveType_POLYGON)) {
+    //    return false;
+    //}
 
     // Find out how many output faces we'll get
     unsigned int numOut = 0, max_out = 0;
     bool get_normals = true;
-    for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
-        aiFace& face = pMesh->mFaces[a];
+    //for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
+    //    aiFace& face = pMesh->mFaces[a];
         if (face.mNumIndices <= 4) {
             get_normals = false;
         }
         if( face.mNumIndices <= 3) {
             numOut++;
-
         }
         else {
             numOut += face.mNumIndices-2;
             max_out = std::max(max_out,face.mNumIndices);
         }
-    }
+    //}
 
     // Just another check whether aiMesh::mPrimitiveTypes is correct
-    assert(numOut != pMesh->mNumFaces);
+    //assert(numOut != pMesh->mNumFaces);
 
     aiVector3D* nor_out = NULL;
 
-    // if we don't have normals yet, but expect them to be a cheap side
-    // product of triangulation anyway, allocate storage for them.
-    if (!pMesh->mNormals && get_normals) {
-        // XXX need a mechanism to inform the GenVertexNormals process to treat these normals as preprocessed per-face normals
-    //  nor_out = pMesh->mNormals = new aiVector3D[pMesh->mNumVertices];
-    }
 
     // the output mesh will contain triangles, but no polys anymore
-    pMesh->mPrimitiveTypes |= aiPrimitiveType_TRIANGLE;
-    pMesh->mPrimitiveTypes &= ~aiPrimitiveType_POLYGON;
+    //pMesh->mPrimitiveTypes |= aiPrimitiveType_TRIANGLE;
+    //pMesh->mPrimitiveTypes &= ~aiPrimitiveType_POLYGON;
 
     aiFace* out = new aiFace[numOut](), *curOut = out;
+    *resultFaces = out;
     std::vector<aiVector3D> temp_verts3d(max_out+2); /* temporary storage for vertices */
     std::vector<aiVector2D> temp_verts(max_out+2);
 
@@ -578,12 +618,13 @@ bool TriangulateMesh( aiMesh* pMesh)
     FILE* fout = fopen(POLY_OUTPUT_FILE,"a");
 #endif
 
-    const aiVector3D* verts = pMesh->mVertices;
+
 
     // use std::unique_ptr to avoid slow std::vector<bool> specialiations
     std::unique_ptr<bool[]> done(new bool[max_out]);
-    for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
-        aiFace& face = pMesh->mFaces[a];
+    //for( unsigned int a = 0; a < pMesh->mNumFaces; a++) {
+
+
 
         unsigned int* idx = face.mIndices;
         int num = (int)face.mNumIndices, ear = 0, tmp, prev = num-1, next = 0, max = num;
@@ -606,8 +647,9 @@ bool TriangulateMesh( aiMesh* pMesh)
             nface.mNumIndices = face.mNumIndices;
             nface.mIndices    = face.mIndices;
 
-            face.mIndices = NULL;
-            continue;
+            //face.mIndices = NULL;
+            *nResult = 1;
+            return true;
         }
         // optimized code for quadrilaterals
         else if ( face.mNumIndices == 4) {
@@ -643,7 +685,7 @@ bool TriangulateMesh( aiMesh* pMesh)
 
             aiFace& nface = *curOut++;
             nface.mNumIndices = 3;
-            nface.mIndices = face.mIndices;
+            nface.mIndices = new unsigned int[3];
 
             nface.mIndices[0] = temp[start_vertex];
             nface.mIndices[1] = temp[(start_vertex + 1) % 4];
@@ -658,8 +700,9 @@ bool TriangulateMesh( aiMesh* pMesh)
             sface.mIndices[2] = temp[(start_vertex + 3) % 4];
 
             // prevent double deletion of the indices field
-            face.mIndices = NULL;
-            continue;
+            // face.mIndices = NULL;
+            *nResult = (unsigned)(curOut-out);
+            return true;
         }
         else
         {
@@ -896,20 +939,94 @@ bool TriangulateMesh( aiMesh* pMesh)
             ++f;
         }
 
-        delete[] face.mIndices;
-        face.mIndices = NULL;
-    }
+        //delete[] face.mIndices;
+        //face.mIndices = NULL;
+    //}
 
 #ifdef AI_BUILD_TRIANGULATE_DEBUG_POLYS
     fclose(fout);
 #endif
 
     // kill the old faces
-    delete [] pMesh->mFaces;
+    //delete [] pMesh->mFaces;
+    
+
 
     // ... and store the new ones
-    pMesh->mFaces    = out;
-    pMesh->mNumFaces = (unsigned int)(curOut-out); /* not necessarily equal to numOut */
+    //pMesh->mFaces    = out;
+    *nResult = (unsigned)(curOut-out); /* not necessarily equal to numOut */
     return true;
+}
+
+
+static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiMesh* cell,
+        const aiFace *face) {
+
+    std::vector<VertexPtr> result(face->mNumIndices);
+
+    for(int i = 0; i < face->mNumIndices; ++i) {
+        const aiVector3D &vert = cell->mVertices[face->mIndices[i]];
+        VectorMap::const_iterator j = vecMap.find(vert);
+        assert(j != vecMap.end());
+        result[i] = j->second.vert;
+    }
+
+    return result;
+}
+
+ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
+        const aiFace *face, const aiMesh *aim, CellPtr cell) {
+    ImpFace result;
+
+    result.vertices = verticesForFace(vecMap, aim, face);
+
+    aiFace *tris = nullptr;
+    unsigned ntris = 0;
+
+    bool triangulated = ImpTriangulateFace(*face, aim->mVertices, &tris, &ntris);
+    assert(triangulated);
+
+    result.triangles.resize(ntris);
+
+    for(unsigned j = 0; j < ntris; ++j) {
+        aiFace *tri = &tris[j];
+
+        VectorMap::const_iterator it;
+
+        it = vecMap.find(aim->mVertices[tri->mIndices[0]]); assert(it != vecMap.end());
+        MxVertex *v0 = it->second.vert;
+        it = vecMap.find(aim->mVertices[tri->mIndices[1]]); assert(it != vecMap.end());
+        MxVertex *v1 = it->second.vert;
+        it = vecMap.find(aim->mVertices[tri->mIndices[2]]); assert(it != vecMap.end());
+        MxVertex *v2 = it->second.vert;
+
+        std::cout << "creating new triangle: {" << v0 << ", " << v1 << ", " << v2 << "}" << std::endl;
+
+        TrianglePtr t = mesh->findTriangle({{v0, v1, v2}});
+
+        if(t) {
+            assert((t->cells[0] != nullptr || t->cells[1] != nullptr)
+                    && "found triangle that's connected on both sides");
+        }
+        else {
+            t = mesh->createTriangle(nullptr, {{v0, v1, v2}});
+        }
+
+        assert(t);
+        assert(t->cells[0] == nullptr || t->cells[1] == nullptr);
+
+        Vector3 meshNorm = Math::normal(v0->position, v1->position, v2->position);
+        float orientation = Math::dot(meshNorm, t->normal);
+
+        int cellIndx = orientation > 0 ? 0 : 1;
+        cell->appendChild(&t->partialTriangles[cellIndx]);
+
+        result.triangles[j] = t;
+    }
+
+    std::cout << "deleting face ptr: " << tris << std::endl;
+    delete [] tris;
+
+    return result;
 }
 
