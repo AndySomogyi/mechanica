@@ -8,6 +8,8 @@
 #include "MeshIO.h"
 
 #include <iostream>
+#include <algorithm>
+#include <vector>
 
 
 
@@ -17,9 +19,7 @@
 
 #include <unordered_map>
 
-#include <OpenGL/glu.h>
 
-GLUtesselator *tobj;
 
 // AssImp
 // Scene : Mesh*
@@ -147,7 +147,6 @@ static bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFa
 
 
 
-
 /**
  * importer context.
  */
@@ -162,8 +161,37 @@ struct ImpCtx {
 struct ImpFace {
 
 
+    bool equals(const std::vector<VertexPtr> &verts) {
 
-    bool equals(const VectorMap &vecMap, const aiMesh *mesh, const aiFace *face) {
+        if(verts.size() != vertices.size()) {
+            return false;
+        }
+
+        std::vector<VertexPtr> v = verts;
+
+        for(int i = 0; i < verts.size(); ++i) {
+            if(std::equal(v.begin(), v.end(), vertices.begin())) {
+                return true;
+            }
+            std::rotate(v.begin(), v.begin() + 1, v.end());
+        }
+        
+        // rotate back to original position
+        //std::rotate(v.begin(), v.begin() + 1, v.end());
+        assert(std::equal(v.begin(), v.end(), verts.begin()));
+        
+        // reverse the vertex order
+        std::reverse(std::begin(v), std::end(v));
+        
+        // check all rotations again in reverse order
+        for(int i = 0; i < verts.size(); ++i) {
+            if(std::equal(v.begin(), v.end(), vertices.begin())) {
+                return true;
+            }
+            std::rotate(v.begin(), v.begin() + 1, v.end());
+        }
+
+        return false;
 
     }
 
@@ -175,8 +203,15 @@ struct ImpFace {
     std::vector<TrianglePtr> triangles;
 };
 
+/**
+ * Creates a new triangulated polygonal face. All triangles in this face are new.
+ * The triangles should be oriented such that the normal points outwards from the
+ * given AssImp mesh.
+ */
 static ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
-        const aiFace *face, const aiMesh *aim, CellPtr cell);
+        const aiFace *face, const aiMesh *aim);
+
+static void addImpFaceToCell(ImpFace *face, CellPtr cell);
 
 
 /**
@@ -184,6 +219,20 @@ static ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
  */
 struct ImpFaceSet {
 
+    ImpFace *findTriangulatedFace(const VectorMap &vecMap,
+            const aiMesh *mesh, const aiFace *face) {
+        std::vector<VertexPtr> vertices = verticesForFace(vecMap, mesh, face);
+
+        for(ImpFace &face : faces) {
+            if(face.equals(vertices)) {
+                return &face;
+            }
+        }
+        return nullptr;
+    }
+
+
+    std::vector<ImpFace> faces;
 };
 
 
@@ -247,6 +296,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     VectorMap vecMap;
     EdgeVector edges;
+    ImpFaceSet triFaces;
 
     uint flags = aiProcess_JoinIdenticalVertices |
             //aiProcess_Triangulate |
@@ -342,11 +392,15 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
       //          }
         //    }
 
-            ImpFace triangulatedFace = triangulatePolygonalFace(mesh, vecMap, face, aim, cell);
+            ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
 
+            if(!triFace) {
+                triFaces.faces.push_back(triangulatePolygonalFace(mesh, vecMap, face, aim));
+                assert(triFaces.findTriangulatedFace(vecMap, aim, face));
+                triFace = &triFaces.faces.back();
+            }
 
-
-            
+            addImpFaceToCell(triFace, cell);
         }
 
         for(PTrianglePtr pt : cell->boundary) {
@@ -362,7 +416,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     }
 
 
-    //addUnclaimedPartialTrianglesToRoot(mesh);
+    addUnclaimedPartialTrianglesToRoot(mesh);
 
     return mesh;
 }
@@ -975,7 +1029,7 @@ static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiM
 }
 
 ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
-        const aiFace *face, const aiMesh *aim, CellPtr cell) {
+        const aiFace *face, const aiMesh *aim) {
     ImpFace result;
 
     result.vertices = verticesForFace(vecMap, aim, face);
@@ -1013,14 +1067,6 @@ ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
         }
 
         assert(t);
-        assert(t->cells[0] == nullptr || t->cells[1] == nullptr);
-
-        Vector3 meshNorm = Math::normal(v0->position, v1->position, v2->position);
-        float orientation = Math::dot(meshNorm, t->normal);
-
-        int cellIndx = orientation > 0 ? 0 : 1;
-        cell->appendChild(&t->partialTriangles[cellIndx]);
-
         result.triangles[j] = t;
     }
 
@@ -1030,3 +1076,15 @@ ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
     return result;
 }
 
+inline void addImpFaceToCell(ImpFace* face, CellPtr cell)
+{
+    assert(face->triangles.size() >= 1);
+
+    int cellIndx = face->triangles[0]->cells[0] == nullptr ? 0 : 1;
+
+    for(TrianglePtr tri : face->triangles) {
+        assert(tri->cells[cellIndx] == nullptr);
+        std::cout << "appending partial triangle, index: " << cellIndx << std::endl;
+        cell->appendChild(&tri->partialTriangles[cellIndx]);
+    }
+}
