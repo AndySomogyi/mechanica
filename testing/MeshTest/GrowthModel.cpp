@@ -117,7 +117,7 @@ void GrowthModel::loadAssImpModel() {
             return (MxCellType*)&redCellType;
     };
     
-    mesh = MxMesh_FromFile("/Users/andy/cube.obj/hex2.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/Documents/vertex-models/blender/hex5.obj", 1.0, handler);
     
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);

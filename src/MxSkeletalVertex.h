@@ -14,11 +14,19 @@
 
 struct MxSkeletalEdge;
 
+
 struct MxSkeletalVertex : MxVertex
 {
 public:
     MxSkeletalVertex();
     ~MxSkeletalVertex();
+
+
+    unsigned edgeCount;
+
+    /**
+     * Fixed number of edges
+     */
     MxSkeletalEdge *edges[SKELETAL_VERTEX_MAX_EDGES];
 };
 

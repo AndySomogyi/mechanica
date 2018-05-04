@@ -10,7 +10,13 @@
 
 #include "MxMeshCore.h"
 
-struct MxSkeletalEdge
+
+#define SKELETAL_EDGE_MAX_TRIANGLES 3
+
+/**
+ * A skeletal edge is at the boundary of three or more cells.
+ */
+struct MxSkeletalEdge : MxObject
 {
 
     MxSkeletalEdge();
@@ -19,6 +25,8 @@ struct MxSkeletalEdge
     MxObject *next;
 
     MxObject *prev;
+
+    MxTriangle *triangles[SKELETAL_EDGE_MAX_TRIANGLES];
 };
 
 #endif /* SRC_MXSKELETALEDGE_H_ */

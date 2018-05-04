@@ -301,6 +301,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     uint flags = aiProcess_JoinIdenticalVertices |
             //aiProcess_Triangulate |
             aiProcess_RemoveComponent |
+            aiProcess_RemoveRedundantMaterials |
             aiProcess_FindDegenerates;
 
     imp.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
@@ -327,6 +328,8 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     for(int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh *mesh = scene->mMeshes[i];
+        
+        std::cout << "processing verticies from " << mesh->mName.C_Str() << std::endl;
         for(int j = 0; j < mesh->mNumVertices; ++j) {
             aiVector3D vec = mesh->mVertices[j];
 
@@ -340,6 +343,8 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
                 }
                 else {
                     // error, mesh has vertex with more than 4 cells
+                    std::cout << "error, vertex has more than 4 cells" << std::endl;
+                    std::cout << "mesh name: " << mesh->mName.C_Str() << std::endl;
                     return nullptr;
                 }
             }

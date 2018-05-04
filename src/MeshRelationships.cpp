@@ -212,6 +212,7 @@ void connect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
     assert(0 && "triangle has no empty slot");
 }
 
+/*
 int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
     assert(edgeIndx >= 0 && edgeIndx < 3);
     assert(tri->vertices[edgeIndx] && tri->vertices[(edgeIndx+1)%3]);
@@ -234,6 +235,7 @@ int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
     } while(t != ringTri);
 
 }
+*/
 
 HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v) {
     for(int i = 0; i < 3; ++i) {

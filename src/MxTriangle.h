@@ -204,19 +204,13 @@ struct MxTriangle : MxObject {
     std::array<CellPtr, 2> cells;
 
     /**
-     * pointers to the three triangles around the ring edges.
+     * pointers to the three triangles or edges that this triangle connects with.
      *
-     * The edge ring is a circular linked list. A manifold edge has exactly
-     * two triangles on it. The list is structured such that every triangle
-     * in a ringed edge is pointed to by the previous triangle, and
-     * points to the next triangle in the ring. The logical structure of the
-     * ringed edge list exactly mirrors the physical structure of the ringed
-     * edge.
-     *
-     * Invariants:
-     * tri->cells[1] == tri->edgeRing[i]->cells[0]
+     * A neighbor can be either another triangle if the neighbor lies on a manifold
+     * surface, or may be a skeletal edge if the lies at the intersection of three
+     * cells. Currently, we restrict edges to three cells.
      */
-    std::array<TrianglePtr, 3> edgeRing;
+    MxObject *neighbors[3];
 
     /**
      * indices of the two partial triangles that are attached to this triangle.

@@ -21,6 +21,7 @@
 
 #include "MxCell.h"
 #include "MeshOperations.h"
+#include "MxSkeletalEdge.h"
 
 
 
@@ -336,6 +337,8 @@ private:
 
     uint triangleId = 0;
 
+    std::vector<SkeletalEdgePtr> edges;
+
     friend struct MxVertex;
     friend struct MxTriangle;
     friend struct MxFacet;
@@ -344,6 +347,7 @@ private:
     friend struct MeshOperation;
     friend struct RadialEdgeCollapse;
     friend struct RadialEdgeSplit;
+    friend struct MxSkeletalEdge;
 };
 
 
