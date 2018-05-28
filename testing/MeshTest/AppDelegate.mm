@@ -76,15 +76,15 @@
         meshTest->model->mesh->applyMeshOperations();
         meshTest->draw();
     }
-    else if (sender == self.pressureVal)
+    else if (sender == self.differentialSurfaceTensionVal)
     {
-        self.pressureSlider.floatValue = self.pressureVal.floatValue;
-        meshTest->model->pressure = self.pressureVal.floatValue;
+        self.differentialSurfaceTensionSlider.floatValue = self.differentialSurfaceTensionVal.floatValue;
+        meshTest->model->differentialSurfaceTension = self.differentialSurfaceTensionVal.floatValue;
     }
-    else if (sender == self.pressureSlider)
+    else if (sender == self.differentialSurfaceTensionSlider)
     {
-        self.pressureVal.floatValue = self.pressureSlider.floatValue;
-        meshTest->model->pressure = self.pressureSlider.floatValue;
+        self.differentialSurfaceTensionVal.floatValue = self.differentialSurfaceTensionSlider.floatValue;
+        meshTest->model->differentialSurfaceTension = self.differentialSurfaceTensionSlider.floatValue;
     }
     else if (sender == self.volumeVal)
     {
@@ -105,7 +105,7 @@
         meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
     }
     
-    std::cout << "value changed, pressure: " << meshTest->model->pressure
+    std::cout << "value changed, differentialSurfaceTension: " << meshTest->model->differentialSurfaceTension
     << ", surface tension: " << meshTest->model->surfaceTension << std::endl;
 }
 
@@ -128,13 +128,13 @@
     self.volumeSlider.minValue = meshTest->model->minTargetVolume;
     self.volumeSlider.floatValue = meshTest->model->targetVolume;
     
-    self.pressureMax.floatValue = meshTest->model->pressureMax;
-    self.pressureMin.floatValue = meshTest->model->pressureMin;
-    self.pressureVal.floatValue = meshTest->model->pressure;
+    self.differentialSurfaceTensionMax.floatValue = meshTest->model->differentialSurfaceTensionMax;
+    self.differentialSurfaceTensionMin.floatValue = meshTest->model->differentialSurfaceTensionMin;
+    self.differentialSurfaceTensionVal.floatValue = meshTest->model->differentialSurfaceTension;
     
-    self.pressureSlider.maxValue = meshTest->model->pressureMax;
-    self.pressureSlider.minValue = meshTest->model->pressureMin;
-    self.pressureSlider.floatValue = meshTest->model->pressure;
+    self.differentialSurfaceTensionSlider.maxValue = meshTest->model->differentialSurfaceTensionMax;
+    self.differentialSurfaceTensionSlider.minValue = meshTest->model->differentialSurfaceTensionMin;
+    self.differentialSurfaceTensionSlider.floatValue = meshTest->model->differentialSurfaceTension;
     
     self.surfaceTensionMax.floatValue = meshTest->model->surfaceTensionMax;
     self.surfaceTensionMin.floatValue = meshTest->model->surfaceTensionMin;

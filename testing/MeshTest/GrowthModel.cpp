@@ -77,12 +77,12 @@ static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    loadSimpleSheetModel();
+    //loadSimpleSheetModel();
     //loadSheetModel();
     //loadCubeModel();
-    loadTwoMsh();
-    
     //loadAssImpModel();
+    loadTwoModel();
+
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -157,11 +157,49 @@ HRESULT GrowthModel::calcForce() {
         }
     }
     
-    centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
+    applyDifferentialSurfaceTension();
+    
+    //centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
     
     //centerOfMassForce(mesh->cells[22], mesh->cells[7], 1);
     
     return S_OK;
+}
+
+void GrowthModel::applyDifferentialSurfaceTension() {
+
+    for(TrianglePtr tri : mesh->triangles) {
+        
+        if((tri->cells[0] == mesh->cells[1] && tri->cells[1] == mesh->cells[2]) ||
+           (tri->cells[0] == mesh->cells[2] && tri->cells[1] == mesh->cells[1])) {
+
+            assert(tri->area >= 0);
+
+            Vector3 dir[3];
+            float len[3];
+            float totLen = 0;
+            for(int v = 0; v < 3; ++v) {
+                dir[v] = tri->vertices[v]->position - tri->centroid;
+                len[v] = dir[v].length();
+                totLen += len[v];
+            }
+            
+            for(int v = 0; v < 3; ++v) {
+                Vector3 p1 = tri->vertices[(v+1)%3]->position;
+                Vector3 p2 = tri->vertices[(v+2)%3]->position;
+                float len = (p1-p2).length();
+                
+                tri->partialTriangles[0].force[v]
+                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
+                
+                tri->partialTriangles[1].force[v]
+                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
+            }
+        }
+        else {
+            std::cout << "continuing...";
+        }
+    }
 }
 
 HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
@@ -363,10 +401,9 @@ void GrowthModel::loadSimpleSheetModel() {
 
 }
 
-void GrowthModel::loadTwoMsh() {
+
+void GrowthModel::loadTwoModel() {
     mesh = new MxMesh();
-    
-    
     
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
@@ -394,12 +431,19 @@ void GrowthModel::loadTwoMsh() {
     surfaceTension = 4;
     surfaceTensionMax = 15;
     
+    differentialSurfaceTensionMin = -15;
+    differentialSurfaceTension = 0;
+    differentialSurfaceTensionMax = 15;
+    
     setTargetVolume(0.4);
     minTargetVolume = 0.005;
     maxTargetVolume = 10.0;
     targetVolumeLambda = 5.;
     harmonicBondStrength = 0;
     
+    for(int i = 0; i < 10; ++i) {
+        mesh->applyMeshOperations();
+    }
 }
 
 void GrowthModel::loadCubeModel() {
