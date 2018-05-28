@@ -268,6 +268,10 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
+    VertexPtr allocVertex(const MxType *type);
+
+    MxSkeletalEdge *allocSkeletalEdge(const MxType *type);
+
     /**
      * Notify the mesh that the valence count on this vertex has changed.
      * This may enqueue the vertex in the operation queue so that edges or

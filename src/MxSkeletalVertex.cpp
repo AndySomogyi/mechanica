@@ -7,7 +7,17 @@
 
 #include <MxSkeletalVertex.h>
 
-MxSkeletalVertex::MxSkeletalVertex() :  MxVertex(0, 0, {{0.0f, 0.0f, 0.0f}})
+struct MxSkeletalVertexType : MxType {
+
+};
+
+static MxSkeletalVertexType type;
+
+MxType *MxSkeletalVertex_Type = &type;
+
+
+
+MxSkeletalVertex::MxSkeletalVertex() :  MxVertex{MxSkeletalVertex_Type}
 {
     // TODO Auto-generated constructor stub
 

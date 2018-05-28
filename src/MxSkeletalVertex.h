@@ -14,6 +14,8 @@
 
 struct MxSkeletalEdge;
 
+MxAPI_DATA(struct MxType*) MxSkeletalVertex_Type;
+
 
 struct MxSkeletalVertex : MxVertex
 {
@@ -28,6 +30,10 @@ public:
      * Fixed number of edges
      */
     MxSkeletalEdge *edges[SKELETAL_VERTEX_MAX_EDGES];
+
+    static bool classof(const MxObject *o) {
+        return o->ob_type == MxSkeletalVertex_Type;
+    }
 };
 
 #endif /* SRC_SKELETALVERTEX_H_ */

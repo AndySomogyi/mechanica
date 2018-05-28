@@ -8,6 +8,7 @@
 
 #include "MxDebug.h"
 #include "MxMesh.h"
+#include "MxSkeletalVertex.h"
 #include <Magnum/Math/Math.h>
 #include "MagnumExternal/Optional/optional.hpp"
 #include "DifferentialGeometry.h"
@@ -409,4 +410,28 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     }
 
     return S_OK;
+}
+
+MxSkeletalEdge* MxMesh::allocSkeletalEdge(const MxType* type)
+{
+    MxSkeletalEdge *e = new MxSkeletalEdge();
+    edges.push_back(e);
+    return e;
+}
+
+VertexPtr MxMesh::allocVertex(const MxType* type)
+{
+    VertexPtr retval = nullptr;
+    if(type == MxVertex_Type) {
+        retval = new MxVertex();
+    }
+    else if(type == MxSkeletalVertex_Type) {
+        retval = new MxSkeletalVertex();
+    }
+    else {
+        assert(0);
+        return nullptr;
+    }
+    vertices.push_back(retval);
+    return retval;
 }

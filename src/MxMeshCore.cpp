@@ -13,6 +13,18 @@
 float MxVertex::minForceDivergence;
 float MxVertex::maxForceDivergence;
 
+struct MxVertexType : MxType {
+
+};
+
+static MxVertexType type;
+
+MxType *MxVertex_Type = &type;
+
+MxVertex::MxVertex(MxType* derivedType) : MxObject{derivedType}
+{
+}
+
 std::set<VertexPtr> MxVertex::link() const {
     std::set<VertexPtr> lnk;
 
@@ -23,6 +35,15 @@ std::set<VertexPtr> MxVertex::link() const {
     }
     return lnk;
 }
+
+MxVertex::MxVertex() : MxVertex{MxVertex_Type}
+{
+}
+
+MxVertex::MxVertex(float mass, float area, const Magnum::Vector3 &pos) :
+        MxObject{MxVertex_Type},
+        mass{mass}, area{area}, position{pos} {
+};
 
 HRESULT MxVertex::removeTriangle(const TrianglePtr tri) {
     auto iter = std::find(_triangles.begin(), _triangles.end(), tri);
@@ -113,3 +134,5 @@ Magnum::Vector3 MxVertex::areaWeightedNormal(CCellPtr cell) const
     }
     return result;
 }
+
+

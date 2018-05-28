@@ -13,6 +13,10 @@
 
 #define SKELETAL_EDGE_MAX_TRIANGLES 3
 
+MxAPI_DATA(struct MxType*) MxSkeletalEdge_Type;
+
+struct MxSkeletalVertex;
+
 /**
  * A skeletal edge is at the boundary of three or more cells.
  */
@@ -22,11 +26,18 @@ struct MxSkeletalEdge : MxObject
     MxSkeletalEdge();
     ~MxSkeletalEdge();
 
-    MxObject *next;
+    /**
+     * The next and prev pointers are a skeletal vertex.
+     */
 
-    MxObject *prev;
+    MxSkeletalVertex *vertices[2];
 
-    MxTriangle *triangles[SKELETAL_EDGE_MAX_TRIANGLES];
+
+    MxTriangle *triangles[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
+
+    static bool classof(const MxObject *o) {
+        return o->ob_type == MxSkeletalEdge_Type;
+    }
 };
 
 #endif /* SRC_MXSKELETALEDGE_H_ */

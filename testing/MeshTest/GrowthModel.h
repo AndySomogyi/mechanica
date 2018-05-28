@@ -59,6 +59,8 @@ struct GrowthModel : public MxModel {
     void loadMonodisperseVoronoiModel();
     
     void loadAssImpModel();
+    
+    void loadTwoMsh();
 
     virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force);
 

@@ -89,6 +89,8 @@ protected:
     friend class MxVertex;
 };
 
+MxAPI_DATA(struct MxType*) MxVertex_Type;
+
 struct MxVertex : MxObject {
     /**
      * The Mechanica vertex does not represent a point mass as in a traditional
@@ -107,8 +109,9 @@ struct MxVertex : MxObject {
     static float minForceDivergence;
     static float maxForceDivergence;
 
-    MxVertex(float mass, float area, const Magnum::Vector3 &pos) :
-        mass{mass}, area{area}, position{pos} {};
+    MxVertex();
+
+    MxVertex(float mass, float area, const Magnum::Vector3 &pos);
 
     Magnum::Vector3 position;
     //Magnum::Vector3 velocity;
@@ -144,6 +147,13 @@ struct MxVertex : MxObject {
      * incident triangles for the given cell.
      */
     Magnum::Vector3 areaWeightedNormal(CCellPtr cell) const;
+
+    static bool classof(const MxObject *o) {
+        return o->ob_type == MxVertex_Type;
+    }
+
+protected:
+    MxVertex(MxType *derivedType);
 
 
 

@@ -79,4 +79,13 @@ int _CaAstInit();
 #include "mx_error.h"
 
 
+
+template <class X, class Y>
+inline X* dyn_cast(const Y &o) {
+    return X::classof(o)  ? static_cast<X*>(o) : nullptr;
+};
+
+
+
+
 #endif /* _INCLUDED_CAYMAN_PRIVATE_H_ */

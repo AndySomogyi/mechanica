@@ -77,11 +77,12 @@ static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
 GrowthModel::GrowthModel()  {
 
     //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
+    loadSimpleSheetModel();
     //loadSheetModel();
     //loadCubeModel();
+    loadTwoMsh();
     
-    loadAssImpModel();
+    //loadAssImpModel();
     
     /*
     Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
@@ -117,7 +118,7 @@ void GrowthModel::loadAssImpModel() {
             return (MxCellType*)&redCellType;
     };
     
-    mesh = MxMesh_FromFile("/Users/andy/Documents/vertex-models/blender/hex5.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/Documents/vertex-models/blender/hex5.2.obj", 1.0, handler);
     
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);
@@ -360,6 +361,45 @@ void GrowthModel::loadSimpleSheetModel() {
     targetVolumeLambda = 5.;
     harmonicBondStrength = 0;
 
+}
+
+void GrowthModel::loadTwoMsh() {
+    mesh = new MxMesh();
+    
+    
+    
+    MxMeshGmshImporter importer{*mesh,
+        [](Gmsh::ElementType, int id) {
+            
+            if((id % 2) == 0) {
+                return (MxCellType*)&redCellType;
+            } else {
+                return (MxCellType*)&blueCellType;
+            }
+            
+            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
+        }
+    };
+    
+    
+    mesh->setShortCutoff(0.2);
+    mesh->setLongCutoff(0.7);
+    importer.read("/Users/andy/src/mechanica/testing/MeshTest/two.msh");
+    
+    pressureMin = 0;
+    pressure = 5;
+    pressureMax = 15;
+    
+    surfaceTensionMin = 0;
+    surfaceTension = 4;
+    surfaceTensionMax = 15;
+    
+    setTargetVolume(0.4);
+    minTargetVolume = 0.005;
+    maxTargetVolume = 10.0;
+    targetVolumeLambda = 5.;
+    harmonicBondStrength = 0;
+    
 }
 
 void GrowthModel::loadCubeModel() {
