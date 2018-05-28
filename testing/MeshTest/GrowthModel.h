@@ -30,6 +30,8 @@ struct GrowthModel : public MxModel {
 
     HRESULT cellVolumeForce(CellPtr cell);
     
+    void applyDifferentialSurfaceTension();
+    
     float minTargetVolume;
     float maxTargetVolume;
     float targetVolume;
@@ -44,6 +46,10 @@ struct GrowthModel : public MxModel {
     float surfaceTension = 0;
     float surfaceTensionMax;
     float surfaceTensionMin;
+    
+    float differentialSurfaceTension = 0;
+    float differentialSurfaceTensionMax;
+    float differentialSurfaceTensionMin;
 
     void testEdges();
 
@@ -51,6 +57,8 @@ struct GrowthModel : public MxModel {
 
 
     void loadSheetModel();
+    
+    void loadTwoModel();
 
     void loadSimpleSheetModel();
 

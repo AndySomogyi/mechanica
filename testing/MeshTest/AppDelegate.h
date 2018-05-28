@@ -18,10 +18,10 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSButton *constantPressureBtn;
 
 
-@property (assign, nonatomic) IBOutlet NSSlider *pressureSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *pressureMin;
-@property (assign, nonatomic) IBOutlet NSTextField *pressureMax;
-@property (assign, nonatomic) IBOutlet NSTextField *pressureVal;
+@property (assign, nonatomic) IBOutlet NSSlider *differentialSurfaceTensionSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionMin;
+@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionMax;
+@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionVal;
 
 
 @property (assign, nonatomic) IBOutlet NSSlider *surfaceTensionSlider;
