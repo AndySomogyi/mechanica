@@ -96,6 +96,8 @@ set(SRC
   MxExpression.cpp
   MeshIO.cpp
   MxTesselator.cpp
+  MxColumnarCell.cpp
+  SkeletalVertexReconnect.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -155,6 +157,8 @@ set(HEADERS
   MxExpression.h
   MeshIO.h
   MxTesselator.h
+  MxColumnarCell.h
+  SkeletalVertexReconnect.h
   )
 
 
