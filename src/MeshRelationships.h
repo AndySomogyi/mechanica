@@ -141,23 +141,7 @@ HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v);
 void connect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 
 
-/**
- * Connect a triangle into a ring edge on the given edge index.
- * Searches the vertex triangle lists for matching triangles,
- * finds the ring list, and inserts the triangle into the ring.
- *
- * The given triangle must already be inserted into the list of
- * triangles on each vertex.
- *
- * @returns:
- * -1 if the triangle is already in the ring.
- * positive integer of the number of triangles in the list on success.
- *
- *
- */
-int radialedge_connect_triangle(TrianglePtr tri, int edgeIndex);
 
-int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex);
 
 
 

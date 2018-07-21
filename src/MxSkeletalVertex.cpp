@@ -19,12 +19,26 @@ MxType *MxSkeletalVertex_Type = &type;
 
 MxSkeletalVertex::MxSkeletalVertex() :  MxVertex{MxSkeletalVertex_Type}
 {
-    // TODO Auto-generated constructor stub
-
 }
 
 MxSkeletalVertex::~MxSkeletalVertex()
 {
-    // TODO Auto-generated destructor stub
 }
 
+HRESULT MxSkeletalVertex::init(float mass, float area,
+        const Magnum::Vector3& pos)
+{
+    this->mass = mass;
+    this->area = area;
+    this->position = pos;
+    return S_OK;
+}
+
+MxSkeletalVertex::MxSkeletalVertex(float mass, float area,
+        const Magnum::Vector3& pos) :
+        MxVertex{MxSkeletalVertex_Type} {
+
+        this->mass = mass;
+        this->area = area;
+        this->position = pos;
+};

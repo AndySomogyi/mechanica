@@ -23,8 +23,12 @@ public:
     MxSkeletalVertex();
     ~MxSkeletalVertex();
 
+    MxSkeletalVertex(float mass, float area, const Magnum::Vector3 &pos);
 
-    unsigned edgeCount;
+    HRESULT init(float mass, float area, const Magnum::Vector3 &pos);
+
+
+    unsigned edgeCount = 0;
 
     /**
      * Fixed number of edges

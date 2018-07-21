@@ -210,7 +210,7 @@ struct MxTriangle : MxObject {
      * surface, or may be a skeletal edge if the lies at the intersection of three
      * cells. Currently, we restrict edges to three cells.
      */
-    MxObject *neighbors[3];
+    std::array<MxObject*, 3> neighbors;
 
     /**
      * indices of the two partial triangles that are attached to this triangle.
@@ -397,9 +397,18 @@ struct MxTriangle : MxObject {
 
     VertexPtr prevVertex(CVertexPtr vert) const;
 
+    bool hasSkeletalEdge() const;
+
 };
 
 std::ostream& operator<<(std::ostream& os, CTrianglePtr tri);
+
+
+/**
+ * Connect any open neighbor slots in a triangle to the neighboring triangle
+ * determined by the triangle vertices.
+ */
+HRESULT connectTriangleTriangle(TrianglePtr, TrianglePtr);
 
 namespace Magnum { namespace Math {
 

@@ -6,6 +6,8 @@
  */
 
 #include "MeshIO.h"
+#include "MxSkeletalEdge.h"
+#include "MxSkeletalVertex.h"
 
 #include <iostream>
 #include <algorithm>
@@ -71,53 +73,77 @@ struct AiVecHasher
     }
 };
 
+struct ImpVertex;
+
 struct ImpEdge {
 
-    ImpEdge(aiMesh *msh, struct ImpVertex *v1, struct ImpVertex *v2) {
-        aiMeshes.push_back(msh);
+    ImpEdge(ImpVertex *v1, ImpVertex *v2) {
         verts[0] = v1;
         verts[1] = v2;
     }
 
-    struct ImpVertex *verts[2];
+    const bool matches(const ImpVertex *v0, const ImpVertex *v1) const {
+        return (verts[0] == v0 && verts[1] == v1) || (verts[0] == v1 && verts[1] == v0);
+    }
 
-    // the mesh (cells) that this vertex belongs to
-    std::vector<aiMesh*> aiMeshes;
+    ImpVertex *verts[2];
+
+
+    // the associated skeletal edge in the mechanica mesh,
+    // created after we've verified the imported mesh.
+    SkeletalEdgePtr edge = nullptr;
 };
 
 typedef std::vector<ImpEdge> EdgeVector;
 
-typedef std::unordered_map<aiVector3D, ImpEdge*, AiVecHasher> EdgeMap;
+
 
 struct ImpVertex {
-    ImpVertex(aiMesh *msh) {
+    ImpVertex(const aiMesh *msh, const aiVector3D& vec) : pos{vec} {
         aiMeshes.push_back(msh);
     }
     // the mesh (cells) that this vertex belongs to
-    std::vector<aiMesh*> aiMeshes;
+    std::vector<const aiMesh*> aiMeshes;
 
-    bool containsMesh(aiMesh* msh) {
+    bool containsMesh(const aiMesh* msh) {
         return std::find(aiMeshes.begin(), aiMeshes.end(), msh) != aiMeshes.end();
-    }
-
-    ImpEdge *edgeForVertex(const aiVector3D &vert) {
-        EdgeMap::iterator i = edges.find(vert);
-
-        return i != edges.end() ? i->second : nullptr;
     }
 
     // the Mx vertex that we create in our mx mesh.
     MxVertex *vert = nullptr;
 
-    EdgeMap edges;
+    aiVector3D pos;
+
+    // vertex can have up to 4 edges
+    std::vector<const ImpEdge*> edges;
+
+    bool hasEdge(const ImpEdge *edge) const {
+        return std::find(edges.begin(), edges.end(), edge) != edges.end();
+    }
+
+    bool addEdge(const ImpEdge *edge) {
+        if(edges.size() < 4) {
+            edges.push_back(edge);
+            return true;
+        }
+        return false;
+    }
 };
 
 
 
 /**
  * Hash:
- * A unary function object type that takes an object of type key type as argument and returns a unique value of type size_t based on it. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to hash<Key>, which returns a hash value with a probability of collision approaching 1.0/std::numeric_limits<size_t>::max().
- * The unordered_map object uses the hash values returned by this function to organize its elements internally, speeding up the process of locating individual elements.
+ * A unary function object type that takes an object of type key type as
+ * argument and returns a unique value of type size_t based on it. This
+ * can either be a class implementing a function call operator or a pointer
+ * to a function (see constructor for an example). This defaults to hash<Key>,
+ * which returns a hash value with a probability of collision approaching
+ * 1.0/std::numeric_limits<size_t>::max().
+ * The unordered_map object uses the hash values returned by this function
+ * to organize its elements internally, speeding up the process of locating
+ * individual elements.
+ *
  * Aliased as member type unordered_map::hasher.
  *
  * A hash function; this must be a class that overrides operator() and calculates
@@ -146,22 +172,16 @@ static bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFa
 
 
 
-
-/**
- * importer context.
- */
-struct ImpCtx {
-
-};
-
-
 /**
  * A single triangulated face
+ *
+ * AssImp, at least from blender reads in a face as a set of vertices. We tell AssImp
+ * not to triangulate it, because we triangulate ourselves.
  */
 struct ImpFace {
 
 
-    bool equals(const std::vector<VertexPtr> &verts) {
+    bool equals(const std::vector<VertexPtr> &verts) const {
 
         if(verts.size() != vertices.size()) {
             return false;
@@ -175,14 +195,14 @@ struct ImpFace {
             }
             std::rotate(v.begin(), v.begin() + 1, v.end());
         }
-        
+
         // rotate back to original position
         //std::rotate(v.begin(), v.begin() + 1, v.end());
         assert(std::equal(v.begin(), v.end(), verts.begin()));
-        
+
         // reverse the vertex order
         std::reverse(std::begin(v), std::end(v));
-        
+
         // check all rotations again in reverse order
         for(int i = 0; i < verts.size(); ++i) {
             if(std::equal(v.begin(), v.end(), vertices.begin())) {
@@ -238,22 +258,21 @@ struct ImpFaceSet {
 
 
 
-static ImpEdge *findImpEdge(VectorMap &vecMap, const aiMesh *aim, const aiVector3D &v1,
-        const aiVector3D &v2) {
-
-    VectorMap::iterator i1 = vecMap.find(v1);
-
-    assert(i1 != vecMap.end());
-
-    return i1->second.edgeForVertex(v2);
+static ImpEdge *findImpEdge(EdgeVector &edges, const ImpVertex *v1, const ImpVertex *v2) {
+    for (ImpEdge &e : edges) {
+        if(e.matches(v1, v2)) {
+            return &e;
+        }
+    }
+    return nullptr;
 }
 
-static ImpEdge *createImpEdge(VectorMap &vecMap, EdgeVector &edges, aiMesh *msh, const aiVector3D &v1,
-        const aiVector3D &v2) {
-
-    ImpVertex *vv1 = &vecMap.at(v1);
-    ImpVertex *vv2 = &vecMap.at(v2);
-    edges.emplace_back(msh, vv1, vv2);
+/**
+ * Creates a new ImpEdge in the edges vector. Does not check to see if one already
+ * exists.
+ */
+static ImpEdge *createImpEdge(EdgeVector &edges,  ImpVertex *v0, ImpVertex *v1) {
+    edges.emplace_back(v0, v1);
     return &edges.back();
 }
 
@@ -287,6 +306,50 @@ static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
         }
     }
     assert(mesh->rootCell()->isValid());
+}
+
+
+/**
+ * Searches a vector map for a corresponding vertex. If found, returns the vertex,
+ * otherwise creates a new vertex and returns it.
+ *
+ * Checks to make sure a vertex does not already belong to 4 cells.
+ */
+static ImpVertex *getImpVertex(VectorMap &vecMap, const aiVector3D vec, const aiMesh *mesh) {
+    VectorMap::iterator i = vecMap.find(vec);
+
+    if(i == vecMap.end()) {
+        auto result = vecMap.emplace(vec, ImpVertex(mesh, vec));
+
+        if(result.second) {
+            VectorMap::iterator i = result.first;
+            ImpVertex& o = i->second;
+            return &o;
+        }
+        else {
+            std::cout << "could not insert AssImp vector and vertex into map";
+            return nullptr;
+        }
+    } else {
+        // found a vertex, if it's already attached to the mesh, just return it.
+        if (i->second.containsMesh(mesh)) {
+            return &(i->second);
+        }
+
+        // found the vertex, it's not attached to the mesh, so add the mesh, and
+        // return the vertex.
+        if(i->second.aiMeshes.size() < 4) {
+            i->second.aiMeshes.push_back(mesh);
+            return &(i->second);
+        }
+        // vertex is already attached to 4 cells, can't add another.
+        else {
+            // error, mesh has vertex with more than 4 cells
+            std::cout << "error, vertex has more than 4 cells" << std::endl;
+            std::cout << "mesh name: " << mesh->mName.C_Str() << std::endl;
+            return nullptr;
+        }
+    }
 }
 
 
@@ -328,26 +391,69 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     for(int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh *mesh = scene->mMeshes[i];
-        
-        std::cout << "processing verticies from " << mesh->mName.C_Str() << std::endl;
-        for(int j = 0; j < mesh->mNumVertices; ++j) {
-            aiVector3D vec = mesh->mVertices[j];
 
-            VectorMap::iterator i = vecMap.find(vec);
+        std::cout << "processing vertices from " << mesh->mName.C_Str() << std::endl;
 
-            if(i == vecMap.end()) {
-                vecMap.emplace(vec, ImpVertex(mesh));
-            } else if (!i->second.containsMesh(mesh)){
-                if(i->second.aiMeshes.size() < 4) {
-                    i->second.aiMeshes.push_back(mesh);
+        for(int j = 0; j < mesh->mNumFaces; ++j) {
+            aiFace *face = &mesh->mFaces[j];
+
+            for(int k = 0; k < face->mNumIndices; ++k) {
+
+                const int vid0 = face->mIndices[k];
+                const int vid1 = face->mIndices[(k+1) % face->mNumIndices];
+
+                // the vertex and the next vertex in the polygon face. These are connected
+                // by a skeletal edge by definition.
+                aiVector3D av1 = mesh->mVertices[vid0];
+                aiVector3D av2 = mesh->mVertices[vid1];
+
+                ImpVertex *v1 = getImpVertex(vecMap, av1, mesh);
+                if(!v1) {return nullptr;}
+                ImpVertex *v2 = getImpVertex(vecMap, av2, mesh);
+                if(!v2) {return nullptr;}
+
+                if (!findImpEdge(edges, v1, v2)) {
+                    std::cout << "no existing edge for face " << j << ", vertices " << vid0 << ", " << vid1 << std::endl;
+
+                    if(v1->edges.size() >= 4) {
+                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
+                                  << vid0 << " already has " << v1->edges.size()
+                                  << " edges, can't add more." << std::endl;
+                        return nullptr;
+                    }
+
+                    if(v2->edges.size() >= 4) {
+                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
+                                  << vid1 << " already has "
+                                  << v2->edges.size() << " edges, can't add more." << std::endl;
+                        return nullptr;
+                    }
+
+                    ImpEdge *edge = createImpEdge(edges, v1, v2);
+                    v1->addEdge(edge);
+                    v2->addEdge(edge);
+
+                    std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                            std::to_string(j) << " edge count: " << std::to_string(v1->edges.size()) << std::endl;
+
+                    std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                            std::to_string((j+1) % mesh->mNumVertices)
+                    << " edge count: " << std::to_string(v2->edges.size()) << std::endl;
+
                 }
                 else {
-                    // error, mesh has vertex with more than 4 cells
-                    std::cout << "error, vertex has more than 4 cells" << std::endl;
-                    std::cout << "mesh name: " << mesh->mName.C_Str() << std::endl;
-                    return nullptr;
+                    std::cout << "found edge for face " << j << ", vertices " << vid0 << ", " << vid1 << std::endl;
                 }
             }
+        }
+    }
+
+    {
+        int j = 0;
+
+        for(auto i : vecMap) {
+            const ImpVertex &vert = i.second;
+            std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
         }
     }
 
@@ -359,21 +465,41 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     MxMesh *mesh = new MxMesh();
 
+    // first add all the vertices that are in the skeletal edge list,
+    // these are skeletal vertices.
+    for(ImpEdge &edge : edges) {
+        SkeletalEdgePtr e = (SkeletalEdgePtr)mesh->alloc(MxSkeletalEdge_Type);
+        for(int i = 0; i < 2; ++i) {
+            if(edge.verts[i]->vert == nullptr) {
+                SkeletalVertexPtr vert =
+                        (SkeletalVertexPtr)mesh->createVertex(
+                                {{edge.verts[i]->pos.x, edge.verts[i]->pos.y, edge.verts[i]->pos.z}});
+                edge.verts[i]->vert = vert;
+                std::cout << "created new skeletal vertex: " << vert << std::endl;
+            }
+        }
+    }
+
+    // create mesh vertices for ever vertex that's not a skeletal vertex
     for(VectorMap::iterator i = vecMap.begin(); i != vecMap.end(); ++i) {
+        if(i->second.vert == nullptr) {
         const aiVector3D &pos = i->first;
         i->second.vert = mesh->createVertex({{pos.x, pos.y, pos.z}});
-
-        std::cout << "created new vertex: " << i->second.vert << std::endl;
+            std::cout << "created new vertex: " << i->second.vert << std::endl;
+        }
+        else {
+            std::cout << "using existing skeletal vertex " << i->second.vert << std::endl;
+        }
     }
 
 
-    // the AI mesh has a set of 'faces', Each face is a set of indices. Each face
-    // should be a triangle, as we tell assimp to fully triangulate the meshes.
-
+    // the AI mesh (defines a cell) has a set of 'faces', Each face is a set of indices.
+    // We tell AssImp not to triangulate, so each face is a set of vertices
+    // that define the polygonal face between a pair of cells.
     for(int i = 0; i < scene->mNumMeshes; ++i) {
-        
+
         aiMesh *aim = scene->mMeshes[i];
-        
+
         std::cout << "creating new cell \"" << aim->mName.C_Str() << "\"" << std::endl;
 
         CellPtr cell = mesh->createCell(cellTypeHandler(aim->mName.C_Str(), i));
@@ -382,20 +508,6 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
         for(int j = 0; j < aim->mNumFaces; ++j) {
             aiFace *face = &aim->mFaces[j];
-
-
-
-            // enumerate all the faces
-            //for(int k = 0; k < face->mNumIndices; ++k) {
-            //    aiVector3D &v1 = aim->mVertices[k];
-            //    aiVector3D &v2 = aim->mVertices[(k+1)%face->mNumIndices];/
-//
-  //              ImpEdge *edge = findImpEdge(vecMap, aim, v1, v2);//
-//
-  //              if(edge == nullptr) {
-    //                edge = createImpEdge(vecMap, edges, aim, v1, v2);
-      //          }
-        //    }
 
             ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
 
@@ -423,11 +535,16 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     addUnclaimedPartialTrianglesToRoot(mesh);
 
+
+
     return mesh;
 }
 
 
 /*
+ *
+ * Copy and pasted face triangulation routine from AssImp.
+ *
 ---------------------------------------------------------------------------
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
@@ -1008,7 +1125,7 @@ bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFace **re
 
     // kill the old faces
     //delete [] pMesh->mFaces;
-    
+
 
 
     // ... and store the new ones

@@ -28,12 +28,47 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     return -1;
 }
 
-VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos) {
-    VertexPtr v = new MxVertex{0., 0., pos};
-    v->id = ++vertexId;
-    vertices.push_back(v);
-    assert(valid(v));
-    return v;
+VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos, const MxType *type) {
+
+    VertexPtr retval = nullptr;
+    if(type == MxVertex_Type) {
+        retval = new MxVertex{0., 0., pos};
+    }
+    else if(type == MxSkeletalVertex_Type) {
+        retval = new MxSkeletalVertex{0., 0., pos};
+    }
+    else {
+        return nullptr;
+    }
+
+    retval->id = ++vertexId;
+    vertices.push_back(retval);
+    return retval;
+}
+
+
+MxObject *MxMesh::alloc(const MxType* type)
+{
+    VertexPtr retval = nullptr;
+    if(type == MxVertex_Type) {
+        retval = new MxVertex();
+        vertices.push_back(retval);
+        return retval;
+    }
+    else if(type == MxSkeletalVertex_Type) {
+        retval = new MxSkeletalVertex();
+        vertices.push_back(retval);
+        return retval;
+    }
+    else if(type == MxSkeletalEdge_Type) {
+        MxSkeletalEdge *e = new MxSkeletalEdge();
+        edges.push_back(e);
+        return e;
+    }
+    else {
+        assert(0);
+        return nullptr;
+    }
 }
 
 CellPtr MxMesh::createCell(MxCellType *type) {
@@ -324,6 +359,16 @@ HRESULT MxMesh::updateDerivedAttributes()
     return S_OK;
 }
 
+SkeletalEdgePtr MxMesh::findSkeletalEdge(CVertexPtr a, CVertexPtr b) const
+{
+    for(SkeletalEdgePtr edge : edges) {
+        if(edge->matches(a, b)) {
+            return edge;
+        }
+    }
+    return nullptr;
+}
+
 bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
     EdgeTriangles e{{{a, b}}};
     return true;
@@ -412,26 +457,4 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     return S_OK;
 }
 
-MxSkeletalEdge* MxMesh::allocSkeletalEdge(const MxType* type)
-{
-    MxSkeletalEdge *e = new MxSkeletalEdge();
-    edges.push_back(e);
-    return e;
-}
 
-VertexPtr MxMesh::allocVertex(const MxType* type)
-{
-    VertexPtr retval = nullptr;
-    if(type == MxVertex_Type) {
-        retval = new MxVertex();
-    }
-    else if(type == MxSkeletalVertex_Type) {
-        retval = new MxSkeletalVertex();
-    }
-    else {
-        assert(0);
-        return nullptr;
-    }
-    vertices.push_back(retval);
-    return retval;
-}

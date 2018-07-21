@@ -35,3 +35,25 @@ void foo(MxObject *o) {
     }
 }
 
+HRESULT connectEdgeVertices(SkeletalEdgePtr, SkeletalVertexPtr,
+        SkeletalVertexPtr)
+{
+}
+
+HRESULT disconnectEdgeVertices(SkeletalEdgePtr)
+{
+}
+
+HRESULT connectEdgeTriangle(SkeletalEdgePtr, TrianglePtr)
+{
+}
+
+HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, TrianglePtr)
+{
+}
+
+bool MxSkeletalEdge::matches(CVertexPtr a, CVertexPtr b) const
+{
+    return ((MxVertex*)vertices[0] == a && (MxVertex*)vertices[1] == b) ||
+            ((MxVertex*)vertices[1] == a && (MxVertex*)vertices[0] == b);
+}

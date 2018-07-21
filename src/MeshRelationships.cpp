@@ -212,30 +212,7 @@ void connect_triangle_vertex(TrianglePtr tri, VertexPtr v) {
     assert(0 && "triangle has no empty slot");
 }
 
-/*
-int radialedge_connect_triangle(TrianglePtr tri, int edgeIndx) {
-    assert(edgeIndx >= 0 && edgeIndx < 3);
-    assert(tri->vertices[edgeIndx] && tri->vertices[(edgeIndx+1)%3]);
-    assert(tri->cells[0] && tri->cells[1]);
 
-    TrianglePtr ringTri = nullptr;
-
-    for(TrianglePtr t : tri->vertices[edgeIndx]->triangles()) {
-        if(incident(t, tri->vertices[(edgeIndx+1)%3])) {
-            ringTri = t;
-        }
-    }
-
-    assert(ringTri);
-
-    TrianglePtr t = ringTri;
-    do {
-
-        t = t->edgeRing[edgeIndx];
-    } while(t != ringTri);
-
-}
-*/
 
 HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v) {
     for(int i = 0; i < 3; ++i) {
@@ -249,8 +226,7 @@ HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v) {
     return E_FAIL;
 }
 
-int radialedge_disconnect_triangle(TrianglePtr tri, int edgeIndex) {
-}
+
 
 bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     if(v1->triangles().size() < v2->triangles().size()) {

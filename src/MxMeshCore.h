@@ -70,6 +70,11 @@ typedef const MxMesh *CMeshPtr;
 
 struct MxSkeletalEdge;
 typedef MxSkeletalEdge *SkeletalEdgePtr;
+typedef const MxSkeletalEdge *CSkeletalEdgePtr;
+
+struct MxSkeletalVertex;
+typedef MxSkeletalVertex *SkeletalVertexPtr;
+typedef const MxSkeletalVertex *CSkeletalVertexPtr;
 
 // triangle container in the main mesh
 typedef std::vector<TrianglePtr> TriangleContainer;

@@ -198,6 +198,12 @@ struct MxMesh  {
     TrianglePtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
     /**
+     * searches the edge list and checks to see if there is a skeletal edge
+     * for the given pair of vertices.
+     */
+    SkeletalEdgePtr findSkeletalEdge(CVertexPtr a, CVertexPtr b) const;
+
+    /**
      * Creates a new triangle for the given three vertices.
      *
      * returns a new, orphaned triangle.
@@ -254,7 +260,7 @@ struct MxMesh  {
      */
     HRESULT setPositions(uint32_t len, const Vector3 *positions);
 
-    VertexPtr createVertex(const Magnum::Vector3 &pos);
+    VertexPtr createVertex(const Magnum::Vector3 &pos, const MxType *type = MxVertex_Type);
 
     HRESULT deleteVertex(VertexPtr v);
 
@@ -268,9 +274,16 @@ struct MxMesh  {
 
     bool valid(PTrianglePtr p);
 
-    VertexPtr allocVertex(const MxType *type);
+    /**
+     * Allocates a new type, and adds it to the list of objects managed by this
+     * class. This only allocates the object with the default ctor, and adds
+     * it to the lists, but does not connect or initlize it.
+     *
+     * The type must be one of the types manages by this class, currently, these are
+     * any cell, vertex, triangle or edge derived types.
+     */
+    MxObject *alloc(const MxType *type);
 
-    MxSkeletalEdge *allocSkeletalEdge(const MxType *type);
 
     /**
      * Notify the mesh that the valence count on this vertex has changed.
@@ -341,6 +354,9 @@ private:
 
     uint triangleId = 0;
 
+    /**
+     * Maintain a list of explicit edges between skeletal vertices.
+     */
     std::vector<SkeletalEdgePtr> edges;
 
     friend struct MxVertex;
