@@ -307,6 +307,18 @@ HRESULT connectTriangleTriangle(TrianglePtr a, TrianglePtr b)
 {
     EdgeIndx edge = adjacentEdgeIndex(a, b);
 
+    if(edge[0] < 0 || edge[1] < 0) {
+        return mx_error(E_FAIL, "triangles are not adjacent -- do not share vertices");
+    }
+
+    if(a->neighbors[edge[0]] != nullptr) {
+        return mx_error(E_FAIL, "triangle a neighbor slot is not open");
+    }
+
+    if(b->neighbors[edge[1]] != nullptr) {
+        return mx_error(E_FAIL, "triangle b neighbor slot is not open");
+    }
+
     if(edge[0] >= 0 && edge[1] >= 0) {
 
     #ifndef NDEBUG
@@ -319,16 +331,16 @@ HRESULT connectTriangleTriangle(TrianglePtr a, TrianglePtr b)
         assert(a->neighbors[edge[0]] == nullptr);
         assert(b->neighbors[edge[1]] == nullptr);
 
-        /*
+        // check to make sure the partial triangles are hooked in in the same orientation
+        // as the triangle neighbors.
         for(int i = 0; i < 2; ++i) {
             for(int j = 0; j < 2; ++j) {
                 if(a->cells[i] == b->cells[j]) {
-                    assert(a->partialTriangles[i].neighbors[edge[0]] == b->partialTriangles[j].neighbors[edge[1]]);
+                    assert(a->partialTriangles[i].neighbors[edge[0]] == &b->partialTriangles[j]);
+                    assert(b->partialTriangles[j].neighbors[edge[1]] == &a->partialTriangles[i]);
                 }
             }
         }
-         */
-
     #endif
 
         a->neighbors[edge[0]] = b;
@@ -348,12 +360,11 @@ bool connectedEdgeTrianglePointers(CSkeletalEdgePtr edge, CTrianglePtr tri)
     for(int i = 0; i < 3; ++i) {
         if(tri->neighbors[i] == edge) {
 #ifndef NDEBUG
-            for(int j = 0; j < 3; ++j) {
-                if(edge->triangles[j] == tri) {
-                    return true;
-                }
-            }
             assert(0 && "edge triangle list does not contain triangle");
+            int index = indexOfEdgeVertices(edge, tri);
+            assert(index >= 0);
+            assert(tri->neighbors[index] == edge);
+            assert(edge->triangles[0] == tri || edge->triangles[1] == tri || edge->triangles[2] == tri);
 #endif
             return true;
         }

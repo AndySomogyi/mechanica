@@ -194,14 +194,14 @@ struct MxTriangle : MxObject {
      * in the correct winding order. The winding of these vertices correspond to the
      * normal vector.
      */
-    std::array<VertexPtr, 3> vertices;
+    std::array<VertexPtr, 3> vertices = {{nullptr}};
 
     /**
      * Need to associate this triangle with the cells on both sides. Trans-cell flux
      * is very frequently calculated, so optimize structure layout for both
      * trans-cell and trans-partial-triangle fluxes.
      */
-    std::array<CellPtr, 2> cells;
+    std::array<CellPtr, 2> cells = {{nullptr}};
 
     /**
      * pointers to the three triangles or edges that this triangle connects with.
@@ -210,7 +210,7 @@ struct MxTriangle : MxObject {
      * surface, or may be a skeletal edge if the lies at the intersection of three
      * cells. Currently, we restrict edges to three cells.
      */
-    std::array<MxObject*, 3> neighbors;
+    std::array<MxObject*, 3> neighbors = {{nullptr}};
 
     /**
      * indices of the two partial triangles that are attached to this triangle.

@@ -84,19 +84,15 @@ set(SRC
   ScalarField.cpp
   MeshRelationships.cpp
   MeshOperations.cpp
-  EdgeFlip.cpp
-  RadialEdgeSplit.cpp
-  RadialEdgeCollapse.cpp
   DifferentialGeometry.cpp
-  VertexSplit.cpp
   stochastic_rk.cpp
-  RadialFaceCollapse.cpp
   MxSkeletalEdge.cpp
   MxExpression.cpp
   MeshIO.cpp
   MxTesselator.cpp
   MxColumnarCell.cpp
-  SkeletalVertexReconnect.cpp
+  SkeletalEdgeToTriangleOperation.cpp
+  TriangleToSkeletalEdgeOperation.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -144,19 +140,15 @@ set(HEADERS
   ScalarField.h
   MeshRelationships.h
   MeshOperations.h
-  EdgeFlip.h
-  RadialEdgeSplit.h
-  RadialEdgeCollapse.h
   DifferentialGeometry.h
-  VertexSplit.h
   stochastic_rk.h
-  RadialFaceCollapse.h
   MxSkeletalEdge.h
   MxExpression.h
   MeshIO.h
   MxTesselator.h
   MxColumnarCell.h
-  SkeletalVertexReconnect.h
+  SkeletalEdgeToTriangleOperation.h
+  TriangleToSkeletalEdgeOperation.h
   )
 
 

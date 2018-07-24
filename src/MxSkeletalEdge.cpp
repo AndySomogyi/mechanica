@@ -47,11 +47,11 @@ HRESULT connectEdgeVertices(SkeletalEdgePtr edge, VertexPtr v0,
     int v1_edges = v1->edgeCount();
 
     if(v0_edges >= 4) {
-        return mx_error(E_FAIL, "vertex 1 allready has 4 edges");
+        return mx_error(E_FAIL, "vertex 1 already has 4 edges");
     }
 
     if(v1_edges >= 4) {
-        return mx_error(E_FAIL, "vertex 2 allready has 4 edges");
+        return mx_error(E_FAIL, "vertex 2 already has 4 edges");
     }
 
     edge->vertices[0] = v0;

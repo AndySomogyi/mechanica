@@ -7,10 +7,6 @@
 
 #include "MeshOperations.h"
 #include "MxMesh.h"
-#include "EdgeFlip.h"
-#include "RadialEdgeSplit.h"
-#include "RadialEdgeCollapse.h"
-#include "VertexSplit.h"
 #include <algorithm>
 #include <limits>
 #include <iostream>
@@ -36,7 +32,7 @@ MeshOperations::MeshOperations(MeshPtr _mesh, float _shortCutoff,
 
 HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBegin,
         TriangleContainer::const_iterator triEnd) {
-    
+
 #ifndef NDEBUG
     if(shouldStop) return S_OK;
 #endif
@@ -58,26 +54,7 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
             }
         }
 
-        Edge edge = {{tri->vertices[minIndx], tri->vertices[(minIndx+1)%3]}};
 
-        MeshOperation *meshOpp;
-
-        if(minEdge < shortCutoff &&
-           findMatchingOperation(edge) == nullptr &&
-           (meshOpp = RadialEdgeCollapse::create(mesh, shortCutoff, edge)) != nullptr)
-        {
-            push(meshOpp);
-        }
-
-        else {
-            edge = {{tri->vertices[maxIndx], tri->vertices[(maxIndx+1)%3]}};
-
-            if(maxEdge > longCutoff &&
-                    findMatchingOperation(edge) == nullptr &&
-                    RadialEdgeSplit::applicable(edge)) {
-                push(new RadialEdgeSplit(mesh, longCutoff, edge));
-            }
-        }
     }
 
     return S_OK;
@@ -86,13 +63,12 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 HRESULT MeshOperations::valenceChanged(const VertexPtr vert) {
     MeshOperation *meshOp;
 
-    if(findMatchingOperation(vert) == nullptr &&
-       (meshOp = VertexSplit::create(mesh, vert)))
-    {
-        removeDependentOperations(vert);
-        push(meshOp);
-    }
+
     return S_OK;
+}
+
+void setMeshOpDebugMode(uint c) {
+
 }
 
 HRESULT MeshOperations::removeDependentOperations(const TrianglePtr tri) {
@@ -287,4 +263,12 @@ HRESULT MeshOperations::debugStep() {
 
 MeshOperation::MeshOperation(MeshPtr _mesh)  :
     mesh{_mesh}, ops{&_mesh->meshOperations} {
+}
+
+MeshOperation* MeshOperations::createSkeletalEdgeToTriangleOperation(
+		const CSkeletalEdgePtr) {
+}
+
+MeshOperation* MeshOperations::createTriangleToSkeletalEdgeOperation(
+		const CTrianglePtr) {
 }

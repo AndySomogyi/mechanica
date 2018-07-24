@@ -91,6 +91,8 @@ struct MeshOperationFactory {
  */
 struct MeshOperations {
 
+    static MeshOperation *createSkeletalEdgeToTriangleOperation(const CSkeletalEdgePtr);
+    static MeshOperation *createTriangleToSkeletalEdgeOperation(const CTrianglePtr);
 
 
     MeshOperations(MeshPtr mesh, float shortEdgeCutoff, float longEdgeCutoff);
@@ -186,7 +188,7 @@ private:
     Container::iterator findDependentOperation(Container::iterator start, const VertexPtr);
 
     MeshOperation *findMatchingOperation(const Edge& edge) ;
-    
+
     MeshOperation *findMatchingOperation(CVertexPtr vertex) ;
 
     MeshOperation *currentOp = nullptr;

@@ -540,7 +540,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     for(TrianglePtr tri : mesh->triangles) {
         for(SkeletalEdgePtr edge : mesh->edges) {
             if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
-                connectEdgeTriangle(edge, tri);
+                VERIFY(connectEdgeTriangle(edge, tri));
             }
         }
     }
@@ -552,7 +552,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         for(int i = 0; i < 3; ++i) {
             if(tri->neighbors[i] == nullptr) {
                 assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
-                //VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->triangle));
+                VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->triangle));
             }
         }
     }
