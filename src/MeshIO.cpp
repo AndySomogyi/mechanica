@@ -7,8 +7,6 @@
 
 #include "MeshIO.h"
 #include "MxSkeletalEdge.h"
-#include "MxSkeletalVertex.h"
-
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -471,13 +469,13 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         SkeletalEdgePtr e = (SkeletalEdgePtr)mesh->alloc(MxSkeletalEdge_Type);
         for(int i = 0; i < 2; ++i) {
             if(edge.verts[i]->vert == nullptr) {
-                SkeletalVertexPtr vert =
-                        (SkeletalVertexPtr)mesh->createVertex(
+                VertexPtr vert = mesh->createVertex(
                                 {{edge.verts[i]->pos.x, edge.verts[i]->pos.y, edge.verts[i]->pos.z}});
                 edge.verts[i]->vert = vert;
                 std::cout << "created new skeletal vertex: " << vert << std::endl;
             }
         }
+        VERIFY(connectEdgeVertices(e, edge.verts[0]->vert, edge.verts[1]->vert));
     }
 
     // create mesh vertices for ever vertex that's not a skeletal vertex
@@ -535,7 +533,29 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
     addUnclaimedPartialTrianglesToRoot(mesh);
 
+    // at this point, all the vertices, skeletal edges and triangles have been added
+    // to the mesh, so now go over the triangles, check which ones are supposed to be
+    // connected to the skeletal edges by their vertex relationships, and connect
+    // the pointers.
+    for(TrianglePtr tri : mesh->triangles) {
+        for(SkeletalEdgePtr edge : mesh->edges) {
+            if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
+                connectEdgeTriangle(edge, tri);
+            }
+        }
+    }
 
+    // now we have connected all the skeletal edges, but triangles with a manifold
+    // connection to neighboring triangles are still not connected, connect
+    // these now.
+    for(TrianglePtr tri : mesh->triangles) {
+        for(int i = 0; i < 3; ++i) {
+            if(tri->neighbors[i] == nullptr) {
+                assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
+                //VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->triangle));
+            }
+        }
+    }
 
     return mesh;
 }

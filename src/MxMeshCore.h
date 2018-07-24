@@ -72,9 +72,9 @@ struct MxSkeletalEdge;
 typedef MxSkeletalEdge *SkeletalEdgePtr;
 typedef const MxSkeletalEdge *CSkeletalEdgePtr;
 
-struct MxSkeletalVertex;
-typedef MxSkeletalVertex *SkeletalVertexPtr;
-typedef const MxSkeletalVertex *CSkeletalVertexPtr;
+struct MxVertex;
+typedef MxVertex *VertexPtr;
+typedef const MxVertex *CVertexPtr;
 
 // triangle container in the main mesh
 typedef std::vector<TrianglePtr> TriangleContainer;
@@ -91,7 +91,7 @@ struct MxMeshNode {
 protected:
     MeshPtr mesh;
 
-    friend class MxVertex;
+    friend struct MxVertex;
 };
 
 MxAPI_DATA(struct MxType*) MxVertex_Type;
@@ -133,6 +133,8 @@ struct MxVertex : MxObject {
     HRESULT removeTriangle(const TrianglePtr);
 
     HRESULT appendTriangle(TrianglePtr);
+
+    int edgeCount() const;
 
     /**
      * Inform the vertex that the cell of an attached triangle was changed.
@@ -177,13 +179,17 @@ private:
     MeshPtr mesh();
 
 
-    SkeletalEdgePtr edges[4];
+    SkeletalEdgePtr edges[4] = {nullptr};
 
     /**
      * temporary hack for volume constraint.
      */
     Vector3 awc;
     friend class MxCell;
+
+    friend bool connectedEdgeVertex(CSkeletalEdgePtr, CVertexPtr);
+    friend HRESULT connectEdgeVertices(SkeletalEdgePtr edge, VertexPtr,
+            VertexPtr);
 };
 
 std::ostream& operator<<(std::ostream& os, CVertexPtr v);

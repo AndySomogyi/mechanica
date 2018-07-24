@@ -404,11 +404,7 @@ struct MxTriangle : MxObject {
 std::ostream& operator<<(std::ostream& os, CTrianglePtr tri);
 
 
-/**
- * Connect any open neighbor slots in a triangle to the neighboring triangle
- * determined by the triangle vertices.
- */
-HRESULT connectTriangleTriangle(TrianglePtr, TrianglePtr);
+
 
 namespace Magnum { namespace Math {
 

@@ -161,7 +161,7 @@ HRESULT RadialEdgeSplit::apply() {
         // assert(std::abs(nt->area + tri->area - originalArea) < (1.0 / originalArea));
 
         // makes sure that new and old tri share an edge.
-        assert(adjacent_triangle_vertices(tri, nt));
+        assert(adjacentTriangleVertices(tri, nt));
 
         // removes the edge[1] - outer edge connection connection from the old
         // triangle and replaces it with the new triangle,
@@ -172,7 +172,7 @@ HRESULT RadialEdgeSplit::apply() {
             reconnect(&tri->partialTriangles[i], &nt->partialTriangles[i], {{edge[1], outer}});
             assert(tri->partialTriangles[i].unboundNeighborCount() == 1);
             assert(nt->partialTriangles[i].unboundNeighborCount() == 2);
-            connect_partial_triangles(&tri->partialTriangles[i], &nt->partialTriangles[i]);
+            connectPartialTrianglePartialTriangle(&tri->partialTriangles[i], &nt->partialTriangles[i]);
             assert(tri->partialTriangles[i].unboundNeighborCount() == 0);
             assert(nt->partialTriangles[i].unboundNeighborCount() == 1);
             tri->cells[i]->boundary.push_back(&nt->partialTriangles[i]);
@@ -198,7 +198,7 @@ HRESULT RadialEdgeSplit::apply() {
             firstNewTri = nt;
             prevNewTri = nt;
         } else {
-            assert(adjacent_triangle_vertices(nt, prevNewTri));
+            assert(adjacentTriangleVertices(nt, prevNewTri));
             connect_triangle_partial_triangles(nt, prevNewTri, commonCell(i));
             prevNewTri = nt;
         }

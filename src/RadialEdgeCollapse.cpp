@@ -221,10 +221,10 @@ static HRESULT safeTopology(const TrianglePtr tri, const Edge& edge1, const Edge
         assert(p1 != p2);
         assert(p1 != &tri->partialTriangles[i]);
         assert(p2 != &tri->partialTriangles[i]);
-        assert(adjacent(p1, &tri->partialTriangles[i]));
-        assert(adjacent(p2, &tri->partialTriangles[i]));
+        assert(adjacentPartialTrianglePointers(p1, &tri->partialTriangles[i]));
+        assert(adjacentPartialTrianglePointers(p2, &tri->partialTriangles[i]));
 
-        if (adjacent(p1, p2)) {
+        if (adjacentPartialTrianglePointers(p1, p2)) {
             return mx_error(E_FAIL, "can't perform edge collapse, not topologically invariant");
         }
     }
@@ -380,7 +380,7 @@ static void reconnectPartialTriangles(PTrianglePtr center,
     assert(pLeft && pRight);
     assert(incident(pLeft->triangle, {{apex, vsrc}}));
     assert(incident(pRight->triangle, {{apex, vdest}}));
-    assert(!adjacent(pLeft, pRight));
+    assert(!adjacentPartialTrianglePointers(pLeft, pRight));
 
     disconnect_partial_triangles(center, pLeft);
     disconnect_partial_triangles(center, pRight);
@@ -627,7 +627,7 @@ HRESULT RadialEdgeCollapse::apply() {
     // iterate over all of the non-radial edge triangles, and check if they
     // can be moved.
     for(const TrianglePtr tri : edge[0]->triangles()) {
-        if(!incident(tri, edge[1]) &&
+        if(!incidentTriangleVertex(tri, edge[1]) &&
                 (res = canTriangleVertexBeMoved(tri, edge[0], pos)) != S_OK) {
             return res;
         }
@@ -637,7 +637,7 @@ HRESULT RadialEdgeCollapse::apply() {
     }
 
     for(const TrianglePtr tri : edge[1]->triangles()) {
-        if(!incident(tri, edge[0]) &&
+        if(!incidentTriangleVertex(tri, edge[0]) &&
                 (res = canTriangleVertexBeMoved(tri, edge[1], pos)) != S_OK) {
             return res;
         }

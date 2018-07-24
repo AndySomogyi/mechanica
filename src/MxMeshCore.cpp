@@ -135,4 +135,12 @@ Magnum::Vector3 MxVertex::areaWeightedNormal(CCellPtr cell) const
     return result;
 }
 
-
+int MxVertex::edgeCount() const
+{
+    for(int i = 0; i < 4; ++i) {
+        if(edges[i] == nullptr) {
+            return i;
+        }
+    }
+    return 4;
+}

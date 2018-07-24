@@ -15,35 +15,61 @@
  * form a common edge. Note, this does NOT check the pointer relationships
  * only that the triangles share two vertices.
  */
-bool adjacent_triangle_vertices(CTrianglePtr a, CTrianglePtr b);
+bool adjacentTriangleVertices(CTrianglePtr a, CTrianglePtr b);
 
-bool adjacent_triangle_pointers(CTrianglePtr a, CTrianglePtr b);
+bool connectedTrianglePointers(CTrianglePtr a, CTrianglePtr b);
 
-bool incident(CTrianglePtr t, CCellPtr c);
+bool connectedTriangleCellPointers(CTrianglePtr t, CCellPtr c);
 
-inline bool incident(CCellPtr c, CTrianglePtr t ) {
-    return incident(t, c);
+
+/**
+ * If the given triangle shares vertices with the vertices in the
+ * edge, returns the index of which side the edge is on. Otherwise
+ * returns -1.
+ */
+int indexOfEdgeVertices(CSkeletalEdgePtr edge, CTrianglePtr tri);
+
+/**
+ * Does the edge vertices match a pair of vertices in a triangle.
+ *
+ * This only checks vertex relationships, this does NOT check that the
+ * triangle and edge pointers are connected.
+ */
+bool incidentEdgeTriangleVertices(CSkeletalEdgePtr edge, CTrianglePtr tri);
+
+/**
+ * Are the edge and triangle pointers connected. Only checks the pointers
+ * relationships, but does not check vertex relationships.
+ */
+bool connectedEdgeTrianglePointers(CSkeletalEdgePtr edge, CTrianglePtr tri);
+
+inline bool connectedCellTrianglePointers(CCellPtr c, CTrianglePtr t ) {
+    return connectedTriangleCellPointers(t, c);
 }
 
-bool incident(CTrianglePtr tri, CVertexPtr v);
 
-inline bool incident(CVertexPtr v, CTrianglePtr tri) {
-    return incident(tri, v);
+bool incidentTriangleVertex(CTrianglePtr tri, CVertexPtr v);
+
+inline bool incidentVertexTriangle(CVertexPtr v, CTrianglePtr tri) {
+    return incidentTriangleVertex(tri, v);
 }
 
-bool incident(CPTrianglePtr tri, CVertexPtr v);
+bool incidentPartialTriangleVertex(CPTrianglePtr tri, CVertexPtr v);
 
 inline bool incident(CVertexPtr v, CPTrianglePtr tri) {
-    return incident(tri, v);
+    return incidentPartialTriangleVertex(tri, v);
 }
 
 
-bool adjacent(CPTrianglePtr a, CPTrianglePtr b);
+
+/**
+ * Are the pointers of a pair of partial triangles connected.
+ */
+bool adjacentPartialTrianglePointers(CPTrianglePtr a, CPTrianglePtr b);
 
 /**
  * Is the given triangle tri incident to the edge formed
- * by vertices a and b. The partial triangle incident if the
- * it is incident to both vertices a and b.
+ * by vertices a and b. The partial triangle incident incidentPartialTriangleVertex* it is incident to both
  */
 bool incident(CTrianglePtr tri, const Edge&);
 
@@ -51,10 +77,10 @@ bool adjacent(CVertexPtr v1, CVertexPtr v2);
 
 
 /**
- * Is the given partial triangle pt incident to the edge formed
+ * Is the given partial triangle pt incident to the ` formed
  * by vertices a and b. The partial triangle incident if the
  * triangle that the partial triangle is attached to is incident to
- * this edge.
+ *connectedCellTrianincidentPartialTriangleVertexerincidentVertexTriangle
  */
 bool incident(CPTrianglePtr pt, const Edge&);
 
@@ -75,14 +101,14 @@ void connect_triangle_partial_triangles(TrianglePtr a, TrianglePtr b, CCellPtr c
  * triangles must have at least one empty (null) neighbor pointer
  * each.
  */
-void connect_partial_triangles(PTrianglePtr a, PTrianglePtr b);
+void connectPartialTrianglePartialTriangle(PTrianglePtr a, PTrianglePtr b);
 
 /**
  * Connects a triangle with a cell.
  *
  * The triangle
  */
-HRESULT connect_triangle_cell(TrianglePtr tri, CellPtr cell, int index);
+HRESULT connectTriangleCell(TrianglePtr tri, CellPtr cell, int index);
 
 /**
  * Disconnects a pair of partial triangles, finds the adjacent
@@ -139,6 +165,22 @@ void disconnect_triangle_vertex(TrianglePtr tri, VertexPtr v);
 HRESULT replaceTriangleVertex(TrianglePtr tri, VertexPtr o, VertexPtr v);
 
 void connect_triangle_vertex(TrianglePtr tri, VertexPtr v);
+
+/**
+ * Connect any open neighbor slots in a triangle to the neighboring triangle
+ * determined by the triangle vertices. Uses the vertices to determine
+ * connect index location, so a neighboring triangle in the 0 position
+ * shares vertices 0 and 1, neighboring triangle in the 1 shares vertices
+ * 1 and 2, and a neighboring triangle in the 2 slot shares vertices
+ * 2 and 0.
+ *
+ * first searches for matching vertex pointers, then hooks up the neighbor
+ * pointer. The neighbor pointer must be empty in both triangles, otherwise
+ * error is returned.
+ */
+HRESULT connectTriangleTriangle(TrianglePtr, TrianglePtr);
+
+bool connectedEdgeVertex(CSkeletalEdgePtr, CVertexPtr);
 
 
 

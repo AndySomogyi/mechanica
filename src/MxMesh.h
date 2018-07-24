@@ -223,6 +223,16 @@ struct MxMesh  {
             const std::array<VertexPtr, 3>&);
 
     /**
+     * Creates a new edge between a given pair of vertices.
+     *
+     * The new edge is connected to the vertices, and the two vertices
+     * get connected to the edge. This does NOT connect the triangles
+     * of the vertices, that must be done with connectEdgeTriangle.
+     * returns a new edge.
+     */
+    SkeletalEdgePtr createSkeletalEdge(VertexPtr a, VertexPtr b);
+
+    /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
     CellPtr createCell(MxCellType *type = nullptr);
@@ -299,6 +309,10 @@ struct MxMesh  {
     std::vector<TrianglePtr> triangles;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
+    /**
+     * Maintain a list of explicit edges between skeletal vertices.
+     */
+    std::vector<SkeletalEdgePtr> edges;
 
     /**
      * random percent of difference from true center of split
@@ -354,10 +368,7 @@ private:
 
     uint triangleId = 0;
 
-    /**
-     * Maintain a list of explicit edges between skeletal vertices.
-     */
-    std::vector<SkeletalEdgePtr> edges;
+
 
     friend struct MxVertex;
     friend struct MxTriangle;
@@ -368,6 +379,7 @@ private:
     friend struct RadialEdgeCollapse;
     friend struct RadialEdgeSplit;
     friend struct MxSkeletalEdge;
+
 };
 
 

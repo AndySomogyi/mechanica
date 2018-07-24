@@ -8,9 +8,9 @@
 #ifndef SRC_SKELETALEDGESPLIT_H_
 #define SRC_SKELETALEDGESPLIT_H_
 
+#include <MxVertex.h>
 #include "MxMesh.h"
 #include "MxSkeletalEdge.h"
-#include "MxSkeletalVertex.h"
 
 class SkeletalEdgeSplit
 {
@@ -25,6 +25,6 @@ class SkeletalEdgeSplit
  * destroys edge, and creates two new edges, e1 and e2.
  */
 HRESULT skeletalEdgeSpit(MxMesh *mesh, MxSkeletalEdge *edge, const Vector3& midpt,
-        MxSkeletalEdge **e1, MxSkeletalEdge **e2, MxSkeletalVertex **vert);
+        MxSkeletalEdge **e1, MxSkeletalEdge **e2, MxVertex **vert);
 
 #endif /* SRC_SKELETALEDGESPLIT_H_ */

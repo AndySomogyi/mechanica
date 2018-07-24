@@ -92,7 +92,6 @@ set(SRC
   stochastic_rk.cpp
   RadialFaceCollapse.cpp
   MxSkeletalEdge.cpp
-  MxSkeletalVertex.cpp
   MxExpression.cpp
   MeshIO.cpp
   MxTesselator.cpp
@@ -153,7 +152,6 @@ set(HEADERS
   stochastic_rk.h
   RadialFaceCollapse.h
   MxSkeletalEdge.h
-  MxSkeletalVertex.h
   MxExpression.h
   MeshIO.h
   MxTesselator.h

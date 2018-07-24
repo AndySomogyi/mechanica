@@ -414,7 +414,7 @@ void MxMeshVoronoiImporter::createTriangleForCell(
         const std::array<VertexPtr, 3>& verts, CellPtr cell) {
     TrianglePtr tri = mesh.findTriangle(verts);
     if(tri) {
-        if(::incident(tri, mesh.rootCell())) {
+        if(::connectedTriangleCellPointers(tri, mesh.rootCell())) {
             assert(mesh.rootCell()->removeChild(tri) == S_OK);
         }
     }

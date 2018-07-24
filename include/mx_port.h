@@ -196,6 +196,18 @@ typedef int32_t HRESULT;
 #define HRESULT_SEVERITY(hr)  (((hr) >> 31) & 0x1)
 
 
+/**
+ * debug verify an operation succeedes
+ *
+ */
+
+#ifndef NDEBUG
+#define VERIFY(hr) assert(SUCCEEDED(hr))
+#else
+#define VEFIFY(hr) hr
+#endif
+
+
 #endif
 
 /**

@@ -88,7 +88,7 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
     TrianglePtr first = nullptr, prev = nullptr, tri = nullptr;
 
     for(TrianglePtr ta : edge[0]->triangles()) {
-        if(incident(ta, edge[1])) {
+        if(incidentTriangleVertex(ta, edge[1])) {
             first = ta;
             triangles.push_back(first);
             break;
@@ -134,7 +134,7 @@ EdgeTriangles::EdgeTriangles(const Edge& edge) {
 #else
 
     for(TrianglePtr ta : edge[0]->triangles()) {
-        if(incident(ta, edge[1])) {
+        if(incidentTriangleVertex(ta, edge[1])) {
             triangles.push_back(ta);
         }
     }
@@ -223,7 +223,7 @@ std::vector<TrianglePtr> triangleFan(CVertexPtr vert, CCellPtr cell)
     // keep track of the previous triangle
     TrianglePtr prev = nullptr;
     do {
-        assert(incident(tri, vert));
+        assert(incidentTriangleVertex(tri, vert));
         fan.push_back(tri);
         TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
         prev = tri;

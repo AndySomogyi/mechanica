@@ -8,7 +8,6 @@
 
 #include "MxDebug.h"
 #include "MxMesh.h"
-#include "MxSkeletalVertex.h"
 #include <Magnum/Math/Math.h>
 #include "MagnumExternal/Optional/optional.hpp"
 #include "DifferentialGeometry.h"
@@ -31,15 +30,8 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
 VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos, const MxType *type) {
 
     VertexPtr retval = nullptr;
-    if(type == MxVertex_Type) {
-        retval = new MxVertex{0., 0., pos};
-    }
-    else if(type == MxSkeletalVertex_Type) {
-        retval = new MxSkeletalVertex{0., 0., pos};
-    }
-    else {
-        return nullptr;
-    }
+    retval = new MxVertex{0., 0., pos};
+
 
     retval->id = ++vertexId;
     vertices.push_back(retval);
@@ -52,11 +44,6 @@ MxObject *MxMesh::alloc(const MxType* type)
     VertexPtr retval = nullptr;
     if(type == MxVertex_Type) {
         retval = new MxVertex();
-        vertices.push_back(retval);
-        return retval;
-    }
-    else if(type == MxSkeletalVertex_Type) {
-        retval = new MxSkeletalVertex();
         vertices.push_back(retval);
         return retval;
     }
@@ -146,7 +133,7 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
     remove(vertices, v);
 #ifndef NDEBUG
     for(TrianglePtr tri : triangles) {
-        assert(!incident(tri, v));
+        assert(!incidentTriangleVertex(tri, v));
     }
 #endif
     delete v;
@@ -164,7 +151,7 @@ HRESULT MxMesh::deleteTriangle(TrianglePtr tri) {
 
 #ifndef NDEBUG
     for(CellPtr cell : cells) {
-        assert(!incident(cell, tri));
+        assert(!connectedCellTrianglePointers(cell, tri));
     }
 
 #endif
@@ -271,7 +258,7 @@ TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
 bool MxMesh::validateVertex(const VertexPtr v) {
     assert(contains(vertices, v));
     for(TrianglePtr tri : v->triangles()) {
-        assert(incident(tri, v));
+        assert(incidentTriangleVertex(tri, v));
         assert(contains(triangles, tri));
         assert(tri->cells[0] && tri->cells[1]);
     }

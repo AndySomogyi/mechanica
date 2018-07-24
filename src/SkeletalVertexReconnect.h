@@ -1,5 +1,5 @@
 /*
- * SkeletalVertexReconnect.h
+ * VertexReconnect.h
  *
  *  Created on: Jul 13, 2018
  *      Author: andy
@@ -11,7 +11,7 @@
 #include "MeshOperations.h"
 
 
-struct SkeletalVertexReconnect : MeshOperation {
+struct VertexReconnect : MeshOperation {
 };
 
 #endif /* SRC_SKELETALVERTEXRECONNECT_H_ */

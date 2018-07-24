@@ -14,7 +14,7 @@ using namespace Magnum;
 HRESULT discreteCurvature(CCellPtr cell, CVertexPtr vert, float* meanCurvature,
         float* gaussianCurvature) {
     for(CTrianglePtr tri : vert->triangles()) {
-        if(incident(tri, cell)) {
+        if(connectedTriangleCellPointers(tri, cell)) {
             return discreteCurvature(cell, vert, tri, meanCurvature, gaussianCurvature);
         }
     }
@@ -51,7 +51,7 @@ HRESULT discreteCurvature(CCellPtr cell, CVertexPtr vi, CTrianglePtr tri,
         for(int i = 0; i < 3; ++i) {
             CVertexPtr v = prev->vertices[i];
             if(v != vi) {
-                if(incident(v, next)) {
+                if(incidentVertexTriangle(v, next)) {
                     assert(!vj);
                     vj = v;
                 }
@@ -64,7 +64,7 @@ HRESULT discreteCurvature(CCellPtr cell, CVertexPtr vi, CTrianglePtr tri,
 
         for(int i = 0; i < 3; ++i) {
             CVertexPtr v = next->vertices[i];
-            if(!incident(v, prev)) {
+            if(!incidentVertexTriangle(v, prev)) {
                 v_beta = v;
                 break;
             }
@@ -249,7 +249,7 @@ Vector3 centroidTriangleFan(CVertexPtr center, const std::vector<TrianglePtr>& t
     assert(tri.size() >= 3);
     CVertexPtr prev = nullptr;
     for(int j = 0; j < 3; ++j) {
-        if(tri[0]->vertices[j] != center && incident(tri[0]->vertices[j], tri[tri.size()-1])) {
+        if(tri[0]->vertices[j] != center && incidentVertexTriangle(tri[0]->vertices[j], tri[tri.size()-1])) {
             prev = tri[0]->vertices[j];
             break;
         }

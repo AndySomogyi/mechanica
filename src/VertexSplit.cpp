@@ -41,7 +41,7 @@ static HRESULT splitVertex(MeshPtr, VertexPtr, CellPtr);
  */
 static int sharedCellCount(CVertexPtr v);
 
-//static bool isSkeletalVertex(CVertexPtr v, VertexPtr &next, CellSet &cells);
+//static bool isVertex(CVertexPtr v, VertexPtr &next, CellSet &cells);
 
 /**
  * A cone vertex is the vertex that has the highest cell valence count
@@ -58,7 +58,7 @@ static bool isConeVertex(CVertexPtr v, CCellPtr c);
 
 static VertexPtr skeletalVertexFromCone(CVertexPtr cone, CellSet &cells);
 
-static VertexPtr nextSkeletalVertex(CVertexPtr v, CVertexPtr prev,
+static VertexPtr nextVertex(CVertexPtr v, CVertexPtr prev,
                                     const CellSet &cells);
 
 /**
@@ -350,7 +350,7 @@ float VertexSplit::energy() const
 
 bool VertexSplit::depends(CTrianglePtr tri) const
 {
-    return incident(tri, vertex);
+    return incidentTriangleVertex(tri, vertex);
 }
 
 bool VertexSplit::depends(CVertexPtr v) const
@@ -394,10 +394,10 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
     for(int i = 0; i < fan.size()-1; ++i) {
         TrianglePtr t0 = fan[i];
         TrianglePtr t1 = fan[i+1];
-        assert(incident(t0, center));
-        assert(incident(t1, center));
-        assert(adjacent_triangle_pointers(t0, t1));
-        assert(adjacent_triangle_pointers(t0, t1));
+        assert(incidentTriangleVertex(t0, center));
+        assert(incidentTriangleVertex(t1, center));
+        assert(connectedTrianglePointers(t0, t1));
+        assert(connectedTrianglePointers(t0, t1));
     }
 #endif
 
@@ -423,10 +423,10 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
         TrianglePtr t0 = fan[i];
         TrianglePtr t1 = fan[(i+1)%fan.size()];
 
-        assert(incident(t0, center));
-        assert(incident(t1, center));
-        assert(adjacent_triangle_pointers(t0, t1));
-        assert(adjacent_triangle_pointers(t0, t1));
+        assert(incidentTriangleVertex(t0, center));
+        assert(incidentTriangleVertex(t1, center));
+        assert(connectedTrianglePointers(t0, t1));
+        assert(connectedTrianglePointers(t0, t1));
 
         int c0_i = t0->cells[0] == cell ? 1 : 0;
         int c1_i = t1->cells[0] == cell ? 1 : 0;
@@ -452,7 +452,7 @@ static HRESULT splitVertex(MeshPtr mesh, VertexPtr center, CellPtr cell) {
 
         // we now know that these triangles belong to the same cell, but could have
         // a situation where they are not connected, deal with it.
-        else if(!adjacent(&t0->partialTriangles[c0_i], &t1->partialTriangles[c1_i])) {
+        else if(!adjacentPartialTrianglePointers(&t0->partialTriangles[c0_i], &t1->partialTriangles[c1_i])) {
             assert(c0 == c1);
             std::cout << "same side partial triangles not adjacent" << std::endl;
             reconnectPathologicalPTriangles(t0, c0_i, t1, c1_i);
@@ -633,7 +633,7 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     int t0_frontierIndex = -1;
     for(int i = 0; i < 3; ++i) {
         VertexPtr v = t0->vertices[i];
-        if(v != centerVertex && incident(v, t1)) {
+        if(v != centerVertex && incidentVertexTriangle(v, t1)) {
             frontierVertex = v;
             t0_frontierIndex = i;
             break;
@@ -664,10 +664,10 @@ static TrianglePtr splitEdge(MeshPtr mesh, CCellPtr cell, VertexPtr centerVertex
     // opposite cell sides.
     TrianglePtr ta0 = t0->partialTriangles[ci0].neighbors[t0_ai]->triangle;
     TrianglePtr ta1 = t1->partialTriangles[ci1].neighbors[t1_ai]->triangle;
-    assert(incident(ta0, frontierVertex));
-    assert(incident(ta0, centerVertex));
-    assert(incident(ta1, frontierVertex));
-    assert(incident(ta1, centerVertex));
+    assert(incidentTriangleVertex(ta0, frontierVertex));
+    assert(incidentTriangleVertex(ta0, centerVertex));
+    assert(incidentTriangleVertex(ta1, frontierVertex));
+    assert(incidentTriangleVertex(ta1, centerVertex));
 
     // index of cells in the ta triangles
     int ta0_ci = ta0->cellIndex(c0);

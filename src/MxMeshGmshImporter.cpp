@@ -35,7 +35,7 @@ MxMeshGmshImporter::Quadrilateral* MxMeshGmshImporter::findQuad(
         for(TrianglePtr tri : quad.triangles) {
             int incCnt = 0;
             for(VertexPtr vert : verts) {
-                if(::incident(tri, vert)) {
+                if(::incidentTriangleVertex(tri, vert)) {
                     incCnt += 1;
                 }
             }

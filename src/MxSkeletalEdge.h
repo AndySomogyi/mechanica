@@ -15,7 +15,7 @@
 
 MxAPI_DATA(struct MxType*) MxSkeletalEdge_Type;
 
-struct MxSkeletalVertex;
+struct MxVertex;
 
 /**
  * A skeletal edge is at the boundary of three or more cells.
@@ -30,7 +30,7 @@ struct MxSkeletalEdge : MxObject
      * The next and prev pointers are a skeletal vertex.
      */
 
-    MxSkeletalVertex *vertices[2] = {nullptr};
+    MxVertex *vertices[2] = {nullptr};
 
     /**
      * Is this edge between the given pair of vertices.
@@ -65,8 +65,11 @@ typedef const MxSkeletalEdge *CSkeletalEdgePtr;
  *
  * The edge must not be connected, and neither of the vertices can be
  * connected to the edge.
+ *
+ * Does NOT connect the triangles that are connected to the vertices,
+ * the triangles must be connected with connectEdgeTriangle.
  */
-HRESULT connectEdgeVertices(SkeletalEdgePtr, SkeletalVertexPtr, SkeletalVertexPtr);
+HRESULT connectEdgeVertices(SkeletalEdgePtr, VertexPtr, VertexPtr);
 
 /**
  * Disconnects an edge from a pair of vertices. This clear the vertex pointers in the

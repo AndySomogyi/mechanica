@@ -27,16 +27,16 @@ bool MxCell::manifold() const {
     for(auto t : boundary) {
 
         // check pointers
-        if (!adjacent(t, t->neighbors[0]) ||
-            !adjacent(t, t->neighbors[1]) ||
-            !adjacent(t, t->neighbors[2])) {
+        if (!adjacentPartialTrianglePointers(t, t->neighbors[0]) ||
+            !adjacentPartialTrianglePointers(t, t->neighbors[1]) ||
+            !adjacentPartialTrianglePointers(t, t->neighbors[2])) {
             return false;
         }
 
         // check vertices
-        if (!adjacent_triangle_vertices(t->triangle, t->neighbors[0]->triangle) ||
-            !adjacent_triangle_vertices(t->triangle, t->neighbors[1]->triangle) ||
-            !adjacent_triangle_vertices(t->triangle, t->neighbors[2]->triangle)) {
+        if (!adjacentTriangleVertices(t->triangle, t->neighbors[0]->triangle) ||
+            !adjacentTriangleVertices(t->triangle, t->neighbors[1]->triangle) ||
+            !adjacentTriangleVertices(t->triangle, t->neighbors[2]->triangle)) {
             return false;
         }
     }
@@ -123,7 +123,7 @@ HRESULT MxCell::removeChild(TrianglePtr tri) {
 
     int index = tri->cells[0] == this ? 0 : 1;
 
-    connect_triangle_cell(tri, nullptr, index);
+    connectTriangleCell(tri, nullptr, index);
     //tri->cells[index] = nullptr;
 
 
@@ -213,7 +213,7 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
         return mx_error(E_FAIL, "partial triangle neighbors already connected");
     }
 
-    connect_triangle_cell(pt->triangle, this, ptIndx);
+    connectTriangleCell(pt->triangle, this, ptIndx);
     //pt->triangle->cells[ptIndx] = this;
 
     std::cout << __PRETTY_FUNCTION__ << "{"
@@ -235,9 +235,9 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
     // an edge with the given triangle.
     for(PTrianglePtr t : boundary) {
         for(int k = 0; k < 3; ++k) {
-            if(adjacent_triangle_vertices(pt->triangle, t->triangle)) {
-                connect_partial_triangles(pt, t);
-                assert(adjacent(pt, t));
+            if(adjacentTriangleVertices(pt->triangle, t->triangle)) {
+                connectPartialTrianglePartialTriangle(pt, t);
+                assert(adjacentPartialTrianglePointers(pt, t));
                 break;
             }
         }

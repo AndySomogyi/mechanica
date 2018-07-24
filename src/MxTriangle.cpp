@@ -144,9 +144,9 @@ bool MxTriangle::isConnected() const {
 
         const PTrianglePtr t = const_cast<PTrianglePtr>(&partialTriangles[i]);
 
-        bool padj0 = adjacent(t, t->neighbors[0]);
-        bool padj1 = adjacent(t, t->neighbors[1]);
-        bool padj2 = adjacent(t, t->neighbors[2]);
+        bool padj0 = adjacentPartialTrianglePointers(t, t->neighbors[0]);
+        bool padj1 = adjacentPartialTrianglePointers(t, t->neighbors[1]);
+        bool padj2 = adjacentPartialTrianglePointers(t, t->neighbors[2]);
         bool padj = padj0 && padj1 && padj2;
 
         // check pointers
@@ -158,9 +158,9 @@ bool MxTriangle::isConnected() const {
         assert(this == t->triangle);
 
         // check vertices
-        bool tadj0 = adjacent_triangle_vertices(const_cast<TrianglePtr>(this), t->neighbors[0]->triangle);
-        bool tadj1 = adjacent_triangle_vertices(const_cast<TrianglePtr>(this), t->neighbors[1]->triangle);
-        bool tadj2 = adjacent_triangle_vertices(const_cast<TrianglePtr>(this), t->neighbors[2]->triangle);
+        bool tadj0 = adjacentTriangleVertices(const_cast<TrianglePtr>(this), t->neighbors[0]->triangle);
+        bool tadj1 = adjacentTriangleVertices(const_cast<TrianglePtr>(this), t->neighbors[1]->triangle);
+        bool tadj2 = adjacentTriangleVertices(const_cast<TrianglePtr>(this), t->neighbors[2]->triangle);
 
         if(!(tadj0 && tadj1 && tadj2)) {
             std::cout << "error, partial triangle neighbor triangle not adjacent to this triangle" << std::endl;
@@ -194,7 +194,7 @@ bool MxTriangle::isValid() const  {
                 return false;
             }
 
-            if(!adjacent_triangle_vertices(this, partialTriangles[cellId].neighbors[adjId]->triangle)) {
+            if(!adjacentTriangleVertices(this, partialTriangles[cellId].neighbors[adjId]->triangle)) {
                 std::cout << "error, triangle:" << this << std::endl
                         << ", partialTriangles["
                         << cellId << "].neighbors["
@@ -203,7 +203,7 @@ bool MxTriangle::isValid() const  {
                 return false;
             }
 
-            if(!incident(cells[cellId], partialTriangles[cellId].neighbors[adjId]->triangle)) {
+            if(!connectedCellTrianglePointers(cells[cellId], partialTriangles[cellId].neighbors[adjId]->triangle)) {
                 std::cout << "error, triangle:" << this << std::endl
                         << ", partialTriangles["
                         << cellId << "].neighbors["
@@ -244,7 +244,7 @@ bool MxTriangle::isValid() const  {
             return false;
         }
 
-        if(!incident(const_cast<TrianglePtr>(this), cells[i])) {
+        if(!connectedTriangleCellPointers(const_cast<TrianglePtr>(this), cells[i])) {
             std::cout << "error, triangle:" << this << std::endl
                     << ", triangle is not incident to cell[" << i << "]" << std::endl;
             return false;
@@ -323,7 +323,7 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
         for(uint i = 0; i < 3; ++i) {
             // the neighbor might be null
             if (pt->neighbors[i] &&
-                incident(pt->neighbors[i], vert) && incident(pt->neighbors[i], otherVert) ) {
+                incidentPartialTriangleVertex(pt->neighbors[i], vert) && incidentPartialTriangleVertex(pt->neighbors[i], otherVert) ) {
                 return pt->neighbors[i]->triangle;
             }
         }
@@ -339,7 +339,7 @@ TrianglePtr MxTriangle::nextTriangleInFan(CVertexPtr vert,
         if(!prevPt) return nullptr;
 
         for(uint i = 0; i < 3; ++i) {
-            if (pt->neighbors[i] && pt->neighbors[i] != prevPt && incident(pt->neighbors[i], vert)) {
+            if (pt->neighbors[i] && pt->neighbors[i] != prevPt && incidentPartialTriangleVertex(pt->neighbors[i], vert)) {
                 return pt->neighbors[i]->triangle;
             }
         }
@@ -422,8 +422,8 @@ TrianglePtr MxTriangle::nextTriangleInRing(CTrianglePtr prev) const
     assert(partialTriangles[oppoIndx].neighbors[triId]);
     TrianglePtr next = partialTriangles[oppoIndx].neighbors[triId]->triangle;
     assert(next != this);
-    assert(adjacent_triangle_vertices(prev, next));
-    assert(adjacent_triangle_vertices(this, next));
+    assert(adjacentTriangleVertices(prev, next));
+    assert(adjacentTriangleVertices(this, next));
     assert(debugTriangleInRing(next, this) == prev);
 
     return next;
@@ -443,7 +443,7 @@ TrianglePtr MxTriangle::adjacentTriangleForEdge(CVertexPtr v1,
         assert(partialTriangles[0].neighbors[i]);
         TrianglePtr tri = partialTriangles[0].neighbors[i]->triangle;
         assert(tri);
-        if(incident(tri, v1) && incident(tri, v2)) {
+        if(incidentTriangleVertex(tri, v1) && incidentTriangleVertex(tri, v2)) {
             return tri;
         }
     }
@@ -464,7 +464,7 @@ bool MxPartialTriangle::isValid() const
             return false;
         }
 
-        if(!adjacent_triangle_vertices(triangle, neighbors[adjId]->triangle)) {
+        if(!adjacentTriangleVertices(triangle, neighbors[adjId]->triangle)) {
             std::cout << "error, partial triangle id:"
                     << triangle->id << "." << id
                     << ", neighbors[" << adjId << "]->triangle does not have adjacent vertices to this triangle, " << std::endl
@@ -472,7 +472,7 @@ bool MxPartialTriangle::isValid() const
             return false;
         }
 
-        if(!adjacent_triangle_pointers(triangle, neighbors[adjId]->triangle)) {
+        if(!connectedTrianglePointers(triangle, neighbors[adjId]->triangle)) {
             std::cout << "error, partial triangle id:"
                     << triangle->id << "." << id
                     << ", neighbors[" << adjId << "]->triangle does not have adjacent pointers to this triangle"
