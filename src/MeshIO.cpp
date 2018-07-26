@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <sstream>
 
 
 
@@ -97,14 +98,33 @@ typedef std::vector<ImpEdge> EdgeVector;
 
 
 struct ImpVertex {
-    ImpVertex(const aiMesh *msh, const aiVector3D& vec) : pos{vec} {
-        aiMeshes.push_back(msh);
-    }
+    ImpVertex(int id, const aiVector3D& vec) : id{id}, pos{vec} {};
+    
+    int id;
+    
     // the mesh (cells) that this vertex belongs to
-    std::vector<const aiMesh*> aiMeshes;
+    std::vector<const aiMesh*> meshes;
+    
+    // the id of this vertex in the corresponding mesh above.
+    std::vector<int> ids;
 
     bool containsMesh(const aiMesh* msh) {
-        return std::find(aiMeshes.begin(), aiMeshes.end(), msh) != aiMeshes.end();
+        return std::find(meshes.begin(), meshes.end(), msh) != meshes.end();
+    }
+
+    
+    bool addMesh(const aiMesh *mesh, int id) {
+        
+        // vertex is already attached to 4 meshes, can't add another.
+        if(meshes.size() >= 4) {
+            // error, mesh has vertex with more than 4 cells
+            std::cout << "error, vertex has more than 4 cells" << std::endl;
+            std::cout << toString();
+            return false;
+        }
+        meshes.push_back(mesh);
+        ids.push_back(id);
+        return true;
     }
 
     // the Mx vertex that we create in our mx mesh.
@@ -125,6 +145,18 @@ struct ImpVertex {
             return true;
         }
         return false;
+    }
+    
+    std::string toString() const {
+        std::stringstream ss;
+        
+        ss << "vertex:{ id: " << id << ", pos:{" << pos[0] << ", " << pos[1] << ", " << pos[2] << "}, meshes:{";
+        for(int i = 0; i < meshes.size(); ++i) {
+            ss << "{\"" << meshes[i]->mName.C_Str() << "\", ";
+            ss << ids[i] << "}, ";
+        }
+        ss << "}";
+        return ss.str();
     }
 };
 
@@ -156,6 +188,14 @@ struct ImpVertex {
  */
 
 typedef std::unordered_map<aiVector3D, ImpVertex, AiVecHasher> VectorMap;
+
+struct Foo {
+
+    ImpVertex *findVertex(const aiVector3D &pos);
+
+    ImpVertex *createVertex(const aiVector3D &pos, int id);
+
+};
 
 /**
  * Looks up the global vertices from a given aiFace.
@@ -313,41 +353,14 @@ static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
  *
  * Checks to make sure a vertex does not already belong to 4 cells.
  */
-static ImpVertex *getImpVertex(VectorMap &vecMap, const aiVector3D vec, const aiMesh *mesh) {
+static ImpVertex *findVertex(VectorMap &vecMap, const aiVector3D vec) {
     VectorMap::iterator i = vecMap.find(vec);
 
-    if(i == vecMap.end()) {
-        auto result = vecMap.emplace(vec, ImpVertex(mesh, vec));
-
-        if(result.second) {
-            VectorMap::iterator i = result.first;
-            ImpVertex& o = i->second;
-            return &o;
-        }
-        else {
-            std::cout << "could not insert AssImp vector and vertex into map";
-            return nullptr;
-        }
-    } else {
-        // found a vertex, if it's already attached to the mesh, just return it.
-        if (i->second.containsMesh(mesh)) {
-            return &(i->second);
-        }
-
-        // found the vertex, it's not attached to the mesh, so add the mesh, and
-        // return the vertex.
-        if(i->second.aiMeshes.size() < 4) {
-            i->second.aiMeshes.push_back(mesh);
-            return &(i->second);
-        }
-        // vertex is already attached to 4 cells, can't add another.
-        else {
-            // error, mesh has vertex with more than 4 cells
-            std::cout << "error, vertex has more than 4 cells" << std::endl;
-            std::cout << "mesh name: " << mesh->mName.C_Str() << std::endl;
-            return nullptr;
-        }
+    if(i != vecMap.end()) {
+        return &i->second;
     }
+    
+    return nullptr;
 }
 
 
@@ -386,14 +399,67 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         std::cout << "ERROR::ASSIMP::" << imp.GetErrorString() << std::endl;
         return nullptr;
     }
+    
+    // iterate over all meshes and vertices, and add the vertices to the map
+    {
+        // global vertex id.
+        int vId = 0;
+        for(int i = 0; i < scene->mNumMeshes; ++i) {
+            aiMesh *mesh = scene->mMeshes[i];
 
+            std::cout << "processing vertices from " << mesh->mName.C_Str() << std::endl;
+
+            for(int j = 0; j < mesh->mNumVertices; ++j) {
+                const aiVector3D &vec = mesh->mVertices[j];
+                VectorMap::iterator vecIter = vecMap.find(vec);
+                ImpVertex *v = nullptr;
+                if(vecIter != vecMap.end()) {
+                    ImpVertex& o = vecIter->second;
+                    v = &o;
+                }
+                else {
+                    auto result = vecMap.emplace(vec, ImpVertex(vId++, vec));
+                    if(result.second) {
+                        VectorMap::iterator i = result.first;
+                        ImpVertex& o = i->second;
+                        v = &o;
+                    }
+                }
+                assert(v);
+                if(!v->addMesh(mesh, j)) {
+                    return nullptr;
+                }
+            }
+        }
+
+        std::cout << "processed " << vId << " vertices" << std::endl;
+        for(auto i : vecMap) {
+            const ImpVertex &vert = i.second;
+            std::cout << vert.toString() << std::endl;
+        }
+
+        int sharedVertices = 0;
+
+        for(auto i : vecMap) {
+            const ImpVertex &vert = i.second;
+            if(vert.meshes.size() > 1) {
+                sharedVertices++;
+                std::cout << "shared vertex: " << vert.toString() << std::endl;
+            }
+        }
+
+        std::cout << "found " << sharedVertices << " shared vertices" << std::endl;
+    }
+    // done adding all the vertices from the file
+    
+    // process all the skeletal edges
     for(int i = 0; i < scene->mNumMeshes; ++i) {
         aiMesh *mesh = scene->mMeshes[i];
 
-        std::cout << "processing vertices from " << mesh->mName.C_Str() << std::endl;
-
         for(int j = 0; j < mesh->mNumFaces; ++j) {
             aiFace *face = &mesh->mFaces[j];
+            
+            std::cout << "processing edges from mesh " << mesh->mName.C_Str() << ", face " << j << std::endl;
 
             for(int k = 0; k < face->mNumIndices; ++k) {
 
@@ -405,27 +471,42 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
                 aiVector3D av1 = mesh->mVertices[vid0];
                 aiVector3D av2 = mesh->mVertices[vid1];
 
-                ImpVertex *v1 = getImpVertex(vecMap, av1, mesh);
+                ImpVertex *v1 = findVertex(vecMap, av1);
                 if(!v1) {return nullptr;}
-                ImpVertex *v2 = getImpVertex(vecMap, av2, mesh);
+                ImpVertex *v2 = findVertex(vecMap, av2);
                 if(!v2) {return nullptr;}
+                
+                
 
                 if (!findImpEdge(edges, v1, v2)) {
-                    std::cout << "no existing edge for face " << j << ", vertices " << vid0 << ", " << vid1 << std::endl;
+                    //std::cout << "no existing edge for face " << j << ", vertices " << v1->id << ", " << v2->id << std::endl;
 
                     if(v1->edges.size() >= 4) {
                         std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
-                                  << vid0 << " already has " << v1->edges.size()
-                                  << " edges, can't add more." << std::endl;
-                        return nullptr;
+                                  << v1->toString() << " already has " << v1->edges.size()
+                                  << " edges, can't add more." << std::endl
+                                  << "tried to add edge to " << v2->toString() << std::endl
+                        << "existing edges: {";
+                        for(const ImpEdge* e : v1->edges) {
+                            std::cout << "edge: {" << e->verts[0]->toString() << ", "
+                                      << e->verts[1]->toString() << "}, ";
+                        }
+                        std::cout << "}" << std::endl;
+   
+                        //return nullptr;
+                        continue;
                     }
 
                     if(v2->edges.size() >= 4) {
                         std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
-                                  << vid1 << " already has "
-                                  << v2->edges.size() << " edges, can't add more." << std::endl;
-                        return nullptr;
+                                  << v2->toString() << " already has " << v2->edges.size()
+                                  << " edges, can't add more." << std::endl
+                                  << "tried to add edge to " << v1->toString() << std::endl;
+                        //return nullptr;
+                        continue;
                     }
+                    
+                    std::cout << "creating edge: {" << v1->id << ", " << v2->id  << "}" << std::endl;
 
                     ImpEdge *edge = createImpEdge(edges, v1, v2);
                     v1->addEdge(edge);
@@ -489,46 +570,66 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
             std::cout << "using existing skeletal vertex " << i->second.vert << std::endl;
         }
     }
+    
+    assert(scene->mRootNode);
 
 
-    // the AI mesh (defines a cell) has a set of 'faces', Each face is a set of indices.
+    // A scene is organized into a hierarchical set of 'objects', starting
+    // with the root object. Each object can have multiple meshes, for different
+    // materials. We need to grab all the triangles from each mesh, and create a
+    // cell out of them.
+    // the AI mesh has a set of 'faces', Each face is a set of indices.
     // We tell AssImp not to triangulate, so each face is a set of vertices
     // that define the polygonal face between a pair of cells.
-    for(int i = 0; i < scene->mNumMeshes; ++i) {
+    for(int i = 0; i < scene->mRootNode->mNumChildren; ++i) {
+        
+        aiNode *obj = scene->mRootNode->mChildren[i];
+        
+        std::cout << "creating new cell \"" << obj->mName.C_Str() << "\"" << std::endl;
 
-        aiMesh *aim = scene->mMeshes[i];
+        CellPtr cell = mesh->createCell(cellTypeHandler(obj->mName.C_Str(), i));
+        
+        for(int m = 0; m < obj->mNumMeshes; ++m) {
+            
+            aiMesh *aim = scene->mMeshes[obj->mMeshes[m]];
+            
+            std::cout << "processing triangles from mesh " << aim->mName.C_Str() << "\"" << std::endl;
 
-        std::cout << "creating new cell \"" << aim->mName.C_Str() << "\"" << std::endl;
+            // these are polygonal faces, each edge in a polygonal face defines a skeletal edge.
+            for(int j = 0; j < aim->mNumFaces; ++j) {
+                aiFace *face = &aim->mFaces[j];
 
-        CellPtr cell = mesh->createCell(cellTypeHandler(aim->mName.C_Str(), i));
+                ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
 
-        // these are polygonal faces, each edge in a polygonal face defines a skeletal edge.
+                if(!triFace) {
+                    triFaces.faces.push_back(triangulatePolygonalFace(mesh, vecMap, face, aim));
+                    assert(triFaces.findTriangulatedFace(vecMap, aim, face));
+                    triFace = &triFaces.faces.back();
+                }
+                else {
+                    std::cout << "found shared face with " << triFace->vertices.size() << " vertices" << std::endl;
+                }
 
-        for(int j = 0; j < aim->mNumFaces; ++j) {
-            aiFace *face = &aim->mFaces[j];
-
-            ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
-
-            if(!triFace) {
-                triFaces.faces.push_back(triangulatePolygonalFace(mesh, vecMap, face, aim));
-                assert(triFaces.findTriangulatedFace(vecMap, aim, face));
-                triFace = &triFaces.faces.back();
+                addImpFaceToCell(triFace, cell);
             }
-
-            addImpFaceToCell(triFace, cell);
         }
-
+        
+        // done with all of the meshes for this cell, the cell should
+        // have a complete set of triangles now.
+        
         for(PTrianglePtr pt : cell->boundary) {
             float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
                                                      pt->triangle->vertices[1]->position,
                                                      pt->triangle->vertices[2]->position);
             pt->mass = area * density;
         }
-
+        
         assert(mesh->valid(cell));
         assert(cell->updateDerivedAttributes() == S_OK);
         assert(cell->isValid());
     }
+    
+    /*
 
 
     addUnclaimedPartialTrianglesToRoot(mesh);
@@ -544,6 +645,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
             }
         }
     }
+     
 
     // now we have connected all the skeletal edges, but triangles with a manifold
     // connection to neighboring triangles are still not connected, connect
@@ -556,6 +658,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
             }
         }
     }
+     */
 
     return mesh;
 }
@@ -1155,13 +1258,14 @@ bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFace **re
 }
 
 
-static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiMesh* cell,
+static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiMesh* mesh,
         const aiFace *face) {
 
     std::vector<VertexPtr> result(face->mNumIndices);
 
     for(int i = 0; i < face->mNumIndices; ++i) {
-        const aiVector3D &vert = cell->mVertices[face->mIndices[i]];
+        assert(face->mIndices[i] >= 0 && face->mIndices[i] < mesh->mNumVertices);
+        const aiVector3D &vert = mesh->mVertices[face->mIndices[i]];
         VectorMap::const_iterator j = vecMap.find(vert);
         assert(j != vecMap.end());
         result[i] = j->second.vert;
