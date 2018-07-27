@@ -80,11 +80,13 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
             attrs[2].color = color;
         }
 
-        attrs[0].position = tri.vertices[0]->position;
-        attrs[1].position = tri.vertices[1]->position;
-        attrs[2].position = tri.vertices[2]->position;
-
-
+        for(int i = 0; i < 3; ++i) {
+            if(dyn_cast<MxSkeletalEdge>(tri.neighbors[i])) {
+                attrs[i].color = Color4::yellow();
+                attrs[(i+1)%3].color = Color4::yellow();
+            }
+            attrs[i].position = tri.vertices[i]->position;
+        }
     }
 }
 
@@ -214,7 +216,7 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
     }
 
     connectTriangleCell(pt->triangle, this, ptIndx);
-    
+
     /*
     std::cout << __PRETTY_FUNCTION__ << "{"
         << "\triangle:{id:" << pt->triangle->id
