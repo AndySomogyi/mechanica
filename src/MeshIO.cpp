@@ -515,12 +515,12 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
                     v1->addEdge(edge);
                     v2->addEdge(edge);
 
-                    std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
-                            std::to_string(j) << " edge count: " << std::to_string(v1->edges.size()) << std::endl;
+                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                    //        std::to_string(j) << " edge count: " << std::to_string(v1->edges.size()) << std::endl;
 
-                    std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
-                            std::to_string((j+1) % mesh->mNumVertices)
-                    << " edge count: " << std::to_string(v2->edges.size()) << std::endl;
+                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                    //        std::to_string((j+1) % mesh->mNumVertices)
+                    //<< " edge count: " << std::to_string(v2->edges.size()) << std::endl;
 
                 }
                 else {
@@ -530,13 +530,13 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         }
     }
 
-    {
-        int j = 0;
-
-        for(auto vert : vecMap) {
-            std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
-        }
-    }
+    //{
+    //    int j = 0;
+    //
+    //    for(auto vert : vecMap) {
+    //        std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
+    //    }
+    //}
 
     // now we've iterated over all vertices in the mesh, and checked to make sure that
     // no vertex is incident to more than 4 cells, safe to make new mesh now.
@@ -560,10 +560,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         VERIFY(connectEdgeVertices(e, edge.verts[0]->vert, edge.verts[1]->vert));
     }
 
-
-    
     assert(scene->mRootNode);
-
 
     // A scene is organized into a hierarchical set of 'objects', starting
     // with the root object. Each object can have multiple meshes, for different
@@ -620,9 +617,6 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         assert(cell->isValid());
     }
     
-    
-
-
     addUnclaimedPartialTrianglesToRoot(mesh);
 
     // at this point, all the vertices, skeletal edges and triangles have been added
@@ -649,7 +643,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
             }
         }
     }
-     
+    
 
     return mesh;
 }

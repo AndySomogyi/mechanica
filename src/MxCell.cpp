@@ -214,8 +214,8 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
     }
 
     connectTriangleCell(pt->triangle, this, ptIndx);
-    //pt->triangle->cells[ptIndx] = this;
-
+    
+    /*
     std::cout << __PRETTY_FUNCTION__ << "{"
         << "\triangle:{id:" << pt->triangle->id
         << ", pos:{" << pt->triangle->vertices[0]->position
@@ -230,6 +230,7 @@ HRESULT MxCell::appendChild(PTrianglePtr pt) {
         std::cout << ", " << t->triangle->vertices[2]->position;
         std::cout << "}" << std::endl;
     }
+     */
 
     // scan through the list of partial triangles, and connect whichever ones share
     // an edge with the given triangle.
