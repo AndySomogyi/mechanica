@@ -160,42 +160,63 @@ struct ImpVertex {
     }
 };
 
+struct VectorMap {
 
+    VectorMap(double fudge) : fudgeDistance{fudge} {};
 
-/**
- * Hash:
- * A unary function object type that takes an object of type key type as
- * argument and returns a unique value of type size_t based on it. This
- * can either be a class implementing a function call operator or a pointer
- * to a function (see constructor for an example). This defaults to hash<Key>,
- * which returns a hash value with a probability of collision approaching
- * 1.0/std::numeric_limits<size_t>::max().
- * The unordered_map object uses the hash values returned by this function
- * to organize its elements internally, speeding up the process of locating
- * individual elements.
- *
- * Aliased as member type unordered_map::hasher.
- *
- * A hash function; this must be a class that overrides operator() and calculates
- * the hash value given an object of the key-type. One particularly
- * straight-forward way of doing this is to specialize the std::hash template
- * for your key-type.
- *
- * Pred:
- * A binary predicate that takes two arguments of the key type and returns a bool. The expression pred(a,b), where pred is an object of this type and a and b are key values, shall return true if a is to be considered equivalent to b. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to equal_to<Key>, which returns the same as applying the equal-to operator (a==b).
- * The unordered_map object uses this expression to determine whether two element keys are equivalent. No two elements in an unordered_map container can have keys that yield true using this predicate.
- * Aliased as member type unordered_map::key_equal.
- */
+    std::vector<ImpVertex> vertices;
 
-typedef std::unordered_map<aiVector3D, ImpVertex, AiVecHasher> VectorMap;
+    const double fudgeDistance;
 
-struct Foo {
+    ImpVertex *findVertex(const aiVector3D &pos) {
+        for(ImpVertex &v : vertices) {
+            aiVector3D dist = v.pos - pos;
+            if(dist.Length() <= fudgeDistance) {
+                return &v;
+            }
+        }
+        return nullptr;
+    }
 
-    ImpVertex *findVertex(const aiVector3D &pos);
+    ImpVertex *createVertex(const aiVector3D &pos, int id) {
+        assert(findVertex(pos) == nullptr);
+        vertices.push_back(ImpVertex(id, pos));
+        return &vertices.back();
+    }
 
-    ImpVertex *createVertex(const aiVector3D &pos, int id);
+    typedef std::vector<ImpVertex>::iterator iterator;
+    typedef std::vector<ImpVertex>::const_iterator const_iterator;
+
+    iterator begin() {
+        return vertices.begin();
+    }
+
+    iterator end() {
+        return vertices.end();
+    }
+
+    const_iterator end() const {
+        return vertices.end();
+    }
+
+    const_iterator find(const aiVector3D &pos) const {
+
+        for(const_iterator v = vertices.begin(); v != vertices.end(); ++v) {
+            aiVector3D dist = v->pos - pos;
+            if(dist.Length() <= fudgeDistance) {
+                return v;
+            }
+        }
+        return vertices.end();
+    }
+
 
 };
+
+
+
+
+
 
 /**
  * Looks up the global vertices from a given aiFace.
@@ -354,13 +375,7 @@ static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
  * Checks to make sure a vertex does not already belong to 4 cells.
  */
 static ImpVertex *findVertex(VectorMap &vecMap, const aiVector3D vec) {
-    VectorMap::iterator i = vecMap.find(vec);
-
-    if(i != vecMap.end()) {
-        return &i->second;
-    }
-    
-    return nullptr;
+    return vecMap.findVertex(vec);
 }
 
 
@@ -368,7 +383,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 {
     Assimp::Importer imp;
 
-    VectorMap vecMap;
+    VectorMap vecMap(0.0001);
     EdgeVector edges;
     ImpFaceSet triFaces;
 
@@ -411,19 +426,9 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
 
             for(int j = 0; j < mesh->mNumVertices; ++j) {
                 const aiVector3D &vec = mesh->mVertices[j];
-                VectorMap::iterator vecIter = vecMap.find(vec);
-                ImpVertex *v = nullptr;
-                if(vecIter != vecMap.end()) {
-                    ImpVertex& o = vecIter->second;
-                    v = &o;
-                }
-                else {
-                    auto result = vecMap.emplace(vec, ImpVertex(vId++, vec));
-                    if(result.second) {
-                        VectorMap::iterator i = result.first;
-                        ImpVertex& o = i->second;
-                        v = &o;
-                    }
+                ImpVertex *v = vecMap.findVertex(vec);
+                if(v == nullptr) {
+                    v = vecMap.createVertex(vec, vId++);
                 }
                 assert(v);
                 if(!v->addMesh(mesh, j)) {
@@ -433,15 +438,13 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         }
 
         std::cout << "processed " << vId << " vertices" << std::endl;
-        for(auto i : vecMap) {
-            const ImpVertex &vert = i.second;
+        for(auto vert : vecMap) {
             std::cout << vert.toString() << std::endl;
         }
 
         int sharedVertices = 0;
 
-        for(auto i : vecMap) {
-            const ImpVertex &vert = i.second;
+        for(auto vert : vecMap) {
             if(vert.meshes.size() > 1) {
                 sharedVertices++;
                 std::cout << "shared vertex: " << vert.toString() << std::endl;
@@ -530,8 +533,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     {
         int j = 0;
 
-        for(auto i : vecMap) {
-            const ImpVertex &vert = i.second;
+        for(auto vert : vecMap) {
             std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
         }
     }
@@ -543,33 +545,22 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     // in the mesh for these.
 
     MxMesh *mesh = new MxMesh();
+    
+    // create mesh vertices for ever vertex that we read from the file
+    for(ImpVertex &vert : vecMap) {
+        assert(vert.vert == nullptr);
+        vert.vert = mesh->createVertex({{vert.pos.x, vert.pos.y, vert.pos.z}});
+        std::cout << "created new vertex: " << vert.vert << std::endl;
+    }
 
     // first add all the vertices that are in the skeletal edge list,
     // these are skeletal vertices.
     for(ImpEdge &edge : edges) {
         SkeletalEdgePtr e = (SkeletalEdgePtr)mesh->alloc(MxSkeletalEdge_Type);
-        for(int i = 0; i < 2; ++i) {
-            if(edge.verts[i]->vert == nullptr) {
-                VertexPtr vert = mesh->createVertex(
-                                {{edge.verts[i]->pos.x, edge.verts[i]->pos.y, edge.verts[i]->pos.z}});
-                edge.verts[i]->vert = vert;
-                std::cout << "created new skeletal vertex: " << vert << std::endl;
-            }
-        }
         VERIFY(connectEdgeVertices(e, edge.verts[0]->vert, edge.verts[1]->vert));
     }
 
-    // create mesh vertices for ever vertex that's not a skeletal vertex
-    for(VectorMap::iterator i = vecMap.begin(); i != vecMap.end(); ++i) {
-        if(i->second.vert == nullptr) {
-        const aiVector3D &pos = i->first;
-        i->second.vert = mesh->createVertex({{pos.x, pos.y, pos.z}});
-            std::cout << "created new vertex: " << i->second.vert << std::endl;
-        }
-        else {
-            std::cout << "using existing skeletal vertex " << i->second.vert << std::endl;
-        }
-    }
+
     
     assert(scene->mRootNode);
 
@@ -629,7 +620,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         assert(cell->isValid());
     }
     
-    /*
+    
 
 
     addUnclaimedPartialTrianglesToRoot(mesh);
@@ -658,7 +649,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
             }
         }
     }
-     */
+     
 
     return mesh;
 }
@@ -1268,7 +1259,7 @@ static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiM
         const aiVector3D &vert = mesh->mVertices[face->mIndices[i]];
         VectorMap::const_iterator j = vecMap.find(vert);
         assert(j != vecMap.end());
-        result[i] = j->second.vert;
+        result[i] = j->vert;
     }
 
     return result;
@@ -1294,11 +1285,11 @@ ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
         VectorMap::const_iterator it;
 
         it = vecMap.find(aim->mVertices[tri->mIndices[0]]); assert(it != vecMap.end());
-        MxVertex *v0 = it->second.vert;
+        MxVertex *v0 = it->vert;
         it = vecMap.find(aim->mVertices[tri->mIndices[1]]); assert(it != vecMap.end());
-        MxVertex *v1 = it->second.vert;
+        MxVertex *v1 = it->vert;
         it = vecMap.find(aim->mVertices[tri->mIndices[2]]); assert(it != vecMap.end());
-        MxVertex *v2 = it->second.vert;
+        MxVertex *v2 = it->vert;
 
         std::cout << "creating new triangle: {" << v0 << ", " << v1 << ", " << v2 << "}" << std::endl;
 
