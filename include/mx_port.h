@@ -204,7 +204,7 @@ typedef int32_t HRESULT;
 #ifndef NDEBUG
 #define VERIFY(hr) assert(SUCCEEDED(hr))
 #else
-#define VEFIFY(hr) hr
+#define VERIFY(hr) hr
 #endif
 
 

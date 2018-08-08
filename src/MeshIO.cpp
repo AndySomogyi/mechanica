@@ -644,7 +644,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         }
     }
     
-
+    VERIFY(mesh->updateDerivedAttributes());
     return mesh;
 }
 
