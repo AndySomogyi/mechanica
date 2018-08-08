@@ -17,7 +17,8 @@
 static struct RedCellType : MxCellType
 {
     virtual Magnum::Color4 color(struct MxCell *cell) {
-        return Color4{1.0f, 0.0f, 0.0f, 0.08f};
+        //return Color4{1.0f, 0.0f, 0.0f, 0.08f};
+        return Color4::green();
     }
 } redCellType;
 
@@ -119,8 +120,10 @@ void GrowthModel::loadAssImpModel() {
     };
 
     //hex3.obj
+
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
     mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
+
 
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);

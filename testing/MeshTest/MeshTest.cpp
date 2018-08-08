@@ -189,11 +189,11 @@ MeshTest::MeshTest(const Configuration& configuration) :
     // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
     // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
     // don't cover up front ones.
-    //Renderer::enable(Renderer::Feature::DepthTest);
+    Renderer::enable(Renderer::Feature::DepthTest);
 
     // don't draw facets that face away from us. We have A LOT of these INSIDE cells, no need to
     // draw them.
-    //Renderer::enable(Renderer::Feature::FaceCulling);
+    Renderer::enable(Renderer::Feature::FaceCulling);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
