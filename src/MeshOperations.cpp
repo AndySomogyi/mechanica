@@ -38,7 +38,7 @@ HRESULT MeshOperations::positionsChanged(TriangleContainer::const_iterator triBe
 #endif
 
     for(auto iter = triBegin; iter != triEnd; ++iter) {
-        const TrianglePtr tri = *iter;
+        const PolygonPtr tri = *iter;
         int minIndx = -1, maxIndx = -1;
         float minEdge = std::numeric_limits<float>::max();
         float maxEdge = std::numeric_limits<float>::min();
@@ -71,7 +71,7 @@ void setMeshOpDebugMode(uint c) {
 
 }
 
-HRESULT MeshOperations::removeDependentOperations(const TrianglePtr tri) {
+HRESULT MeshOperations::removeDependentOperations(const PolygonPtr tri) {
     Container::iterator iter = c.begin();
     bool found = false;
     while((iter = findDependentOperation(iter, tri)) != c.end()) {
@@ -165,7 +165,7 @@ void MeshOperations::setLongCutoff(float val) {
 }
 
 MeshOperations::Container::iterator MeshOperations::findDependentOperation(
-        MeshOperations::Container::iterator start, const TrianglePtr tri) {
+        MeshOperations::Container::iterator start, const PolygonPtr tri) {
     return std::find_if(start, c.end(),
             [tri](const MeshOperation* op)->bool { return op->depends(tri); });
 }
@@ -220,11 +220,7 @@ void MeshOperations::stop(const Edge& edge) {
 
     //mesh->makeTrianglesTransparent();
 
-    for(TrianglePtr tri : EdgeTriangles(edge)) {
-        //tri->color = Magnum::Color4{1, 1, 0, 1};
-        //tri->color[3] = 1;
-        tri->alpha = 1;
-    }
+
 
 
 }
@@ -270,5 +266,5 @@ MeshOperation* MeshOperations::createSkeletalEdgeToTriangleOperation(
 }
 
 MeshOperation* MeshOperations::createTriangleToSkeletalEdgeOperation(
-		const CTrianglePtr) {
+		const CPolygonPtr) {
 }

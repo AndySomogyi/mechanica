@@ -138,11 +138,8 @@ MxMeshRenderer& MxMeshRenderer::setProjectionMatrix(
 
 void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
 
-    //if(!cell->render) {
-    //    return;
-    //}
 
-    indexBuffer.unmap();
+    //indexBuffer.unmap();
 
     void* vertexPtr = vertexBuffer.map<void>(0,
             cell->vertexCount() * ShaderProgram::AttributeSize,

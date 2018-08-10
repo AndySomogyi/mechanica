@@ -22,7 +22,7 @@ struct MagnumCellRenderer : MxCellRenderer {
 
     CellPtr cell;
     Magnum::Mesh mesh;
-    Magnum::Buffer indexBuffer;
+    //Magnum::Buffer indexBuffer;
     Magnum::Buffer vertexBuffer;
 
     MagnumCellRenderer(CellPtr cell) : cell{cell} {invalidate();};

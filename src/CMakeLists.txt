@@ -50,7 +50,7 @@ set(SRC
   mx_tupleobject.cpp
   MxMeshCore.cpp
   MxMesh.cpp
-  MxTriangle.cpp
+  MxPolygon.cpp
   MxModule.cpp
   MxSimulator.cpp
   MxTestCube.cpp
@@ -70,23 +70,18 @@ set(SRC
   MxLattice.cpp
   MxLatticeCluster.cpp
   MxCell.cpp
-  MxMeshVoronoiImporter.cpp
   MxMeshRenderer.cpp
   MxMeshShaderProgram.cpp
   MeshPropagator.cpp
   MxMeshPottsPropagator.cpp
-  GmshIO.cpp
-  MxMeshGmshImporter.cpp
   MxExecutionContext.cpp
   MxForceFunction.cpp
   LangevinPropagator.cpp
-  MeshIterators.cpp
   ScalarField.cpp
   MeshRelationships.cpp
   MeshOperations.cpp
-  DifferentialGeometry.cpp
   stochastic_rk.cpp
-  MxSkeletalEdge.cpp
+  MxEdge.cpp
   MxExpression.cpp
   MeshIO.cpp
   MxTesselator.cpp
@@ -107,7 +102,7 @@ set(HEADERS
   MxObject.h
   MxMeshCore.h
   MxMesh.h
-  MxTriangle.h
+  MxPolygon.h
   MxModule.h
   MxSimulator.h
   MxTestCube.h
@@ -126,23 +121,18 @@ set(HEADERS
   MxLattice.h
   MxLatticeCluster.h
   MxCell.h
-  MxMeshVoronoiImporter.h
   MxMeshRenderer.h
   MxMeshShaderProgram.h
   MeshPropagator.h
   MxMeshPottsPropagator.h
-  GmshIO.h
-  MxMeshGmshImporter.h
   MxExecutionContext.h
   MxForceFunction.h
   LangevinPropagator.h
-  MeshIterators.h
   ScalarField.h
   MeshRelationships.h
   MeshOperations.h
-  DifferentialGeometry.h
   stochastic_rk.h
-  MxSkeletalEdge.h
+  MxEdge.h
   MxExpression.h
   MeshIO.h
   MxTesselator.h

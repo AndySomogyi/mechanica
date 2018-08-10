@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#ifndef SRC_MXTRIANGLE_H_
-#define SRC_MXTRIANGLE_H_
+#ifndef SRC_MXPOLYGON_H_
+#define SRC_MXPOLYGON_H_
 
 #include "MxMeshCore.h"
 #include "Magnum/Math/Color.h"
@@ -17,7 +17,7 @@ enum struct Orientation {
 };
 
 
-struct MxPartialTriangleType : MxType {
+struct MxPartialPolygonType : MxType {
 
 
     /**
@@ -75,23 +75,22 @@ struct MxPartialTriangleType : MxType {
  *
  * The centroid
  */
-struct MxPartialTriangle : MxObject {
+struct MxPartialPolygon : MxObject {
 
-    MxPartialTriangle(MxPartialTriangleType *type, MxTriangle *ti,
-            const PartialTriangles& neighbors = {{nullptr, nullptr, nullptr}},
+    MxPartialPolygon(MxPartialPolygonType *type, MxPolygon *ti,
+            const PartialPolygons& neighbors = {{nullptr, nullptr, nullptr}},
             float mass = 0, MxReal *scalars = nullptr) :
-                MxObject{type}, triangle{ti}, neighbors{neighbors},
+                MxObject{type}, polygon{ti}, neighbors{neighbors},
                 mass{mass}, scalarFields{scalars} {};
 
     /**
      * index of the triangle that this partial triangle references.
      */
-    TrianglePtr triangle;
-
+    PolygonPtr polygon;
     /**
      * indices of the three neighboring partial triangles.
      */
-    std::array<MxPartialTriangle*, 3> neighbors;
+    std::vector<MxPartialPolygon*> neighbors;
 
 
     /**
@@ -108,11 +107,11 @@ struct MxPartialTriangle : MxObject {
 
 
     /**
-         * The total force excreted by this triangle onto the three
-         * incident vertices. This force is a contribution from both of the
-         * incident cells.
-         */
-        std::array<Magnum::Vector3, 3> force;
+     * The total force excreted by this triangle onto the three
+     * incident vertices. This force is a contribution from both of the
+     * incident cells.
+     */
+    std::vector<Magnum::Vector3> force;
 
     /**
      * A contiguous sequence of scalar attributes, who's time evolution is
@@ -136,9 +135,11 @@ struct MxPartialTriangle : MxObject {
 };
 
 
-struct MxTriangleType : MxType {
+struct MxPolygonType : MxType {
 
 };
+
+static MxPolygonType MxPolygon_Type;
 
 
 /**
@@ -158,7 +159,7 @@ struct MxTriangleType : MxType {
  *     * represent the geometry of a triangle.
  *     *
  */
-struct MxTriangle : MxObject {
+struct MxPolygon : MxObject {
 
     const uint id;
 
@@ -194,7 +195,7 @@ struct MxTriangle : MxObject {
      * in the correct winding order. The winding of these vertices correspond to the
      * normal vector.
      */
-    std::array<VertexPtr, 3> vertices = {{nullptr}};
+    std::vector<VertexPtr> vertices;
 
     /**
      * Need to associate this triangle with the cells on both sides. Trans-cell flux
@@ -210,7 +211,7 @@ struct MxTriangle : MxObject {
      * surface, or may be a skeletal edge if the lies at the intersection of three
      * cells. Currently, we restrict edges to three cells.
      */
-    std::array<MxObject*, 3> neighbors = {{nullptr}};
+    std::vector<MxObject*> neighbors;
 
     /**
      * indices of the two partial triangles that are attached to this triangle.
@@ -218,7 +219,7 @@ struct MxTriangle : MxObject {
      *
      * partialTriangles[0] contains the partial triangle for cells[0]
      */
-    std::array<MxPartialTriangle, 2> partialTriangles;
+    std::array<MxPartialPolygon, 2> partialTriangles;
 
     /**
      * The total force excreted by this triangle onto the three
@@ -274,7 +275,7 @@ struct MxTriangle : MxObject {
      *
      * Later versions will investigate stack allocation.
      */
-    MxTriangle() :
+    MxPolygon() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
         partialTriangles {{
@@ -285,9 +286,9 @@ struct MxTriangle : MxObject {
     {}
 
 
-    MxTriangle(uint _id, MxTriangleType *type, const std::array<VertexPtr, 3> &vertices,
+    MxPolygon(uint _id, MxPolygonType *type, const std::vector<VertexPtr> &vertices,
             const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
-            const std::array<MxPartialTriangleType*, 2> &partialTriangleTypes = {{nullptr, nullptr}});
+            const std::array<MxPartialPolygonType*, 2> &partialTriangleTypes = {{nullptr, nullptr}});
 
 
     /**
@@ -335,73 +336,24 @@ struct MxTriangle : MxObject {
         partialTriangles[cellId].mass = val;
     }
 
-    /**
-     * Finds the next triangle in a triangle fan centered at Vertex vert.
-     * The next triangle will be attached to the given cell.
-     *
-     *  // get the first triangle
-     *  TrianglePtr first = getTheFirstTriangleSomehow();
-     *  // the loop triangle
-     *  TrianglePtr tri = first;
-     *  // keep track of the previous triangle
-     *  TrianglePtr prev = nullptr;
-     *  do {
-     *      TrianglePtr next = tri->nextTriangleInFan(vert, cell, prev);
-     *      prev = tri;
-     *      tri = next;
-     *  } while(tri && tri != first);
-     *
-     * @param vert: The triangle fan center vertex
-     * @param cell: Which side of the triangle where to choose the next triangle
-     * @param prev: The previous triangle. May be null, if so, returns the first
-     *              triangle that's incident to vert and cell.
-     * @return:    The next triangle. May return null if this triangle is not
-     *              adjacent to either vert of cell.
-     */
-    TrianglePtr nextTriangleInFan(CVertexPtr vert,
-                                  CCellPtr cell, CTrianglePtr prev) const;
 
-    /**
-     * Finds the next triangle in a radial edge.
-     *
-     * The prev parameter is needed to determine the shared edge.
-     *
-     * Find this triangle's partial triangle which has a neighboring
-     * partial triangle who's triangle pointer is the previous triangle.
-     * This tells us the index of the partial triangle that is adjacent
-     * to one of the previous triangle's partial triangles. To find the
-     * next triangle, grab the this triangle's opposite partial triangle.
-     * Then that partial triangle's neighbor in the same index slot is
-     * oriented towards the same vertex pair. The next triangle is then
-     * the triangle pointed to by this neighboring partial triangle.
-     *
-     * @param prev: The previous triangle, must not be null
-     *
-     * @returns: the next triangle, or null if prev is not adjacent to this triangle.
-     */
-    TrianglePtr nextTriangleInRing(CTrianglePtr prev) const;
+
+
 
     /**
      * Finds the first triangle that is adjacent to this triangle
      * via the given pair of vertices. If either of the vertices are not
      * incident to this triangle, returns null.
      */
-    TrianglePtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
+    PolygonPtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
 
 
-    /**
-     * Get the next adjacent vertex (in CCW order), if vert
-     * is not incident to this triangle, returns null.
-     */
-    VertexPtr nextVertex(CVertexPtr vert) const;
-
-    VertexPtr prevVertex(CVertexPtr vert) const;
 
     bool hasSkeletalEdge() const;
 
 };
 
-std::ostream& operator<<(std::ostream& os, CTrianglePtr tri);
+std::ostream& operator<<(std::ostream& os, CPolygonPtr tri);
 
 
 
@@ -452,4 +404,4 @@ namespace Magnum { namespace Math {
     }
 }}
 
-#endif /* SRC_MXTRIANGLE_H_ */
+#endif /* SRC_MXPOLYGON_H_ */

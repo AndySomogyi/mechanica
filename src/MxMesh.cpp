@@ -10,7 +10,6 @@
 #include "MxMesh.h"
 #include <Magnum/Math/Math.h>
 #include "MagnumExternal/Optional/optional.hpp"
-#include "DifferentialGeometry.h"
 
 #include <deque>
 #include <limits>
@@ -48,7 +47,7 @@ MxObject *MxMesh::alloc(const MxType* type)
         return retval;
     }
     else if(type == MxSkeletalEdge_Type) {
-        MxSkeletalEdge *e = new MxSkeletalEdge();
+        MxEdge *e = new MxEdge();
         edges.push_back(e);
         return e;
     }
@@ -89,20 +88,6 @@ std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
     return std::make_tuple(min, max);
 }
 
-TrianglePtr MxMesh::findTriangle(const std::array<VertexPtr, 3> &verts) {
-    assert(valid(verts[0]));
-    assert(valid(verts[1]));
-    assert(valid(verts[2]));
-
-    for (TrianglePtr tri : triangles) {
-        if (tri->matchVertexIndices(verts) != 0) {
-            return tri;
-        }
-    }
-
-    return nullptr;
-}
-
 struct UniverseCellType : MxCellType {
     virtual Magnum::Color4 color(struct MxCell *cell) {
         return Color4{0., 0., 0., 0.};
@@ -113,9 +98,9 @@ UniverseCellType universeCellType = {};
 
 MxCellType *MxUniverseCell_Type = &universeCellType;
 
-MxPartialTriangleType universePartialTriangleType = {};
+MxPartialPolygonType universePartialTriangleType = {};
 
-MxPartialTriangleType *MxUniversePartialTriangle_Type =
+MxPartialPolygonType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;
 
 MxMesh::MxMesh() :
@@ -132,7 +117,7 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
     remove(vertices, v);
 #ifndef NDEBUG
-    for(TrianglePtr tri : triangles) {
+    for(PolygonPtr tri : triangles) {
         assert(!incidentTriangleVertex(tri, v));
     }
 #endif
@@ -140,7 +125,7 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
     return S_OK;
 }
 
-HRESULT MxMesh::deleteTriangle(TrianglePtr tri) {
+HRESULT MxMesh::deleteTriangle(PolygonPtr tri) {
 
     meshOperations.removeDependentOperations(tri);
 
@@ -173,7 +158,7 @@ int test(const std::vector<std::string*> &stuff) {
 
 
 
-bool MxMesh::valid(TrianglePtr p) {
+bool MxMesh::valid(PolygonPtr p) {
 
     if(std::find(triangles.begin(), triangles.end(), p) == triangles.end()) {
         return false;
@@ -181,8 +166,8 @@ bool MxMesh::valid(TrianglePtr p) {
 
 
     return
-        p == p->partialTriangles[0].triangle &&
-        p == p->partialTriangles[1].triangle &&
+        p == p->partialTriangles[0].polygon &&
+        p == p->partialTriangles[1].polygon &&
         valid(p->vertices[0]) &&
         valid(p->vertices[1]) &&
         valid(p->vertices[2]);
@@ -193,7 +178,7 @@ bool MxMesh::valid(CellPtr c) {
         return false;
     }
 
-    for(PTrianglePtr p : c->boundary) {
+    for(PPolygonPtr p : c->boundary) {
         if(!valid(p)) {
             return false;
         }
@@ -206,8 +191,8 @@ bool MxMesh::valid(VertexPtr v) {
     return std::find(vertices.begin(), vertices.end(), v) != vertices.end();
 }
 
-bool MxMesh::valid(PTrianglePtr p) {
-    return p && valid(p->triangle);
+bool MxMesh::valid(PPolygonPtr p) {
+    return p && valid(p->polygon);
 }
 
 MxMesh::~MxMesh() {
@@ -243,10 +228,10 @@ HRESULT MxMesh::applyMeshOperations() {
     return updateDerivedAttributes();
 }
 
-TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
-        const std::array<VertexPtr, 3>& verts) {
+PolygonPtr MxMesh::createTriangle(MxPolygonType* type,
+        const std::vector<VertexPtr>& verts) {
 
-    TrianglePtr tri = new MxTriangle{(uint)triangles.size(), type, verts};
+    PolygonPtr tri = new MxPolygon{(uint)triangles.size(), type, verts};
 
     triangles.push_back(tri);
 
@@ -257,7 +242,7 @@ TrianglePtr MxMesh::createTriangle(MxTriangleType* type,
 
 bool MxMesh::validateVertex(const VertexPtr v) {
     assert(contains(vertices, v));
-    for(TrianglePtr tri : v->triangles()) {
+    for(PolygonPtr tri : v->triangles()) {
         assert(incidentTriangleVertex(tri, v));
         assert(contains(triangles, tri));
         assert(tri->cells[0] && tri->cells[1]);
@@ -275,13 +260,13 @@ bool MxMesh::validateVertices() {
 bool MxMesh::validateTriangles() {
     bool result = true;
     for(int i = 0; i < triangles.size(); ++i) {
-        TrianglePtr tri = triangles[i];
+        PolygonPtr tri = triangles[i];
         result &= tri->isValid();
     }
     return true;
 }
 
-bool MxMesh::validateTriangle(const TrianglePtr tri) {
+bool MxMesh::validateTriangle(const PolygonPtr tri) {
     assert(tri->isValid());
 
     for(int i = 0; i < 3; ++i) {
@@ -313,7 +298,7 @@ HRESULT MxMesh::updateDerivedAttributes()
         v->area = 0;
     }
 
-    for(TrianglePtr tri : triangles) {
+    for(PolygonPtr tri : triangles) {
 
         tri->partialTriangles[0].force[0] = Vector3{};
         tri->partialTriangles[0].force[1] = Vector3{};
@@ -333,16 +318,6 @@ HRESULT MxMesh::updateDerivedAttributes()
         }
     }
 
-    for(VertexPtr v : vertices) {
-        v->attr = forceDivergence(v);
-        if(v->attr > MxVertex::maxForceDivergence) {
-            MxVertex::maxForceDivergence = v->attr;
-        }
-        if(v->attr < MxVertex::minForceDivergence) {
-            MxVertex::minForceDivergence = v->attr;
-        }
-    }
-
     return S_OK;
 }
 
@@ -356,18 +331,15 @@ SkeletalEdgePtr MxMesh::findSkeletalEdge(CVertexPtr a, CVertexPtr b) const
     return nullptr;
 }
 
-bool MxMesh::validateEdge(const VertexPtr a, const VertexPtr b) {
-    EdgeTriangles e{{{a, b}}};
-    return true;
-}
+
 
 void MxMesh::markEdge(const Edge& edge) {
-    for(TrianglePtr tri : triangles) {
+    for(PolygonPtr tri : triangles) {
         tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
     }
 }
 
-void MxMesh::markTriangle(const TrianglePtr tri) {
+void MxMesh::markTriangle(const PolygonPtr tri) {
     makeTrianglesTransparent();
     tri->color = Magnum::Color4::red();
 }
@@ -377,16 +349,6 @@ HRESULT MxMesh::valenceChanged(VertexPtr v)
     return S_OK;
 }
 
-TrianglePtr MxMesh::createTriangle(const std::array<CellPtr, 2> &cells,
-        const std::array<VertexPtr, 3> &verts)
-{
-
-    TrianglePtr tri = new MxTriangle{(uint)triangles.size(), nullptr, verts, cells};
-
-    triangles.push_back(tri);
-
-    return tri;
-}
 
 HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
 {
@@ -411,7 +373,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
         }
     }
 
-    for(TrianglePtr tri : triangles) {
+    for(PolygonPtr tri : triangles) {
 
         tri->partialTriangles[0].force[0] = Vector3{};
         tri->partialTriangles[0].force[1] = Vector3{};
@@ -428,16 +390,6 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     for(CellPtr cell : cells) {
         if((result = cell->updateDerivedAttributes() != S_OK)) {
             return result;
-        }
-    }
-
-    for(VertexPtr v : vertices) {
-        v->attr = forceDivergence(v);
-        if(v->attr > MxVertex::maxForceDivergence) {
-            MxVertex::maxForceDivergence = v->attr;
-        }
-        if(v->attr < MxVertex::minForceDivergence) {
-            MxVertex::minForceDivergence = v->attr;
         }
     }
 

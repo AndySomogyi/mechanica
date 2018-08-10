@@ -49,16 +49,16 @@ typedef const MxVertex *CVertexPtr;
 
 typedef std::array<VertexPtr, 3> VertexIndices;
 
-struct MxTriangle;
-typedef MxTriangle *TrianglePtr;
-typedef const MxTriangle *CTrianglePtr;
+struct MxPolygon;
+typedef MxPolygon *PolygonPtr;
+typedef const MxPolygon *CPolygonPtr;
 
 
-struct MxPartialTriangle;
-typedef MxPartialTriangle *PTrianglePtr;
-typedef const MxPartialTriangle *CPTrianglePtr;
+struct MxPartialPolygon;
+typedef MxPartialPolygon *PPolygonPtr;
+typedef const MxPartialPolygon *CPPolygonPtr;
 
-typedef std::array<PTrianglePtr, 3> PartialTriangles;
+typedef std::vector<PPolygonPtr> PartialPolygons;
 
 struct MxCell;
 typedef MxCell *CellPtr;
@@ -68,19 +68,19 @@ struct MxMesh;
 typedef MxMesh *MeshPtr;
 typedef const MxMesh *CMeshPtr;
 
-struct MxSkeletalEdge;
-typedef MxSkeletalEdge *SkeletalEdgePtr;
-typedef const MxSkeletalEdge *CSkeletalEdgePtr;
+struct MxEdge;
+typedef MxEdge *SkeletalEdgePtr;
+typedef const MxEdge *CSkeletalEdgePtr;
 
 struct MxVertex;
 typedef MxVertex *VertexPtr;
 typedef const MxVertex *CVertexPtr;
 
 // triangle container in the main mesh
-typedef std::vector<TrianglePtr> TriangleContainer;
+typedef std::vector<PolygonPtr> TriangleContainer;
 
 // triangle container for the vertices
-typedef std::vector<TrianglePtr> Triangles;
+typedef std::vector<PolygonPtr> Triangles;
 
 
 struct MxMeshNode {
@@ -130,22 +130,22 @@ struct MxVertex : MxObject {
 
     std::set<VertexPtr> link() const;
 
-    HRESULT removeTriangle(const TrianglePtr);
+    HRESULT removeTriangle(const PolygonPtr);
 
-    HRESULT appendTriangle(TrianglePtr);
+    HRESULT appendTriangle(PolygonPtr);
 
     int edgeCount() const;
 
     /**
      * Inform the vertex that the cell of an attached triangle was changed.
      */
-    HRESULT triangleCellChanged(TrianglePtr tri);
+    HRESULT triangleCellChanged(PolygonPtr tri);
 
     /**
      * Find the first triangle that is incident to the given cell.
      * If no triangle is incident, returns null.
      */
-    TrianglePtr triangleForCell(CCellPtr cell) const;
+    PolygonPtr triangleForCell(CCellPtr cell) const;
 
     uint id{0};
 

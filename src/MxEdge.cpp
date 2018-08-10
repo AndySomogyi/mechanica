@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxSkeletalEdge.h>
+#include <MxEdge.h>
 #include "MeshRelationships.h"
 
 struct MxSkeletalEdgeType : MxType {
@@ -19,17 +19,17 @@ MxType *MxSkeletalEdge_Type = &type;
 
 
 
-MxSkeletalEdge::MxSkeletalEdge() : MxObject(MxSkeletalEdge_Type)
+MxEdge::MxEdge() : MxObject(MxSkeletalEdge_Type)
 {
 }
 
-MxSkeletalEdge::~MxSkeletalEdge()
+MxEdge::~MxEdge()
 {
     // TODO Auto-generated destructor stub
 }
 
 void foo(MxObject *o) {
-    MxSkeletalEdge *x = dyn_cast<MxSkeletalEdge>(o);
+    MxEdge *x = dyn_cast<MxEdge>(o);
 
     if(x) {
         std::cout << "foo";
@@ -65,7 +65,7 @@ HRESULT disconnectEdgeVertices(SkeletalEdgePtr)
 {
 }
 
-HRESULT connectEdgeTriangle(SkeletalEdgePtr edge, TrianglePtr tri)
+HRESULT connectEdgeTriangle(SkeletalEdgePtr edge, PolygonPtr tri)
 {
     int index = indexOfEdgeVertices(edge, tri);
     if(index < 0) {
@@ -86,11 +86,11 @@ HRESULT connectEdgeTriangle(SkeletalEdgePtr edge, TrianglePtr tri)
     return S_OK;
 }
 
-HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, TrianglePtr)
+HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, PolygonPtr)
 {
 }
 
-bool MxSkeletalEdge::matches(CVertexPtr a, CVertexPtr b) const
+bool MxEdge::matches(CVertexPtr a, CVertexPtr b) const
 {
     return ((MxVertex*)vertices[0] == a && (MxVertex*)vertices[1] == b) ||
             ((MxVertex*)vertices[1] == a && (MxVertex*)vertices[0] == b);

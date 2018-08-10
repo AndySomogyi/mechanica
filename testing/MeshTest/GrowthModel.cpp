@@ -6,10 +6,8 @@
  */
 
 #include "GrowthModel.h"
-#include <MxMeshGmshImporter.h>
 #include <MxDebug.h>
 #include <iostream>
-#include "MxMeshVoronoiImporter.h"
 #include "MeshIO.h"
 #include "MeshTest.h"
 
@@ -43,8 +41,8 @@ static struct ClearCellType : MxCellType
 static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
     std::set<VertexPtr> verts;
 
-    for(PTrianglePtr pt : c->boundary) {
-        TrianglePtr tri = pt->triangle;
+    for(PPolygonPtr pt : c->boundary) {
+        PolygonPtr tri = pt->polygon;
 
         for(int i = 0; i < 3; ++i) {
             if(verts.find(tri->vertices[i]) == verts.end()) {
@@ -122,7 +120,7 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
 
 
     mesh->setShortCutoff(0);
@@ -173,7 +171,7 @@ HRESULT GrowthModel::calcForce() {
 
 void GrowthModel::applyDifferentialSurfaceTension() {
 
-    for(TrianglePtr tri : mesh->triangles) {
+    for(PolygonPtr tri : mesh->triangles) {
 
         if((tri->cells[0] == mesh->cells[1] && tri->cells[1] == mesh->cells[2]) ||
            (tri->cells[0] == mesh->cells[2] && tri->cells[1] == mesh->cells[1])) {
@@ -222,7 +220,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
 
     for(auto pt: cell->boundary) {
 
-        TrianglePtr tri = pt->triangle;
+        PolygonPtr tri = pt->polygon;
 
         assert(tri->area >= 0);
 
@@ -300,7 +298,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         diff = (targetVolumeLambda / cell->volume) * diff;
 
         for(auto pt: cell->boundary) {
-            TrianglePtr tri = pt->triangle;
+            PolygonPtr tri = pt->polygon;
             Vector3 normal = tri->cellNormal(cell);
             Vector3 force = (pressure + diff) * tri->area * normal;
 
@@ -312,7 +310,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
 
     else {
         for(auto pt: cell->boundary) {
-            TrianglePtr tri = pt->triangle;
+            PolygonPtr tri = pt->polygon;
             Vector3 normal = tri->cellNormal(cell);
             Vector3 force = pressure * tri->area * normal;
 
@@ -338,6 +336,7 @@ void GrowthModel::testEdges() {
 void GrowthModel::loadSheetModel() {
     mesh = new MxMesh();
 
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             if((id % 2) == 0) {
@@ -347,11 +346,12 @@ void GrowthModel::loadSheetModel() {
             }
         }
     };
+    */
 
     mesh->setShortCutoff(0);
     //mesh->setLongCutoff(0.12);
     mesh->setLongCutoff(0.2);
-    importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
+    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
 
     pressureMin = 0;
     pressure = 5;
@@ -372,6 +372,7 @@ void GrowthModel::loadSimpleSheetModel() {
 
 
 
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
 
@@ -389,6 +390,8 @@ void GrowthModel::loadSimpleSheetModel() {
     mesh->setShortCutoff(0.2);
     mesh->setLongCutoff(0.7);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
+
+    */
 
     pressureMin = 0;
     pressure = 5;
@@ -410,6 +413,8 @@ void GrowthModel::loadSimpleSheetModel() {
 void GrowthModel::loadTwoModel() {
     mesh = new MxMesh();
 
+    /*
+
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
 
@@ -427,6 +432,8 @@ void GrowthModel::loadTwoModel() {
     mesh->setShortCutoff(0.2);
     mesh->setLongCutoff(0.7);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/two.msh");
+
+    */
 
     pressureMin = 0;
     pressure = 5;
@@ -455,6 +462,7 @@ void GrowthModel::loadCubeModel() {
 
     mesh = new MxMesh();
 
+    /*
     MxMeshGmshImporter importer{*mesh,
         [](Gmsh::ElementType, int id) {
             return (MxCellType*)&redCellType;
@@ -464,6 +472,7 @@ void GrowthModel::loadCubeModel() {
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);
     importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
+    */
 
     pressureMin = 0;
     pressure = 5;
@@ -486,9 +495,10 @@ void GrowthModel::loadCubeModel() {
 void GrowthModel::loadMonodisperseVoronoiModel() {
     mesh = new MxMesh();
 
-    MxMeshVoronoiImporter importer(*mesh);
 
-    importer.monodisperse();
+    //MxMeshVoronoiImporter importer(*mesh);
+
+    //importer.monodisperse();
 }
 
 HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
@@ -512,7 +522,7 @@ HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vec
 
         assert(v->mass > 0 && v->area > 0);
 
-        for(CTrianglePtr tri : v->triangles()) {
+        for(CPolygonPtr tri : v->triangles()) {
             for(int j = 0; j < 3; ++j) {
                 if(tri->vertices[j] == v) {
                     force[i] += tri->force(j);
@@ -574,7 +584,7 @@ HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
 
         Vector3 force;
 
-        for(CTrianglePtr tri : v->triangles()) {
+        for(CPolygonPtr tri : v->triangles()) {
             for(int j = 0; j < 3; ++j) {
                 if(tri->vertices[j] == v) {
                     force += tri->force(j);

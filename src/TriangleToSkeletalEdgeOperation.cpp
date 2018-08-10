@@ -7,12 +7,12 @@
 
 #include <TriangleToSkeletalEdgeOperation.h>
 
-HRESULT TriangleToSkeletalEdgeOperation::create(MeshPtr, CTrianglePtr,
+HRESULT TriangleToSkeletalEdgeOperation::create(MeshPtr, CPolygonPtr,
         TriangleToSkeletalEdgeOperation** result) {
     return E_FAIL;
 }
 
 TriangleToSkeletalEdgeOperation::TriangleToSkeletalEdgeOperation(MeshPtr mesh,
-    CTrianglePtr) :
+    CPolygonPtr) :
     MeshOperation{mesh} {
 }

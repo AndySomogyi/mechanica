@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
+#include <MxEdge.h>
 #include "MeshIO.h"
-#include "MxSkeletalEdge.h"
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -236,8 +236,18 @@ static bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFa
  *
  * AssImp, at least from blender reads in a face as a set of vertices. We tell AssImp
  * not to triangulate it, because we triangulate ourselves.
+ *
+ * The ImpFace gets created after the mesh is created, and the polygon
+ * ptr gets initialized when the ImpFace is constructed.
  */
 struct ImpFace {
+
+    ImpFace(MxMesh *mesh, const VectorMap &vecMap,
+            const aiFace *face, const aiMesh *aim) {
+
+        vertices = verticesForFace(vecMap, aim, face);
+        polygon = mesh->createTriangle(&MxPolygon_Type, vertices);
+    }
 
 
     bool equals(const std::vector<VertexPtr> &verts) const {
@@ -279,16 +289,12 @@ struct ImpFace {
      */
     std::vector<VertexPtr> vertices;
 
-    std::vector<TrianglePtr> triangles;
+    /**
+     * the associated mechanica polygon for this face.
+     */
+    PolygonPtr polygon = nullptr;
 };
 
-/**
- * Creates a new triangulated polygonal face. All triangles in this face are new.
- * The triangles should be oriented such that the normal points outwards from the
- * given AssImp mesh.
- */
-static ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
-        const aiFace *face, const aiMesh *aim);
 
 static void addImpFaceToCell(ImpFace *face, CellPtr cell);
 
@@ -335,36 +341,17 @@ static ImpEdge *createImpEdge(EdgeVector &edges,  ImpVertex *v0, ImpVertex *v1) 
     return &edges.back();
 }
 
-static void createTriangleForCell(MxMesh *mesh,
-        const std::array<VertexPtr, 3>& verts, CellPtr cell) {
-    TrianglePtr tri = mesh->findTriangle(verts);
-    if(tri) {
-        assert((tri->cells[0] != nullptr || tri->cells[1] != nullptr)
-                && "found triangle that's connected on both sides");
-    }
-    else {
-        tri = mesh->createTriangle(nullptr, verts);
-    }
 
-    assert(tri);
-    assert(tri->cells[0] == nullptr || tri->cells[1] == nullptr);
-
-    Vector3 meshNorm = Math::normal(verts[0]->position, verts[1]->position, verts[2]->position);
-    float orientation = Math::dot(meshNorm, tri->normal);
-
-    int cellIndx = orientation > 0 ? 0 : 1;
-    cell->appendChild(&tri->partialTriangles[cellIndx]);
-}
 
 static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
 {
-    for(TrianglePtr tri : mesh->triangles) {
+    for(PolygonPtr tri : mesh->triangles) {
         assert(tri->cells[0]);
         if(!tri->cells[1]) {
-            mesh->rootCell()->appendChild(&tri->partialTriangles[1]);
+            VERIFY(connectPolygonCell(tri, mesh->rootCell()));
         }
     }
-    assert(mesh->rootCell()->isValid());
+    //assert(mesh->rootCell()->isValid());
 }
 
 
@@ -590,7 +577,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
                 ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
 
                 if(!triFace) {
-                    triFaces.faces.push_back(triangulatePolygonalFace(mesh, vecMap, face, aim));
+                    triFaces.faces.push_back(ImpFace(mesh, vecMap, face, aim));
                     assert(triFaces.findTriangulatedFace(vecMap, aim, face));
                     triFace = &triFaces.faces.back();
                 }
@@ -605,16 +592,16 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         // done with all of the meshes for this cell, the cell should
         // have a complete set of triangles now.
         
-        for(PTrianglePtr pt : cell->boundary) {
-            float area = Magnum::Math::triangle_area(pt->triangle->vertices[0]->position,
-                                                     pt->triangle->vertices[1]->position,
-                                                     pt->triangle->vertices[2]->position);
+        for(PPolygonPtr pt : cell->boundary) {
+            float area = Magnum::Math::triangle_area(pt->polygon->vertices[0]->position,
+                                                     pt->polygon->vertices[1]->position,
+                                                     pt->polygon->vertices[2]->position);
             pt->mass = area * density;
         }
         
-        assert(mesh->valid(cell));
-        assert(cell->updateDerivedAttributes() == S_OK);
-        assert(cell->isValid());
+        //assert(mesh->valid(cell));
+        //assert(cell->updateDerivedAttributes() == S_OK);
+        //assert(cell->isValid());
     }
     
     addUnclaimedPartialTrianglesToRoot(mesh);
@@ -623,26 +610,26 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     // to the mesh, so now go over the triangles, check which ones are supposed to be
     // connected to the skeletal edges by their vertex relationships, and connect
     // the pointers.
-    for(TrianglePtr tri : mesh->triangles) {
-        for(SkeletalEdgePtr edge : mesh->edges) {
-            if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
-                VERIFY(connectEdgeTriangle(edge, tri));
-            }
-        }
-    }
+    //for(PolygonPtr tri : mesh->triangles) {
+    //    for(SkeletalEdgePtr edge : mesh->edges) {
+    //        if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
+    //            VERIFY(connectEdgeTriangle(edge, tri));
+    //        }
+    //    }
+    //}
      
 
     // now we have connected all the skeletal edges, but triangles with a manifold
     // connection to neighboring triangles are still not connected, connect
     // these now.
-    for(TrianglePtr tri : mesh->triangles) {
-        for(int i = 0; i < 3; ++i) {
-            if(tri->neighbors[i] == nullptr) {
-                assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
-                VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->triangle));
-            }
-        }
-    }
+    //for(PolygonPtr tri : mesh->triangles) {
+    //    for(int i = 0; i < 3; ++i) {
+    //        if(tri->neighbors[i] == nullptr) {
+    //            assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
+    //            VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->polygon));
+    //        }
+    //    }
+    //}
     
     VERIFY(mesh->updateDerivedAttributes());
     return mesh;
@@ -1259,63 +1246,10 @@ static std::vector<VertexPtr> verticesForFace(const VectorMap &vecMap, const aiM
     return result;
 }
 
-ImpFace triangulatePolygonalFace(MxMesh *mesh, const VectorMap &vecMap,
-        const aiFace *face, const aiMesh *aim) {
-    ImpFace result;
 
-    result.vertices = verticesForFace(vecMap, aim, face);
-
-    aiFace *tris = nullptr;
-    unsigned ntris = 0;
-
-    bool triangulated = ImpTriangulateFace(*face, aim->mVertices, &tris, &ntris);
-    assert(triangulated);
-
-    result.triangles.resize(ntris);
-
-    for(unsigned j = 0; j < ntris; ++j) {
-        aiFace *tri = &tris[j];
-
-        VectorMap::const_iterator it;
-
-        it = vecMap.find(aim->mVertices[tri->mIndices[0]]); assert(it != vecMap.end());
-        MxVertex *v0 = it->vert;
-        it = vecMap.find(aim->mVertices[tri->mIndices[1]]); assert(it != vecMap.end());
-        MxVertex *v1 = it->vert;
-        it = vecMap.find(aim->mVertices[tri->mIndices[2]]); assert(it != vecMap.end());
-        MxVertex *v2 = it->vert;
-
-        std::cout << "creating new triangle: {" << v0 << ", " << v1 << ", " << v2 << "}" << std::endl;
-
-        TrianglePtr t = mesh->findTriangle({{v0, v1, v2}});
-
-        if(t) {
-            assert((t->cells[0] != nullptr || t->cells[1] != nullptr)
-                    && "found triangle that's connected on both sides");
-        }
-        else {
-            t = mesh->createTriangle(nullptr, {{v0, v1, v2}});
-        }
-
-        assert(t);
-        result.triangles[j] = t;
-    }
-
-    std::cout << "deleting face ptr: " << tris << std::endl;
-    delete [] tris;
-
-    return result;
-}
 
 inline void addImpFaceToCell(ImpFace* face, CellPtr cell)
 {
-    assert(face->triangles.size() >= 1);
-
-    int cellIndx = face->triangles[0]->cells[0] == nullptr ? 0 : 1;
-
-    for(TrianglePtr tri : face->triangles) {
-        assert(tri->cells[cellIndx] == nullptr);
-        std::cout << "appending partial triangle, index: " << cellIndx << std::endl;
-        cell->appendChild(&tri->partialTriangles[cellIndx]);
-    }
+    assert(face->polygon);
+    VERIFY(connectPolygonCell(face->polygon, cell));
 }

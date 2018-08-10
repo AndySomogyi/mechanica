@@ -41,7 +41,7 @@ struct MeshOperation {
     /**
      * does this operation depend on this triangle?
      */
-    virtual bool depends(CTrianglePtr) const = 0;
+    virtual bool depends(CPolygonPtr) const = 0;
 
     /**
      * does this operation depend on this vertex?
@@ -92,7 +92,7 @@ struct MeshOperationFactory {
 struct MeshOperations {
 
     static MeshOperation *createSkeletalEdgeToTriangleOperation(const CSkeletalEdgePtr);
-    static MeshOperation *createTriangleToSkeletalEdgeOperation(const CTrianglePtr);
+    static MeshOperation *createTriangleToSkeletalEdgeOperation(const CPolygonPtr);
 
 
     MeshOperations(MeshPtr mesh, float shortEdgeCutoff, float longEdgeCutoff);
@@ -118,7 +118,7 @@ struct MeshOperations {
      * a mesh object was deleted, remove any enqueued operations
      * that refer to this obj.
      */
-    HRESULT removeDependentOperations(const TrianglePtr tri);
+    HRESULT removeDependentOperations(const PolygonPtr tri);
 
     /**
      * a mesh object was deleted, remove any enqueued operations
@@ -183,7 +183,7 @@ private:
     float shortCutoff;
     float longCutoff;
 
-    Container::iterator findDependentOperation(Container::iterator start, const TrianglePtr);
+    Container::iterator findDependentOperation(Container::iterator start, const PolygonPtr);
 
     Container::iterator findDependentOperation(Container::iterator start, const VertexPtr);
 

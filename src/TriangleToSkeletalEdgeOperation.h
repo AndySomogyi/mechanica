@@ -12,10 +12,10 @@
 
 class TriangleToSkeletalEdgeOperation: public MeshOperation {
 public:
-    HRESULT create (MeshPtr, CTrianglePtr, TriangleToSkeletalEdgeOperation **result);
+    HRESULT create (MeshPtr, CPolygonPtr, TriangleToSkeletalEdgeOperation **result);
 
 private:
-    TriangleToSkeletalEdgeOperation(MeshPtr, CTrianglePtr);
+    TriangleToSkeletalEdgeOperation(MeshPtr, CPolygonPtr);
 };
 
 #endif /* SRC_TRIANGLETOSKELETALEDGEOPERATION_H_ */

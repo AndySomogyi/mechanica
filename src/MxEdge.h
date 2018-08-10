@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#ifndef SRC_MXSKELETALEDGE_H_
-#define SRC_MXSKELETALEDGE_H_
+#ifndef SRC_MXEDGE_H_
+#define SRC_MXEDGE_H_
 
 #include "MxMeshCore.h"
 
@@ -20,11 +20,11 @@ struct MxVertex;
 /**
  * A skeletal edge is at the boundary of three or more cells.
  */
-struct MxSkeletalEdge : MxObject
+struct MxEdge : MxObject
 {
 
-    MxSkeletalEdge();
-    ~MxSkeletalEdge();
+    MxEdge();
+    ~MxEdge();
 
     /**
      * The next and prev pointers are a skeletal vertex.
@@ -44,7 +44,7 @@ struct MxSkeletalEdge : MxObject
      * We get 2 triangles when we read in a mesh, and the edges of a polygonal
      * face don't have any neighbors.
      */
-    MxTriangle *triangles[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
+    MxPolygon *triangles[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
 
     static bool classof(const MxObject *o) {
         return o->ob_type == MxSkeletalEdge_Type;
@@ -57,8 +57,8 @@ struct MxSkeletalEdge : MxObject
     }
 };
 
-typedef MxSkeletalEdge* SkeletalEdgePtr;
-typedef const MxSkeletalEdge *CSkeletalEdgePtr;
+typedef MxEdge* SkeletalEdgePtr;
+typedef const MxEdge *CSkeletalEdgePtr;
 
 /**
  * Connects an edge with a pair of skeletal vertices.
@@ -87,7 +87,7 @@ HRESULT disconnectEdgeVertices(SkeletalEdgePtr);
  * first connect the vertices to the edges and triangles, then connect the edges
  * to the triangles.
  */
-HRESULT connectEdgeTriangle(SkeletalEdgePtr, TrianglePtr);
+HRESULT connectEdgeTriangle(SkeletalEdgePtr, PolygonPtr);
 
 /**
  * Disconnects a triangle from an edge, and clears the corresponding
@@ -96,6 +96,6 @@ HRESULT connectEdgeTriangle(SkeletalEdgePtr, TrianglePtr);
  * Only clears the triangle and neighbor slots, does not re-connect the
  * triangle neighbor slots to anything else.
  */
-HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, TrianglePtr);
+HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, PolygonPtr);
 
-#endif /* SRC_MXSKELETALEDGE_H_ */
+#endif /* SRC_MXEDGE_H_ */

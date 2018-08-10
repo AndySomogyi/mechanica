@@ -14,7 +14,6 @@
 #include <set>
 
 #include "MxDebug.h"
-#include "DifferentialGeometry.h"
 #include "MxMeshRenderer.h"
 
 bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {
@@ -34,9 +33,9 @@ bool MxCell::manifold() const {
         }
 
         // check vertices
-        if (!adjacentTriangleVertices(t->triangle, t->neighbors[0]->triangle) ||
-            !adjacentTriangleVertices(t->triangle, t->neighbors[1]->triangle) ||
-            !adjacentTriangleVertices(t->triangle, t->neighbors[2]->triangle)) {
+        if (!adjacentTriangleVertices(t->polygon, t->neighbors[0]->polygon) ||
+            !adjacentTriangleVertices(t->polygon, t->neighbors[1]->polygon) ||
+            !adjacentTriangleVertices(t->polygon, t->neighbors[2]->polygon)) {
             return false;
         }
     }
@@ -46,63 +45,49 @@ bool MxCell::manifold() const {
 void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes,
         uint vertexCount, uint stride, void* buffer) {
     MxCellType *type = (MxCellType*)ob_type;
+
+
     uchar *ptr = (uchar*)buffer;
-    for(uint i = 0; i < boundary.size() && ptr < vertexCount * stride + (uchar*)buffer; ++i, ptr += 3 * stride) {
+
+    // vertex attribute, currently we just dump out triangles,
+    // so each subsequent vertex attr represent a vertex, and three
+    // Contiguous attrs represent a triangle.
+    VertexAttribute *attrs = (VertexAttribute*)ptr;
+
+    // for each triangle,
+    // ptr += 3 * stride
+    // VertexAttribute *attrs = (VertexAttribute*)ptr;
+
+    // counter of current triangle being written to buffer
+    uint triCount = 0;
+
+    for(CPPolygonPtr pp : boundary) {
+        CPolygonPtr poly = pp->polygon;
+
+        for(int i = 0; i < poly->vertices.size(); ++i) {
+            CVertexPtr p1 = poly->vertices[i];
+            CVertexPtr p2 = poly->vertices[(i+1)%poly->vertices.size()];
 
 
-        const MxTriangle &tri = *(boundary[i])->triangle;
-        VertexAttribute *attrs = (VertexAttribute*)ptr;
 
-        if(false) {
-            for(int i = 0; i < 3; ++i) {
-                attrs[i].color = jetColorMap(
-                    tri.vertices[i]->attr,
-                    MxVertex::minForceDivergence,
-                    MxVertex::maxForceDivergence
-                );
-                attrs[i].color[3] = tri.alpha;
-            }
+            attrs[0].position = p1->position;
+            attrs[0].color = Color4::green();
+            attrs[1].position = p2->position;
+            attrs[1].color = Color4::green();
+            attrs[2].position = poly->centroid;
+            attrs[2].color = Color4::red();
+
+            ptr += 3 * stride;
+            attrs = (VertexAttribute*)ptr;
         }
-
-        else {
-            Color4 color;
-            if(tri.color[3] > 0) {
-                color = tri.color;
-            }
-            else if (type) {
-                color = type->color(this);
-            }
-            else {
-                color = Color4::yellow();
-            }
-            attrs[0].color = color;
-            attrs[1].color = color;
-            attrs[2].color = color;
-        }
-
-
-        for(int i = 0; i < 3; ++i) {
-            //if(dyn_cast<MxSkeletalEdge>(tri.neighbors[i])) {
-            //    attrs[i].color = Color4::yellow();
-            //    attrs[(i+1)%3].color = Color4::yellow();
-            //}
-            attrs[i].position = tri.vertices[i]->position;
-        }
-
     }
+
+    assert(ptr == vertexCount * stride + (uchar*)buffer);
 }
 
 
 
 
-//void MxCell::indexData(uint indexCount, uint* buffer) {
-//    for(int i = 0; i < boundary.size(); ++i, buffer += 3) {
-//        const MxTriangle &face = *boundary[i]->triangle;
-//        buffer[0] = face.vertices[0];
-//        buffer[1] = face.vertices[1];
-//        buffer[2] = face.vertices[2];
-//    }
-//}
 
 
 
@@ -111,7 +96,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 void MxCell::dump() {
 
     for (uint i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &ti = *boundary[i]->triangle;
+        const MxPolygon &ti = *boundary[i]->polygon;
 
         std::cout << "face[" << i << "] {" << std::endl;
         //std::cout << "vertices:" << ti.vertices << std::endl;
@@ -119,35 +104,6 @@ void MxCell::dump() {
     }
 
 }
-
-HRESULT MxCell::removeChild(TrianglePtr tri) {
-    if(tri->cells[0] != this && tri->cells[1] != this) {
-        return mx_error(E_FAIL, "triangle does not belong to this cell");
-    }
-
-    int index = tri->cells[0] == this ? 0 : 1;
-
-    connectTriangleCell(tri, nullptr, index);
-    //tri->cells[index] = nullptr;
-
-
-    PTrianglePtr pt = &tri->partialTriangles[index];
-
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            if(pt->neighbors[i] && pt->neighbors[i]->neighbors[j] == pt) {
-                pt->neighbors[i]->neighbors[j] = nullptr;
-                break;
-            }
-        }
-        pt->neighbors[i] = nullptr;
-    }
-
-    remove(boundary, pt);
-
-    return S_OK;
-}
-
 
 
 /* POV mesh format:
@@ -179,7 +135,7 @@ void MxCell::writePOV(std::ostream& out) {
     out << "face_indices {" << std::endl;
     out << boundary.size()  << std::endl;
     for (int i = 0; i < boundary.size(); ++i) {
-        const MxTriangle &face = *boundary[i]->triangle;
+        const MxPolygon &face = *boundary[i]->polygon;
         //out << face.vertices << std::endl;
         //auto &pf = boundary[i];
         //for (int j = 0; j < 3; ++j) {
@@ -191,68 +147,6 @@ void MxCell::writePOV(std::ostream& out) {
     out << "}" << std::endl;
 }
 
-HRESULT MxCell::appendChild(PTrianglePtr pt) {
-
-    if(!pt) {
-        return mx_error(E_FAIL, "partial triangle is null");
-    }
-
-    int ptIndx = &pt->triangle->partialTriangles[0] == pt ? 0 : 1;
-
-    if(pt->triangle->cells[ptIndx] == this) {
-        return mx_error(E_FAIL, "partial triangle is already attached to this cell");
-    }
-
-    if(pt->triangle->cells[(ptIndx+1)%2] == this) {
-        return mx_error(E_FAIL, "opposite partial triangle is already attached to this cell");
-    }
-
-    if (pt->triangle->cells[ptIndx] != nullptr) {
-        return mx_error(E_FAIL, "partial triangle is already attached to a cell at the specified index");
-    }
-
-    if (pt->neighbors[0] ||
-        pt->neighbors[1] ||
-        pt->neighbors[2]) {
-        return mx_error(E_FAIL, "partial triangle neighbors already connected");
-    }
-
-    connectTriangleCell(pt->triangle, this, ptIndx);
-
-    /*
-    std::cout << __PRETTY_FUNCTION__ << "{"
-        << "\triangle:{id:" << pt->triangle->id
-        << ", pos:{" << pt->triangle->vertices[0]->position
-        << ", " << pt->triangle->vertices[1]->position
-        << ", " << pt->triangle->vertices[2]->position
-        << "}}}" << std::endl;
-
-    for(int i = 0; i < boundary.size(); ++i) {
-        auto t = boundary[i];
-        std::cout << i << ", {" << t->triangle->vertices[0]->position;
-        std::cout << ", " << t->triangle->vertices[1]->position;
-        std::cout << ", " << t->triangle->vertices[2]->position;
-        std::cout << "}" << std::endl;
-    }
-     */
-
-    // scan through the list of partial triangles, and connect whichever ones share
-    // an edge with the given triangle.
-    for(PTrianglePtr t : boundary) {
-        for(int k = 0; k < 3; ++k) {
-            if(adjacentTriangleVertices(pt->triangle, t->triangle)) {
-                connectPartialTrianglePartialTriangle(pt, t);
-                assert(adjacentPartialTrianglePointers(pt, t));
-                break;
-            }
-        }
-    }
-
-    boundary.push_back(pt);
-
-    return S_OK;
-}
-
 HRESULT MxCell::updateDerivedAttributes() {
     area = 0;
     volume = 0;
@@ -260,7 +154,7 @@ HRESULT MxCell::updateDerivedAttributes() {
     int ntri = 0;
 
     for(auto pt : boundary) {
-        TrianglePtr tri = pt->triangle;
+        PolygonPtr tri = pt->polygon;
 
         assert(tri->area >= 0);
 
@@ -283,12 +177,12 @@ HRESULT MxCell::updateDerivedAttributes() {
     //std::cout << "cell id:" << id << ", volume:" << volume << ", area:" << area << std::endl;
 
     if(!isRoot()) {
-        for(PTrianglePtr pt : boundary) {
-            if(pt->triangle->orientation() != Orientation::Outward) {
-                pt->triangle->color = Color4{0., 1., 0., 0.3};
+        for(PPolygonPtr pt : boundary) {
+            if(pt->polygon->orientation() != Orientation::Outward) {
+                pt->polygon->color = Color4{0., 1., 0., 0.3};
             }
-            else if (pt->triangle->color == Color4{0., 1., 0., 0.3} ) {
-                pt->triangle->color = Color4{0., 0., 0., 0.};
+            else if (pt->polygon->color == Color4{0., 1., 0., 0.3} ) {
+                pt->polygon->color = Color4{0., 0., 0., 0.};
             }
         }
     }
@@ -321,11 +215,11 @@ bool MxCell::isValid() const
         std::vector<uint> badCells;
 
         for(int i = 0; i < boundary.size(); ++i) {
-            if(!boundary[i]->triangle->isValid()) {
-                badCells.push_back(boundary[i]->triangle->id);
+            if(!boundary[i]->polygon->isValid()) {
+                badCells.push_back(boundary[i]->polygon->id);
             }
 
-            std::cout << boundary[i]->triangle << std::endl;
+            std::cout << boundary[i]->polygon << std::endl;
         }
 
         std::cout << "bad cells:";
@@ -352,8 +246,8 @@ Vector3 MxCell::centerOfMass() const
     float mass = 0;
 
 
-    for(PTrianglePtr pt : boundary) {
-        for(VertexPtr v : pt->triangle->vertices) {
+    for(PPolygonPtr pt : boundary) {
+        for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
                 mass += v->mass;
                 sum += v->mass * v->position;
@@ -374,8 +268,8 @@ Vector3 MxCell::radiusMeanVarianceStdDev() const
     std::set<VertexPtr> verts;
     //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
 
-    for(PTrianglePtr pt : boundary) {
-        for(VertexPtr v : pt->triangle->vertices) {
+    for(PPolygonPtr pt : boundary) {
+        for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
                 float x = centroid[0] - v->position[0];
                 float y = centroid[1] - v->position[1];
@@ -409,8 +303,8 @@ Matrix3 MxCell::momentOfInertia() const
     std::set<VertexPtr> verts;
     //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
 
-    for(PTrianglePtr pt : boundary) {
-        for(VertexPtr v : pt->triangle->vertices) {
+    for(PPolygonPtr pt : boundary) {
+        for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
 
                 inertia[0][0]  += v->mass * (centroid[0] * centroid[0]  - v->position[0] * v->position[0]);
@@ -447,8 +341,8 @@ void MxCell::projectVolumeConstraint()
 
     std::set<VertexPtr> verts;
 
-    for(PTrianglePtr pt : boundary) {
-        TrianglePtr tri = pt->triangle;
+    for(PPolygonPtr pt : boundary) {
+        PolygonPtr tri = pt->polygon;
 
         for(VertexPtr v : tri->vertices) {
             if(verts.find(v) == verts.end()) {
@@ -470,7 +364,7 @@ void MxCell::projectVolumeConstraint()
     //    }
     //}
 
-    //for(PTrianglePtr pt : boundary) {
+    //for(PPolygonPtr pt : boundary) {
     //    TrianglePtr tri = pt->triangle;
     //    tri->positionsChanged();
     //}
@@ -487,4 +381,22 @@ void MxCell::projectVolumeConstraint()
     }
     */
 
+}
+
+uint MxCell::faceCount()
+{
+    uint fc = 0;
+    for(CPPolygonPtr poly : boundary ) {
+        fc += poly->polygon->vertices.size();
+    }
+    return fc;
+}
+
+uint MxCell::vertexCount()
+{
+    uint vc = 0;
+    for(CPPolygonPtr poly : boundary ) {
+        vc += 3 * poly->polygon->vertices.size();
+    }
+    return vc;
 }

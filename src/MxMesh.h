@@ -16,12 +16,12 @@
 
 #include <Magnum/Magnum.h>
 #include <Magnum/Mesh.h>
+#include <MxEdge.h>
 #include "mechanica_private.h"
 
 
 #include "MxCell.h"
 #include "MeshOperations.h"
-#include "MxSkeletalEdge.h"
 
 
 
@@ -33,7 +33,7 @@ MxAPI_DATA(MxCellType) *MxUniverseCell_Type;
 /**
  * The type object for a universe partial triangle.
  */
-MxAPI_DATA(MxPartialTriangleType) *MxUniversePartialTriangle_Type;
+MxAPI_DATA(MxPartialPolygonType) *MxUniversePartialTriangle_Type;
 
 /**
  * Internal implementation of MxObject
@@ -195,7 +195,7 @@ struct MxMesh  {
     /**
      * Searches for a triangle which contains the given three vertices.
      */
-    TrianglePtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
+    PolygonPtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
 
     /**
      * searches the edge list and checks to see if there is a skeletal edge
@@ -208,19 +208,9 @@ struct MxMesh  {
      *
      * returns a new, orphaned triangle.
      */
-    TrianglePtr createTriangle(MxTriangleType *type,
-            const std::array<VertexPtr, 3> &verts);
+    PolygonPtr createTriangle(MxPolygonType *type,
+            const std::vector<VertexPtr> &verts);
 
-    /**
-     * Creates a new triangle for the given three vertices.
-     *
-     * The cells get attaches to each side of the triangles, and the cell types are
-     * used to determine the triangle type.
-     *
-     * returns a new, orphaned triangle.
-     */
-    TrianglePtr createTriangle(const std::array<CellPtr, 2>&,
-            const std::array<VertexPtr, 3>&);
 
     /**
      * Creates a new edge between a given pair of vertices.
@@ -274,15 +264,15 @@ struct MxMesh  {
 
     HRESULT deleteVertex(VertexPtr v);
 
-    HRESULT deleteTriangle(TrianglePtr tri);
+    HRESULT deleteTriangle(PolygonPtr tri);
 
-    bool valid(TrianglePtr p);
+    bool valid(PolygonPtr p);
 
     bool valid(CellPtr c);
 
     bool valid(VertexPtr v);
 
-    bool valid(PTrianglePtr p);
+    bool valid(PPolygonPtr p);
 
     /**
      * Allocates a new type, and adds it to the list of objects managed by this
@@ -306,7 +296,7 @@ struct MxMesh  {
 
     CellPtr rootCell() const {return _rootCell;};
 
-    std::vector<TrianglePtr> triangles;
+    std::vector<PolygonPtr> triangles;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
     /**
@@ -324,7 +314,7 @@ struct MxMesh  {
      * debug code to set the alpha to near zero on all triangles.
      */
     void makeTrianglesTransparent() {
-        for (TrianglePtr tri : triangles) {
+        for (PolygonPtr tri : triangles) {
             tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
             tri->alpha = 0.0;
         }
@@ -339,7 +329,7 @@ struct MxMesh  {
 
     void markEdge(const Edge& edge);
 
-    void markTriangle(const TrianglePtr tri);
+    void markTriangle(const PolygonPtr tri);
 
 private:
 
@@ -349,7 +339,7 @@ private:
 
     bool validateTriangles();
 
-    bool validateTriangle(const TrianglePtr tri);
+    bool validateTriangle(const PolygonPtr tri);
 
 
 
@@ -371,14 +361,14 @@ private:
 
 
     friend struct MxVertex;
-    friend struct MxTriangle;
+    friend struct MxPolygon;
     friend struct MxFacet;
     friend struct MxEdge;
     friend struct MxCell;
     friend struct MeshOperation;
     friend struct RadialEdgeCollapse;
     friend struct RadialEdgeSplit;
-    friend struct MxSkeletalEdge;
+    friend struct MxEdge;
 
 };
 

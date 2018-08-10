@@ -15,9 +15,8 @@
 #include "Magnum/Math/Color.h"
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix3.h>
+#include <MxPolygon.h>
 #include "MxMeshCore.h"
-#include "MxTriangle.h"
-#include "MeshIterators.h"
 #include "MeshRelationships.h"
 
 
@@ -89,7 +88,7 @@ struct MxCell : MxObject, MxMeshNode {
     /**
      * the closed set of faces that define the boundary of this cell
      */
-    std::vector<struct MxPartialTriangle*> boundary;
+    std::vector<struct MxPartialPolygon*> boundary;
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state
@@ -125,7 +124,7 @@ struct MxCell : MxObject, MxMeshNode {
      * a mesh may completely share a vertex between neighboring triangles and have
      * per-vertex normals ant attributes.
      */
-    inline uint faceCount() { return boundary.size(); }
+    uint faceCount();
 
     /**
      * Even though we share position for vertices, each face has
@@ -133,7 +132,7 @@ struct MxCell : MxObject, MxMeshNode {
      * for each face. Not a problem because we compute these, don't
      * waste memory.
      */
-    inline uint vertexCount() {return 3 * boundary.size(); };
+    uint vertexCount();
 
     /**
      * Write vertex attributes to a supplied buffer. The given pointer is typically
@@ -145,42 +144,6 @@ struct MxCell : MxObject, MxMeshNode {
     void vertexAtributeData(const std::vector<MxVertexAttribute> &attributes,
             uint vertexCount, uint stride, void* buffer);
 
-
-    /**
-     * Adds an orphaned triangle to this cell. The triangle must have at least one free
-     * cell slot (it can only be attached to at most one existing cell).
-     *
-     * Searches the existing triangles, and examines if the new tri is adjacent
-     * (shares a pair of vertices) with existing triangles, then this method connects
-     * the partial faces of the existing and new triangle.
-     *
-     * If the new triangle is already attached to an existing cell, then this method
-     * will either add the tri to the existing face (if one exists), or it will generate
-     * a new face, and append that face to both this cell, and the other cell to which
-     * the triangle incident to.
-     *
-     * @param index, specifies the the orientation of the triangle, must be either
-     * 0 or 1. A 0 means the that the triangle winding orients the normal away from the
-     * cell, and the cell goes in the MxTriangle::cell[0] position, a 1 means the
-     * triangle winding is backwards, and must go in the MxTriangle::cells[1] slot. Must
-     * go in the correct slot so the normal gets correctly calculated.
-     */
-    HRESULT appendChild(PTrianglePtr tri);
-
-
-    /**
-     * Removes the triangle from this cell, the triangle is then no-longer attached
-     * to this cell. If the triangle is not attached to any other cell, it becomes
-     * orphaned.
-     *
-     * Does not modify or alter geometry, removing a triangle from a cell will
-     * likely leave a hole in the cell, making such that the cell is no longer
-     * a manifold surface.
-     *
-     * Warning, volume calculations for non-manifold cells will not yield a
-     * correct value, volume is undefined for non-manifold cells.
-     */
-    HRESULT removeChild(TrianglePtr tri);
 
     /**
      * Inform the cell that the topology changed (change in vertex or triangle
