@@ -15,11 +15,11 @@
  * form a common edge. Note, this does NOT check the pointer relationships
  * only that the triangles share two vertices.
  */
-bool adjacentTriangleVertices(CPolygonPtr a, CPolygonPtr b);
+bool adjacentPolygonVertices(CPolygonPtr a, CPolygonPtr b);
 
-bool connectedTrianglePointers(CPolygonPtr a, CPolygonPtr b);
+bool connectedPolygonPointers(CPolygonPtr a, CPolygonPtr b);
 
-bool connectedTriangleCellPointers(CPolygonPtr t, CCellPtr c);
+bool connectedPolygonCellPointers(CPolygonPtr t, CCellPtr c);
 
 
 /**
@@ -35,29 +35,29 @@ int indexOfEdgeVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
  * This only checks vertex relationships, this does NOT check that the
  * triangle and edge pointers are connected.
  */
-bool incidentEdgeTriangleVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
+bool incidentEdgePolygonVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
 
 /**
  * Are the edge and triangle pointers connected. Only checks the pointers
  * relationships, but does not check vertex relationships.
  */
-bool connectedEdgeTrianglePointers(CSkeletalEdgePtr edge, CPolygonPtr tri);
+bool connectedEdgePolygonPointers(CSkeletalEdgePtr edge, CPolygonPtr tri);
 
-inline bool connectedCellTrianglePointers(CCellPtr c, CPolygonPtr t ) {
-    return connectedTriangleCellPointers(t, c);
+inline bool connectedCellPolygonPointers(CCellPtr c, CPolygonPtr t ) {
+    return connectedPolygonCellPointers(t, c);
 }
 
 
-bool incidentTriangleVertex(CPolygonPtr tri, CVertexPtr v);
+bool incidentPolygonVertex(CPolygonPtr tri, CVertexPtr v);
 
-inline bool incidentVertexTriangle(CVertexPtr v, CPolygonPtr tri) {
-    return incidentTriangleVertex(tri, v);
+inline bool incidentVertexPolygon(CVertexPtr v, CPolygonPtr tri) {
+    return incidentPolygonVertex(tri, v);
 }
 
-bool incidentPartialTriangleVertex(CPPolygonPtr tri, CVertexPtr v);
+bool incidentPartiaPolygonVertex(CPPolygonPtr tri, CVertexPtr v);
 
 inline bool incident(CVertexPtr v, CPPolygonPtr tri) {
-    return incidentPartialTriangleVertex(tri, v);
+    return incidentPartiaPolygonVertex(tri, v);
 }
 
 
@@ -93,7 +93,7 @@ bool incident(CPPolygonPtr pt, const Edge&);
  * on the shared edge and the shared cells. If cell is not null, this will only
  * connect the partial triangles on the side that's connected to the given cell.
  */
-void connect_triangle_partial_triangles(PolygonPtr a, PolygonPtr b, CCellPtr cell = nullptr);
+void connect_triangle_partial_polygons(PolygonPtr a, PolygonPtr b, CCellPtr cell = nullptr);
 
 /**
  * Connects the pointers of a pair of partial triangles. Searches
@@ -101,7 +101,7 @@ void connect_triangle_partial_triangles(PolygonPtr a, PolygonPtr b, CCellPtr cel
  * triangles must have at least one empty (null) neighbor pointer
  * each.
  */
-void connectPartialTrianglePartialTriangle(PPolygonPtr a, PPolygonPtr b);
+void connectPartialTrianglePartialPolygon(PPolygonPtr a, PPolygonPtr b);
 
 /**
  * Connects a triangle with a cell.
@@ -121,7 +121,7 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell);
  * Disconnects a pair of partial triangles, finds the adjacent
  * neighbor pointer and sets them both to null.
  */
-void disconnect_partial_triangles(PPolygonPtr a, PPolygonPtr b);
+void disconnect_partial_polygons(PPolygonPtr a, PPolygonPtr b);
 
 /**
  * Disconnect a triangle from the edge formed by the vertices a and b.
@@ -164,14 +164,14 @@ void reconnect(PPolygonPtr o, PPolygonPtr n, const Edge&);
  * Disconnects all the partial triangles that referred to the
  * two triangles that were disconnected.
  */
-void disconnect_triangle_vertex(PolygonPtr tri, VertexPtr v);
+void disconnect_polygon_vertex(PolygonPtr tri, VertexPtr v);
 
 /**
  * replaces the o vertex with the v vertex.
  */
-HRESULT replaceTriangleVertex(PolygonPtr tri, VertexPtr o, VertexPtr v);
+HRESULT replacePolygonVertex(PolygonPtr tri, VertexPtr o, VertexPtr v);
 
-void connect_triangle_vertex(PolygonPtr tri, VertexPtr v);
+void connect_polygon_vertex(PolygonPtr tri, VertexPtr v);
 
 /**
  * Connect any open neighbor slots in a triangle to the neighboring triangle
@@ -185,7 +185,7 @@ void connect_triangle_vertex(PolygonPtr tri, VertexPtr v);
  * pointer. The neighbor pointer must be empty in both triangles, otherwise
  * error is returned.
  */
-HRESULT connectTriangleTriangle(PolygonPtr, PolygonPtr);
+HRESULT connectPolygonPolygon(PolygonPtr, PolygonPtr);
 
 bool connectedEdgeVertex(CSkeletalEdgePtr, CVertexPtr);
 

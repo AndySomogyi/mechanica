@@ -69,13 +69,30 @@ void main() {
     const float area = abs(dot(vec2(-v[1].y, v[1].x), v[2]));
 
     /* Add distance to opposite side to each vertex */
-    for(int i = 0; i != 3; ++i) {
-        dist = vec3(0.0, 0.0, 0.0);
-        dist[i] = area/length(v[i]);
-        gl_Position = gl_in[i].gl_Position;
-        geomColor = vertColor[i];
-        EmitVertex();
-    }
+
+    // complete and total utter hack to render only outside of polygons.
+    // scales the distance to make the fragment shader think the
+    // edge is further away.
+    // TODO: fix this shit!!!
+
+    dist = vec3(0.0, 0.0, 0.0);
+    dist[0] = 1000  * area/length(v[0]);
+    gl_Position = gl_in[0].gl_Position;
+    geomColor = vertColor[0];
+    EmitVertex();
+
+
+    dist = vec3(0.0, 0.0, 0.0);
+    dist[1] = 1000 * area/length(v[1]);
+    gl_Position = gl_in[1].gl_Position;
+    geomColor = vertColor[1];
+    EmitVertex();
+
+    dist = vec3(0.0, 0.0, 0.0);
+    dist[2] =  area/length(v[2]);
+    gl_Position = gl_in[2].gl_Position;
+    geomColor = vertColor[2];
+    EmitVertex();
 
     EndPrimitive();
 }

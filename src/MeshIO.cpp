@@ -246,7 +246,7 @@ struct ImpFace {
             const aiFace *face, const aiMesh *aim) {
 
         vertices = verticesForFace(vecMap, aim, face);
-        polygon = mesh->createTriangle(&MxPolygon_Type, vertices);
+        polygon = mesh->createPolygon(&MxPolygon_Type, vertices);
     }
 
 
@@ -345,7 +345,7 @@ static ImpEdge *createImpEdge(EdgeVector &edges,  ImpVertex *v0, ImpVertex *v1) 
 
 static void addUnclaimedPartialTrianglesToRoot(MxMesh *mesh)
 {
-    for(PolygonPtr tri : mesh->triangles) {
+    for(PolygonPtr tri : mesh->polygons) {
         assert(tri->cells[0]);
         if(!tri->cells[1]) {
             VERIFY(connectPolygonCell(tri, mesh->rootCell()));

@@ -33,9 +33,9 @@ bool MxCell::manifold() const {
         }
 
         // check vertices
-        if (!adjacentTriangleVertices(t->polygon, t->neighbors[0]->polygon) ||
-            !adjacentTriangleVertices(t->polygon, t->neighbors[1]->polygon) ||
-            !adjacentTriangleVertices(t->polygon, t->neighbors[2]->polygon)) {
+        if (!adjacentPolygonVertices(t->polygon, t->neighbors[0]->polygon) ||
+            !adjacentPolygonVertices(t->polygon, t->neighbors[1]->polygon) ||
+            !adjacentPolygonVertices(t->polygon, t->neighbors[2]->polygon)) {
             return false;
         }
     }

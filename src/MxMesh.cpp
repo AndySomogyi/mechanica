@@ -117,26 +117,26 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
     remove(vertices, v);
 #ifndef NDEBUG
-    for(PolygonPtr tri : triangles) {
-        assert(!incidentTriangleVertex(tri, v));
+    for(PolygonPtr tri : polygons) {
+        assert(!incidentPolygonVertex(tri, v));
     }
 #endif
     delete v;
     return S_OK;
 }
 
-HRESULT MxMesh::deleteTriangle(PolygonPtr tri) {
+HRESULT MxMesh::deletePolygon(PolygonPtr tri) {
 
     meshOperations.removeDependentOperations(tri);
 
-    remove(triangles, tri);
+    remove(polygons, tri);
     delete tri;
 
-    assert(!contains(triangles, tri));
+    assert(!contains(polygons, tri));
 
 #ifndef NDEBUG
     for(CellPtr cell : cells) {
-        assert(!connectedCellTrianglePointers(cell, tri));
+        assert(!connectedCellPolygonPointers(cell, tri));
     }
 
 #endif
@@ -160,7 +160,7 @@ int test(const std::vector<std::string*> &stuff) {
 
 bool MxMesh::valid(PolygonPtr p) {
 
-    if(std::find(triangles.begin(), triangles.end(), p) == triangles.end()) {
+    if(std::find(polygons.begin(), polygons.end(), p) == polygons.end()) {
         return false;
     }
 
@@ -202,7 +202,7 @@ MxMesh::~MxMesh() {
     for(auto p : vertices) {
         delete p;
     }
-    for(auto t : triangles) {
+    for(auto t : polygons) {
         delete t;
     }
 }
@@ -213,7 +213,7 @@ HRESULT MxMesh::applyMeshOperations() {
     MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
     MxVertex::minForceDivergence = std::numeric_limits<float>::max();
 
-    if((result = meshOperations.positionsChanged(triangles.begin(), triangles.end())) != S_OK) {
+    if((result = meshOperations.positionsChanged(polygons.begin(), polygons.end())) != S_OK) {
         return result;
     }
 
@@ -228,12 +228,12 @@ HRESULT MxMesh::applyMeshOperations() {
     return updateDerivedAttributes();
 }
 
-PolygonPtr MxMesh::createTriangle(MxPolygonType* type,
+PolygonPtr MxMesh::createPolygon(MxPolygonType* type,
         const std::vector<VertexPtr>& verts) {
 
-    PolygonPtr tri = new MxPolygon{(uint)triangles.size(), type, verts};
+    PolygonPtr tri = new MxPolygon{(uint)polygons.size(), type, verts};
 
-    triangles.push_back(tri);
+    polygons.push_back(tri);
 
     //assert(tri->isValid());
 
@@ -243,8 +243,8 @@ PolygonPtr MxMesh::createTriangle(MxPolygonType* type,
 bool MxMesh::validateVertex(const VertexPtr v) {
     assert(contains(vertices, v));
     for(PolygonPtr tri : v->triangles()) {
-        assert(incidentTriangleVertex(tri, v));
-        assert(contains(triangles, tri));
+        assert(incidentPolygonVertex(tri, v));
+        assert(contains(polygons, tri));
         assert(tri->cells[0] && tri->cells[1]);
     }
     return true;
@@ -259,8 +259,8 @@ bool MxMesh::validateVertices() {
 
 bool MxMesh::validateTriangles() {
     bool result = true;
-    for(int i = 0; i < triangles.size(); ++i) {
-        PolygonPtr tri = triangles[i];
+    for(int i = 0; i < polygons.size(); ++i) {
+        PolygonPtr tri = polygons[i];
         result &= tri->isValid();
     }
     return true;
@@ -298,7 +298,7 @@ HRESULT MxMesh::updateDerivedAttributes()
         v->area = 0;
     }
 
-    for(PolygonPtr tri : triangles) {
+    for(PolygonPtr tri : polygons) {
 
         tri->partialTriangles[0].force[0] = Vector3{};
         tri->partialTriangles[0].force[1] = Vector3{};
@@ -334,7 +334,7 @@ SkeletalEdgePtr MxMesh::findSkeletalEdge(CVertexPtr a, CVertexPtr b) const
 
 
 void MxMesh::markEdge(const Edge& edge) {
-    for(PolygonPtr tri : triangles) {
+    for(PolygonPtr tri : polygons) {
         tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
     }
 }
@@ -373,7 +373,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
         }
     }
 
-    for(PolygonPtr tri : triangles) {
+    for(PolygonPtr tri : polygons) {
 
         tri->partialTriangles[0].force[0] = Vector3{};
         tri->partialTriangles[0].force[1] = Vector3{};

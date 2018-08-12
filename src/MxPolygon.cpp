@@ -20,7 +20,7 @@ static std::string to_string(const MxPartialPolygon *pt) {
 
 std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
 {
-    os << "Triangle {" << std::endl
+    os << "Polygon {" << std::endl
        << "id:" << tri->id << "," << std::endl
        << "cells:{" << to_string(tri->cells[0]) << "," << to_string(tri->cells[1]) << "}," << std::endl
        << "vertices:{" << std::endl
@@ -112,9 +112,9 @@ bool MxPolygon::isConnected() const {
         assert(this == t->polygon);
 
         // check vertices
-        bool tadj0 = adjacentTriangleVertices(const_cast<PolygonPtr>(this), t->neighbors[0]->polygon);
-        bool tadj1 = adjacentTriangleVertices(const_cast<PolygonPtr>(this), t->neighbors[1]->polygon);
-        bool tadj2 = adjacentTriangleVertices(const_cast<PolygonPtr>(this), t->neighbors[2]->polygon);
+        bool tadj0 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[0]->polygon);
+        bool tadj1 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[1]->polygon);
+        bool tadj2 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[2]->polygon);
 
         if(!(tadj0 && tadj1 && tadj2)) {
             std::cout << "error, partial triangle neighbor triangle not adjacent to this triangle" << std::endl;
@@ -148,7 +148,7 @@ bool MxPolygon::isValid() const  {
                 return false;
             }
 
-            if(!adjacentTriangleVertices(this, partialTriangles[cellId].neighbors[adjId]->polygon)) {
+            if(!adjacentPolygonVertices(this, partialTriangles[cellId].neighbors[adjId]->polygon)) {
                 std::cout << "error, triangle:" << this << std::endl
                         << ", partialTriangles["
                         << cellId << "].neighbors["
@@ -157,7 +157,7 @@ bool MxPolygon::isValid() const  {
                 return false;
             }
 
-            if(!connectedCellTrianglePointers(cells[cellId], partialTriangles[cellId].neighbors[adjId]->polygon)) {
+            if(!connectedCellPolygonPointers(cells[cellId], partialTriangles[cellId].neighbors[adjId]->polygon)) {
                 std::cout << "error, triangle:" << this << std::endl
                         << ", partialTriangles["
                         << cellId << "].neighbors["
@@ -198,7 +198,7 @@ bool MxPolygon::isValid() const  {
             return false;
         }
 
-        if(!connectedTriangleCellPointers(const_cast<PolygonPtr>(this), cells[i])) {
+        if(!connectedPolygonCellPointers(const_cast<PolygonPtr>(this), cells[i])) {
             std::cout << "error, triangle:" << this << std::endl
                     << ", triangle is not incident to cell[" << i << "]" << std::endl;
             return false;
@@ -273,7 +273,7 @@ PolygonPtr MxPolygon::adjacentTriangleForEdge(CVertexPtr v1,
         assert(partialTriangles[0].neighbors[i]);
         PolygonPtr tri = partialTriangles[0].neighbors[i]->polygon;
         assert(tri);
-        if(incidentTriangleVertex(tri, v1) && incidentTriangleVertex(tri, v2)) {
+        if(incidentPolygonVertex(tri, v1) && incidentPolygonVertex(tri, v2)) {
             return tri;
         }
     }
@@ -294,7 +294,7 @@ bool MxPartialPolygon::isValid() const
             return false;
         }
 
-        if(!adjacentTriangleVertices(polygon, neighbors[adjId]->polygon)) {
+        if(!adjacentPolygonVertices(polygon, neighbors[adjId]->polygon)) {
             std::cout << "error, partial triangle id:"
                     << polygon->id << "." << id
                     << ", neighbors[" << adjId << "]->triangle does not have adjacent vertices to this triangle, " << std::endl
@@ -302,7 +302,7 @@ bool MxPartialPolygon::isValid() const
             return false;
         }
 
-        if(!connectedTrianglePointers(polygon, neighbors[adjId]->polygon)) {
+        if(!connectedPolygonPointers(polygon, neighbors[adjId]->polygon)) {
             std::cout << "error, partial triangle id:"
                     << polygon->id << "." << id
                     << ", neighbors[" << adjId << "]->triangle does not have adjacent pointers to this triangle"

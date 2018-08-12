@@ -120,7 +120,7 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/fcc13.obj", 1.0, handler);
 
 
     mesh->setShortCutoff(0);
@@ -171,7 +171,7 @@ HRESULT GrowthModel::calcForce() {
 
 void GrowthModel::applyDifferentialSurfaceTension() {
 
-    for(PolygonPtr tri : mesh->triangles) {
+    for(PolygonPtr tri : mesh->polygons) {
 
         if((tri->cells[0] == mesh->cells[1] && tri->cells[1] == mesh->cells[2]) ||
            (tri->cells[0] == mesh->cells[2] && tri->cells[1] == mesh->cells[1])) {

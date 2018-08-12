@@ -193,11 +193,6 @@ struct MxMesh  {
     int findVertex(const Magnum::Vector3 &pos, double tolerance = 0.00001);
 
     /**
-     * Searches for a triangle which contains the given three vertices.
-     */
-    PolygonPtr findTriangle(const std::array<VertexPtr, 3> &vertexInd);
-
-    /**
      * searches the edge list and checks to see if there is a skeletal edge
      * for the given pair of vertices.
      */
@@ -208,7 +203,7 @@ struct MxMesh  {
      *
      * returns a new, orphaned triangle.
      */
-    PolygonPtr createTriangle(MxPolygonType *type,
+    PolygonPtr createPolygon(MxPolygonType *type,
             const std::vector<VertexPtr> &verts);
 
 
@@ -264,7 +259,7 @@ struct MxMesh  {
 
     HRESULT deleteVertex(VertexPtr v);
 
-    HRESULT deleteTriangle(PolygonPtr tri);
+    HRESULT deletePolygon(PolygonPtr tri);
 
     bool valid(PolygonPtr p);
 
@@ -296,7 +291,7 @@ struct MxMesh  {
 
     CellPtr rootCell() const {return _rootCell;};
 
-    std::vector<PolygonPtr> triangles;
+    std::vector<PolygonPtr> polygons;
     std::vector<VertexPtr> vertices;
     std::vector<CellPtr> cells;
     /**
@@ -314,7 +309,7 @@ struct MxMesh  {
      * debug code to set the alpha to near zero on all triangles.
      */
     void makeTrianglesTransparent() {
-        for (PolygonPtr tri : triangles) {
+        for (PolygonPtr tri : polygons) {
             tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
             tri->alpha = 0.0;
         }

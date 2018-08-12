@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <iostream>
 
-bool connectedTriangleCellPointers(CPolygonPtr t, CCellPtr c) {
+bool connectedPolygonCellPointers(CPolygonPtr t, CCellPtr c) {
     return t->cells[0] == c || t->cells[1] == c;
 }
 
-bool adjacentTriangleVertices(CPolygonPtr a, CPolygonPtr b) {
+bool adjacentPolygonVertices(CPolygonPtr a, CPolygonPtr b) {
 
     for(int k = 0; k < 3; ++k) {
         if ((a->vertices[0] == b->vertices[k] &&
@@ -48,7 +48,7 @@ bool adjacentPartialTrianglePointers(CPPolygonPtr a, CPPolygonPtr b) {
         (b->neighbors[0] == a || b->neighbors[1] == a || b->neighbors[2] == a);
 
 #ifndef NDEBUG
-    if(result) assert(adjacentTriangleVertices(a->polygon, b->polygon));
+    if(result) assert(adjacentPolygonVertices(a->polygon, b->polygon));
 #endif
     return result;
 }
@@ -56,7 +56,7 @@ bool adjacentPartialTrianglePointers(CPPolygonPtr a, CPPolygonPtr b) {
 
 void connect_triangle_partial_triangles(PolygonPtr a, PolygonPtr b, CCellPtr cell) {
     // check to see that triangles share adjacent vertices.
-    assert(adjacentTriangleVertices(a, b));
+    assert(adjacentPolygonVertices(a, b));
 
 #ifndef NDEBUG
     bool found = false;
@@ -67,7 +67,7 @@ void connect_triangle_partial_triangles(PolygonPtr a, PolygonPtr b, CCellPtr cel
         for(uint i = 0; i < 2; ++i) {
             for(uint j = 0; j < 2; ++j) {
                 if(cell == a->cells[i] && cell == b->cells[j]) {
-                    connectPartialTrianglePartialTriangle(&a->partialTriangles[i], &b->partialTriangles[j]);
+                    connectPartialTrianglePartialPolygon(&a->partialTriangles[i], &b->partialTriangles[j]);
 #ifndef NDEBUG
                     found = true;
 #endif
@@ -82,7 +82,7 @@ void connect_triangle_partial_triangles(PolygonPtr a, PolygonPtr b, CCellPtr cel
         for(uint i = 0; i < 2; ++i) {
             for(uint j = 0; j < 2; ++j) {
                 if(a->cells[i] == b->cells[j]) {
-                    connectPartialTrianglePartialTriangle(&a->partialTriangles[i], &b->partialTriangles[j]);
+                    connectPartialTrianglePartialPolygon(&a->partialTriangles[i], &b->partialTriangles[j]);
 #ifndef NDEBUG
                     found = true;
 #endif
@@ -154,7 +154,7 @@ inline EdgeIndx adjacentEdgeIndex(CPolygonPtr a, CPolygonPtr b) {
     return result;
 }
 
-void connectPartialTrianglePartialTriangle(PPolygonPtr a, PPolygonPtr b) {
+void connectPartialTrianglePartialPolygon(PPolygonPtr a, PPolygonPtr b) {
 
     EdgeIndx edge = adjacent_edge_indx(a, b);
 
@@ -173,7 +173,7 @@ void connectPartialTrianglePartialTriangle(PPolygonPtr a, PPolygonPtr b) {
     b->neighbors[edge[1]] = a;
 }
 
-void disconnect_partial_triangles(PPolygonPtr a, PPolygonPtr b) {
+void disconnect_partial_polygons(PPolygonPtr a, PPolygonPtr b) {
     for(int i = 0; i < 3; ++i) {
         if(a->neighbors[i] == b) {
             a->neighbors[i] = nullptr;
@@ -185,7 +185,7 @@ void disconnect_partial_triangles(PPolygonPtr a, PPolygonPtr b) {
     }
 }
 
-bool incidentTriangleVertex(CPolygonPtr tri, CVertexPtr v) {
+bool incidentPolygonVertex(CPolygonPtr tri, CVertexPtr v) {
     assert(tri);
     return tri->vertices[0] == v || tri->vertices[1] == v || tri->vertices[2] == v;
 }
@@ -195,7 +195,7 @@ bool incident(CPPolygonPtr pt, const Edge& edge) {
 }
 
 bool incident(CPolygonPtr tri, const std::array<VertexPtr, 2>& edge) {
-    return incidentTriangleVertex(tri, edge[0]) && incidentTriangleVertex(tri, edge[1]);
+    return incidentPolygonVertex(tri, edge[0]) && incidentPolygonVertex(tri, edge[1]);
 }
 
 
@@ -205,8 +205,8 @@ void reconnect(PPolygonPtr o, PPolygonPtr n, const std::array<VertexPtr, 2>& edg
            o->neighbors[i]->polygon &&
            incident(o->neighbors[i]->polygon, edge)) {
             PPolygonPtr adj = o->neighbors[i];
-            disconnect_partial_triangles(o, adj);
-            connectPartialTrianglePartialTriangle(n, adj);
+            disconnect_partial_polygons(o, adj);
+            connectPartialTrianglePartialPolygon(n, adj);
             return;
         }
     }
@@ -214,11 +214,11 @@ void reconnect(PPolygonPtr o, PPolygonPtr n, const std::array<VertexPtr, 2>& edg
 
 }
 
-bool incidentPartialTriangleVertex(CPPolygonPtr tri, CVertexPtr v) {
-    return incidentTriangleVertex(tri->polygon, v);
+bool incidentPartiaPolygonVertex(CPPolygonPtr tri, CVertexPtr v) {
+    return incidentPolygonVertex(tri->polygon, v);
 }
 
-void disconnect_triangle_vertex(PolygonPtr tri, VertexPtr v) {
+void disconnect_polygon_vertex(PolygonPtr tri, VertexPtr v) {
     if(!v) return;
 
     for(uint i = 0; i < 3; ++i) {
@@ -232,7 +232,7 @@ void disconnect_triangle_vertex(PolygonPtr tri, VertexPtr v) {
     assert(0 && "triangle did not match vertex");
 }
 
-void connect_triangle_vertex(PolygonPtr tri, VertexPtr v) {
+void connect_polygon_vertex(PolygonPtr tri, VertexPtr v) {
     for(int i = 0; i < 3; ++i) {
         if(tri->vertices[i] == nullptr) {
             tri->vertices[i] = v;
@@ -245,7 +245,7 @@ void connect_triangle_vertex(PolygonPtr tri, VertexPtr v) {
 
 
 
-HRESULT replaceTriangleVertex(PolygonPtr tri, VertexPtr o, VertexPtr v) {
+HRESULT replacePolygonVertex(PolygonPtr tri, VertexPtr o, VertexPtr v) {
     for(int i = 0; i < 3; ++i) {
         if(tri->vertices[i] == o) {
             HRESULT result = o->removeTriangle(tri);
@@ -262,13 +262,13 @@ HRESULT replaceTriangleVertex(PolygonPtr tri, VertexPtr o, VertexPtr v) {
 bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     if(v1->triangles().size() < v2->triangles().size()) {
         for(PolygonPtr tri : v1->triangles()) {
-            if(incidentTriangleVertex(tri, v2)) {
+            if(incidentPolygonVertex(tri, v2)) {
                 return true;
             }
         }
     } else {
         for(PolygonPtr tri : v2->triangles()) {
-            if(incidentTriangleVertex(tri, v1)) {
+            if(incidentPolygonVertex(tri, v1)) {
                 return true;
             }
         }
@@ -276,7 +276,7 @@ bool adjacent(CVertexPtr v1, CVertexPtr v2) {
     return false;
 }
 
-bool connectedTrianglePointers(CPolygonPtr a, CPolygonPtr b)
+bool connectedPolygonPointers(CPolygonPtr a, CPolygonPtr b)
 {
     for(int i = 0; i < 2; ++i) {
         for(int j = 0; j < 3; ++j) {
@@ -328,7 +328,7 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell)
     return E_NOTIMPL;
 }
 
-HRESULT connectTriangleTriangle(PolygonPtr a, PolygonPtr b)
+HRESULT connectPolygonPolygon(PolygonPtr a, PolygonPtr b)
 {
     EdgeIndx edge = adjacentEdgeIndex(a, b);
 
@@ -375,12 +375,12 @@ HRESULT connectTriangleTriangle(PolygonPtr a, PolygonPtr b)
     return E_FAIL;
 }
 
-bool incidentEdgeTriangleVertices(CSkeletalEdgePtr edge, CPolygonPtr tri)
+bool incidentEdgePolygonVertices(CSkeletalEdgePtr edge, CPolygonPtr tri)
 {
-    return incidentTriangleVertex(tri, edge->vertices[0]) && incidentTriangleVertex(tri, edge->vertices[1]);
+    return incidentPolygonVertex(tri, edge->vertices[0]) && incidentPolygonVertex(tri, edge->vertices[1]);
 }
 
-bool connectedEdgeTrianglePointers(CSkeletalEdgePtr edge, CPolygonPtr tri)
+bool connectedEdgePolygonPointers(CSkeletalEdgePtr edge, CPolygonPtr tri)
 {
     for(int i = 0; i < 3; ++i) {
         if(tri->neighbors[i] == edge) {
