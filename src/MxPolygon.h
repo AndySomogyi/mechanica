@@ -78,19 +78,14 @@ struct MxPartialPolygonType : MxType {
 struct MxPartialPolygon : MxObject {
 
     MxPartialPolygon(MxPartialPolygonType *type, MxPolygon *ti,
-            const PartialPolygons& neighbors = {{nullptr, nullptr, nullptr}},
             float mass = 0, MxReal *scalars = nullptr) :
-                MxObject{type}, polygon{ti}, neighbors{neighbors},
+                MxObject{type}, polygon{ti},
                 mass{mass}, scalarFields{scalars} {};
 
     /**
      * index of the triangle that this partial triangle references.
      */
     PolygonPtr polygon;
-    /**
-     * indices of the three neighboring partial triangles.
-     */
-    std::vector<MxPartialPolygon*> neighbors;
 
 
     /**
@@ -121,15 +116,7 @@ struct MxPartialPolygon : MxObject {
 
     std::array<float, 3> vertexAttr;
 
-    int unboundNeighborCount() {
-        int count = 0;
-        for(int i = 0; i < 3; ++i) {
-            if(neighbors[i] == nullptr) {
-                count += 1;
-            }
-        }
-        return count;
-    }
+
 
     bool isValid() const;
 };
@@ -187,13 +174,15 @@ struct MxPolygon : MxObject {
 
     /**
      * Geometric center (barycenter) of the triangle, computed in positionsChanged()
+     *
+     * We presently treat polygons as homogeneous patches of material, so centroid
+     * is the same as center of mass.
      */
     Vector3 centroid;
 
     /**
-     * indices of the 3 vertices in the MxMesh that make up this partial face,
-     * in the correct winding order. The winding of these vertices correspond to the
-     * normal vector.
+     * Polygons are stored in CCW winding order, from the zero indexed cell
+     * perspective.
      */
     std::vector<VertexPtr> vertices;
 
@@ -231,35 +220,17 @@ struct MxPolygon : MxObject {
     }
 
     /**
-     * does this triangle match the given set of vertex
-     * indices.
+     * calculate the volume contribution this polygon has for the given cell.
      *
-     * There are 3 possible forward combinations of 3 vertices,
-     * {1,2,3}, {2,3,1}, {3,1,2}, if any of these combinations
-     * match, then this returns a 1. Similarly, there are 3 possible
-     * reversed combinations, {3,2,1}, {2,1,3}, {1,3,2}, if any of these
-     * match, then method returns a -1, otherwise, 0.
-     *
-     * @returns -1 if the vertices match in reverse order, or a
-     *             reversed permutation.
-     *
-     * @returns 0 if the is no match
-     * @returns 1 if the vertices match in the same order
+     * result is undefined if cell is not attached to this polygon.
      */
-    int matchVertexIndices(const std::array<VertexPtr, 3> &vertInd);
+    float volume(CCellPtr cell) const;
 
 
     /**
-     * Determines the triangle's orientation relative to the cell centroids.
-     *
-     * If the triangle points outwards from both cells, returns Outward. It's
-     * possible that a triangle can be inward for one cell and outward for
-     * the other cell, in say we have one cell protruding into another.
-     *
-     * Does not check the root cell.
+     * Get the vertex normal for the i'th vertex in this polygon.
      */
-    Orientation orientation() const;
-
+    Vector3 vertexNormal(uint i, CCellPtr cell) const;
 
     /**
      * Orient the normal in the correct direction for the given cell.
@@ -279,8 +250,8 @@ struct MxPolygon : MxObject {
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
         partialTriangles {{
-            {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr},
-            {nullptr, nullptr, {{nullptr, nullptr, nullptr}}, 0.0, nullptr}
+            {nullptr, nullptr, 0.0, nullptr},
+            {nullptr, nullptr, 0.0, nullptr}
         }},
         id{0}
     {}
@@ -324,6 +295,8 @@ struct MxPolygon : MxObject {
 
     bool isValid() const;
 
+
+
     float alpha = 0.5;
 
     Magnum::Color4 color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
@@ -336,21 +309,10 @@ struct MxPolygon : MxObject {
         partialTriangles[cellId].mass = val;
     }
 
-
-
-
-
-    /**
-     * Finds the first triangle that is adjacent to this triangle
-     * via the given pair of vertices. If either of the vertices are not
-     * incident to this triangle, returns null.
-     */
-    PolygonPtr adjacentTriangleForEdge(CVertexPtr v1, CVertexPtr v2) const;
-
-
-
-    bool hasSkeletalEdge() const;
-
+private:
+    float _volume = 0.f;
+    std::vector<Vector3> _vertexNormals;
+    std::vector<float> _vertexAreas;
 };
 
 std::ostream& operator<<(std::ostream& os, CPolygonPtr tri);
@@ -367,17 +329,17 @@ namespace Magnum { namespace Math {
      *
      * TODO: have some global to set CCW winding.
      */
-    inline Vector3<float> normal(const Vector3<float>& v1,
+    inline Vector3<float> triangleNormal(const Vector3<float>& v1,
             const Vector3<float>& v2, const Vector3<float>& v3) {
         return Magnum::Math::cross(v2 - v1, v3 - v1);
     }
 
-    inline Vector3<float> normal(const std::array<Vector3<float>, 3> &verts) {
-        return normal(verts[0], verts[1], verts[2]);
+    inline Vector3<float> triangleNormal(const std::array<Vector3<float>, 3> &verts) {
+        return triangleNormal(verts[0], verts[1], verts[2]);
     }
 
-    inline Vector3<float> normal(const std::array<VertexPtr, 3> &verts) {
-        return normal(verts[0]->position, verts[1]->position, verts[2]->position);
+    inline Vector3<float> triangleNormal(const std::array<VertexPtr, 3> &verts) {
+        return triangleNormal(verts[0]->position, verts[1]->position, verts[2]->position);
     }
 
     // Nx = UyVz - UzVy
@@ -387,9 +349,9 @@ namespace Magnum { namespace Math {
     // multiply by neg 1, CCW winding.
 
 
-    inline float triangle_area(const Vector3<float>& v1,
+    inline float triangleArea(const Vector3<float>& v1,
             const Vector3<float>& v2, const Vector3<float>& v3) {
-        Vector3<float> abnormal = Math::normal(v1, v2, v3);
+        Vector3<float> abnormal = Math::triangleNormal(v1, v2, v3);
         float len = abnormal.length();
         return 0.5 * len;
     }

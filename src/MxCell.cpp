@@ -23,22 +23,7 @@ bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex 
 
 bool MxCell::manifold() const {
 
-    for(auto t : boundary) {
 
-        // check pointers
-        if (!adjacentPartialTrianglePointers(t, t->neighbors[0]) ||
-            !adjacentPartialTrianglePointers(t, t->neighbors[1]) ||
-            !adjacentPartialTrianglePointers(t, t->neighbors[2])) {
-            return false;
-        }
-
-        // check vertices
-        if (!adjacentPolygonVertices(t->polygon, t->neighbors[0]->polygon) ||
-            !adjacentPolygonVertices(t->polygon, t->neighbors[1]->polygon) ||
-            !adjacentPolygonVertices(t->polygon, t->neighbors[2]->polygon)) {
-            return false;
-        }
-    }
     return true;
 }
 
@@ -61,7 +46,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
     // counter of current triangle being written to buffer
     uint triCount = 0;
 
-    for(CPPolygonPtr pp : boundary) {
+    for(CPPolygonPtr pp : surface) {
         CPolygonPtr poly = pp->polygon;
 
         for(int i = 0; i < poly->vertices.size(); ++i) {
@@ -93,16 +78,11 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 
 
 
-void MxCell::dump() {
-
-    for (uint i = 0; i < boundary.size(); ++i) {
-        const MxPolygon &ti = *boundary[i]->polygon;
-
-        std::cout << "face[" << i << "] {" << std::endl;
-        //std::cout << "vertices:" << ti.vertices << std::endl;
-        std::cout << "}" << std::endl;
-    }
-
+void MxCell::dump() const {
+    
+    std::cout << "Cell { name: \"" << name << "\", id: " << id
+              << ", area: " << area << ", volume: " << volume
+              << ", centroid: " << centroid  << "}" << std::endl;
 }
 
 
@@ -133,9 +113,9 @@ inside_vector <0,0,1>
 void MxCell::writePOV(std::ostream& out) {
     out << "mesh2 {" << std::endl;
     out << "face_indices {" << std::endl;
-    out << boundary.size()  << std::endl;
-    for (int i = 0; i < boundary.size(); ++i) {
-        const MxPolygon &face = *boundary[i]->polygon;
+    out << surface.size()  << std::endl;
+    for (int i = 0; i < surface.size(); ++i) {
+        const MxPolygon &face = *surface[i]->polygon;
         //out << face.vertices << std::endl;
         //auto &pf = boundary[i];
         //for (int j = 0; j < 3; ++j) {
@@ -147,46 +127,24 @@ void MxCell::writePOV(std::ostream& out) {
     out << "}" << std::endl;
 }
 
-HRESULT MxCell::updateDerivedAttributes() {
+HRESULT MxCell::positionsChanged() {
     area = 0;
     volume = 0;
     centroid = Vector3{0., 0., 0.};
-    int ntri = 0;
+    int npoly = 0;
 
-    for(auto pt : boundary) {
-        PolygonPtr tri = pt->polygon;
+    for(auto pt : surface) {
+        PolygonPtr poly = pt->polygon;
 
-        assert(tri->area >= 0);
+        assert(poly->area >= 0);
 
-        ntri += 1;
-        centroid += tri->centroid;
-        area += tri->area;
-        float volumeContr = tri->area * Math::dot(tri->cellNormal(this), tri->centroid);
-        volume += volumeContr;
-
-        //for(int i = 0; i < 3; ++i) {
-        //    float gaussian = 0;
-        //    float mean = 0;
-        //    discreteCurvature(this, tri->vertices[i], &mean, &gaussian);
-        //    pt->vertexAttr[i] = mean;
-        //}
-    }
-    volume /= 3.;
-    centroid /= (float)ntri;
-
-    //std::cout << "cell id:" << id << ", volume:" << volume << ", area:" << area << std::endl;
-
-    if(!isRoot()) {
-        for(PPolygonPtr pt : boundary) {
-            if(pt->polygon->orientation() != Orientation::Outward) {
-                pt->polygon->color = Color4{0., 1., 0., 0.3};
-            }
-            else if (pt->polygon->color == Color4{0., 1., 0., 0.3} ) {
-                pt->polygon->color = Color4{0., 0., 0., 0.};
-            }
-        }
+        npoly += 1;
+        centroid += poly->centroid;
+        area += poly->area;
+        volume += poly->volume(this);
     }
 
+    centroid /= (float)npoly;
     return S_OK;
 }
 
@@ -203,39 +161,6 @@ HRESULT MxCell::topologyChanged() {
 
 bool MxCell::isValid() const
 {
-    bool result = true;
-
-    for(int i = 0; i < boundary.size(); ++i) {
-        result &= boundary[i]->isValid();
-    }
-
-    if(!result) {
-        std::cout << "cell not valid" << std::endl;
-
-        std::vector<uint> badCells;
-
-        for(int i = 0; i < boundary.size(); ++i) {
-            if(!boundary[i]->polygon->isValid()) {
-                badCells.push_back(boundary[i]->polygon->id);
-            }
-
-            std::cout << boundary[i]->polygon << std::endl;
-        }
-
-        std::cout << "bad cells:";
-        for(auto i : badCells) {
-            std::cout << i << ",";
-        }
-
-        return false;
-
-    }
-
-    if(!manifold()) {
-        std::cout << "error, cellId:" << id << " is not manifold" << std::endl;
-        return false;
-    }
-
     return true;
 }
 
@@ -246,7 +171,7 @@ Vector3 MxCell::centerOfMass() const
     float mass = 0;
 
 
-    for(PPolygonPtr pt : boundary) {
+    for(PPolygonPtr pt : surface) {
         for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
                 mass += v->mass;
@@ -268,7 +193,7 @@ Vector3 MxCell::radiusMeanVarianceStdDev() const
     std::set<VertexPtr> verts;
     //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
 
-    for(PPolygonPtr pt : boundary) {
+    for(PPolygonPtr pt : surface) {
         for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
                 float x = centroid[0] - v->position[0];
@@ -303,7 +228,7 @@ Matrix3 MxCell::momentOfInertia() const
     std::set<VertexPtr> verts;
     //  sqrt((Xp-Xc)^2 + (Yp-Yc)^2 + (Zp-Zc)^2) - R
 
-    for(PPolygonPtr pt : boundary) {
+    for(PPolygonPtr pt : surface) {
         for(VertexPtr v : pt->polygon->vertices) {
             if(verts.find(v) == verts.end()) {
 
@@ -335,58 +260,14 @@ float MxCell::volumeConstraint()
 void MxCell::projectVolumeConstraint()
 {
 
-    float c = volumeConstraint();
 
-    float sumWC = 0;
-
-    std::set<VertexPtr> verts;
-
-    for(PPolygonPtr pt : boundary) {
-        PolygonPtr tri = pt->polygon;
-
-        for(VertexPtr v : tri->vertices) {
-            if(verts.find(v) == verts.end()) {
-                verts.insert(v);
-                float w = (1. / v->mass);
-                v->awc = v->areaWeightedNormal(this);
-                sumWC += w * Math::dot(v->awc, v->awc);
-            }
-        }
-    }
-
-    for(VertexPtr v : verts) {
-        v->position -= (1. / v->mass * c) / (sumWC) * v->awc;
-    }
-
-    //for(VertexPtr v : verts) {
-    //    for(TrianglePtr tri : v->_triangles) {
-    //        tri->positionsChanged();
-    //    }
-    //}
-
-    //for(PPolygonPtr pt : boundary) {
-    //    TrianglePtr tri = pt->triangle;
-    //    tri->positionsChanged();
-    //}
-
-    /*
-    std::set<TrianglePtr> tris;
-    for(VertexPtr v : verts) {
-        for(TrianglePtr tri : v->_triangles) {
-            if(tris.find(tri) == tris.end()) {
-                tris.insert(tri);
-                tri->positionsChanged();
-            }
-        }
-    }
-    */
 
 }
 
 uint MxCell::faceCount()
 {
     uint fc = 0;
-    for(CPPolygonPtr poly : boundary ) {
+    for(CPPolygonPtr poly : surface ) {
         fc += poly->polygon->vertices.size();
     }
     return fc;
@@ -395,7 +276,7 @@ uint MxCell::faceCount()
 uint MxCell::vertexCount()
 {
     uint vc = 0;
-    for(CPPolygonPtr poly : boundary ) {
+    for(CPPolygonPtr poly : surface ) {
         vc += 3 * poly->polygon->vertices.size();
     }
     return vc;

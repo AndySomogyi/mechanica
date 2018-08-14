@@ -41,7 +41,7 @@ static struct ClearCellType : MxCellType
 static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
     std::set<VertexPtr> verts;
 
-    for(PPolygonPtr pt : c->boundary) {
+    for(PPolygonPtr pt : c->surface) {
         PolygonPtr tri = pt->polygon;
 
         for(int i = 0; i < 3; ++i) {
@@ -120,7 +120,8 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/fcc13.obj", 1.0, handler);
+    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t3.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
 
 
     mesh->setShortCutoff(0);
@@ -218,7 +219,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     float diff =  - cell->area;
     //float diff = -0.35;
 
-    for(auto pt: cell->boundary) {
+    for(auto pt: cell->surface) {
 
         PolygonPtr tri = pt->polygon;
 
@@ -295,9 +296,8 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
         float diff = targetVolume - cell->volume;
 
 
-        diff = (targetVolumeLambda / cell->volume) * diff;
 
-        for(auto pt: cell->boundary) {
+        for(auto pt: cell->surface) {
             PolygonPtr tri = pt->polygon;
             Vector3 normal = tri->cellNormal(cell);
             Vector3 force = (pressure + diff) * tri->area * normal;
@@ -309,7 +309,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
     }
 
     else {
-        for(auto pt: cell->boundary) {
+        for(auto pt: cell->surface) {
             PolygonPtr tri = pt->polygon;
             Vector3 normal = tri->cellNormal(cell);
             Vector3 force = pressure * tri->area * normal;
@@ -505,31 +505,6 @@ HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vec
 {
     HRESULT result;
 
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
-
-    if(pos) {
-        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
-            return result;
-        }
-    }
-
-    calcForce();
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        VertexPtr v = mesh->vertices[i];
-
-        assert(v->mass > 0 && v->area > 0);
-
-        for(CPolygonPtr tri : v->triangles()) {
-            for(int j = 0; j < 3; ++j) {
-                if(tri->vertices[j] == v) {
-                    force[i] += tri->force(j);
-                }
-            }
-        }
-    }
 
 
     return S_OK;
@@ -565,35 +540,7 @@ HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
 {
     HRESULT result;
 
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
 
-    if(pos) {
-        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
-            return result;
-        }
-    }
-
-    calcForce();
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        VertexPtr v = mesh->vertices[i];
-
-        assert(v->mass > 0 && v->area > 0);
-
-        Vector3 force;
-
-        for(CPolygonPtr tri : v->triangles()) {
-            for(int j = 0; j < 3; ++j) {
-                if(tri->vertices[j] == v) {
-                    force += tri->force(j);
-                }
-            }
-        }
-
-        acc[i] = force / v->mass;
-    }
 
 
     return S_OK;

@@ -27,12 +27,7 @@ std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
        << "\t" << tri->vertices[0] << ", " << std::endl
        << "\t" << tri->vertices[1] << ", " << std::endl
        << "\t" << tri->vertices[2] << "}" << std::endl
-       << "neighbors0:{" << to_string(tri->partialTriangles[0].neighbors[0]) << ","
-                         << to_string(tri->partialTriangles[0].neighbors[1]) << ","
-                         << to_string(tri->partialTriangles[0].neighbors[2]) << "}," << std::endl
-       << "neighbors1:{" << to_string(tri->partialTriangles[1].neighbors[0]) << ","
-                         << to_string(tri->partialTriangles[1].neighbors[1]) << ","
-                         << to_string(tri->partialTriangles[1].neighbors[2]) << "}," << std::endl
+
        << "}" << std::endl;
     return os;
 }
@@ -45,16 +40,12 @@ MxPolygon::MxPolygon(uint _id, MxPolygonType* type,
             id{_id}, MxObject{type}, vertices{verts}, cells{cells},
             partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
 
+
     neighbors.resize(vertices.size());
     partialTriangles[0].force.resize(vertices.size());
     partialTriangles[1].force.resize(vertices.size());
-
-
-    // connect this triangle to the vertex tri lists
-    for(VertexPtr vert : verts) {
-        auto res = vert->appendTriangle(this);
-        assert(res==S_OK);
-    }
+    _vertexNormals.resize(vertices.size());
+                _vertexAreas.resize(vertices.size());
 
     positionsChanged();
 }
@@ -76,6 +67,9 @@ int MxPolygon::adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const {
 
 HRESULT MxPolygon::positionsChanged() {
 
+    area = 0.;
+    normal = {{0.f, 0.f, 0.f}};
+    _volume = 0.f;
     centroid = {{0.f, 0.f, 0.f}};
 
     for (CVertexPtr v : vertices) {
@@ -84,93 +78,84 @@ HRESULT MxPolygon::positionsChanged() {
 
     centroid /= (float)vertices.size();
 
+
+    // triangle area is 1/2 * length of surface normal (non-normalized)
+
+
+    for (int i = 0; i < vertices.size(); ++i) {
+        int prevIndex = (vertices.size() + ((i-1)%vertices.size())) % vertices.size();
+        int nextIndex = (i+1)%vertices.size();
+
+        CVertexPtr vp = vertices[prevIndex];
+        CVertexPtr v = vertices[i];
+        CVertexPtr vn = vertices[nextIndex];
+
+        Vector3 np = triangleNormal(v->position, (v->position + vp->position) / 2., centroid);
+        Vector3 nn = triangleNormal((vn->position + v->position) / 2., v->position, centroid);
+        Vector3 vertNormal = (np + nn);
+        float vertLen = vertNormal.length();
+
+        // normalized surface normals and vertex areas
+        _vertexNormals[i] = vertNormal / vertLen;
+        _vertexAreas[i] = 0.5 * vertLen;
+
+        Vector3 triCentroid = (v->position + vn->position + centroid) / 3.;
+        Vector3 triNormal = triangleNormal(v->position, vn->position, centroid);
+
+        // Volume contribution for each triangle is
+        // (A/3) * ( N_x*(x1 + x2 + x3) + N_y * (y1 + y2 + y3) + N_z * (z1 + z2 + x3)
+        // where A is the triangle area, and N is the normalized surface normal vector.
+        // A = |surface normal| / 2
+        // note, (1/3) * ( N_x*(x1 + x2 + x3) + N_y * (y1 + y2 + y3) + N_z * (z1 + z2 + x3))
+        // is N dot centroid
+        // and A = |non-normalized surface normal| / 2
+
+
+        _volume += 0.5 * Math::dot(triNormal, triCentroid);
+
+        // polygon area
+        area += 0.5f * triNormal.length();;
+
+        // non-normalized polygon normal
+        normal += triNormal;
+    }
+
+    normal = normal.normalized();
+
+    // total volume contribution
+    _volume /= 3.;
+
+#ifndef NDEBUG
+    float vertArea = 0;
+    for (float v :_vertexAreas) {
+        vertArea += v;
+    }
+
+    std::cout << "vert area: " << vertArea << ", poly area: " << area << ", diff: " << area - vertArea << std::endl;
+#endif
+
     return S_OK;
 }
 
 
 bool MxPolygon::isConnected() const {
 
-    for(int i = 0; i < 2; ++i) {
 
-        if(cells[i]->isRoot()) continue;
-
-        // TODO: HACK fix the constness.
-
-        const PPolygonPtr t = const_cast<PPolygonPtr>(&partialTriangles[i]);
-
-        bool padj0 = adjacentPartialTrianglePointers(t, t->neighbors[0]);
-        bool padj1 = adjacentPartialTrianglePointers(t, t->neighbors[1]);
-        bool padj2 = adjacentPartialTrianglePointers(t, t->neighbors[2]);
-        bool padj = padj0 && padj1 && padj2;
-
-        // check pointers
-        if (!padj) {
-            std::cout << "error, partial triangles neighbors not adjacent to this triangle" << std::endl;
-            return false;
-        }
-
-        assert(this == t->polygon);
-
-        // check vertices
-        bool tadj0 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[0]->polygon);
-        bool tadj1 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[1]->polygon);
-        bool tadj2 = adjacentPolygonVertices(const_cast<PolygonPtr>(this), t->neighbors[2]->polygon);
-
-        if(!(tadj0 && tadj1 && tadj2)) {
-            std::cout << "error, partial triangle neighbor triangle not adjacent to this triangle" << std::endl;
-            return false;
-        }
-    }
     return true;
 
 }
 
+Vector3 MxPolygon::vertexNormal(uint i, CCellPtr cell) const
+{
+    assert(cells[0] == cell || cells[1] == cell);
+    float direction = cells[0] == cell ? 1.0f : -1.0f;
+
+    return direction * _vertexNormals[i];
+}
 
 bool MxPolygon::isValid() const  {
 
-    for(int cellId = 0; cellId < 2; ++cellId) {
-        for(int adjId = 0; adjId < 3; ++adjId) {
-            if(!partialTriangles[cellId].neighbors[adjId]) {
-                std::cout << "error, triangle:" << this << std::endl
-                        << ", partialTriangles["
-                        << cellId << "].neighbors["
-                        << adjId << "] is null"
-                        << std::endl;
-                return false;
-            }
 
-            if(!partialTriangles[cellId].neighbors[adjId]->polygon) {
-                std::cout << "error, triangle:" << this << std::endl
-                        << ", partialTriangles["
-                        << cellId << "].neighbors["
-                        << adjId << "]->triangle is null"
-                        << std::endl;
-                return false;
-            }
-
-            if(!adjacentPolygonVertices(this, partialTriangles[cellId].neighbors[adjId]->polygon)) {
-                std::cout << "error, triangle:" << this << std::endl
-                        << ", partialTriangles["
-                        << cellId << "].neighbors["
-                        << adjId << "]->triangle does not have adjacent vertices to this triangle" << std::endl
-                        << "offending neighbor: " << partialTriangles[cellId].neighbors[adjId]->polygon << std::endl;
-                return false;
-            }
-
-            if(!connectedCellPolygonPointers(cells[cellId], partialTriangles[cellId].neighbors[adjId]->polygon)) {
-                std::cout << "error, triangle:" << this << std::endl
-                        << ", partialTriangles["
-                        << cellId << "].neighbors["
-                        << adjId << "]->triangle: "
-                        << partialTriangles[cellId].neighbors[adjId]->polygon << std::endl
-                        << "is not incident to cell[" << cellId << "]"
-                        << std::endl
-                        << "this: " << this << std::endl
-                        << "neighbor: " << partialTriangles[cellId].neighbors[adjId]->polygon << std::endl;
-                return false;
-            }
-        }
-    }
 
     for(int i = 0; i < 3; ++i) {
         VertexPtr v1 = vertices[i];
@@ -178,17 +163,7 @@ bool MxPolygon::isValid() const  {
         int ni = adjacentEdgeIndex(v1, v2);
         assert(ni == i);
 
-        for(int j = 0; j < 2; ++j) {
-            PolygonPtr tri = partialTriangles[j].neighbors[i]->polygon;
-            if(tri->adjacentEdgeIndex(v1, v2) < 0) {
-                std::cout << "error, triangle:" << this << std::endl
-                        << ", neighbor triangle: " << tri << std::endl
-                        << "at index[cell:" << j << ",nid:" << i
-                        << "], neighbor triangle should be incident to vertices: " << std::endl
-                        << "v1:" << v1 << ", v2: " << v2 << std::endl;
-                return false;
-            }
-        }
+
     }
 
     for(int i = 0; i < 2; ++i) {
@@ -263,53 +238,10 @@ bool MxPolygon::isValid() const  {
 }
 
 
-
-
-
-
-PolygonPtr MxPolygon::adjacentTriangleForEdge(CVertexPtr v1,
-                                                CVertexPtr v2) const {
-    for(int i = 0; i < 3; ++i) {
-        assert(partialTriangles[0].neighbors[i]);
-        PolygonPtr tri = partialTriangles[0].neighbors[i]->polygon;
-        assert(tri);
-        if(incidentPolygonVertex(tri, v1) && incidentPolygonVertex(tri, v2)) {
-            return tri;
-        }
-    }
-    return nullptr;
-}
-
 bool MxPartialPolygon::isValid() const
 {
     assert(polygon);
     int id = (&polygon->partialTriangles[0] == this) ? 0 : 1;
-
-    for(int adjId = 0; adjId < 3; ++adjId) {
-        if(!neighbors[adjId]) {
-            std::cout << "error, partial triangle id:"
-                    << polygon->id << "." << id
-                    << ", neighbors[" << adjId << "] is null"
-                    << std::endl;
-            return false;
-        }
-
-        if(!adjacentPolygonVertices(polygon, neighbors[adjId]->polygon)) {
-            std::cout << "error, partial triangle id:"
-                    << polygon->id << "." << id
-                    << ", neighbors[" << adjId << "]->triangle does not have adjacent vertices to this triangle, " << std::endl
-                    << "offending neighbor: " << neighbors[adjId]->polygon << std::endl;
-            return false;
-        }
-
-        if(!connectedPolygonPointers(polygon, neighbors[adjId]->polygon)) {
-            std::cout << "error, partial triangle id:"
-                    << polygon->id << "." << id
-                    << ", neighbors[" << adjId << "]->triangle does not have adjacent pointers to this triangle"
-                    << std::endl;
-            return false;
-        }
-    }
 
     if(polygon->cells[id]->isRoot()) {
         if(mass != 0.) {
@@ -333,41 +265,12 @@ bool MxPartialPolygon::isValid() const
 }
 
 
-Orientation MxPolygon::orientation() const
+float MxPolygon::volume(CCellPtr cell) const
 {
-    Orientation o0{Orientation::Invalid}, o1{Orientation::Invalid};
+    assert(cells[0] == cell || cells[1] == cell);
+    float direction = cells[0] == cell ? 1.0f : -1.0f;
 
-    if(cells[0] && !cells[0]->isRoot()) {
-        Vector3 triPos = centroid - cells[0]->centroid;
-        float dir = Math::dot(normal, triPos);
-        o0 = dir > 0 ? Orientation::Outward : Orientation::Inward;
-    }
-
-    if(cells[1] && !cells[1]->isRoot()) {
-        Vector3 triPos = centroid - cells[1]->centroid;
-        float dir = -1 * Math::dot(normal, triPos);
-        o1 = dir > 0 ? Orientation::Outward : Orientation::Inward;
-    }
-
-    if((o0 == Orientation::Outward || o0 == Orientation::Invalid) &&
-       (o1 == Orientation::Outward || o1 == Orientation::Invalid)) {
-        return Orientation::Outward;
-    }
-
-    if((o0 == Orientation::Inward || o0 == Orientation::Invalid) &&
-       (o1 == Orientation::Inward || o1 == Orientation::Invalid)) {
-        return Orientation::Inward;
-    }
-
-    if((o0 == Orientation::Inward  || o0 == Orientation::Invalid) &&
-       (o1 == Orientation::Outward || o1 == Orientation::Invalid)) {
-        return Orientation::InwardOutward;
-    }
-
-    if((o0 == Orientation::Outward || o0 == Orientation::Invalid) &&
-       (o1 == Orientation::Inward  || o1 == Orientation::Invalid)) {
-        return Orientation::OutwardInward;
-    }
-
-    return Orientation::Invalid;
+    return direction * _volume;
 }
+
+

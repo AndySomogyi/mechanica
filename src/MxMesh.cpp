@@ -57,8 +57,8 @@ MxObject *MxMesh::alloc(const MxType* type)
     }
 }
 
-CellPtr MxMesh::createCell(MxCellType *type) {
-    CellPtr cell = new MxCell{(uint)cells.size(), type, this, nullptr};
+CellPtr MxMesh::createCell(MxCellType *type, const std::string& name) {
+    CellPtr cell = new MxCell{(uint)cells.size(), type, this, nullptr, name};
     cells.push_back(cell);
     return cell;
 }
@@ -178,7 +178,7 @@ bool MxMesh::valid(CellPtr c) {
         return false;
     }
 
-    for(PPolygonPtr p : c->boundary) {
+    for(PPolygonPtr p : c->surface) {
         if(!valid(p)) {
             return false;
         }
@@ -210,8 +210,7 @@ MxMesh::~MxMesh() {
 HRESULT MxMesh::applyMeshOperations() {
     HRESULT result = E_FAIL;
 
-    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
-    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
+
 
     if((result = meshOperations.positionsChanged(polygons.begin(), polygons.end())) != S_OK) {
         return result;
@@ -225,7 +224,7 @@ HRESULT MxMesh::applyMeshOperations() {
         return result;
     }
 
-    return updateDerivedAttributes();
+    return positionsChanged();
 }
 
 PolygonPtr MxMesh::createPolygon(MxPolygonType* type,
@@ -240,57 +239,16 @@ PolygonPtr MxMesh::createPolygon(MxPolygonType* type,
     return tri;
 }
 
-bool MxMesh::validateVertex(const VertexPtr v) {
-    assert(contains(vertices, v));
-    for(PolygonPtr tri : v->triangles()) {
-        assert(incidentPolygonVertex(tri, v));
-        assert(contains(polygons, tri));
-        assert(tri->cells[0] && tri->cells[1]);
-    }
-    return true;
-}
 
-bool MxMesh::validateVertices() {
-    for(int i = 0; i < vertices.size(); ++i) {
-        validateVertex(vertices[i]);
-    }
-    return true;
-}
 
-bool MxMesh::validateTriangles() {
-    bool result = true;
-    for(int i = 0; i < polygons.size(); ++i) {
-        PolygonPtr tri = polygons[i];
-        result &= tri->isValid();
-    }
-    return true;
-}
 
-bool MxMesh::validateTriangle(const PolygonPtr tri) {
-    assert(tri->isValid());
 
-    for(int i = 0; i < 3; ++i) {
-        validateVertex(tri->vertices[i]);
-        assert(contains(tri->vertices[i]->triangles(), tri));
-    }
-    return true;
-}
 
-bool MxMesh::validate() {
 
-    validateTriangles();
-
-    return true;
-    validateVertices();
-    return true;
-}
-
-HRESULT MxMesh::updateDerivedAttributes()
+HRESULT MxMesh::positionsChanged()
 {
     HRESULT result;
 
-    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
-    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
 
     for(int i = 0; i < vertices.size(); ++i) {
         VertexPtr v = vertices[i];
@@ -313,7 +271,7 @@ HRESULT MxMesh::updateDerivedAttributes()
     }
 
     for(CellPtr cell : cells) {
-        if((result = cell->updateDerivedAttributes() != S_OK)) {
+        if((result = cell->positionsChanged() != S_OK)) {
             return result;
         }
     }
@@ -354,8 +312,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
 {
     HRESULT result;
 
-    MxVertex::maxForceDivergence = std::numeric_limits<float>::min();
-    MxVertex::minForceDivergence = std::numeric_limits<float>::max();
+
 
     if(positions) {
         for(int i = 0; i < vertices.size(); ++i) {
@@ -388,7 +345,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     }
 
     for(CellPtr cell : cells) {
-        if((result = cell->updateDerivedAttributes() != S_OK)) {
+        if((result = cell->positionsChanged() != S_OK)) {
             return result;
         }
     }

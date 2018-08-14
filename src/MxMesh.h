@@ -220,7 +220,7 @@ struct MxMesh  {
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
-    CellPtr createCell(MxCellType *type = nullptr);
+    CellPtr createCell(MxCellType *type = nullptr, const std::string& name = "");
 
     void dump(uint what);
 
@@ -241,7 +241,7 @@ struct MxMesh  {
      * This is called when the mesh is initially loaded, or the mesh itself
      * calls this in response to positions changing.
      */
-    HRESULT updateDerivedAttributes();
+    HRESULT positionsChanged();
 
     /**
      * Set all of the positions in the mesh. This does NOT trigger any mesh update
@@ -328,18 +328,8 @@ struct MxMesh  {
 
 private:
 
-    bool validateVertex(const VertexPtr v);
-
-    bool validateVertices();
-
-    bool validateTriangles();
-
-    bool validateTriangle(const PolygonPtr tri);
 
 
-
-
-    bool validateEdge(const VertexPtr a, const VertexPtr b);
 
 
     MeshOperations meshOperations;

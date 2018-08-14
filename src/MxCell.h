@@ -82,13 +82,13 @@ struct MxCellType : MxType {
  */
 struct MxCell : MxObject, MxMeshNode {
 
-    MxCell(uint id, MxCellType *type, MeshPtr msh, MxReal *stateVector) :
-        MxObject{type}, MxMeshNode{msh, id}, stateVector{stateVector} {};
+    MxCell(uint id, MxCellType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
+        MxObject{type}, MxMeshNode{msh, id}, stateVector{stateVector}, name{nm} {};
 
     /**
      * the closed set of faces that define the boundary of this cell
      */
-    std::vector<struct MxPartialPolygon*> boundary;
+    std::vector<struct MxPartialPolygon*> surface;
 
     /**
      * Pointer to the vector of state variables that belong to this cell. The state
@@ -154,10 +154,13 @@ struct MxCell : MxObject, MxMeshNode {
     /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.
+     *
+     * Assumes that the polygons have already had their positionsChanged function
+     * called and their attributes are updated.
      */
-    HRESULT updateDerivedAttributes();
+    HRESULT positionsChanged();
 
-    void dump();
+    void dump() const;
 
     void writePOV(std::ostream &out);
 
@@ -187,6 +190,8 @@ struct MxCell : MxObject, MxMeshNode {
      * we just dot the centroid with the triangle's normal vector.
      */
     float volume = 0;
+    
+    std::string name;
 
     Vector3 centroid = {0., 0., 0.};
 

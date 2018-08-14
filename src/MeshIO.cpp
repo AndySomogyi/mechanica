@@ -562,7 +562,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         
         std::cout << "creating new cell \"" << obj->mName.C_Str() << "\"" << std::endl;
 
-        CellPtr cell = mesh->createCell(cellTypeHandler(obj->mName.C_Str(), i));
+        CellPtr cell = mesh->createCell(cellTypeHandler(obj->mName.C_Str(), i), obj->mName.C_Str());
         
         for(int m = 0; m < obj->mNumMeshes; ++m) {
             
@@ -592,13 +592,15 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         // done with all of the meshes for this cell, the cell should
         // have a complete set of triangles now.
         
-        for(PPolygonPtr pt : cell->boundary) {
-            float area = Magnum::Math::triangle_area(pt->polygon->vertices[0]->position,
+        for(PPolygonPtr pt : cell->surface) {
+            float area = Magnum::Math::triangleArea(pt->polygon->vertices[0]->position,
                                                      pt->polygon->vertices[1]->position,
                                                      pt->polygon->vertices[2]->position);
             pt->mass = area * density;
         }
         
+
+
         //assert(mesh->valid(cell));
         //assert(cell->updateDerivedAttributes() == S_OK);
         //assert(cell->isValid());
@@ -631,7 +633,13 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     //    }
     //}
     
-    VERIFY(mesh->updateDerivedAttributes());
+    VERIFY(mesh->positionsChanged());
+
+#ifndef NDEBUG
+    for (CCellPtr cell : mesh->cells) {
+        cell->dump();
+    }
+#endif
     return mesh;
 }
 

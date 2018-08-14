@@ -111,49 +111,21 @@ struct MxVertex : MxObject {
 
     float area = 0;
 
-    static float minForceDivergence;
-    static float maxForceDivergence;
 
     MxVertex();
 
     MxVertex(float mass, float area, const Magnum::Vector3 &pos);
 
     Magnum::Vector3 position;
-    //Magnum::Vector3 velocity;
+
 
     float attr = 0;
 
-     // one to many relationship of vertex -> triangles
-    const Triangles &triangles() const {return _triangles;}
-
-    const std::vector<CellPtr> &cells() const { return _cells; }
-
-    std::set<VertexPtr> link() const;
-
-    HRESULT removeTriangle(const PolygonPtr);
-
-    HRESULT appendTriangle(PolygonPtr);
-
     int edgeCount() const;
 
-    /**
-     * Inform the vertex that the cell of an attached triangle was changed.
-     */
-    HRESULT triangleCellChanged(PolygonPtr tri);
-
-    /**
-     * Find the first triangle that is incident to the given cell.
-     * If no triangle is incident, returns null.
-     */
-    PolygonPtr triangleForCell(CCellPtr cell) const;
 
     uint id{0};
 
-    /**
-     * Area weighted vector that's the some area weighted sum of all
-     * incident triangles for the given cell.
-     */
-    Magnum::Vector3 areaWeightedNormal(CCellPtr cell) const;
 
     static bool classof(const MxObject *o) {
         return o->ob_type == MxVertex_Type;
@@ -165,13 +137,7 @@ protected:
 
 
 private:
-     // one to many relationship of vertex -> triangles
-    Triangles _triangles;
 
-    // one to many relationship of vertex -> cells
-    std::vector<CellPtr> _cells;
-
-    void rebuildCells();
 
     /**
      * Get the mesh pointer.
