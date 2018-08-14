@@ -126,7 +126,7 @@ HRESULT connectPolygonCell(PolygonPtr poly, CellPtr cell)
         }
     }
 
-    cell->surface.push_back(&poly->partialTriangles[side]);
+    cell->surface.push_back(&poly->partialPolygons[side]);
     poly->cells[side] = cell;
 
     return S_OK;

@@ -166,8 +166,8 @@ bool MxMesh::valid(PolygonPtr p) {
 
 
     return
-        p == p->partialTriangles[0].polygon &&
-        p == p->partialTriangles[1].polygon &&
+        p == p->partialPolygons[0].polygon &&
+        p == p->partialPolygons[1].polygon &&
         valid(p->vertices[0]) &&
         valid(p->vertices[1]) &&
         valid(p->vertices[2]);
@@ -254,16 +254,10 @@ HRESULT MxMesh::positionsChanged()
         VertexPtr v = vertices[i];
         v->mass = 0;
         v->area = 0;
+        v->force = {{0.f, 0.f, 0.f}};
     }
 
     for(PolygonPtr tri : polygons) {
-
-        tri->partialTriangles[0].force[0] = Vector3{};
-        tri->partialTriangles[0].force[1] = Vector3{};
-        tri->partialTriangles[0].force[2] = Vector3{};
-        tri->partialTriangles[1].force[0] = Vector3{};
-        tri->partialTriangles[1].force[1] = Vector3{};
-        tri->partialTriangles[1].force[2] = Vector3{};
 
         if((result = tri->positionsChanged() != S_OK)) {
             return result;
@@ -330,16 +324,8 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
         }
     }
 
-    for(PolygonPtr tri : polygons) {
-
-        tri->partialTriangles[0].force[0] = Vector3{};
-        tri->partialTriangles[0].force[1] = Vector3{};
-        tri->partialTriangles[0].force[2] = Vector3{};
-        tri->partialTriangles[1].force[0] = Vector3{};
-        tri->partialTriangles[1].force[1] = Vector3{};
-        tri->partialTriangles[1].force[2] = Vector3{};
-
-        if((result = tri->positionsChanged() != S_OK)) {
+    for(PolygonPtr poly : polygons) {
+        if((result = poly->positionsChanged() != S_OK)) {
             return result;
         }
     }

@@ -118,6 +118,8 @@ struct MxVertex : MxObject {
 
     Magnum::Vector3 position;
 
+    Magnum::Vector3 force;
+
 
     float attr = 0;
 

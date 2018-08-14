@@ -100,14 +100,6 @@ struct MxPartialPolygon : MxObject {
      */
     float mass = 0;
 
-
-    /**
-     * The total force excreted by this triangle onto the three
-     * incident vertices. This force is a contribution from both of the
-     * incident cells.
-     */
-    std::vector<Magnum::Vector3> force;
-
     /**
      * A contiguous sequence of scalar attributes, who's time evolution is
      * defined by reactions and odes.
@@ -208,16 +200,8 @@ struct MxPolygon : MxObject {
      *
      * partialTriangles[0] contains the partial triangle for cells[0]
      */
-    std::array<MxPartialPolygon, 2> partialTriangles;
+    std::array<MxPartialPolygon, 2> partialPolygons;
 
-    /**
-     * The total force excreted by this triangle onto the three
-     * incident vertices. This force is a contribution from both of the
-     * incident cells.
-     */
-    Vector3 force(int vertexIndx) const {
-        return partialTriangles[0].force[vertexIndx] + partialTriangles[1].force[vertexIndx];
-    }
 
     /**
      * calculate the volume contribution this polygon has for the given cell.
@@ -231,6 +215,11 @@ struct MxPolygon : MxObject {
      * Get the vertex normal for the i'th vertex in this polygon.
      */
     Vector3 vertexNormal(uint i, CCellPtr cell) const;
+
+
+    float vertexArea(uint i) const {
+        return _vertexAreas[i];
+    }
 
     /**
      * Orient the normal in the correct direction for the given cell.
@@ -249,7 +238,7 @@ struct MxPolygon : MxObject {
     MxPolygon() :
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
-        partialTriangles {{
+        partialPolygons {{
             {nullptr, nullptr, 0.0, nullptr},
             {nullptr, nullptr, 0.0, nullptr}
         }},
@@ -301,12 +290,12 @@ struct MxPolygon : MxObject {
 
     Magnum::Color4 color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
 
-    inline float getMass() const { return partialTriangles[0].mass + partialTriangles[1].mass; };
+    inline float getMass() const { return partialPolygons[0].mass + partialPolygons[1].mass; };
 
     void setMassForCell(float val, CellPtr cell) {
         assert(cell == cells[0] || cell == cells[1]);
         uint cellId = cell == cells[0] ? 0 : 1;
-        partialTriangles[cellId].mass = val;
+        partialPolygons[cellId].mass = val;
     }
 
 private:

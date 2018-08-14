@@ -41,16 +41,7 @@ static struct ClearCellType : MxCellType
 static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
     std::set<VertexPtr> verts;
 
-    for(PPolygonPtr pt : c->surface) {
-        PolygonPtr tri = pt->polygon;
 
-        for(int i = 0; i < 3; ++i) {
-            if(verts.find(tri->vertices[i]) == verts.end()) {
-                verts.insert(tri->vertices[i]);
-                pt->force[i] += force;
-            }
-        }
-    }
 }
 
 static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
@@ -121,7 +112,7 @@ void GrowthModel::loadAssImpModel() {
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t3.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
 
 
     mesh->setShortCutoff(0);
@@ -151,17 +142,14 @@ HRESULT GrowthModel::calcForce() {
 
     HRESULT result;
 
-    for(CellPtr cell : mesh->cells) {
-        if((result = cellAreaForce(cell)) != S_OK) {
-            return mx_error(result, "cell area force");
-        }
-
-        if((result = cellVolumeForce(cell)) != S_OK) {
-            return mx_error(result, "cell volume force");
-        }
+    for(PolygonPtr poly : mesh->polygons) {
+        applyVolumeConservationForce(poly->cells[0], poly, &poly->partialPolygons[0]);
+        applyVolumeConservationForce(poly->cells[1], poly, &poly->partialPolygons[1]);
     }
 
-    applyDifferentialSurfaceTension();
+
+
+    //applyDifferentialSurfaceTension();
 
     //centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
 
@@ -188,6 +176,8 @@ void GrowthModel::applyDifferentialSurfaceTension() {
                 totLen += len[v];
             }
 
+            /*
+
             for(int v = 0; v < 3; ++v) {
                 Vector3 p1 = tri->vertices[(v+1)%3]->position;
                 Vector3 p2 = tri->vertices[(v+2)%3]->position;
@@ -199,6 +189,7 @@ void GrowthModel::applyDifferentialSurfaceTension() {
                 tri->partialTriangles[1].force[v]
                     += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
             }
+            */
         }
         else {
             //std::cout << "continuing...";
@@ -249,7 +240,7 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
             Vector3 p1 = tri->vertices[(v+1)%3]->position;
             Vector3 p2 = tri->vertices[(v+2)%3]->position;
             float len = (p1-p2).length();
-            pt->force[v] -= surfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
+            //pt->force[v] -= surfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
             //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid);
 
             //for(int i = 0; i < 3; ++i) {
@@ -273,8 +264,20 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     return S_OK;
 }
 
-HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
+HRESULT GrowthModel::applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp)
 {
+    if(cell->isRoot()) {
+        return S_OK;
+    }
+
+    float force = -2. * targetVolumeLambda * (cell->volume - targetVolume) * p->area;
+
+    for(int i = 0; i < p->vertices.size(); ++i) {
+        VertexPtr v = p->vertices[i];
+        v->force += force * p->vertexArea(i) * p->vertexNormal(i, cell);
+    }
+
+    /*
 
 
     if(mesh->rootCell() == cell) {
@@ -321,7 +324,7 @@ HRESULT GrowthModel::cellVolumeForce(CellPtr cell)
     }
 
 
-
+*/
 
 
 
@@ -540,8 +543,23 @@ HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
 {
     HRESULT result;
 
+    if(len != mesh->vertices.size()) {
+        return E_FAIL;
+    }
 
+    if(pos) {
+        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
+            return result;
+        }
+    }
 
+    calcForce();
+
+    for(int i = 0; i < mesh->vertices.size(); ++i) {
+        VertexPtr v = mesh->vertices[i];
+
+        acc[i] = v->force;
+    }
 
     return S_OK;
 }

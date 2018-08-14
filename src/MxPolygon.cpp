@@ -38,12 +38,10 @@ MxPolygon::MxPolygon(uint _id, MxPolygonType* type,
         const std::array<CellPtr, 2>& cells,
         const std::array<MxPartialPolygonType*, 2>& partTriTypes) :
             id{_id}, MxObject{type}, vertices{verts}, cells{cells},
-            partialTriangles{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
+            partialPolygons{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
 
 
     neighbors.resize(vertices.size());
-    partialTriangles[0].force.resize(vertices.size());
-    partialTriangles[1].force.resize(vertices.size());
     _vertexNormals.resize(vertices.size());
                 _vertexAreas.resize(vertices.size());
 
@@ -180,9 +178,9 @@ bool MxPolygon::isValid() const  {
         }
 
         if(cells[i]->isRoot()) {
-            assert(partialTriangles[i].mass == 0.);
+            assert(partialPolygons[i].mass == 0.);
         } else {
-            isfinite(partialTriangles[i].mass ) && partialTriangles[i].mass  > 0;
+            isfinite(partialPolygons[i].mass ) && partialPolygons[i].mass  > 0;
         }
     }
 
@@ -241,7 +239,7 @@ bool MxPolygon::isValid() const  {
 bool MxPartialPolygon::isValid() const
 {
     assert(polygon);
-    int id = (&polygon->partialTriangles[0] == this) ? 0 : 1;
+    int id = (&polygon->partialPolygons[0] == this) ? 0 : 1;
 
     if(polygon->cells[id]->isRoot()) {
         if(mass != 0.) {

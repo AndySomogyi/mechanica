@@ -11,11 +11,11 @@
 #include "MxModel.h"
 
 struct GrowthModel : public MxModel {
-    
+
     enum VolumeForce {
         ConstantVolume, ConstantPressure
     };
-    
+
     VolumeForce volumeForceType = VolumeForce::ConstantVolume;
 
     GrowthModel();
@@ -28,25 +28,25 @@ struct GrowthModel : public MxModel {
 
     HRESULT cellAreaForce(CellPtr cell);
 
-    HRESULT cellVolumeForce(CellPtr cell);
-    
+    HRESULT applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp);
+
     void applyDifferentialSurfaceTension();
-    
+
     float minTargetVolume;
     float maxTargetVolume;
     float targetVolume;
     float targetVolumeLambda;
-    
+
     float harmonicBondStrength;
-    
+
     float pressure = 0;
     float pressureMax;
     float pressureMin;
-    
+
     float surfaceTension = 0;
     float surfaceTensionMax;
     float surfaceTensionMin;
-    
+
     float differentialSurfaceTension = 0;
     float differentialSurfaceTensionMax;
     float differentialSurfaceTensionMin;
@@ -57,7 +57,7 @@ struct GrowthModel : public MxModel {
 
 
     void loadSheetModel();
-    
+
     void loadTwoModel();
 
     void loadSimpleSheetModel();
@@ -65,7 +65,7 @@ struct GrowthModel : public MxModel {
     void loadCubeModel();
 
     void loadMonodisperseVoronoiModel();
-    
+
     void loadAssImpModel();
 
     virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force);
