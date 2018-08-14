@@ -88,8 +88,8 @@ HRESULT MxPolygon::positionsChanged() {
         CVertexPtr v = vertices[i];
         CVertexPtr vn = vertices[nextIndex];
 
-        Vector3 np = triangleNormal(v->position, (v->position + vp->position) / 2., centroid);
-        Vector3 nn = triangleNormal((vn->position + v->position) / 2., v->position, centroid);
+        Vector3 np = triangleNormal((v->position + vp->position) / 2., v->position, centroid);
+        Vector3 nn = triangleNormal(v->position, (vn->position + v->position) / 2., centroid);
         Vector3 vertNormal = (np + nn);
         float vertLen = vertNormal.length();
 
@@ -123,13 +123,25 @@ HRESULT MxPolygon::positionsChanged() {
     // total volume contribution
     _volume /= 3.;
 
+
 #ifndef NDEBUG
+    /*
     float vertArea = 0;
     for (float v :_vertexAreas) {
         vertArea += v;
     }
 
     std::cout << "vert area: " << vertArea << ", poly area: " << area << ", diff: " << area - vertArea << std::endl;
+
+    Vector3 vertNormal;
+    for(const Vector3& v : _vertexNormals) {
+        vertNormal += v;
+    }
+
+    vertNormal /= _vertexNormals.size();
+
+    std::cout << "normal: " << normal << ", vertex normal: " << vertNormal << ", dot: " << Math::dot(normal, vertNormal) << std::endl;
+     */
 #endif
 
     return S_OK;

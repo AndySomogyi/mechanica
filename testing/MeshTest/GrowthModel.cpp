@@ -111,8 +111,14 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t3.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
+    
+    
+    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+    targetVolume = 9;
+    minTargetVolume = 5;
+    maxTargetVolume = 10.0;
+    targetVolumeLambda = 0.1;
 
 
     mesh->setShortCutoff(0);
@@ -126,10 +132,8 @@ void GrowthModel::loadAssImpModel() {
     surfaceTension = 5;
     surfaceTensionMax = 15;
 
-    targetVolume = 0.6;
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
+    
+    
 
     mesh->cells[1]->targetVolume = targetVolume;
 
@@ -270,11 +274,11 @@ HRESULT GrowthModel::applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, P
         return S_OK;
     }
 
-    float force = -2. * targetVolumeLambda * (cell->volume - targetVolume) * p->area;
+    float force = -2. * targetVolumeLambda * (cell->volume - targetVolume);
 
     for(int i = 0; i < p->vertices.size(); ++i) {
         VertexPtr v = p->vertices[i];
-        v->force += force * p->vertexArea(i) * p->vertexNormal(i, cell);
+        v->force += force * p->vertexNormal(i, cell);
     }
 
     /*
