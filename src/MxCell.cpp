@@ -79,7 +79,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 
 
 void MxCell::dump() const {
-    
+
     std::cout << "Cell { name: \"" << name << "\", id: " << id
               << ", area: " << area << ", volume: " << volume
               << ", centroid: " << centroid  << "}" << std::endl;
@@ -259,8 +259,18 @@ float MxCell::volumeConstraint()
 
 void MxCell::projectVolumeConstraint()
 {
+    float vc = volumeConstraint();
 
+    for(PPolygonPtr pp : surface) {
 
+        PolygonPtr poly = pp->polygon;
+
+        for(int i = 0; i < poly->vertices.size(); ++i) {
+            VertexPtr v = poly->vertices[i];
+            v->position -= vc * (1/3.) * poly->vertexNormal(i, this);
+            v->faceCountPerCell += 1;
+        }
+    }
 
 }
 

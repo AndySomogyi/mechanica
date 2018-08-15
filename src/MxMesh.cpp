@@ -311,6 +311,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     if(positions) {
         for(int i = 0; i < vertices.size(); ++i) {
             VertexPtr v = vertices[i];
+            v->faceCountPerCell = 0;
             v->mass = 0;
             v->area = 0;
             v->position = positions[i];
@@ -319,8 +320,7 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     else {
         for(int i = 0; i < vertices.size(); ++i) {
             VertexPtr v = vertices[i];
-            v->mass = 0;
-            v->area = 0;
+            v->positionsChanged();
         }
     }
 

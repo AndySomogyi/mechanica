@@ -111,6 +111,8 @@ struct MxVertex : MxObject {
 
     float area = 0;
 
+    // total pathetic hack, see void MxCell::projectVolumeConstraint()
+    int faceCountPerCell;
 
     MxVertex();
 
@@ -133,6 +135,11 @@ struct MxVertex : MxObject {
         return o->ob_type == MxVertex_Type;
     }
 
+    void positionsChanged() {
+        mass = 0;
+        area = 0;
+    }
+
 protected:
     MxVertex(MxType *derivedType);
 
@@ -149,10 +156,6 @@ private:
 
     SkeletalEdgePtr edges[4] = {nullptr};
 
-    /**
-     * temporary hack for volume constraint.
-     */
-    Vector3 awc;
     friend class MxCell;
 
     friend bool connectedEdgeVertex(CSkeletalEdgePtr, CVertexPtr);

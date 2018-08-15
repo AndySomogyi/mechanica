@@ -27,11 +27,13 @@ HRESULT LangevinPropagator::step(MxReal dt) {
     //    stateVectorStep(dt);
     //}
 
-    for(int i = 0; i < 10; ++i) {
-    if((result = rungeKuttaStep(dt/10)) != S_OK) {
-        return result;
+    /*
+    for(int i = 0; i < 50; ++i) {
+        if((result = rungeKuttaStep(dt/50)) != S_OK) {
+            return result;
+        }
     }
-    }
+    */
 
     if((timeSteps % 20) == 0) {
         result = mesh->applyMeshOperations();
@@ -39,6 +41,8 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 
     float sumError = 0;
     int iter = 0;
+
+
 
     do {
         for(int i=1; i < mesh->cells.size(); ++i) {
@@ -65,6 +69,8 @@ HRESULT LangevinPropagator::step(MxReal dt) {
         std::cout << "constraint iter / sum sqr error: " << iter << "/" << sumError << std::endl;
 
     } while(iter < 2);
+
+
 
     timeSteps += 1;
 
