@@ -18,16 +18,16 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSButton *constantPressureBtn;
 
 
-@property (assign, nonatomic) IBOutlet NSSlider *differentialSurfaceTensionSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionMin;
-@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionMax;
-@property (assign, nonatomic) IBOutlet NSTextField *differentialSurfaceTensionVal;
+@property (assign, nonatomic) IBOutlet NSSlider *cellMediaSurfaceTensionSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionMin;
+@property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionMax;
+@property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionVal;
 
 
-@property (assign, nonatomic) IBOutlet NSSlider *surfaceTensionSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionMin;
-@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionMax;
-@property (assign, nonatomic) IBOutlet NSTextField *surfaceTensionVal;
+@property (assign, nonatomic) IBOutlet NSSlider *cellCellSurfaceTensionSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionMin;
+@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionMax;
+@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionVal;
 
 @property (assign, nonatomic) IBOutlet NSSlider *volumeSlider;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeMin;

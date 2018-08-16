@@ -54,15 +54,15 @@
     
    
     
-    if (sender == self.surfaceTensionSlider)
+    if (sender == self.cellCellSurfaceTensionSlider)
     {
-        self.surfaceTensionVal.floatValue = self.surfaceTensionSlider.floatValue;
-        meshTest->model->surfaceTension = self.surfaceTensionSlider.floatValue;
+        self.cellCellSurfaceTensionVal.floatValue = self.cellCellSurfaceTensionSlider.floatValue;
+        meshTest->model->cellCellSurfaceTension = self.cellCellSurfaceTensionSlider.floatValue;
     }
-    else if (sender == self.surfaceTensionVal)
+    else if (sender == self.cellCellSurfaceTensionVal)
     {
-        self.surfaceTensionSlider.floatValue = self.surfaceTensionVal.floatValue;
-        meshTest->model->surfaceTension = self.surfaceTensionVal.floatValue;
+        self.cellCellSurfaceTensionSlider.floatValue = self.cellCellSurfaceTensionVal.floatValue;
+        meshTest->model->cellCellSurfaceTension = self.cellCellSurfaceTensionVal.floatValue;
     }
     else if (sender == self.shortCutoff)
     {
@@ -76,15 +76,15 @@
         meshTest->model->mesh->applyMeshOperations();
         meshTest->draw();
     }
-    else if (sender == self.differentialSurfaceTensionVal)
+    else if (sender == self.cellMediaSurfaceTensionVal)
     {
-        self.differentialSurfaceTensionSlider.floatValue = self.differentialSurfaceTensionVal.floatValue;
-        meshTest->model->differentialSurfaceTension = self.differentialSurfaceTensionVal.floatValue;
+        self.cellMediaSurfaceTensionSlider.floatValue = self.cellMediaSurfaceTensionVal.floatValue;
+        meshTest->model->cellMediaSurfaceTension = self.cellMediaSurfaceTensionVal.floatValue;
     }
-    else if (sender == self.differentialSurfaceTensionSlider)
+    else if (sender == self.cellMediaSurfaceTensionSlider)
     {
-        self.differentialSurfaceTensionVal.floatValue = self.differentialSurfaceTensionSlider.floatValue;
-        meshTest->model->differentialSurfaceTension = self.differentialSurfaceTensionSlider.floatValue;
+        self.cellMediaSurfaceTensionVal.floatValue = self.cellMediaSurfaceTensionSlider.floatValue;
+        meshTest->model->cellMediaSurfaceTension = self.cellMediaSurfaceTensionSlider.floatValue;
     }
     else if (sender == self.volumeVal)
     {
@@ -105,8 +105,8 @@
         meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
     }
     
-    std::cout << "value changed, differentialSurfaceTension: " << meshTest->model->differentialSurfaceTension
-    << ", surface tension: " << meshTest->model->surfaceTension << std::endl;
+    std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->cellMediaSurfaceTension
+    << ", surface tension: " << meshTest->model->cellCellSurfaceTension << std::endl;
 }
 
 -(IBAction)volumeForceClick:(id)sender {
@@ -128,21 +128,21 @@
     self.volumeSlider.minValue = meshTest->model->minTargetVolume;
     self.volumeSlider.floatValue = meshTest->model->targetVolume;
     
-    self.differentialSurfaceTensionMax.floatValue = meshTest->model->differentialSurfaceTensionMax;
-    self.differentialSurfaceTensionMin.floatValue = meshTest->model->differentialSurfaceTensionMin;
-    self.differentialSurfaceTensionVal.floatValue = meshTest->model->differentialSurfaceTension;
+    self.cellMediaSurfaceTensionMax.floatValue = meshTest->model->cellMediaSurfaceTensionMax;
+    self.cellMediaSurfaceTensionMin.floatValue = meshTest->model->cellMediaSurfaceTensionMin;
+    self.cellMediaSurfaceTensionVal.floatValue = meshTest->model->cellMediaSurfaceTension;
     
-    self.differentialSurfaceTensionSlider.maxValue = meshTest->model->differentialSurfaceTensionMax;
-    self.differentialSurfaceTensionSlider.minValue = meshTest->model->differentialSurfaceTensionMin;
-    self.differentialSurfaceTensionSlider.floatValue = meshTest->model->differentialSurfaceTension;
+    self.cellMediaSurfaceTensionSlider.maxValue = meshTest->model->cellMediaSurfaceTensionMax;
+    self.cellMediaSurfaceTensionSlider.minValue = meshTest->model->cellMediaSurfaceTensionMin;
+    self.cellMediaSurfaceTensionSlider.floatValue = meshTest->model->cellMediaSurfaceTension;
     
-    self.surfaceTensionMax.floatValue = meshTest->model->surfaceTensionMax;
-    self.surfaceTensionMin.floatValue = meshTest->model->surfaceTensionMin;
-    self.surfaceTensionVal.floatValue = meshTest->model->surfaceTension;
+    self.cellCellSurfaceTensionMax.floatValue = meshTest->model->cellCellSurfaceTensionMax;
+    self.cellCellSurfaceTensionMin.floatValue = meshTest->model->cellCellSurfaceTensionMin;
+    self.cellCellSurfaceTensionVal.floatValue = meshTest->model->cellCellSurfaceTension;
     
-    self.surfaceTensionSlider.maxValue = meshTest->model->surfaceTensionMax;
-    self.surfaceTensionSlider.minValue = meshTest->model->surfaceTensionMin;
-    self.surfaceTensionSlider.floatValue = meshTest->model->surfaceTension;
+    self.cellCellSurfaceTensionSlider.maxValue = meshTest->model->cellCellSurfaceTensionMax;
+    self.cellCellSurfaceTensionSlider.minValue = meshTest->model->cellCellSurfaceTensionMin;
+    self.cellCellSurfaceTensionSlider.floatValue = meshTest->model->cellCellSurfaceTension;
     
     self.shortCutoff.floatValue = meshTest->model->mesh->getShortCutoff();
     self.longCutoff.floatValue = meshTest->model->mesh->getLongCutoff();

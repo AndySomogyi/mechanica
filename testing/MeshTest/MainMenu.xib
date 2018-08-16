@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -652,7 +652,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="62" y="594" width="489" height="510"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="489" height="510"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -745,7 +745,7 @@
                             <action selector="valueChanged:" target="494" id="Xem-AH-Ivg"/>
                         </connections>
                     </textField>
-                    <box fixedFrame="YES" title="Surface Tension" translatesAutoresizingMaskIntoConstraints="NO" id="Xbs-Dz-dAR">
+                    <box fixedFrame="YES" title="Cell Cell Surface Tension" translatesAutoresizingMaskIntoConstraints="NO" id="Xbs-Dz-dAR">
                         <rect key="frame" x="17" y="336" width="201" height="78"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="OLB-io-ZjG">
@@ -843,7 +843,7 @@
                             </subviews>
                         </view>
                     </box>
-                    <box fixedFrame="YES" title="Differential Surface Tension" translatesAutoresizingMaskIntoConstraints="NO" id="h0t-Hz-VVg">
+                    <box fixedFrame="YES" title="Cell Media Surface Tension" translatesAutoresizingMaskIntoConstraints="NO" id="h0t-Hz-VVg">
                         <rect key="frame" x="17" y="412" width="201" height="78"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" id="3bD-hn-A9N">
@@ -1153,14 +1153,18 @@
             <connections>
                 <outlet property="actualVolumeTxt" destination="xqK-QT-LVI" id="Q3P-uC-zZo"/>
                 <outlet property="areaTxt" destination="hXN-gf-IHb" id="iqo-Vd-5dE"/>
+                <outlet property="cellCellSurfaceTensionMax" destination="fO2-fh-TET" id="XNh-aS-xc3"/>
+                <outlet property="cellCellSurfaceTensionMin" destination="QET-ok-bXK" id="vIW-4i-bCp"/>
+                <outlet property="cellCellSurfaceTensionSlider" destination="sFK-eo-CYW" id="npW-SX-rKp"/>
+                <outlet property="cellCellSurfaceTensionVal" destination="SZY-O0-rFM" id="9LC-xE-4gF"/>
+                <outlet property="cellMediaSurfaceTensionMax" destination="I4l-vi-GAG" id="b9l-yg-7iB"/>
+                <outlet property="cellMediaSurfaceTensionMin" destination="vzk-eh-v6e" id="AuZ-Dx-riM"/>
+                <outlet property="cellMediaSurfaceTensionSlider" destination="Pq6-m3-pFa" id="8bU-Ot-avL"/>
+                <outlet property="cellMediaSurfaceTensionVal" destination="qPe-fn-aEb" id="Ast-fe-ksu"/>
                 <outlet property="centerOfGeometryTxt" destination="Sbb-Eg-8Ko" id="v0f-1r-Mp3"/>
                 <outlet property="centerOfMassTxt" destination="dnP-no-fdO" id="KwX-IK-Wsv"/>
                 <outlet property="constantPressureBtn" destination="AbJ-OL-J7W" id="NeZ-II-8f8"/>
                 <outlet property="constantVolumeBtn" destination="KDS-Wh-yuM" id="f5V-ep-fc2"/>
-                <outlet property="differentialSurfaceTensionMax" destination="I4l-vi-GAG" id="qYg-cZ-bqa"/>
-                <outlet property="differentialSurfaceTensionMin" destination="vzk-eh-v6e" id="Qzm-Za-aGm"/>
-                <outlet property="differentialSurfaceTensionSlider" destination="Pq6-m3-pFa" id="mTc-rA-leB"/>
-                <outlet property="differentialSurfaceTensionVal" destination="qPe-fn-aEb" id="AQj-9a-sYS"/>
                 <outlet property="harmonicBondTxt" destination="aeK-A4-bFH" id="xEg-rR-ZdH"/>
                 <outlet property="inertiaLxTxt" destination="PCV-0d-RRP" id="rav-9u-SGY"/>
                 <outlet property="inertiaLyTxt" destination="C0B-Za-3I7" id="S0o-RO-vMa"/>
@@ -1168,10 +1172,6 @@
                 <outlet property="longCutoff" destination="igm-wW-5P9" id="FYK-qa-qEb"/>
                 <outlet property="radiusTxt" destination="tJG-3w-9Kh" id="UDR-SE-vu2"/>
                 <outlet property="shortCutoff" destination="BXH-za-c6S" id="2rI-zF-17v"/>
-                <outlet property="surfaceTensionMax" destination="fO2-fh-TET" id="Aiw-Z9-uHV"/>
-                <outlet property="surfaceTensionMin" destination="QET-ok-bXK" id="OgV-Se-KFu"/>
-                <outlet property="surfaceTensionSlider" destination="sFK-eo-CYW" id="N9w-rT-p39"/>
-                <outlet property="surfaceTensionVal" destination="SZY-O0-rFM" id="3rN-JV-Sww"/>
                 <outlet property="volumeLambda" destination="6b4-aH-S6o" id="WKa-QW-dd6"/>
                 <outlet property="volumeMax" destination="7no-VB-eT5" id="4I9-aC-uYM"/>
                 <outlet property="volumeMin" destination="l6Z-jz-miH" id="1gd-AR-Dab"/>

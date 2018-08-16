@@ -27,13 +27,13 @@ HRESULT LangevinPropagator::step(MxReal dt) {
     //    stateVectorStep(dt);
     //}
 
-    /*
-    for(int i = 0; i < 50; ++i) {
-        if((result = rungeKuttaStep(dt/50)) != S_OK) {
+
+    for(int i = 0; i < 10; ++i) {
+        if((result = rungeKuttaStep(dt/10)) != S_OK) {
             return result;
         }
     }
-    */
+
 
     if((timeSteps % 20) == 0) {
         result = mesh->applyMeshOperations();

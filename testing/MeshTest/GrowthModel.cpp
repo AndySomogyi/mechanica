@@ -111,7 +111,7 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
 
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
@@ -128,9 +128,13 @@ void GrowthModel::loadAssImpModel() {
     pressure = 5;
     pressureMax = 15;
 
-    surfaceTensionMin = 0;
-    surfaceTension = 5;
-    surfaceTensionMax = 15;
+    cellMediaSurfaceTensionMin = 0;
+    cellMediaSurfaceTension = 1;
+    cellMediaSurfaceTensionMax = 2;
+    
+    cellCellSurfaceTensionMin = 2;
+    cellCellSurfaceTension = 3;
+    cellCellSurfaceTensionMax = 4;
 
     setTargetVolume(targetVolume);
 }
@@ -142,9 +146,16 @@ HRESULT GrowthModel::calcForce() {
 
     HRESULT result;
 
+    /*
+
     for(PolygonPtr poly : mesh->polygons) {
         applyVolumeConservationForce(poly->cells[0], poly, &poly->partialPolygons[0]);
         applyVolumeConservationForce(poly->cells[1], poly, &poly->partialPolygons[1]);
+    }
+    */
+
+    for(PolygonPtr poly : mesh->polygons) {
+        applySurfaceTensionForce(poly);
     }
 
 
@@ -360,9 +371,9 @@ void GrowthModel::loadSheetModel() {
     pressure = 5;
     pressureMax = 10;
 
-    surfaceTensionMin = 0;
-    surfaceTension = 1.0;
-    surfaceTensionMax = 6;
+    cellMediaSurfaceTensionMin = 0;
+    cellMediaSurfaceTension = 1.0;
+    cellMediaSurfaceTensionMax = 6;
 
     setTargetVolume(0.01);
     minTargetVolume = 0.005;
@@ -400,9 +411,9 @@ void GrowthModel::loadSimpleSheetModel() {
     pressure = 5;
     pressureMax = 15;
 
-    surfaceTensionMin = 0;
-    surfaceTension = 4;
-    surfaceTensionMax = 15;
+    cellMediaSurfaceTensionMin = 0;
+    cellMediaSurfaceTension = 4;
+    cellMediaSurfaceTensionMax = 15;
 
     setTargetVolume(0.4);
     minTargetVolume = 0.005;
@@ -442,13 +453,13 @@ void GrowthModel::loadTwoModel() {
     pressure = 5;
     pressureMax = 15;
 
-    surfaceTensionMin = 0;
-    surfaceTension = 4;
-    surfaceTensionMax = 15;
+    cellMediaSurfaceTensionMin = 0;
+    cellMediaSurfaceTension = 4;
+    cellMediaSurfaceTensionMax = 15;
 
-    differentialSurfaceTensionMin = -15;
-    differentialSurfaceTension = 0;
-    differentialSurfaceTensionMax = 15;
+    cellCellSurfaceTensionMin = -15;
+    cellCellSurfaceTension = 0;
+    cellCellSurfaceTensionMax = 15;
 
     setTargetVolume(0.4);
     minTargetVolume = 0.005;
@@ -481,9 +492,9 @@ void GrowthModel::loadCubeModel() {
     pressure = 5;
     pressureMax = 15;
 
-    surfaceTensionMin = 0;
-    surfaceTension = 5;
-    surfaceTensionMax = 15;
+    cellMediaSurfaceTensionMin = 0;
+    cellMediaSurfaceTension = 5;
+    cellMediaSurfaceTensionMax = 15;
 
     targetVolume = 0.6;
     minTargetVolume = 0.005;
@@ -587,4 +598,25 @@ void GrowthModel::setTargetVolume(float tv)
     for(int i = 0; i < mesh->cells.size(); ++i) {
         mesh->cells[i]->targetVolume = targetVolume;
     }
+}
+
+HRESULT GrowthModel::applySurfaceTensionForce(PolygonPtr pp) {
+    float k = 0;
+
+    if(pp->cells[0]->isRoot() || pp->cells[1]->isRoot()) {
+        k = cellMediaSurfaceTension;
+    } else {
+        k = cellCellSurfaceTension;
+    }
+
+    for(uint i = 0; i < pp->vertices.size(); ++i) {
+        VertexPtr vi = pp->vertices[i];
+        VertexPtr vn = pp->vertices[(i+1)%pp->vertices.size()];
+        Vector3 dx = vn->position - vi->position;
+
+        vi->force += k * dx;
+        vn->force -= k * dx;
+    }
+
+    return S_OK;
 }

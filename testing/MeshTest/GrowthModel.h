@@ -30,6 +30,11 @@ struct GrowthModel : public MxModel {
 
     HRESULT applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp);
 
+    /**
+     * Apply a surface tension due to each partial polygon
+     */
+    HRESULT applySurfaceTensionForce(PolygonPtr pp);
+
     void applyDifferentialSurfaceTension();
 
     float minTargetVolume;
@@ -43,13 +48,13 @@ struct GrowthModel : public MxModel {
     float pressureMax;
     float pressureMin;
 
-    float surfaceTension = 0;
-    float surfaceTensionMax;
-    float surfaceTensionMin;
+    float cellMediaSurfaceTension = 0;
+    float cellMediaSurfaceTensionMax;
+    float cellMediaSurfaceTensionMin;
 
-    float differentialSurfaceTension = 0;
-    float differentialSurfaceTensionMax;
-    float differentialSurfaceTensionMin;
+    float cellCellSurfaceTension = 0;
+    float cellCellSurfaceTensionMax;
+    float cellCellSurfaceTensionMin;
 
     void testEdges();
 
