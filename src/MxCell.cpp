@@ -268,7 +268,6 @@ void MxCell::projectVolumeConstraint()
         for(int i = 0; i < poly->vertices.size(); ++i) {
             VertexPtr v = poly->vertices[i];
             v->position -= vc * (1/3.) * poly->vertexNormal(i, this);
-            v->faceCountPerCell += 1;
         }
     }
 

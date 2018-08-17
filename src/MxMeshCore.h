@@ -69,8 +69,8 @@ typedef MxMesh *MeshPtr;
 typedef const MxMesh *CMeshPtr;
 
 struct MxEdge;
-typedef MxEdge *SkeletalEdgePtr;
-typedef const MxEdge *CSkeletalEdgePtr;
+typedef MxEdge *EdgePtr;
+typedef const MxEdge *CEdgePtr;
 
 struct MxVertex;
 typedef MxVertex *VertexPtr;
@@ -110,9 +110,6 @@ struct MxVertex : MxObject {
     float mass = 0;
 
     float area = 0;
-
-    // total pathetic hack, see void MxCell::projectVolumeConstraint()
-    int faceCountPerCell;
 
     MxVertex();
 
@@ -154,12 +151,13 @@ private:
     MeshPtr mesh();
 
 
-    SkeletalEdgePtr edges[4] = {nullptr};
+    //EdgePtr edges[4] = {nullptr};
+
+    uint _edgeCount = 0;
 
     friend class MxCell;
 
-    friend bool connectedEdgeVertex(CSkeletalEdgePtr, CVertexPtr);
-    friend HRESULT connectEdgeVertices(SkeletalEdgePtr edge, VertexPtr,
+    friend HRESULT connectEdgeVertices(EdgePtr edge, VertexPtr,
             VertexPtr);
 };
 

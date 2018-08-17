@@ -41,7 +41,7 @@ MxPolygon::MxPolygon(uint _id, MxPolygonType* type,
             partialPolygons{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
 
 
-    neighbors.resize(vertices.size());
+    edges.resize(vertices.size());
     _vertexNormals.resize(vertices.size());
                 _vertexAreas.resize(vertices.size());
 

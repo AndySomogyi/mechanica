@@ -91,7 +91,7 @@ struct MeshOperationFactory {
  */
 struct MeshOperations {
 
-    static MeshOperation *createSkeletalEdgeToTriangleOperation(const CSkeletalEdgePtr);
+    static MeshOperation *createSkeletalEdgeToTriangleOperation(const CEdgePtr);
     static MeshOperation *createTriangleToSkeletalEdgeOperation(const CPolygonPtr);
 
 

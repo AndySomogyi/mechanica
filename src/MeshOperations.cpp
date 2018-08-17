@@ -262,7 +262,7 @@ MeshOperation::MeshOperation(MeshPtr _mesh)  :
 }
 
 MeshOperation* MeshOperations::createSkeletalEdgeToTriangleOperation(
-		const CSkeletalEdgePtr) {
+		const CEdgePtr) {
 }
 
 MeshOperation* MeshOperations::createTriangleToSkeletalEdgeOperation(

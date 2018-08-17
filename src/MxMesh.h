@@ -196,7 +196,7 @@ struct MxMesh  {
      * searches the edge list and checks to see if there is a skeletal edge
      * for the given pair of vertices.
      */
-    SkeletalEdgePtr findSkeletalEdge(CVertexPtr a, CVertexPtr b) const;
+    EdgePtr findSkeletalEdge(CVertexPtr a, CVertexPtr b) const;
 
     /**
      * Creates a new triangle for the given three vertices.
@@ -215,7 +215,7 @@ struct MxMesh  {
      * of the vertices, that must be done with connectEdgeTriangle.
      * returns a new edge.
      */
-    SkeletalEdgePtr createSkeletalEdge(VertexPtr a, VertexPtr b);
+    EdgePtr createSkeletalEdge(VertexPtr a, VertexPtr b);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
@@ -297,7 +297,7 @@ struct MxMesh  {
     /**
      * Maintain a list of explicit edges between skeletal vertices.
      */
-    std::vector<SkeletalEdgePtr> edges;
+    std::vector<EdgePtr> edges;
 
     /**
      * random percent of difference from true center of split

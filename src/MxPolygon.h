@@ -192,7 +192,11 @@ struct MxPolygon : MxObject {
      * surface, or may be a skeletal edge if the lies at the intersection of three
      * cells. Currently, we restrict edges to three cells.
      */
-    std::vector<MxObject*> neighbors;
+    std::vector<MxObject*> edges;
+
+    uint edgeCount() const {
+        return edges.size();
+    }
 
     /**
      * indices of the two partial triangles that are attached to this triangle.

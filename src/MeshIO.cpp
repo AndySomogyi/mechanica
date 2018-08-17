@@ -90,7 +90,7 @@ struct ImpEdge {
 
     // the associated skeletal edge in the mechanica mesh,
     // created after we've verified the imported mesh.
-    SkeletalEdgePtr edge = nullptr;
+    EdgePtr edge = nullptr;
 };
 
 typedef std::vector<ImpEdge> EdgeVector;
@@ -543,7 +543,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     // first add all the vertices that are in the skeletal edge list,
     // these are skeletal vertices.
     for(ImpEdge &edge : edges) {
-        SkeletalEdgePtr e = (SkeletalEdgePtr)mesh->alloc(MxSkeletalEdge_Type);
+        EdgePtr e = (EdgePtr)mesh->alloc(MxSkeletalEdge_Type);
         VERIFY(connectEdgeVertices(e, edge.verts[0]->vert, edge.verts[1]->vert));
     }
 

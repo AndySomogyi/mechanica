@@ -36,7 +36,7 @@ void foo(MxObject *o) {
     }
 }
 
-HRESULT connectEdgeVertices(SkeletalEdgePtr edge, VertexPtr v0,
+HRESULT connectEdgeVertices(EdgePtr edge, VertexPtr v0,
         VertexPtr v1)
 {
     if(edge->vertices[0] || edge->vertices[1]) {
@@ -56,37 +56,35 @@ HRESULT connectEdgeVertices(SkeletalEdgePtr edge, VertexPtr v0,
 
     edge->vertices[0] = v0;
     edge->vertices[1] = v1;
-    v0->edges[v0_edges] = edge;
-    v1->edges[v1_edges] = edge;
     return S_OK;
 }
 
-HRESULT disconnectEdgeVertices(SkeletalEdgePtr)
+HRESULT disconnectEdgeVertices(EdgePtr)
 {
 }
 
-HRESULT connectEdgeTriangle(SkeletalEdgePtr edge, PolygonPtr tri)
+HRESULT connectEdgeTriangle(EdgePtr edge, PolygonPtr tri)
 {
     int index = indexOfEdgeVertices(edge, tri);
     if(index < 0) {
         return mx_error(E_FAIL, "triangle not incident to edge");
     }
 
-    if(tri->neighbors[index]) {
+    if(tri->edges[index]) {
         return mx_error(E_FAIL, "triangle neighbor is already connected");
     }
 
-    uint triCount = edge->triangleCount();
+    uint triCount = edge->polygonCount();
     if(triCount >= 3) {
         return mx_error(E_FAIL, "edge already has 3 triangles");
     }
 
-    edge->triangles[triCount] = tri;
-    tri->neighbors[index] = edge;
+    edge->polygons[triCount] = tri;
+    tri->edges[index] = edge;
     return S_OK;
 }
 
-HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, PolygonPtr)
+HRESULT disconnectEdgeTriangle(EdgePtr, PolygonPtr)
 {
 }
 

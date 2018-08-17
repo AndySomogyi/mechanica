@@ -143,21 +143,21 @@ HRESULT connectPolygonPolygon(PolygonPtr a, PolygonPtr b)
     return E_FAIL;
 }
 
-bool incidentEdgePolygonVertices(CSkeletalEdgePtr edge, CPolygonPtr tri)
+bool incidentEdgePolygonVertices(CEdgePtr edge, CPolygonPtr tri)
 {
     return incidentPolygonVertex(tri, edge->vertices[0]) && incidentPolygonVertex(tri, edge->vertices[1]);
 }
 
-bool connectedEdgePolygonPointers(CSkeletalEdgePtr edge, CPolygonPtr tri)
+bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr tri)
 {
     for(int i = 0; i < 3; ++i) {
-        if(tri->neighbors[i] == edge) {
+        if(tri->edges[i] == edge) {
 #ifndef NDEBUG
             assert(0 && "edge triangle list does not contain triangle");
             int index = indexOfEdgeVertices(edge, tri);
             assert(index >= 0);
-            assert(tri->neighbors[index] == edge);
-            assert(edge->triangles[0] == tri || edge->triangles[1] == tri || edge->triangles[2] == tri);
+            assert(tri->edges[index] == edge);
+            assert(edge->polygons[0] == tri || edge->polygons[1] == tri || edge->polygons[2] == tri);
 #endif
             return true;
         }
@@ -165,7 +165,9 @@ bool connectedEdgePolygonPointers(CSkeletalEdgePtr edge, CPolygonPtr tri)
     return false;
 }
 
-int indexOfEdgeVertices(CSkeletalEdgePtr edge, CPolygonPtr tri)
+int indexOfEdgeVertices(CEdgePtr edge, CPolygonPtr tri)
 {
     return tri->adjacentEdgeIndex(edge->vertices[0], edge->vertices[1]);
 }
+
+

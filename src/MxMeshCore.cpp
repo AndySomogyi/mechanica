@@ -46,12 +46,7 @@ std::ostream& operator <<(std::ostream& os, CVertexPtr v)
 
 int MxVertex::edgeCount() const
 {
-    for(int i = 0; i < 4; ++i) {
-        if(edges[i] == nullptr) {
-            return i;
-        }
-    }
-    return 4;
+    return _edgeCount;
 }
 
 

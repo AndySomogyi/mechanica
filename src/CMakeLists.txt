@@ -86,8 +86,7 @@ set(SRC
   MeshIO.cpp
   MxTesselator.cpp
   MxColumnarCell.cpp
-  SkeletalEdgeToTriangleOperation.cpp
-  TriangleToSkeletalEdgeOperation.cpp
+  T1Transition.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -137,8 +136,7 @@ set(HEADERS
   MeshIO.h
   MxTesselator.h
   MxColumnarCell.h
-  SkeletalEdgeToTriangleOperation.h
-  TriangleToSkeletalEdgeOperation.h
+  T1Transition.h
   )
 
 

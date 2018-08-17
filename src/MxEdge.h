@@ -29,7 +29,6 @@ struct MxEdge : MxObject
     /**
      * The next and prev pointers are a skeletal vertex.
      */
-
     MxVertex *vertices[2] = {nullptr};
 
     /**
@@ -37,28 +36,27 @@ struct MxEdge : MxObject
      */
     bool matches(CVertexPtr a, CVertexPtr b) const;
 
-
     /**
      * A skeletal either 2 or 3 incident triangles.
      *
      * We get 2 triangles when we read in a mesh, and the edges of a polygonal
      * face don't have any neighbors.
      */
-    MxPolygon *triangles[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
+    MxPolygon *polygons[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
 
     static bool classof(const MxObject *o) {
         return o->ob_type == MxSkeletalEdge_Type;
     }
 
-    uint triangleCount() const {
-        return triangles[0] == nullptr ? 0 :
-              (triangles[1] == nullptr ? 1 :
-              (triangles[2] == nullptr ? 2 : 3));
+    uint polygonCount() const {
+        return polygons[0] == nullptr ? 0 :
+              (polygons[1] == nullptr ? 1 :
+              (polygons[2] == nullptr ? 2 : 3));
     }
 };
 
-typedef MxEdge* SkeletalEdgePtr;
-typedef const MxEdge *CSkeletalEdgePtr;
+typedef MxEdge* EdgePtr;
+typedef const MxEdge *CEdgePtr;
 
 /**
  * Connects an edge with a pair of skeletal vertices.
@@ -69,13 +67,13 @@ typedef const MxEdge *CSkeletalEdgePtr;
  * Does NOT connect the triangles that are connected to the vertices,
  * the triangles must be connected with connectEdgeTriangle.
  */
-HRESULT connectEdgeVertices(SkeletalEdgePtr, VertexPtr, VertexPtr);
+HRESULT connectEdgeVertices(EdgePtr, VertexPtr, VertexPtr);
 
 /**
  * Disconnects an edge from a pair of vertices. This clear the vertex pointers in the
  * edge and removes the edge from the vertex edge lists.
  */
-HRESULT disconnectEdgeVertices(SkeletalEdgePtr);
+HRESULT disconnectEdgeVertices(EdgePtr);
 
 
 /**
@@ -87,7 +85,7 @@ HRESULT disconnectEdgeVertices(SkeletalEdgePtr);
  * first connect the vertices to the edges and triangles, then connect the edges
  * to the triangles.
  */
-HRESULT connectEdgeTriangle(SkeletalEdgePtr, PolygonPtr);
+HRESULT connectEdgeTriangle(EdgePtr, PolygonPtr);
 
 /**
  * Disconnects a triangle from an edge, and clears the corresponding
@@ -96,6 +94,6 @@ HRESULT connectEdgeTriangle(SkeletalEdgePtr, PolygonPtr);
  * Only clears the triangle and neighbor slots, does not re-connect the
  * triangle neighbor slots to anything else.
  */
-HRESULT disconnectEdgeTriangle(SkeletalEdgePtr, PolygonPtr);
+HRESULT disconnectEdgeTriangle(EdgePtr, PolygonPtr);
 
 #endif /* SRC_MXEDGE_H_ */

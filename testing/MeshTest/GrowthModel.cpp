@@ -111,11 +111,11 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
 
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
-    targetVolume = 9;
+    targetVolume = 6;
     minTargetVolume = 5;
     maxTargetVolume = 20.0;
     targetVolumeLambda = 0.1;
@@ -129,12 +129,12 @@ void GrowthModel::loadAssImpModel() {
     pressureMax = 15;
 
     cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 1;
-    cellMediaSurfaceTensionMax = 2;
+    cellMediaSurfaceTension = 0.1;
+    cellMediaSurfaceTensionMax = 1;
     
-    cellCellSurfaceTensionMin = 2;
-    cellCellSurfaceTension = 3;
-    cellCellSurfaceTensionMax = 4;
+    cellCellSurfaceTensionMin = 0;
+    cellCellSurfaceTension = 0.1;
+    cellCellSurfaceTensionMax = 1;
 
     setTargetVolume(targetVolume);
 }

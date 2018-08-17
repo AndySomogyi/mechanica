@@ -27,7 +27,7 @@ bool connectedPolygonCellPointers(CPolygonPtr t, CCellPtr c);
  * edge, returns the index of which side the edge is on. Otherwise
  * returns -1.
  */
-int indexOfEdgeVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
+int indexOfEdgeVertices(CEdgePtr edge, CPolygonPtr tri);
 
 /**
  * Does the edge vertices match a pair of vertices in a triangle.
@@ -35,13 +35,13 @@ int indexOfEdgeVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
  * This only checks vertex relationships, this does NOT check that the
  * triangle and edge pointers are connected.
  */
-bool incidentEdgePolygonVertices(CSkeletalEdgePtr edge, CPolygonPtr tri);
+bool incidentEdgePolygonVertices(CEdgePtr edge, CPolygonPtr tri);
 
 /**
  * Are the edge and triangle pointers connected. Only checks the pointers
  * relationships, but does not check vertex relationships.
  */
-bool connectedEdgePolygonPointers(CSkeletalEdgePtr edge, CPolygonPtr tri);
+bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr tri);
 
 inline bool connectedCellPolygonPointers(CCellPtr c, CPolygonPtr t ) {
     return connectedPolygonCellPointers(t, c);
@@ -87,6 +87,30 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell);
  * error is returned.
  */
 HRESULT connectPolygonPolygon(PolygonPtr, PolygonPtr);
+
+
+/**
+ * Disconnects an edge and vertex from from a polygon.
+ *
+ * Removes an edge and vertex from a polygon, and re-connects
+ * the remaining vertex to the next incident edge. The vertex must be attached
+ * to the edge and polygon, and the edge must be attached to the polygon.
+ *
+ * Leaves the polygon in a valid state, but the vertex and edge are left orphaned.
+ *
+ */
+HRESULT disconnectEdgeVertexPolygon(EdgePtr edge, VertexPtr v, PolygonPtr poly);
+
+
+/**
+ * Connects an edge and vertex with a polygon after the given vertex ref.
+ *
+ * If ref is null, the vertex and edge get inserted at the end of the polygon.
+ *
+ *
+ */
+HRESULT connectEdgeVertexPolygon(EdgePtr edge, VertexPtr, PolygonPtr poly, CVertexPtr ref);
+
 
 
 
