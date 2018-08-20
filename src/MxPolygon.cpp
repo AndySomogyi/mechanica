@@ -10,6 +10,12 @@
 #include "MxDebug.h"
 #include <iostream>
 
+static MxPartialPolygonType partialPolygonType;
+MxPartialPolygonType *MxPartialPolygon_Type = &partialPolygonType;
+
+static MxPolygonType polygonType;
+MxPolygonType *MxPolygon_Type = &polygonType;
+
 static std::string to_string(CCellPtr cell) {
     return cell ? std::to_string(cell->id) : "null";
 }
@@ -33,12 +39,9 @@ std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
 }
 
 
-MxPolygon::MxPolygon(uint _id, MxPolygonType* type,
-        const std::vector<VertexPtr>& verts,
-        const std::array<CellPtr, 2>& cells,
-        const std::array<MxPartialPolygonType*, 2>& partTriTypes) :
-            id{_id}, MxObject{type}, vertices{verts}, cells{cells},
-            partialPolygons{{{partTriTypes[0], this}, {partTriTypes[1], this}}} {
+MxPolygon::MxPolygon(uint _id, MxPolygonType* type) :
+            id{_id}, MxObject{type}, cells{{nullptr, nullptr}},
+            partialPolygons{{{MxPartialPolygon_Type, this}, {MxPartialPolygon_Type, this}}} {
 
 
     edges.resize(vertices.size());
@@ -48,20 +51,6 @@ MxPolygon::MxPolygon(uint _id, MxPolygonType* type,
     positionsChanged();
 }
 
-/**
- * Neighbor triangle indexes are related to vertex indexes as
- * the i'th neighbor triangle shares vertices at indexes i and either i+1
- * or i-1.
- */
-int MxPolygon::adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const {
-    for(int i = 0; i < 3; ++i) {
-        if((vertices[i] == a && vertices[(i+1)%3] == b) ||
-           (vertices[i] == b && vertices[(i+1)%3] == a)) {
-            return i;
-        }
-    }
-    return -1;
-}
 
 HRESULT MxPolygon::positionsChanged() {
 
@@ -165,16 +154,6 @@ Vector3 MxPolygon::vertexNormal(uint i, CCellPtr cell) const
 
 bool MxPolygon::isValid() const  {
 
-
-
-    for(int i = 0; i < 3; ++i) {
-        VertexPtr v1 = vertices[i];
-        VertexPtr v2 = vertices[(i+1)%3];
-        int ni = adjacentEdgeIndex(v1, v2);
-        assert(ni == i);
-
-
-    }
 
     for(int i = 0; i < 2; ++i) {
         if(!cells[i]) {

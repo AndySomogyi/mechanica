@@ -26,6 +26,8 @@ struct MxPartialPolygonType : MxType {
      */
 };
 
+MxAPI_DATA(MxPartialPolygonType*) MxPartialPolygon_Type;
+
 /**
  * A partial face data structure, represents 1/2 of a triangular face. This represents the
  * side of the face that belongs to a cell struct. Partial faces share geometry (the vertex
@@ -118,7 +120,7 @@ struct MxPolygonType : MxType {
 
 };
 
-static MxPolygonType MxPolygon_Type;
+MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
 
 
 /**
@@ -250,20 +252,8 @@ struct MxPolygon : MxObject {
     {}
 
 
-    MxPolygon(uint _id, MxPolygonType *type, const std::vector<VertexPtr> &vertices,
-            const std::array<CellPtr, 2> &cells = {{nullptr, nullptr}},
-            const std::array<MxPartialPolygonType*, 2> &partialTriangleTypes = {{nullptr, nullptr}});
+    MxPolygon(uint _id, MxPolygonType *type);
 
-
-    /**
-     * get the edge index of edge from a pair of vertices.
-     *
-     * If vertices[0] == a and vertices[1] == b or vertices[1] == a and vertices[0] == b,
-     * then the edge is in the zero position, and so forth.
-     *
-     * If the edge does not match, then returns a -1.
-     */
-    int adjacentEdgeIndex(CVertexPtr a, CVertexPtr b) const;
 
     inline int cellIndex(CCellPtr cell) const {
         return (cells[0] == cell) ? 0 : ((cells[1] == cell) ? 1 : -1);
@@ -279,6 +269,14 @@ struct MxPolygon : MxObject {
     }
 
     /**
+     * get the number of sides this polygon has, equivalently, the number of
+     * vertices or edges.
+     */
+    inline uint sides() const {
+        return vertices.size();
+    }
+
+    /**
      * Inform the cell that the vertex positions have changed. Causes the
      * cell to recalculate area and volume, also inform all contained objects.
      */
@@ -287,8 +285,6 @@ struct MxPolygon : MxObject {
     bool isConnected() const;
 
     bool isValid() const;
-
-
 
     float alpha = 0.5;
 
@@ -306,6 +302,12 @@ private:
     float _volume = 0.f;
     std::vector<Vector3> _vertexNormals;
     std::vector<float> _vertexAreas;
+
+    friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
+            const std::vector<VertexPtr> &vertices);
+
+    friend HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert,
+            PolygonPtr poly, CVertexPtr ref);
 };
 
 std::ostream& operator<<(std::ostream& os, CPolygonPtr tri);

@@ -196,7 +196,7 @@ struct MxMesh  {
      * searches the edge list and checks to see if there is a skeletal edge
      * for the given pair of vertices.
      */
-    EdgePtr findSkeletalEdge(CVertexPtr a, CVertexPtr b) const;
+    EdgePtr findEdge(CVertexPtr a, CVertexPtr b) const;
 
     /**
      * Creates a new triangle for the given three vertices.
@@ -204,7 +204,7 @@ struct MxMesh  {
      * returns a new, orphaned triangle.
      */
     PolygonPtr createPolygon(MxPolygonType *type,
-            const std::vector<VertexPtr> &verts);
+            const std::vector<VertexPtr> &vertices);
 
 
     /**
@@ -215,7 +215,7 @@ struct MxMesh  {
      * of the vertices, that must be done with connectEdgeTriangle.
      * returns a new edge.
      */
-    EdgePtr createSkeletalEdge(VertexPtr a, VertexPtr b);
+    EdgePtr createEdge(MxEdgeType *type, VertexPtr a, VertexPtr b);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
@@ -280,12 +280,6 @@ struct MxMesh  {
     MxObject *alloc(const MxType *type);
 
 
-    /**
-     * Notify the mesh that the valence count on this vertex has changed.
-     * This may enqueue the vertex in the operation queue so that edges or
-     * cells can be removed and attached elsewhere.
-     */
-    HRESULT valenceChanged(VertexPtr v);
 
     bool validate();
 

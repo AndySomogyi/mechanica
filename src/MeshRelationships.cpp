@@ -7,6 +7,7 @@
 
 #include <MeshRelationships.h>
 #include <MxEdge.h>
+#include "MxMesh.h"
 #include <algorithm>
 #include <iostream>
 
@@ -19,72 +20,6 @@ bool adjacentPolygonVertices(CPolygonPtr a, CPolygonPtr b) {
 
     return false;
 }
-
-
-
-typedef std::array<int, 2> EdgeIndx;
-
-inline EdgeIndx adjacent_edge_indx(CPPolygonPtr a, CPPolygonPtr b) {
-    assert(a->polygon != b->polygon && "partial triangles are on the same triangle");
-
-    EdgeIndx result;
-
-    VertexPtr v1 = nullptr, v2 = nullptr;
-
-
-    for(int i = 0; i < 3  && (v1 == nullptr || v2 == nullptr); ++i) {
-        for(int j = 0; j < 3 && (v1 == nullptr || v2 == nullptr); ++j) {
-            if(!v1 && a->polygon->vertices[i] == b->polygon->vertices[j]) {
-                v1 = a->polygon->vertices[i];
-                continue;
-            }
-            if(!v2 && a->polygon->vertices[i] == b->polygon->vertices[j]) {
-                v2 = a->polygon->vertices[i];
-            }
-        }
-    }
-
-    assert(v1 && v2);
-    assert(v1 != v2);
-
-    result[0] = a->polygon->adjacentEdgeIndex(v1, v2);
-    result[1] = b->polygon->adjacentEdgeIndex(v1, v2);
-
-    return result;
-}
-
-inline EdgeIndx adjacentEdgeIndex(CPolygonPtr a, CPolygonPtr b) {
-    assert(a && b && a != b && "partial triangles are on the same triangle");
-
-    EdgeIndx result = {-1, -1};
-
-    VertexPtr v1 = nullptr, v2 = nullptr;
-
-
-    for(int i = 0; i < 3  && (v1 == nullptr || v2 == nullptr); ++i) {
-        for(int j = 0; j < 3 && (v1 == nullptr || v2 == nullptr); ++j) {
-            if(!v1 && a->vertices[i] == b->vertices[j]) {
-                v1 = a->vertices[i];
-                continue;
-            }
-            if(!v2 && a->vertices[i] == b->vertices[j]) {
-                v2 = a->vertices[i];
-            }
-        }
-    }
-
-    if(v1 || v2) {
-        assert(v1 && v2);
-        assert(v1 != v2);
-        result[0] = a->adjacentEdgeIndex(v1, v2);
-        result[1] = b->adjacentEdgeIndex(v1, v2);
-    }
-
-    return result;
-}
-
-
-
 
 
 bool incidentPolygonVertex(CPolygonPtr tri, CVertexPtr v) {
@@ -137,7 +72,7 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell)
     return E_NOTIMPL;
 }
 
-HRESULT connectPolygonPolygon(PolygonPtr a, PolygonPtr b)
+HRESULT connectPolygonPolygonPointers(PolygonPtr a, PolygonPtr b)
 {
 
     return E_FAIL;
@@ -148,16 +83,17 @@ bool incidentEdgePolygonVertices(CEdgePtr edge, CPolygonPtr tri)
     return incidentPolygonVertex(tri, edge->vertices[0]) && incidentPolygonVertex(tri, edge->vertices[1]);
 }
 
-bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr tri)
+bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr poly)
 {
     for(int i = 0; i < 3; ++i) {
-        if(tri->edges[i] == edge) {
+        if(edge->polygons[i] == poly) {
 #ifndef NDEBUG
-            assert(0 && "edge triangle list does not contain triangle");
-            int index = indexOfEdgeVertices(edge, tri);
-            assert(index >= 0);
-            assert(tri->edges[index] == edge);
-            assert(edge->polygons[0] == tri || edge->polygons[1] == tri || edge->polygons[2] == tri);
+            for(int j = 0; j > poly->edges.size(); ++j) {
+                if(poly->edges[j] == edge) {
+                    return true;
+                }
+            }
+            assert(false && "edge connected to poly, but poly is not connected to edge");
 #endif
             return true;
         }
@@ -165,9 +101,65 @@ bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr tri)
     return false;
 }
 
-int indexOfEdgeVertices(CEdgePtr edge, CPolygonPtr tri)
+HRESULT disconnectPolygonEdge(PolygonPtr poly, EdgePtr edge)
 {
-    return tri->adjacentEdgeIndex(edge->vertices[0], edge->vertices[1]);
+    if(poly->sides() <= 3) {
+        return mx_error(E_FAIL, "can't disconnect edge from polygon with less than four sides");
+    }
+
+
+
+
+
 }
 
+HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert,
+        PolygonPtr poly, CVertexPtr ref)
+{
+}
 
+HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
+        const std::vector<VertexPtr>& vertices)
+{
+    if(poly->vertices.size() != 0) {
+        return mx_error(E_FAIL, "only empty polygons supported for now");
+    }
+
+    if(vertices.size() < 3) {
+        return mx_error(E_FAIL, "only support polygons with at least three vertices");
+    }
+
+    // grab the edges for each vertex.
+    poly->edges.resize(vertices.size(), nullptr);
+    for(int i = 0; i < vertices.size(); ++i) {
+        VertexPtr v1 = vertices[i];
+        VertexPtr v2 = vertices[(i+1)%vertices.size()];
+        EdgePtr edge = mesh->findEdge(v1, v2);
+
+        if(edge == nullptr) {
+            return mx_error(E_FAIL, "could not find edge for vertex");
+        }
+
+        if(connectedEdgePolygonPointers(edge, poly)) {
+            return mx_error(E_FAIL, "edge is already connected to polygon");
+        }
+
+        uint pc = edge->polygonCount();
+
+        if(pc >= 3) {
+            return mx_error(E_FAIL, "edge is already connected to three polygons");
+        }
+
+        edge->polygons[pc] = poly;
+        poly->edges[i] = edge;
+    }
+
+
+    poly->vertices = vertices;
+    poly->_vertexNormals.resize(vertices.size());
+    poly->_vertexAreas.resize(vertices.size());
+
+    poly->positionsChanged();
+
+    return S_OK;
+}

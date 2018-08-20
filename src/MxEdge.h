@@ -13,7 +13,10 @@
 
 #define SKELETAL_EDGE_MAX_TRIANGLES 3
 
-MxAPI_DATA(struct MxType*) MxSkeletalEdge_Type;
+struct MxEdgeType : MxType {
+};
+
+MxAPI_DATA(struct MxEdgeType*) MxEdge_Type;
 
 struct MxVertex;
 
@@ -37,15 +40,15 @@ struct MxEdge : MxObject
     bool matches(CVertexPtr a, CVertexPtr b) const;
 
     /**
-     * A skeletal either 2 or 3 incident triangles.
+     * A skeletal either 2 or 3 incident polygons.
      *
-     * We get 2 triangles when we read in a mesh, and the edges of a polygonal
+     * We get 2 polygons when we read in a mesh, and the edges of a polygonal
      * face don't have any neighbors.
      */
     MxPolygon *polygons[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
 
     static bool classof(const MxObject *o) {
-        return o->ob_type == MxSkeletalEdge_Type;
+        return o->ob_type == MxEdge_Type;
     }
 
     uint polygonCount() const {
@@ -53,6 +56,15 @@ struct MxEdge : MxObject
               (polygons[1] == nullptr ? 1 :
               (polygons[2] == nullptr ? 2 : 3));
     }
+
+    uint vertexCount() const {
+        return vertices[0] == nullptr ? 0 :
+              (vertices[1] == nullptr ? 1 : 2);
+    }
+
+    friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
+            const std::vector<VertexPtr> &vertices);
+
 };
 
 typedef MxEdge* EdgePtr;
@@ -75,25 +87,5 @@ HRESULT connectEdgeVertices(EdgePtr, VertexPtr, VertexPtr);
  */
 HRESULT disconnectEdgeVertices(EdgePtr);
 
-
-/**
- * Connect a skeletal edge to a triangle. Checks to make sure the skeletal edge
- * has an open triangle slot, and that the triangle has an open neighbor slot.
- * The triangle must already be connected to a pair of vertices, and those vertices
- * must match the edge's vertices. Both the triangle and the edge vertex pointers
- * must already be set. The order of connecting triangles to edges is thus
- * first connect the vertices to the edges and triangles, then connect the edges
- * to the triangles.
- */
-HRESULT connectEdgeTriangle(EdgePtr, PolygonPtr);
-
-/**
- * Disconnects a triangle from an edge, and clears the corresponding
- * triangle and neighbor slots.
- *
- * Only clears the triangle and neighbor slots, does not re-connect the
- * triangle neighbor slots to anything else.
- */
-HRESULT disconnectEdgeTriangle(EdgePtr, PolygonPtr);
 
 #endif /* SRC_MXEDGE_H_ */

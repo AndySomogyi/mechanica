@@ -246,7 +246,10 @@ struct ImpFace {
             const aiFace *face, const aiMesh *aim) {
 
         vertices = verticesForFace(vecMap, aim, face);
-        polygon = mesh->createPolygon(&MxPolygon_Type, vertices);
+
+        polygon = mesh->createPolygon(MxPolygon_Type, vertices);
+
+        assert(polygon != nullptr);
     }
 
 
@@ -543,8 +546,8 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     // first add all the vertices that are in the skeletal edge list,
     // these are skeletal vertices.
     for(ImpEdge &edge : edges) {
-        EdgePtr e = (EdgePtr)mesh->alloc(MxSkeletalEdge_Type);
-        VERIFY(connectEdgeVertices(e, edge.verts[0]->vert, edge.verts[1]->vert));
+        edge.edge = mesh->createEdge(MxEdge_Type, edge.verts[0]->vert, edge.verts[1]->vert);
+        assert(edge.edge != nullptr);
     }
 
     assert(scene->mRootNode);

@@ -8,18 +8,16 @@
 #include <MxEdge.h>
 #include "MeshRelationships.h"
 
-struct MxSkeletalEdgeType : MxType {
 
-};
 
-static MxSkeletalEdgeType type;
+static MxEdgeType type;
 
-MxType *MxSkeletalEdge_Type = &type;
+MxEdgeType *MxEdge_Type = &type;
 
 
 
 
-MxEdge::MxEdge() : MxObject(MxSkeletalEdge_Type)
+MxEdge::MxEdge() : MxObject(MxEdge_Type)
 {
 }
 
@@ -63,30 +61,6 @@ HRESULT disconnectEdgeVertices(EdgePtr)
 {
 }
 
-HRESULT connectEdgeTriangle(EdgePtr edge, PolygonPtr tri)
-{
-    int index = indexOfEdgeVertices(edge, tri);
-    if(index < 0) {
-        return mx_error(E_FAIL, "triangle not incident to edge");
-    }
-
-    if(tri->edges[index]) {
-        return mx_error(E_FAIL, "triangle neighbor is already connected");
-    }
-
-    uint triCount = edge->polygonCount();
-    if(triCount >= 3) {
-        return mx_error(E_FAIL, "edge already has 3 triangles");
-    }
-
-    edge->polygons[triCount] = tri;
-    tri->edges[index] = edge;
-    return S_OK;
-}
-
-HRESULT disconnectEdgeTriangle(EdgePtr, PolygonPtr)
-{
-}
 
 bool MxEdge::matches(CVertexPtr a, CVertexPtr b) const
 {

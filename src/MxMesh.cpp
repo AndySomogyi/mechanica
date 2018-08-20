@@ -8,6 +8,7 @@
 
 #include "MxDebug.h"
 #include "MxMesh.h"
+#include "MeshRelationships.h"
 #include <Magnum/Math/Math.h>
 #include "MagnumExternal/Optional/optional.hpp"
 
@@ -46,7 +47,7 @@ MxObject *MxMesh::alloc(const MxType* type)
         vertices.push_back(retval);
         return retval;
     }
-    else if(type == MxSkeletalEdge_Type) {
+    else if(type == MxEdge_Type) {
         MxEdge *e = new MxEdge();
         edges.push_back(e);
         return e;
@@ -227,16 +228,15 @@ HRESULT MxMesh::applyMeshOperations() {
     return positionsChanged();
 }
 
-PolygonPtr MxMesh::createPolygon(MxPolygonType* type,
-        const std::vector<VertexPtr>& verts) {
+PolygonPtr MxMesh::createPolygon(MxPolygonType* type,  const std::vector<VertexPtr> &vertices) {
 
-    PolygonPtr tri = new MxPolygon{(uint)polygons.size(), type, verts};
+    PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
 
-    polygons.push_back(tri);
+    polygons.push_back(poly);
 
-    //assert(tri->isValid());
+    VERIFY(connectPolygonVertices(this, poly, vertices));
 
-    return tri;
+    return poly;
 }
 
 
@@ -273,7 +273,7 @@ HRESULT MxMesh::positionsChanged()
     return S_OK;
 }
 
-EdgePtr MxMesh::findSkeletalEdge(CVertexPtr a, CVertexPtr b) const
+EdgePtr MxMesh::findEdge(CVertexPtr a, CVertexPtr b) const
 {
     for(EdgePtr edge : edges) {
         if(edge->matches(a, b)) {
@@ -291,14 +291,16 @@ void MxMesh::markEdge(const Edge& edge) {
     }
 }
 
+EdgePtr MxMesh::createEdge(MxEdgeType* type, VertexPtr a, VertexPtr b)
+{
+    EdgePtr e = (EdgePtr)alloc(type);
+    VERIFY(connectEdgeVertices(e, a, b));
+    return e;
+}
+
 void MxMesh::markTriangle(const PolygonPtr tri) {
     makeTrianglesTransparent();
     tri->color = Magnum::Color4::red();
-}
-
-HRESULT MxMesh::valenceChanged(VertexPtr v)
-{
-    return S_OK;
 }
 
 

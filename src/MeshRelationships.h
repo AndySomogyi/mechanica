@@ -21,14 +21,6 @@ bool connectedPolygonPointers(CPolygonPtr a, CPolygonPtr b);
 
 bool connectedPolygonCellPointers(CPolygonPtr t, CCellPtr c);
 
-
-/**
- * If the given triangle shares vertices with the vertices in the
- * edge, returns the index of which side the edge is on. Otherwise
- * returns -1.
- */
-int indexOfEdgeVertices(CEdgePtr edge, CPolygonPtr tri);
-
 /**
  * Does the edge vertices match a pair of vertices in a triangle.
  *
@@ -72,23 +64,6 @@ HRESULT connectPolygonCell(PolygonPtr tri, CellPtr cell);
 HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell);
 
 
-
-
-/**
- * Connect any open neighbor slots in a triangle to the neighboring triangle
- * determined by the triangle vertices. Uses the vertices to determine
- * connect index location, so a neighboring triangle in the 0 position
- * shares vertices 0 and 1, neighboring triangle in the 1 shares vertices
- * 1 and 2, and a neighboring triangle in the 2 slot shares vertices
- * 2 and 0.
- *
- * first searches for matching vertex pointers, then hooks up the neighbor
- * pointer. The neighbor pointer must be empty in both triangles, otherwise
- * error is returned.
- */
-HRESULT connectPolygonPolygon(PolygonPtr, PolygonPtr);
-
-
 /**
  * Disconnects an edge and vertex from from a polygon.
  *
@@ -99,17 +74,41 @@ HRESULT connectPolygonPolygon(PolygonPtr, PolygonPtr);
  * Leaves the polygon in a valid state, but the vertex and edge are left orphaned.
  *
  */
-HRESULT disconnectEdgeVertexPolygon(EdgePtr edge, VertexPtr v, PolygonPtr poly);
+HRESULT disconnectPolygonEdge(PolygonPtr poly, EdgePtr edge);
 
 
 /**
- * Connects an edge and vertex with a polygon after the given vertex ref.
+ * Inserts an edge and vertex into a polygon after the given vertex ref.
  *
  * If ref is null, the vertex and edge get inserted at the end of the polygon.
  *
+ * If poly already has one or more vertices, then vert and edge are added as a pair. In
+ * this case, edge must either have one end open, and the other end connected to vert, or
+ * both ends open. If one end is open, that end gets connected to the last vertex in the
+ * polygon. If both ends of the edge are open, then the vertex is added to the polygon,
+ * and the new edge connects the last vertex in the polygon, and the given vertex.
  *
+ * This procedure will always leave the edges and vertices in a polygon in a valid state.
+ * A polygon with only one vertex and edge will have the edge point back to the same vertex,
+ * i.e. the edge will point to the same vertex on both sides. A polygon with two or more
+ * vertices will have an edge that connects the current indexed vertex to the next one,
+ * so edge at index n connects vertices at index n and n + 1. A polygon with two vertices
+ * has two edges, edge 0 connects vertices 0 and 1, and edge 1 connects vertices 1 and 0.
  */
-HRESULT connectEdgeVertexPolygon(EdgePtr edge, VertexPtr, PolygonPtr poly, CVertexPtr ref);
+HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert, PolygonPtr poly, CVertexPtr ref);
+
+
+//HRESULT connectPolygonEdges(MeshPtr mesh, PolygonPtr poly, const std::vector<EdgePtr> &edges);
+
+
+/**
+ * Connects the vertices to a polygon, and searches the mesh for the edges between the
+ * the vertices, and connects those to the polygon also.
+ *
+ * An edge must be present in the mesh between each pair of vertices.
+ */
+HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
+        const std::vector<VertexPtr> &vertices);
 
 
 
