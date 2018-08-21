@@ -48,7 +48,7 @@ MxObject *MxMesh::alloc(const MxType* type)
         return retval;
     }
     else if(type == MxEdge_Type) {
-        MxEdge *e = new MxEdge();
+        MxEdge *e = new MxEdge(edges.size());
         edges.push_back(e);
         return e;
     }
@@ -284,23 +284,11 @@ EdgePtr MxMesh::findEdge(CVertexPtr a, CVertexPtr b) const
 }
 
 
-
-void MxMesh::markEdge(const Edge& edge) {
-    for(PolygonPtr tri : polygons) {
-        tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
-    }
-}
-
 EdgePtr MxMesh::createEdge(MxEdgeType* type, VertexPtr a, VertexPtr b)
 {
     EdgePtr e = (EdgePtr)alloc(type);
     VERIFY(connectEdgeVertices(e, a, b));
     return e;
-}
-
-void MxMesh::markTriangle(const PolygonPtr tri) {
-    makeTrianglesTransparent();
-    tri->color = Magnum::Color4::red();
 }
 
 
@@ -340,4 +328,23 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     return S_OK;
 }
 
+MxObject* MxMesh::selectedObject() const {
+    return _selectedObject;
+}
 
+HRESULT MxMesh::selectObject(MxType* type, uint index) {
+    if(type == nullptr) {
+        _selectedObject = nullptr;
+    }
+
+    if(type != MxEdge_Type) {
+        return mx_error(E_FAIL, "only edge selection supported");
+    }
+
+    if(index >= edges.size()) {
+        return mx_error(E_FAIL, "index out of range");
+    }
+
+    _selectedObject = edges[index];
+    return S_OK;
+}

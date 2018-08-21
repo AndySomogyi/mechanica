@@ -299,15 +299,6 @@ struct MxMesh  {
      */
     float edgeSplitStochasticAsymmetry = 0.2;
 
-    /**
-     * debug code to set the alpha to near zero on all triangles.
-     */
-    void makeTrianglesTransparent() {
-        for (PolygonPtr tri : polygons) {
-            tri->color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
-            tri->alpha = 0.0;
-        }
-    }
 
     float getShortCutoff() { return meshOperations.getShortCutoff(); };
     void setShortCutoff(float val) { meshOperations.setShortCutoff(val); }
@@ -316,9 +307,19 @@ struct MxMesh  {
     float getLongCutoff() { return meshOperations.getLongCutoff(); }
     void setLongCutoff(float val) { meshOperations.setLongCutoff(val); }
 
-    void markEdge(const Edge& edge);
 
-    void markTriangle(const PolygonPtr tri);
+    /**
+     * Get the currently selected object.
+     */
+    MxObject *selectedObject() const;
+
+    /**
+     * Select an object, sets the current selected object, and clears the existing one.
+     * type can be NULL to clear selection.
+     */
+    HRESULT selectObject(MxType *type, uint index);
+
+
 
 private:
 
@@ -337,7 +338,7 @@ private:
 
     uint triangleId = 0;
 
-
+    MxObject *_selectedObject = nullptr;
 
     friend struct MxVertex;
     friend struct MxPolygon;

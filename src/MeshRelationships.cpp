@@ -101,21 +101,45 @@ bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr poly)
     return false;
 }
 
-HRESULT disconnectPolygonEdge(PolygonPtr poly, EdgePtr edge)
+HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v)
 {
-    if(poly->sides() <= 3) {
+    if(!poly || !edge || !v) {
+        return mx_error(E_INVALIDARG, "null arguments");
+    }
+
+    if(poly->size() <= 3) {
         return mx_error(E_FAIL, "can't disconnect edge from polygon with less than four sides");
     }
 
+    if(edge->vertices[0] != v && edge->vertices[1] != v) {
+        return mx_error(E_INVALIDARG, "edge is not connected to vertex");
+    }
 
+    int index = poly->vertexIndex(v);
 
+    if(index < 0) {
+        return mx_error(E_INVALIDARG, "vertex is not connected to polygon");
+    }
 
+    // remove the edge / vertex from the poly
+    poly->edges.erase(poly->edges.begin() + index);
+    poly->vertices.erase(poly->vertices.begin() + index);
+    poly->_vertexAreas.erase(poly->_vertexAreas.begin() + index);
+    poly->_vertexNormals.erase(poly->_vertexNormals.begin() + index);
 
+    // re-connect the previous edge
+    int prevIndex = loopIndex(index - 1, poly->edges.size());
+    EdgePtr prevEdge = poly->edges[prevIndex];
+    VERIFY(reconnectEdgeVertex(prevEdge, v, poly->vertices[index]));
+
+    VERIFY(edge->erasePolygon(poly));
+
+    return S_OK;
 }
 
-HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert,
-        PolygonPtr poly, CVertexPtr ref)
+HRESULT insertPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr vert, CVertexPtr ref)
 {
+    return S_OK;
 }
 
 HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,

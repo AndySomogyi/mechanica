@@ -17,7 +17,7 @@ MxEdgeType *MxEdge_Type = &type;
 
 
 
-MxEdge::MxEdge() : MxObject(MxEdge_Type)
+MxEdge::MxEdge(uint id) : MxObject(MxEdge_Type), id{id}
 {
 }
 
@@ -57,13 +57,53 @@ HRESULT connectEdgeVertices(EdgePtr edge, VertexPtr v0,
     return S_OK;
 }
 
-HRESULT disconnectEdgeVertices(EdgePtr)
-{
-}
+
 
 
 bool MxEdge::matches(CVertexPtr a, CVertexPtr b) const
 {
     return ((MxVertex*)vertices[0] == a && (MxVertex*)vertices[1] == b) ||
             ((MxVertex*)vertices[1] == a && (MxVertex*)vertices[0] == b);
+}
+
+HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr oldVertex,
+        VertexPtr newVertex)
+{
+    if(edge->vertices[0] == oldVertex) {
+        edge->vertices[0] = newVertex;
+        return S_OK;
+    }
+
+    if(edge->vertices[1] == oldVertex) {
+        edge->vertices[1] = newVertex;
+        return S_OK;
+    }
+
+    return mx_error(E_INVALIDARG, "edge is not attached to the old vertex");
+}
+
+HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
+{
+    int start = -1;
+    for(int i = 0; i < SKELETAL_EDGE_MAX_TRIANGLES; ++i) {
+        if(polygons[i] == poly) {
+            start = i;
+            break;
+        }
+    }
+
+    if(start == -1) {
+        return mx_error(E_INVALIDARG, "polygon is not attached to this edge");
+    }
+
+    for(int i = start; i < SKELETAL_EDGE_MAX_TRIANGLES; ++i) {
+
+        if(i < SKELETAL_EDGE_MAX_TRIANGLES - 1) {
+            polygons[i] = polygons[i+1];
+        }
+        else {
+            polygons[i] = nullptr;
+        }
+    }
+    return S_OK;
 }

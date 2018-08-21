@@ -60,6 +60,8 @@ struct GrowthModel : public MxModel {
 
     void setTargetVolume(float targetVolume);
 
+    HRESULT applyT1Edge2TransitionToSelectedEdge();
+
 
     void loadSheetModel();
 

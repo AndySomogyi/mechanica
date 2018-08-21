@@ -194,11 +194,8 @@ struct MxPolygon : MxObject {
      * surface, or may be a skeletal edge if the lies at the intersection of three
      * cells. Currently, we restrict edges to three cells.
      */
-    std::vector<MxObject*> edges;
+    std::vector<MxEdge*> edges;
 
-    uint edgeCount() const {
-        return edges.size();
-    }
 
     /**
      * indices of the two partial triangles that are attached to this triangle.
@@ -259,20 +256,17 @@ struct MxPolygon : MxObject {
         return (cells[0] == cell) ? 0 : ((cells[1] == cell) ? 1 : -1);
     }
 
-    inline int vertexIndex(CVertexPtr vert) const {
-        for(int i = 0; i < 3; ++i) {
-            if(vertices[i] == vert) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    /**
+     * get the index of the given vertex in this polygons list of vertices.
+     * returns -1 if the vertex does not exist in this polygon.
+     */
+    int vertexIndex(CVertexPtr vert) const;
 
     /**
      * get the number of sides this polygon has, equivalently, the number of
      * vertices or edges.
      */
-    inline uint sides() const {
+    inline uint size() const {
         return vertices.size();
     }
 
@@ -306,8 +300,10 @@ private:
     friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
             const std::vector<VertexPtr> &vertices);
 
-    friend HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert,
+    friend HRESULT insertPolygonEdgeVertex(EdgePtr edge, VertexPtr vert,
             PolygonPtr poly, CVertexPtr ref);
+
+    friend HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v);
 };
 
 std::ostream& operator<<(std::ostream& os, CPolygonPtr tri);

@@ -262,4 +262,11 @@ float MxPolygon::volume(CCellPtr cell) const
     return direction * _volume;
 }
 
-
+int MxPolygon::vertexIndex(CVertexPtr vert) const {
+    for(int i = 0; i < vertices.size(); ++i) {
+        if(vertices[i] == vert) {
+            return i;
+        }
+    }
+    return -1;
+}

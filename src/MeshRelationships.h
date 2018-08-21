@@ -74,7 +74,7 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell);
  * Leaves the polygon in a valid state, but the vertex and edge are left orphaned.
  *
  */
-HRESULT disconnectPolygonEdge(PolygonPtr poly, EdgePtr edge);
+HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v);
 
 
 /**
@@ -95,7 +95,7 @@ HRESULT disconnectPolygonEdge(PolygonPtr poly, EdgePtr edge);
  * so edge at index n connects vertices at index n and n + 1. A polygon with two vertices
  * has two edges, edge 0 connects vertices 0 and 1, and edge 1 connects vertices 1 and 0.
  */
-HRESULT insertEdgeVertexIntoPolygon(EdgePtr edge, VertexPtr vert, PolygonPtr poly, CVertexPtr ref);
+HRESULT insertPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr vert, CVertexPtr ref);
 
 
 //HRESULT connectPolygonEdges(MeshPtr mesh, PolygonPtr poly, const std::vector<EdgePtr> &edges);

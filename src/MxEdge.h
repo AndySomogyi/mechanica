@@ -25,9 +25,11 @@ struct MxVertex;
  */
 struct MxEdge : MxObject
 {
+    const uint id;
 
-    MxEdge();
+    MxEdge(uint id);
     ~MxEdge();
+
 
     /**
      * The next and prev pointers are a skeletal vertex.
@@ -65,6 +67,12 @@ struct MxEdge : MxObject
     friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
             const std::vector<VertexPtr> &vertices);
 
+    /**
+     * searches through the list of polygons and clears the given polygon from the list,
+     * and moves the remaining polygons down
+     */
+    HRESULT erasePolygon(CPolygonPtr poly);
+
 };
 
 typedef MxEdge* EdgePtr;
@@ -81,11 +89,12 @@ typedef const MxEdge *CEdgePtr;
  */
 HRESULT connectEdgeVertices(EdgePtr, VertexPtr, VertexPtr);
 
+
+
 /**
- * Disconnects an edge from a pair of vertices. This clear the vertex pointers in the
- * edge and removes the edge from the vertex edge lists.
+ * Reconnects an edge to a different vertex.
  */
-HRESULT disconnectEdgeVertices(EdgePtr);
+HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr oldVertex, VertexPtr newVertex);
 
 
 #endif /* SRC_MXEDGE_H_ */

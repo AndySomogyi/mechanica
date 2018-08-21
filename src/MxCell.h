@@ -50,6 +50,14 @@ struct MxCellType : MxType {
      * some sort.
      */
     virtual Magnum::Color4 color(struct MxCell *cell) = 0;
+
+
+    //Magnum::Color4 polygonEdgeColor = Magnum::Color4{{13.f/255, 161.f/255, 30.f/255, 1.f}};
+    Magnum::Color4 polygonEdgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 1.f}};
+    Magnum::Color4 polygonCenterColor = Magnum::Color4{{73.f/255, 169.f/255, 163.f/255, 1.f}};
+    Magnum::Color4 selectedEdgeColor = Magnum::Color4{{218.f/255, 142.f/255, 2.f/255, 1.f}};
+
+
 };
 
 
@@ -190,7 +198,7 @@ struct MxCell : MxObject, MxMeshNode {
      * we just dot the centroid with the triangle's normal vector.
      */
     float volume = 0;
-    
+
     std::string name;
 
     Vector3 centroid = {0., 0., 0.};

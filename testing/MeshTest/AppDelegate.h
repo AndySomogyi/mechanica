@@ -34,6 +34,11 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeMax;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeVal;
 
+@property (assign, nonatomic) IBOutlet NSSlider *selectedEdgeSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedEdgeMin;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedEdgeMax;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedEdgeVal;
+
 @property (assign, nonatomic) IBOutlet NSTextField *shortCutoff;
 @property (assign, nonatomic) IBOutlet NSTextField *longCutoff;
 
@@ -55,6 +60,8 @@ typedef unsigned char Byte;
 -(IBAction)stop:(id)sender;
 
 -(IBAction)reset:(id)sender;
+
+-(IBAction)T1transitionSelectedEdge:(id)sender;
 
 -(IBAction)valueChanged:(id)sender;
 

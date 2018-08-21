@@ -10,6 +10,7 @@
 #include <iostream>
 #include "MeshIO.h"
 #include "MeshTest.h"
+#include "T1Transition.h"
 
 
 static struct RedCellType : MxCellType
@@ -111,10 +112,13 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
+    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+
+    mesh->selectObject(MxEdge_Type, 0);
 
 
-    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+
     targetVolume = 6;
     minTargetVolume = 5;
     maxTargetVolume = 20.0;
@@ -131,7 +135,7 @@ void GrowthModel::loadAssImpModel() {
     cellMediaSurfaceTensionMin = 0;
     cellMediaSurfaceTension = 0.1;
     cellMediaSurfaceTensionMax = 1;
-    
+
     cellCellSurfaceTensionMin = 0;
     cellCellSurfaceTension = 0.1;
     cellCellSurfaceTensionMax = 1;
@@ -619,4 +623,12 @@ HRESULT GrowthModel::applySurfaceTensionForce(PolygonPtr pp) {
     }
 
     return S_OK;
+}
+
+HRESULT GrowthModel::applyT1Edge2TransitionToSelectedEdge() {
+    MxObject *obj = mesh->selectedObject();
+    if(obj && dyn_cast<MxEdge>(obj)) {
+        return applyT1Edge2Transition(mesh, EdgePtr(obj));
+    }
+    return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
 }

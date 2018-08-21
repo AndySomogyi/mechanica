@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include "MxDebug.h"
+#include "MxEdge.h"
 
 
 
@@ -104,6 +105,17 @@
     {
         meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
     }
+    else if(sender == self.selectedEdgeSlider) {
+        self.selectedEdgeVal.integerValue = self.selectedEdgeSlider.integerValue;
+        meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeSlider.integerValue);
+    }
+    else if(sender == self.selectedEdgeVal) {
+        self.selectedEdgeSlider.integerValue = self.selectedEdgeVal.integerValue;
+        meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeVal.integerValue);
+    }
+    
+    meshTest->draw();
+    
     
     std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->cellMediaSurfaceTension
     << ", surface tension: " << meshTest->model->cellCellSurfaceTension << std::endl;
@@ -152,6 +164,20 @@
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda;
     
     self.harmonicBondTxt.floatValue = meshTest->model->harmonicBondStrength;
+    
+    self.selectedEdgeMin.integerValue = 0;
+    self.selectedEdgeMax.integerValue = meshTest->model->mesh->edges.size();
+    self.selectedEdgeSlider.maxValue = meshTest->model->mesh->edges.size();
+    self.selectedEdgeSlider.minValue = 0;
+    
+    EdgePtr e = (EdgePtr)meshTest->model->mesh->selectedObject();
+    if (e) {
+        self.selectedEdgeVal.integerValue = e->id;
+        self.selectedEdgeSlider.integerValue = e->id;
+    } else {
+        self.selectedEdgeVal.integerValue = -1;
+        self.selectedEdgeSlider.integerValue = -1;
+    }
 }
 
 -(void)updateGuiStats {
@@ -182,12 +208,19 @@
     self.actualVolumeTxt.floatValue = cell->volume;
     
     self.areaTxt.floatValue = cell->area;
-    
 }
 
 -(IBAction)applyMeshOps:(id)sender {
     meshTest->model->mesh->applyMeshOperations();
     
+}
+
+-(IBAction)T1transitionSelectedEdge:(id)sender {
+    HRESULT result = meshTest->model->applyT1Edge2TransitionToSelectedEdge();
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully applied T1 transition" << std::endl;
+    }
 }
 
 

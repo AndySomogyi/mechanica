@@ -73,7 +73,7 @@ int _CaAstInit();
 
 
 #define MX_NOTIMPLEMENTED \
-	assert("Not Implemented" && 0);\
+    assert("Not Implemented" && 0);\
     return 0;
 
 #include "mx_error.h"
@@ -84,6 +84,63 @@ template <class X, class Y>
 inline X* dyn_cast(const Y &o) {
     return X::classof(o)  ? static_cast<X*>(o) : nullptr;
 };
+
+/**
+ * modulus for negative numbers
+ *
+ * General mod for integer or floating point
+ *
+ * int mod(int x, int divisor)
+ * {
+ *    int m = x % divisor;
+ *    return m + (m < 0 ? divisor : 0);
+ * }
+ */
+template<typename XType, typename DivType> XType mod(XType x, DivType divisor)
+{
+    return (divisor + (x%divisor)) % divisor;
+}
+
+//Returns floor(a/n) (with the division done exactly).
+//Let ÷ be mathematical division, and / be C++ division.
+//We know
+//    a÷b = a/b + f (f is the remainder, not all
+//                   divisions have exact Integral results)
+//and
+//    (a/b)*b + a%b == a (from the standard).
+//Together, these imply (through algebraic manipulation):
+//    sign(f) == sign(a%b)*sign(b)
+//We want the remainder (f) to always be >=0 (by definition of flooredDivision),
+//so when sign(f) < 0, we subtract 1 from a/n to make f > 0.
+template<typename TA, typename TN>
+TA flooredDivision(TA a, TN n) {
+    TA q(a/n);
+    if ((a%n < 0 && n > 0) || (a%n > 0 && n < 0)) --q;
+    return q;
+}
+
+//flooredModulo: Modulo function for use in the construction
+//looping topologies. The result will always be between 0 and the
+//denominator, and will loop in a natural fashion (rather than swapping
+//the looping direction over the zero point (as in C++11),
+//or being unspecified (as in earlier C++)).
+//Returns x such that:
+//
+//Real a = Real(numerator)
+//Real n = Real(denominator)
+//Real r = a - n*floor(n/d)
+//x = Integral(r)
+template<typename TA, typename TN>
+TA flooredModulo(TA a, TN n) {
+    return a - n * flooredDivision(a, n);
+}
+
+template<typename TA, typename TN>
+TA loopIndex(TA index, TN range) {
+    // TODO hack, clean this mess up, does not work when
+    // index is higher negative than array length.
+    return index >= 0 ? (index % range) : (range + index) % range;
+}
 
 
 
