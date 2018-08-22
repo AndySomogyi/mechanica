@@ -137,9 +137,7 @@ TA flooredModulo(TA a, TN n) {
 
 template<typename TA, typename TN>
 TA loopIndex(TA index, TN range) {
-    // TODO hack, clean this mess up, does not work when
-    // index is higher negative than array length.
-    return index >= 0 ? (index % range) : (range + index) % range;
+    return mod(index + range, range);
 }
 
 

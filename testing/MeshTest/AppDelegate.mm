@@ -217,7 +217,6 @@
 
 -(IBAction)T1transitionSelectedEdge:(id)sender {
     HRESULT result = meshTest->model->applyT1Edge2TransitionToSelectedEdge();
-    
     if(SUCCEEDED(result)) {
         std::cout << "successfully applied T1 transition" << std::endl;
     }
