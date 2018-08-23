@@ -85,7 +85,7 @@ HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr newVertex,
 HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
 {
     int start = -1;
-    for(int i = 0; i < SKELETAL_EDGE_MAX_TRIANGLES; ++i) {
+    for(int i = 0; i < EDGE_MAX_POLYGONS; ++i) {
         if(polygons[i] == poly) {
             start = i;
             break;
@@ -96,9 +96,9 @@ HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
         return mx_error(E_INVALIDARG, "polygon is not attached to this edge");
     }
 
-    for(int i = start; i < SKELETAL_EDGE_MAX_TRIANGLES; ++i) {
+    for(int i = start; i < EDGE_MAX_POLYGONS; ++i) {
 
-        if(i < SKELETAL_EDGE_MAX_TRIANGLES - 1) {
+        if(i < EDGE_MAX_POLYGONS - 1) {
             polygons[i] = polygons[i+1];
         }
         else {
@@ -107,6 +107,16 @@ HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
     }
     return S_OK;
 }
+
+HRESULT MxEdge::insertPolygon(CPolygonPtr poly) {
+    uint size = polygonCount();
+    if(size + 1 < EDGE_MAX_POLYGONS) {
+        polygons[size] = const_cast<PolygonPtr>(poly);
+        return S_OK;
+    }
+    return mx_error(E_FAIL, "edge is already connected to max number of polygons");
+}
+
 
 std::ostream& operator <<(std::ostream& os, CEdgePtr edge)
 {

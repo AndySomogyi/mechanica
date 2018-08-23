@@ -29,14 +29,14 @@ std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
 {
     os << "Polygon {" << std::endl
        << "id:" << tri->id << "," << std::endl
-       << "cells:{" << to_string(tri->cells[0]) << "," << to_string(tri->cells[1]) << "}," << std::endl
+    << "cells:{" << (tri->cells[0] ? to_string(tri->cells[0]->id) : "null") << "," << (tri->cells[1] ? to_string(tri->cells[1]->id) : "null") << "}," << std::endl
        << "vertices:{";
        for(CVertexPtr v : tri->vertices) {
            os << v->id << ", ";
        }
-    os << "}" << std::endl << "edges: {";
+    os << "}" << std::endl << "edges: {" << std::endl;
     for(CEdgePtr e : tri->edges) {
-        os << e <<  ", " << std::endl;
+        os << "\t" << e <<  ", " << std::endl;
     }
     os << "}" << std::endl;
 

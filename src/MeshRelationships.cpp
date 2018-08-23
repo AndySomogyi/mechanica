@@ -116,22 +116,22 @@ HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
     if(edge->vertices[0] != v && edge->vertices[1] != v) {
         return mx_error(E_INVALIDARG, "edge is not connected to vertex");
     }
-    
+
     int vertIndex = indexOf(poly->vertices, v); // TODO inefficient
 
     if(vertIndex < 0) {
         return mx_error(E_INVALIDARG, "vertex is not connected to polygon");
     }
-    
+
     // index of given edge
     int edgeIndex = indexOf(poly->edges, edge);
     int prevIndex = loopIndex(edgeIndex - 1, poly->edges.size());
     int nextIndex = loopIndex(edgeIndex + 1, poly->edges.size());
-    
+
     if(edgeIndex < 0) {
         return mx_error(E_INVALIDARG, "edge is not connected to polygon");
     }
-    
+
     *e1 = poly->edges[prevIndex];
     *e2 = poly->edges[nextIndex];
 
@@ -143,7 +143,7 @@ HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
     poly->_vertexNormals.erase(poly->_vertexNormals.begin() + vertIndex);
 
     VERIFY(edge->erasePolygon(poly));
-    
+
 
     return S_OK;
 }
@@ -151,7 +151,7 @@ HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
 HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge)
 {
     assert(poly->checkEdges());
-    
+
     if(!poly || !edge ) {
         return mx_error(E_INVALIDARG, "null arguments");
     }
@@ -189,23 +189,22 @@ HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge)
         return mx_error(E_INVALIDARG, "both vertices of edge connected to poly");
     }
 
-    int nextPos = (refVertPolyIndex+1) % poly->edges.size();
+    // using std::vector::insert, if given begin() + size(), inserts at the end of the array. 
+    int nextPos = refVertPolyIndex+1;
+
+    VERIFY(edge->insertPolygon(poly));
 
     // the given edge gets inserted at the found vertex pos, and all the
     // ones after it get pushed up. Find the next edge, and re-target it
     // to the new vertex. The new edge already connects the current ref vertex
     // and the new vertex.
     EdgePtr nextEdge = poly->edges[refVertPolyIndex];
-    assert(connectedEdgeVertex(nextEdge, refVert));
-    VERIFY(reconnectEdgeVertex(nextEdge, newVert, refVert));
 
     // push all the items down one, and insert the new values.
     poly->vertices.insert(poly->vertices.begin() + nextPos, newVert);
     poly->edges.insert(poly->edges.begin() + refVertPolyIndex, edge);
     poly->_vertexNormals.insert(poly->_vertexNormals.begin() + nextPos, Vector3{});
     poly->_vertexAreas.insert(poly->_vertexAreas.begin() + nextPos, 0);
-
-    //assert(poly->checkEdges());
 
     return S_OK;
 }

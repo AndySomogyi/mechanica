@@ -11,7 +11,7 @@
 #include "MxMeshCore.h"
 
 
-#define SKELETAL_EDGE_MAX_TRIANGLES 3
+#define EDGE_MAX_POLYGONS 3
 
 struct MxEdgeType : MxType {
 };
@@ -47,7 +47,7 @@ struct MxEdge : MxObject
      * We get 2 polygons when we read in a mesh, and the edges of a polygonal
      * face don't have any neighbors.
      */
-    MxPolygon *polygons[SKELETAL_EDGE_MAX_TRIANGLES] = {nullptr};
+    MxPolygon *polygons[EDGE_MAX_POLYGONS] = {nullptr};
 
     static bool classof(const MxObject *o) {
         return o->ob_type == MxEdge_Type;
@@ -72,6 +72,13 @@ struct MxEdge : MxObject
      * and moves the remaining polygons down
      */
     HRESULT erasePolygon(CPolygonPtr poly);
+
+    /**
+     * inserts a polygon into this edge's list of polygons. Only inserts the polygon and modifies
+     * the edge, does NOT alter the polygon. Caller is responsible for ensuring the polygon also
+     * points to this edge.
+     */
+    HRESULT insertPolygon(CPolygonPtr poly);
 
 };
 

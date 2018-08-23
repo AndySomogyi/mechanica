@@ -11,6 +11,8 @@
 #include "MxMesh.h"
 
 HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
+    
+    std::cout << "applyT1Edge2Transition(edge=" << edge << ")" << std::endl;
 
     if(edge->polygonCount() != 2) {
         return mx_error(E_FAIL, "edge polygon count must be 2");
@@ -57,23 +59,27 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     assert(p4 && p2);
 
     EdgePtr e1 = nullptr, e2 = nullptr, e3 = nullptr, e4 = nullptr;
-    
+
 
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
-    
+
     std::cout << "disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2)" << std::endl;
     VERIFY(disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2));
-    
-    
+
+
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
 
     std::cout << "disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4)" << std::endl;
     VERIFY(disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4));
-    
+
     assert(edge->polygonCount() == 0);
     
+    std::cout << "e1:" << e1 << std::endl;
+    std::cout << "e2:" << e2 << std::endl;
+    std::cout << "e3:" << e3 << std::endl;
+    std::cout << "e4:" << e4 << std::endl;
 
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
@@ -82,14 +88,14 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     assert(connectedEdgeVertex(e2, v2));
     assert(connectedEdgeVertex(e3, v2));
     assert(connectedEdgeVertex(e4, v1));
-    
+
     for(PolygonPtr p : e1->polygons) {
         if(contains(p->edges, e4)) {
             p1 = p;
             break;
         }
     }
-    
+
     for(PolygonPtr p : e2->polygons) {
         if(contains(p->edges, e3)) {
             p3 = p;
@@ -102,14 +108,14 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     assert(p2 != p1 && p2 != p3 && p2 != p4);
     assert(p3 != p1 && p3 != p2 && p3 != p4);
     assert(p4 != p1 && p4 != p2 && p1 != p3);
-    
+
     // original edge vector.
     Vector3 edgeVec = v1->position - v2->position;
     float halfLen = edgeVec.length() / 2;
 
     // center position of the polygons that will get a new edge connecting them.
     Vector3 centroid = (p2->centroid + p4->centroid) / 2;
-    
+
     v2->position = centroid + (p2->centroid - centroid).normalized() * halfLen;
     v1->position = centroid + (p4->centroid - centroid).normalized() * halfLen;
 
@@ -117,24 +123,44 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p3: " << p3 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
-    
+
     std::cout << "insertPolygonEdge(p1, edge)" << std::endl;
     VERIFY(insertPolygonEdge(p1, edge));
-    
+
     std::cout << "poly p1: " << p1 << std::endl;
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p3: " << p3 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
-    
+
     std::cout << "insertPolygonEdge(p3, edge)" << std::endl;
     VERIFY(insertPolygonEdge(p3, edge));
-    
+
     std::cout << "poly p1: " << p1 << std::endl;
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p3: " << p3 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
     
+    assert(connectedEdgeVertex(e1, v1));
+    assert(connectedEdgeVertex(e2, v2));
+    assert(connectedEdgeVertex(e3, v2));
+    assert(connectedEdgeVertex(e4, v1));
+    
+    std::cout << "reconnecting edge vertices..." << std::endl;
 
+    // reconnect the two diagonal edges, the other two edges, e2 and e4 stay
+    // connected to their same vertices.
+    VERIFY(reconnectEdgeVertex(e1, v2, v1));
+    VERIFY(reconnectEdgeVertex(e3, v1, v2));
+    
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p3: " << p3 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+
+    assert(p1->checkEdges());
+    assert(p2->checkEdges());
+    assert(p3->checkEdges());
+    assert(p4->checkEdges());
 
     for(CellPtr cell : mesh->cells) {
         cell->topologyChanged();
