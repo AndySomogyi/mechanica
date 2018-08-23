@@ -46,6 +46,8 @@ inline bool incidentVertexPolygon(CVertexPtr v, CPolygonPtr tri) {
     return incidentPolygonVertex(tri, v);
 }
 
+bool connectedEdgeVertex(CEdgePtr edge, CVertexPtr v);
+
 
 
 
@@ -67,14 +69,17 @@ HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell);
 /**
  * Disconnects an edge and vertex from from a polygon.
  *
- * Removes an edge and vertex from a polygon, and re-connects
- * the remaining vertex to the next incident edge. The vertex must be attached
- * to the edge and polygon, and the edge must be attached to the polygon.
+ * Removes an edge and vertex from a polygon, but does NOT reconnect the
+ * adjacent edges.
  *
- * Leaves the polygon in a valid state, but the vertex and edge are left orphaned.
+ * Returns the adjacent edge pointers in e1 and e2, where e1 is before (CCW) edge, and
+ * e2 is after.
+ *
+ * out
  *
  */
-HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v);
+HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
+        EdgePtr *e1, EdgePtr *e2);
 
 
 /**
@@ -95,7 +100,7 @@ HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v);
  * so edge at index n connects vertices at index n and n + 1. A polygon with two vertices
  * has two edges, edge 0 connects vertices 0 and 1, and edge 1 connects vertices 1 and 0.
  */
-HRESULT insertPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr vert, CVertexPtr ref);
+HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge);
 
 
 //HRESULT connectPolygonEdges(MeshPtr mesh, PolygonPtr poly, const std::vector<EdgePtr> &edges);
@@ -109,6 +114,9 @@ HRESULT insertPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr vert, C
  */
 HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
         const std::vector<VertexPtr> &vertices);
+
+
+HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v);
 
 
 

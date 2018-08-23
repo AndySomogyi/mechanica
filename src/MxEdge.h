@@ -94,7 +94,9 @@ HRESULT connectEdgeVertices(EdgePtr, VertexPtr, VertexPtr);
 /**
  * Reconnects an edge to a different vertex.
  */
-HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr oldVertex, VertexPtr newVertex);
+HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr newVertex, CVertexPtr oldVertex);
+
+std::ostream& operator<<(std::ostream& os, CEdgePtr edge);
 
 
 #endif /* SRC_MXEDGE_H_ */

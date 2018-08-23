@@ -30,6 +30,7 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     // identify the two side polygons as p4 on the left, and p2 on the right, check
     // vertex winding. Choose p2 to have v2 after v1, and p4 to have v1 after v2
     {
+        // TODO use next vert instead of looking at all vertices.
         int v1Index_0 = edge->polygons[0]->vertexIndex(v1);
         int v2Index_0 = edge->polygons[0]->vertexIndex(v2);
 
@@ -40,55 +41,105 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
         assert(v1Index_0 >= 0 && v2Index_0 >= 0 && v1Index_0 != v2Index_0);
 
         if(((v1Index_0 + 1) % edge->polygons[0]->size()) == v2Index_0) {
-            // found p2
+            // found p2 CCW
             p2 = edge->polygons[0];
             p4 = edge->polygons[1];
             assert((v2Index_1 + 1) % edge->polygons[1]->size() == v1Index_1);
         }
         else {
-            // found p2
-            p2 = edge->polygons[0];
-            p4 = edge->polygons[1];
+            // found p4
+            p4 = edge->polygons[0];
+            p2 = edge->polygons[1];
             assert((v1Index_1 + 1) % edge->polygons[1]->size() == v2Index_1);
         }
     }
 
     assert(p4 && p2);
 
-    // iterate over one set of neighboring polygons, just choose p4's neighbors. Then polygon p1 is
-    // incident to v1 and adjacent to p2, and polygon p3 is incident to v2 and adjacent to p2.
-    for(EdgePtr e : p4->edges) {
-        assert(e);
-        for(PolygonPtr p : e->polygons) {
-            if(p && p != p4 && p != p2) {
-                if(!p1 && incidentPolygonVertex(p, v1)) {
-                    p1 = p;
-                }
+    EdgePtr e1 = nullptr, e2 = nullptr, e3 = nullptr, e4 = nullptr;
+    
 
-                else if(!p3 && incidentPolygonVertex(p, v2)) {
-                    p3 = p;
-                }
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+    
+    std::cout << "disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2)" << std::endl;
+    VERIFY(disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2));
+    
+    
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
 
-                if(p1 && p3) {
-                    break;
-                }
-            }
+    std::cout << "disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4)" << std::endl;
+    VERIFY(disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4));
+    
+    assert(edge->polygonCount() == 0);
+    
+
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+
+    assert(connectedEdgeVertex(e1, v1));
+    assert(connectedEdgeVertex(e2, v2));
+    assert(connectedEdgeVertex(e3, v2));
+    assert(connectedEdgeVertex(e4, v1));
+    
+    for(PolygonPtr p : e1->polygons) {
+        if(contains(p->edges, e4)) {
+            p1 = p;
+            break;
+        }
+    }
+    
+    for(PolygonPtr p : e2->polygons) {
+        if(contains(p->edges, e3)) {
+            p3 = p;
+            break;
         }
     }
 
     assert(p1 && p3);
+    assert(p1 != p2 && p1 != p3 && p1 != p4);
+    assert(p2 != p1 && p2 != p3 && p2 != p4);
+    assert(p3 != p1 && p3 != p2 && p3 != p4);
+    assert(p4 != p1 && p4 != p2 && p1 != p3);
+    
+    // original edge vector.
+    Vector3 edgeVec = v1->position - v2->position;
+    float halfLen = edgeVec.length() / 2;
 
-    // new vertex positions, divide the line connecting the p2 and p4 centroids
-    // into 3 so v1 is 1/3 the way towards p2, and v2 is 2/3 the way towards p2.
-    Vector3 centerVec = p2->centroid - p4->centroid;
-    float centerDistance = centerVec.length();
-    v1->position = p4->centroid + (1/3) * centerVec;
-    v2->position = p2->centroid - (1/3) * centerVec;
+    // center position of the polygons that will get a new edge connecting them.
+    Vector3 centroid = (p2->centroid + p4->centroid) / 2;
+    
+    v2->position = centroid + (p2->centroid - centroid).normalized() * halfLen;
+    v1->position = centroid + (p4->centroid - centroid).normalized() * halfLen;
 
-    VERIFY(disconnectPolygonEdgeVertex(p4, edge, v2));
-    VERIFY(disconnectPolygonEdgeVertex(p2, edge, v1));
-    VERIFY(insertPolygonEdgeVertex(p1, edge, v2, v1));
-    VERIFY(insertPolygonEdgeVertex(p2, edge, v1, v2));
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p3: " << p3 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+    
+    std::cout << "insertPolygonEdge(p1, edge)" << std::endl;
+    VERIFY(insertPolygonEdge(p1, edge));
+    
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p3: " << p3 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+    
+    std::cout << "insertPolygonEdge(p3, edge)" << std::endl;
+    VERIFY(insertPolygonEdge(p3, edge));
+    
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly p3: " << p3 << std::endl;
+    std::cout << "poly p4: " << p4 << std::endl;
+    
+
+
+    for(CellPtr cell : mesh->cells) {
+        cell->topologyChanged();
+    }
+
     VERIFY(mesh->positionsChanged());
 
     return S_OK;

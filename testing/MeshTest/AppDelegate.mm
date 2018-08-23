@@ -4,6 +4,15 @@
 #include "MxDebug.h"
 #include "MxEdge.h"
 
+void testIndexOf() {
+    std::vector<int> numbers = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}};
+    
+    std::cout << "size of numbers: " << numbers.size() << std::endl;
+    for (int i = -5; i < 15; ++i) {
+        std::cout << "index of " << i << ": " << indexOf(numbers, i) << std::endl;
+    }
+}
+
 
 
 @implementation AppDelegate
@@ -15,7 +24,8 @@
     
     [self updateGuiFromModel];
     [self updateGuiStats];
-
+    
+    testIndexOf();
 }
 
 
@@ -220,6 +230,16 @@
     if(SUCCEEDED(result)) {
         std::cout << "successfully applied T1 transition" << std::endl;
     }
+    
+    std::vector<int> v = {{0, 1, 2, 3, 4, 5}};
+    
+    v.insert(v.begin() + 6, 23);
+    
+    for(int i : v) {
+        std::cout << i << std::endl;
+    }
+    
+    meshTest->draw();
 }
 
 

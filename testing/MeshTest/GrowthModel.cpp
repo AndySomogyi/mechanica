@@ -112,8 +112,9 @@ void GrowthModel::loadAssImpModel() {
     //hex3.obj
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
-    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+    mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
+    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
+    //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/hex49.obj", 1.0, handler);
 
     mesh->selectObject(MxEdge_Type, 0);
 

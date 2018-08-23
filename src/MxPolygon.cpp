@@ -9,6 +9,7 @@
 #include "MxCell.h"
 #include "MxDebug.h"
 #include <iostream>
+#include "MxEdge.h"
 
 static MxPartialPolygonType partialPolygonType;
 MxPartialPolygonType *MxPartialPolygon_Type = &partialPolygonType;
@@ -29,12 +30,16 @@ std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
     os << "Polygon {" << std::endl
        << "id:" << tri->id << "," << std::endl
        << "cells:{" << to_string(tri->cells[0]) << "," << to_string(tri->cells[1]) << "}," << std::endl
-       << "vertices:{" << std::endl
-       << "\t" << tri->vertices[0] << ", " << std::endl
-       << "\t" << tri->vertices[1] << ", " << std::endl
-       << "\t" << tri->vertices[2] << "}" << std::endl
+       << "vertices:{";
+       for(CVertexPtr v : tri->vertices) {
+           os << v->id << ", ";
+       }
+    os << "}" << std::endl << "edges: {";
+    for(CEdgePtr e : tri->edges) {
+        os << e <<  ", " << std::endl;
+    }
+    os << "}" << std::endl;
 
-       << "}" << std::endl;
     return os;
 }
 
@@ -269,4 +274,15 @@ int MxPolygon::vertexIndex(CVertexPtr vert) const {
         }
     }
     return -1;
+}
+
+bool MxPolygon::checkEdges() const
+{
+    for(int i = 0; i < vertices.size(); ++i) {
+        if(!edges[i]->matches(vertices[i], vertices[(i+1) % vertices.size()])) {
+            std::cout << "edge " << i << " in polygon " << this->id << " does not match verts" << std::endl;
+            return false;
+        }
+    }
+    return true;
 }

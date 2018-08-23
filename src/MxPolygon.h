@@ -280,6 +280,8 @@ struct MxPolygon : MxObject {
 
     bool isValid() const;
 
+    bool checkEdges() const ;
+
     float alpha = 0.5;
 
     Magnum::Color4 color = Magnum::Color4{0.0f, 0.0f, 0.0f, 0.0f};
@@ -300,10 +302,11 @@ private:
     friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
             const std::vector<VertexPtr> &vertices);
 
-    friend HRESULT insertPolygonEdgeVertex(EdgePtr edge, VertexPtr vert,
-            PolygonPtr poly, CVertexPtr ref);
+    friend HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge);
 
-    friend HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, VertexPtr v);
+    friend HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
+            EdgePtr *e1, EdgePtr *e2);
+
 };
 
 std::ostream& operator<<(std::ostream& os, CPolygonPtr tri);

@@ -66,8 +66,8 @@ bool MxEdge::matches(CVertexPtr a, CVertexPtr b) const
             ((MxVertex*)vertices[1] == a && (MxVertex*)vertices[0] == b);
 }
 
-HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr oldVertex,
-        VertexPtr newVertex)
+HRESULT reconnectEdgeVertex(EdgePtr edge, VertexPtr newVertex,
+        CVertexPtr oldVertex)
 {
     if(edge->vertices[0] == oldVertex) {
         edge->vertices[0] = newVertex;
@@ -106,4 +106,14 @@ HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
         }
     }
     return S_OK;
+}
+
+std::ostream& operator <<(std::ostream& os, CEdgePtr edge)
+{
+    os << "edge {id=" << edge->id << ", verts={";
+    os << (edge->vertices[0] ? std::to_string(edge->vertices[0]->id) : "null");
+    os << ", ";
+    os << (edge->vertices[1] ? std::to_string(edge->vertices[1]->id) : "null");
+    os << "}";
+    return os;
 }

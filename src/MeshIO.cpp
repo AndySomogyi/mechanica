@@ -636,6 +636,10 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
     //    }
     //}
     
+    for(PolygonPtr poly : mesh->polygons) {
+        assert(poly->checkEdges());
+    }
+
     VERIFY(mesh->positionsChanged());
 
 #ifndef NDEBUG

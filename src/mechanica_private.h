@@ -44,6 +44,8 @@
 
 #include <cstdint>
 
+#include <algorithm>
+
 
 
 
@@ -138,6 +140,16 @@ TA flooredModulo(TA a, TN n) {
 template<typename TA, typename TN>
 TA loopIndex(TA index, TN range) {
     return mod(index + range, range);
+}
+
+/**
+ * searches for the item in the container. If the item is found,
+ * returns the index, otherwise returns -1.
+ */
+template<typename Vec, typename Val>
+int indexOf(const Vec& vec, const Val& val) {
+    int result = std::find(vec.begin(), vec.end(), val) - vec.begin();
+    return result < vec.size() ? result : -1;
 }
 
 
