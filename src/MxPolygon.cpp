@@ -75,21 +75,30 @@ HRESULT MxPolygon::positionsChanged() {
 
 
     for (int i = 0; i < vertices.size(); ++i) {
-        int prevIndex = (vertices.size() + ((i-1)%vertices.size())) % vertices.size();
-        int nextIndex = (i+1)%vertices.size();
+        int prevIndex = loopIndex(i-1, vertices.size());
+        int nextIndex = loopIndex(i+1, vertices.size());
 
         CVertexPtr vp = vertices[prevIndex];
         CVertexPtr v = vertices[i];
         CVertexPtr vn = vertices[nextIndex];
+
+        checkVec(vp->position);
+        checkVec(v->position);
+        checkVec(vn->position);
 
         Vector3 np = triangleNormal((v->position + vp->position) / 2., v->position, centroid);
         Vector3 nn = triangleNormal(v->position, (vn->position + v->position) / 2., centroid);
         Vector3 vertNormal = (np + nn);
         float vertLen = vertNormal.length();
 
+        checkVec(np);
+        checkVec(nn);
+
         // normalized surface normals and vertex areas
         _vertexNormals[i] = vertNormal / vertLen;
         _vertexAreas[i] = 0.5 * vertLen;
+
+        checkVec(_vertexNormals[i]);
 
         Vector3 triCentroid = (v->position + vn->position + centroid) / 3.;
         Vector3 triNormal = triangleNormal(v->position, vn->position, centroid);
@@ -137,6 +146,8 @@ HRESULT MxPolygon::positionsChanged() {
     std::cout << "normal: " << normal << ", vertex normal: " << vertNormal << ", dot: " << Math::dot(normal, vertNormal) << std::endl;
      */
 #endif
+    
+    assert(area >= 0);
 
     return S_OK;
 }

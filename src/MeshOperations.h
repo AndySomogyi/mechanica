@@ -48,7 +48,6 @@ struct MeshOperation {
      */
     virtual bool depends(CVertexPtr) const = 0;
 
-    virtual bool equals(const Edge& e) const = 0;
 
     virtual bool equals(CVertexPtr) const = 0;
 
@@ -151,7 +150,7 @@ struct MeshOperations {
 
 
 #ifndef NDEBUG
-    void stop(const Edge& edge);
+
     bool shouldStop = false;
 #endif
 
@@ -186,8 +185,6 @@ private:
     Container::iterator findDependentOperation(Container::iterator start, const PolygonPtr);
 
     Container::iterator findDependentOperation(Container::iterator start, const VertexPtr);
-
-    MeshOperation *findMatchingOperation(const Edge& edge) ;
 
     MeshOperation *findMatchingOperation(CVertexPtr vertex) ;
 

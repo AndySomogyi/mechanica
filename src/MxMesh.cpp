@@ -240,15 +240,9 @@ PolygonPtr MxMesh::createPolygon(MxPolygonType* type,  const std::vector<VertexP
 }
 
 
-
-
-
-
-
 HRESULT MxMesh::positionsChanged()
 {
     HRESULT result;
-
 
     for(int i = 0; i < vertices.size(); ++i) {
         VertexPtr v = vertices[i];

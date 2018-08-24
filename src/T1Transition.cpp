@@ -165,6 +165,8 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     for(CellPtr cell : mesh->cells) {
         cell->topologyChanged();
     }
+    
+    mesh->setPositions(0, 0);
 
     VERIFY(mesh->positionsChanged());
 

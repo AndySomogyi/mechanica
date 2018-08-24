@@ -153,6 +153,4 @@ int indexOf(const Vec& vec, const Val& val) {
 }
 
 
-
-
 #endif /* _INCLUDED_CAYMAN_PRIVATE_H_ */

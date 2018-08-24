@@ -41,9 +41,7 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 
     float sumError = 0;
     int iter = 0;
-
-
-
+    
     do {
         for(int i=1; i < mesh->cells.size(); ++i) {
             CellPtr cell = mesh->cells[i];

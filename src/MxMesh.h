@@ -279,8 +279,6 @@ struct MxMesh  {
      */
     MxObject *alloc(const MxType *type);
 
-
-
     bool validate();
 
     CellPtr rootCell() const {return _rootCell;};

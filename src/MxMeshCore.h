@@ -183,17 +183,17 @@ struct MxVertexAttribute {
 };
 
 
-/**
- * TODO: clean up the naming convention.
- *
- * An Edge is a lightweight pair of vertices, but an MxEdge is a heavy
- * struct that enumerates all the the triangle relationships.
- */
-typedef std::array<VertexPtr, 2> Edge;
 
-inline float length(const Edge& edge) {
-    return (edge[0]->position - edge[1]->position).length();
-}
+#ifndef NDEBUG
+#define checkVec(vec) \
+    if(std::isnan(vec[0]) || std::isnan(vec[1]) || std::isnan(vec[1])) { \
+        std::cout << "Vector with NaN values" << std::endl; \
+        assert(0); \
+    }
+#else
+#define checkVec(vec)
+#endif
+
 
 
 

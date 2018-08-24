@@ -176,11 +176,7 @@ MeshOperations::Container::iterator MeshOperations::findDependentOperation(
             [vert](const MeshOperation* op)->bool { return op->depends(vert); });
 }
 
-MeshOperation* MeshOperations::findMatchingOperation(const Edge& edge)  {
-    Container::iterator iter = std::find_if(c.begin(), c.end(),
-            [edge](const MeshOperation* op)->bool { return op->equals(edge); });
-    return iter != c.end() ? *iter : nullptr;
-}
+
 
 MeshOperation* MeshOperations::findMatchingOperation(CVertexPtr vertex)  {
     Container::iterator iter = std::find_if(c.begin(), c.end(),
@@ -199,32 +195,7 @@ MeshOperation* MeshOperations::findMatchingOperation(CVertexPtr vertex)  {
 MeshOperations::~MeshOperations() {
 }
 
-#ifndef NDEBUG
 
-void MeshOperations::stop(const Edge& edge) {
-    shouldStop = true;
-
-    /*
-    mesh->makeTrianglesTransparent();
-    shouldStop = true;
-
-    for(TrianglePtr tri : edge[0]->triangles()) {
-        tri->color = Magnum::Color4::green();
-        tri->color[3] = 0.4;
-    }
-    for(TrianglePtr tri : edge[1]->triangles()) {
-        tri->color = Magnum::Color4::yellow();
-        tri->color[3] = 0.4;
-    }
-    */
-
-    //mesh->makeTrianglesTransparent();
-
-
-
-
-}
-#endif
 
 void MeshOperations::setDebugMode(bool val) {
     debugMode = val;
