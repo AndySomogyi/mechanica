@@ -69,14 +69,18 @@ HRESULT MxPolygon::positionsChanged() {
     }
 
     centroid /= (float)vertices.size();
-
+    
+    if(vertices.size() < 3) {
+        return S_OK;
+    }
 
     // triangle area is 1/2 * length of surface normal (non-normalized)
-
 
     for (int i = 0; i < vertices.size(); ++i) {
         int prevIndex = loopIndex(i-1, vertices.size());
         int nextIndex = loopIndex(i+1, vertices.size());
+        
+        assert(prevIndex != nextIndex);
 
         CVertexPtr vp = vertices[prevIndex];
         CVertexPtr v = vertices[i];

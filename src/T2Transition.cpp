@@ -42,6 +42,10 @@ HRESULT applyT2PolygonTransition(MeshPtr mesh, PolygonPtr poly)
     PolygonPtr p1 = otherPolygon(e1, poly);
     PolygonPtr p2 = otherPolygon(e2, poly);
     PolygonPtr p3 = otherPolygon(e3, poly);
+    
+    if(p1->size() <= 3 || p2->size() <= 3 || p3->size() <= 3) {
+        return mx_error(E_INVALIDARG, "each adjacent polygon must have more than three sides");
+    }
 
     EdgePtr e31; // edge between p3 and p1
     EdgePtr e12; // edge between p1 and p2
