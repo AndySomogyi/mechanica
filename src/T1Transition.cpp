@@ -157,6 +157,11 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     std::cout << "poly p3: " << p3 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
 
+    assert(p1->size() >= 0);
+    assert(p2->size() >= 0);
+    assert(p3->size() >= 0);
+    assert(p4->size() >= 0);
+
     assert(p1->checkEdges());
     assert(p2->checkEdges());
     assert(p3->checkEdges());

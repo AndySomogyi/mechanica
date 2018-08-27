@@ -116,8 +116,8 @@ void GrowthModel::loadAssImpModel() {
     
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t2.obj";
-    //const char* fileName = "t2.test1.obj";
-    const char* fileName = "cube1.obj";
+    const char* fileName = "t2.test1.obj";
+    //const char* fileName = "cube1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";

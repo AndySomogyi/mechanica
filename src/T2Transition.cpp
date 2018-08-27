@@ -122,10 +122,12 @@ HRESULT applyT2PolygonTransition(MeshPtr mesh, PolygonPtr poly)
     std::cout << "p2: " << p2 << std::endl;
     std::cout << "p3: " << p3 << std::endl;
 
+    assert(p1->size() >= 3);
+    assert(p2->size() >= 3);
+    assert(p3->size() >= 3);
+
     assert(p1->checkEdges());
-
     assert(p2->checkEdges());
-
     assert(p3->checkEdges());
 
     for(CellPtr cell : poly->cells) {
