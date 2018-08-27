@@ -130,6 +130,10 @@ HRESULT MxMesh::deletePolygon(PolygonPtr tri) {
 
     meshOperations.removeDependentOperations(tri);
 
+    for(EdgePtr e : tri->edges) {
+        remove(edges, e);
+    }
+
     remove(polygons, tri);
     delete tri;
 
@@ -327,18 +331,30 @@ MxObject* MxMesh::selectedObject() const {
 }
 
 HRESULT MxMesh::selectObject(MxType* type, uint index) {
-    if(type == nullptr) {
+    if(type == nullptr ) {
         _selectedObject = nullptr;
+        return S_OK;
     }
 
-    if(type != MxEdge_Type) {
-        return mx_error(E_FAIL, "only edge selection supported");
+    if(type == MxEdge_Type) {
+
+        if(index >= edges.size()) {
+            return mx_error(E_FAIL, "index out of range");
+        }
+
+        _selectedObject = edges[index];
+        return S_OK;
     }
 
-    if(index >= edges.size()) {
-        return mx_error(E_FAIL, "index out of range");
+    if(type == MxPolygon_Type) {
+
+        if(index >= polygons.size()) {
+            return mx_error(E_FAIL, "index out of range");
+        }
+
+        _selectedObject = polygons[index];
+        return S_OK;
     }
 
-    _selectedObject = edges[index];
-    return S_OK;
+    return mx_error(E_FAIL, "type must be either MxEdge_Type or MxPolygon_Type");
 }

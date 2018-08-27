@@ -123,6 +123,14 @@ void testIndexOf() {
         self.selectedEdgeSlider.integerValue = self.selectedEdgeVal.integerValue;
         meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeVal.integerValue);
     }
+    else if(sender == self.selectedPolygonSlider) {
+        self.selectedPolygonVal.integerValue = self.selectedPolygonSlider.integerValue;
+        [self selectChanged];
+    }
+    else if(sender == self.selectedPolygonVal) {
+        self.selectedPolygonSlider.integerValue = self.selectedPolygonVal.integerValue;
+        [self selectChanged];
+    }
     
     meshTest->draw();
     
@@ -180,13 +188,25 @@ void testIndexOf() {
     self.selectedEdgeSlider.maxValue = meshTest->model->mesh->edges.size();
     self.selectedEdgeSlider.minValue = 0;
     
-    EdgePtr e = (EdgePtr)meshTest->model->mesh->selectedObject();
-    if (e) {
-        self.selectedEdgeVal.integerValue = e->id;
-        self.selectedEdgeSlider.integerValue = e->id;
-    } else {
-        self.selectedEdgeVal.integerValue = -1;
-        self.selectedEdgeSlider.integerValue = -1;
+    self.selectedPolygonMin.integerValue = 0;
+    self.selectedPolygonMax.integerValue = meshTest->model->mesh->polygons.size();
+    self.selectedPolygonSlider.maxValue = meshTest->model->mesh->polygons.size();
+    self.selectedPolygonSlider.minValue = 0;
+    
+    MxObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
+    
+    if(obj) {
+        EdgePtr e = dyn_cast<MxEdge>(obj);
+        if (e) {
+            self.selectedEdgeVal.integerValue = e->id;
+            self.selectedEdgeSlider.integerValue = e->id;
+        }
+        
+        PolygonPtr p = dyn_cast<MxPolygon>(obj);
+        if (p) {
+            self.selectedPolygonVal.integerValue = p->id;
+            self.selectedPolygonSlider.integerValue = p->id;
+        }
     }
 }
 
@@ -240,6 +260,92 @@ void testIndexOf() {
     }
     
     meshTest->draw();
+}
+
+-(id)init
+{
+    if (self = [super init])
+    {
+        // Initialization code here
+        selectType = MxEdge_Type;
+        meshTest = nullptr;
+    }
+    
+    
+    return self;
+}
+
+-(IBAction)selectClicked:(NSPopUpButton*)sender {
+    NSString *title = sender.selectedItem.title;
+    
+    std::string name{title.UTF8String};
+    
+    if(name == "Edges") {
+        selectType = MxEdge_Type;
+
+    }
+    else if(name == "Polygons") {
+        selectType = MxPolygon_Type;
+    }
+    
+    [self selectChanged];
+}
+
+-(void)selectChanged {
+    if(selectType == MxEdge_Type) {
+        self.selectedPolygonMax.enabled = false;
+        self.selectedPolygonMin.enabled = false;
+        self.selectedPolygonVal.enabled = false;
+        self.selectedPolygonSlider.enabled = false;
+        
+        self.selectedEdgeMax.enabled = true;
+        self.selectedEdgeMin.enabled = true;
+        self.selectedEdgeVal.enabled = true;
+        self.selectedEdgeSlider.enabled = true;
+        
+        if(meshTest) {
+            meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeVal.integerValue);
+            meshTest->draw();
+        }
+    }
+    else if(selectType == MxPolygon_Type) {
+        self.selectedPolygonMax.enabled = true;
+        self.selectedPolygonMin.enabled = true;
+        self.selectedPolygonVal.enabled = true;
+        self.selectedPolygonSlider.enabled = true;
+        
+        self.selectedEdgeMax.enabled = false;
+        self.selectedEdgeMin.enabled = false;
+        self.selectedEdgeVal.enabled = false;
+        self.selectedEdgeSlider.enabled = false;
+        
+        if(meshTest) {
+            meshTest->model->mesh->selectObject(MxPolygon_Type, self.selectedPolygonVal.integerValue);
+            meshTest->draw();
+        }
+    }
+}
+
+-(IBAction)awakeFromNib {
+    std::cout << "awake" << std::endl;
+    
+    [self selectChanged];
+}
+
+-(IBAction)T2transitionSelectedPolygon:(id)sender {
+    HRESULT result = meshTest->model->applyT2PolygonTransitionToSelectedPolygon();
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully applied T2 transition" << std::endl;
+    }
+    
+    [self updateGuiFromModel];
+    
+    meshTest->draw();
+}
+
+-(IBAction)T3transitionSelectedPolygon:(id)sender {
+    
 }
 
 

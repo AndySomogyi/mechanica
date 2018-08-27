@@ -80,6 +80,15 @@ struct MxEdge : MxObject
      */
     HRESULT insertPolygon(CPolygonPtr poly);
 
+    int polygonIndex(CPolygonPtr poly) const {
+        for(int i = 0; i < EDGE_MAX_POLYGONS; ++i) {
+            if(polygons[i] == poly) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 };
 
 typedef MxEdge* EdgePtr;

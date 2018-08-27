@@ -152,5 +152,11 @@ int indexOf(const Vec& vec, const Val& val) {
     return result < vec.size() ? result : -1;
 }
 
+template<typename ContainerType, typename SizeType>
+typename ContainerType::value_type wrappedAt(ContainerType &container, SizeType index) {
+    SizeType wrappedIndex = loopIndex(index, container.size());
+    return container.at(wrappedIndex);
+}
+
 
 #endif /* _INCLUDED_CAYMAN_PRIVATE_H_ */

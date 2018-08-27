@@ -87,6 +87,7 @@ set(SRC
   MxTesselator.cpp
   MxColumnarCell.cpp
   T1Transition.cpp
+  T2Transition.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -137,6 +138,7 @@ set(HEADERS
   MxTesselator.h
   MxColumnarCell.h
   T1Transition.h
+  T2Transition.h
   )
 
 

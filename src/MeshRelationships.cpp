@@ -67,9 +67,22 @@ HRESULT connectPolygonCell(PolygonPtr poly, CellPtr cell)
     return S_OK;
 }
 
-HRESULT disconnectPolygonCell(PolygonPtr tri, CellPtr cell)
+HRESULT disconnectPolygonCell(PolygonPtr poly, CellPtr cell)
 {
-    return E_NOTIMPL;
+    int cellIndex = poly->cellIndex(cell);
+
+    if(cellIndex < 0) {
+        return mx_error(E_INVALIDARG, "polygon is not connected to cell");
+    }
+
+    int polyIndex = indexOf(cell->surface, &poly->partialPolygons[cellIndex]);
+
+    assert(polyIndex >= 0);
+
+    cell->surface.erase(cell->surface.begin() + polyIndex);
+    poly->cells[cellIndex] = nullptr;
+
+    return S_OK;
 }
 
 HRESULT connectPolygonPolygonPointers(PolygonPtr a, PolygonPtr b)
@@ -263,4 +276,49 @@ bool connectedEdgeVertex(CEdgePtr edge, CVertexPtr v)
 HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v)
 {
 
+}
+
+HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
+        VertexPtr newVert, EdgePtr* prevEdge, EdgePtr* nextEdge)
+{
+    if(!poly || !edge) {
+        return mx_error(E_INVALIDARG, "null arguments" );
+    }
+
+    int index = indexOf(poly->edges, edge);
+
+    if(index < 0) {
+        return mx_error(E_INVALIDARG, "edge is not in polygon");
+    }
+
+    *prevEdge = wrappedAt(poly->edges, index-1);
+    *nextEdge = wrappedAt(poly->edges, index+1);
+
+    // remove the edge / vertex from the poly
+    poly->edges.erase(poly->edges.begin() + index);
+    poly->vertices.erase(poly->vertices.begin() + index);
+    poly->_vertexAreas.erase(poly->_vertexAreas.begin() + index);
+    poly->_vertexNormals.erase(poly->_vertexNormals.begin() + index);
+
+    poly->vertices[loopIndex(index, poly->vertices.size())] = newVert;
+
+    return S_OK;
+}
+
+HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge,
+        EdgePtr* prevEdge, EdgePtr* nextEdge)
+{
+    if(!poly || !edge) {
+        return mx_error(E_INVALIDARG, "null arguments" );
+    }
+
+    int index = indexOf(poly->edges, edge);
+    if(index < 0) {
+        return mx_error(E_INVALIDARG, "edge is not in polygon");
+    }
+
+    *prevEdge = wrappedAt(poly->edges, index-1);
+    *nextEdge = wrappedAt(poly->edges, index+1);
+
+    return S_OK;
 }

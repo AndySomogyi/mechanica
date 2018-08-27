@@ -142,6 +142,10 @@ MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
  */
 struct MxPolygon : MxObject {
 
+    static bool classof(const MxObject *o) {
+        return o->ob_type == MxPolygon_Type;
+    }
+
     const uint id;
 
     /**
@@ -300,12 +304,15 @@ private:
     std::vector<float> _vertexAreas;
 
     friend HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
-            const std::vector<VertexPtr> &vertices);
+        const std::vector<VertexPtr> &vertices);
 
     friend HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge);
 
     friend HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
-            EdgePtr *e1, EdgePtr *e2);
+        EdgePtr *e1, EdgePtr *e2);
+    
+    friend HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
+        VertexPtr newVert, EdgePtr* prevEdge, EdgePtr* nextEdge);
 
 };
 

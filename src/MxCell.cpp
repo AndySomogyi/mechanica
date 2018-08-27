@@ -53,7 +53,9 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
             CVertexPtr p1 = poly->vertices[i];
             CVertexPtr p2 = poly->vertices[(i+1)%poly->vertices.size()];
 
-            Color4 edgeColor = poly->edges[i] == mesh->selectedObject() ? type->selectedEdgeColor : type->polygonEdgeColor;
+            Color4 edgeColor =
+                    (poly == mesh->selectedObject() || poly->edges[i] == mesh->selectedObject())
+                    ? type->selectedEdgeColor : type->polygonEdgeColor;
 
             attrs[0].position = p1->position;
             attrs[0].color = edgeColor;

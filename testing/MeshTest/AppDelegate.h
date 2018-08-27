@@ -6,8 +6,11 @@ typedef unsigned char Byte;
 #import <Cocoa/Cocoa.h>
 
 
+
+
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     MeshTest *meshTest;
+    MxType *selectType;
     float radius;
 }
 
@@ -39,8 +42,15 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSTextField *selectedEdgeMax;
 @property (assign, nonatomic) IBOutlet NSTextField *selectedEdgeVal;
 
+@property (assign, nonatomic) IBOutlet NSSlider *selectedPolygonSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedPolygonMin;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedPolygonMax;
+@property (assign, nonatomic) IBOutlet NSTextField *selectedPolygonVal;
+
 @property (assign, nonatomic) IBOutlet NSTextField *shortCutoff;
 @property (assign, nonatomic) IBOutlet NSTextField *longCutoff;
+
+@property (assign, nonatomic) IBOutlet NSPopUpButton *selectedKind;
 
 @property (assign, nonatomic) IBOutlet NSTextField *volumeLambda;
 @property (assign) IBOutlet NSTextField *centerOfGeometryTxt;
@@ -63,6 +73,10 @@ typedef unsigned char Byte;
 
 -(IBAction)T1transitionSelectedEdge:(id)sender;
 
+-(IBAction)T2transitionSelectedPolygon:(id)sender;
+
+-(IBAction)T3transitionSelectedPolygon:(id)sender;
+
 -(IBAction)valueChanged:(id)sender;
 
 -(IBAction)volumeForceClick:(id)sender;
@@ -72,6 +86,14 @@ typedef unsigned char Byte;
 -(void)updateGuiFromModel;
 
 -(void)updateGuiStats;
+
+-(IBAction)selectClicked:(NSPopUpButton*)sender;
+
+-(id)init;
+
+-(void)selectChanged;
+
+-(IBAction)awakeFromNib;
 
 
 

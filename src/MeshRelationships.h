@@ -119,6 +119,41 @@ HRESULT connectPolygonVertices(MeshPtr mesh, PolygonPtr poly,
 HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v);
 
 
+/**
+ * Disconnects and edge, and it's two associated vertices from a polygon, and replaces them
+ * with a single vertex. Both of the vertices in the edge get disconnected
+ * from the polygon, and replaced with newVert.
+ *
+ * Returns the previous and next edges in prevEdge and nextEdge.
+ *
+ * Does not re-connect the two neighboring edges, the caller is responsible
+ * for re-connecting them.
+ *
+ *
+ * Previous configuration in polygon
+ *
+ * ---------- o ---------- o ------------
+ *   e[i-1]  v[i]  e[i]  v[i+1]  e[i+1]
+ *
+ *
+ *         ---------- o ----------
+ *          e[i-1]  v[i]  e[i]
+ *
+ * in the polygon, e[i-1] remains in the same position, but the edge at e[i+1] gets
+ * moved down to the e[i] position. The new vertex newVert gets stored in the
+ * v[i] position. The caller is responsible for connecting
+
+ *
+ *
+ */
+HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
+        VertexPtr newVert, EdgePtr *prevEdge, EdgePtr *nextEdge);
+
+
+HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge, EdgePtr *prevEdge,
+        EdgePtr *nextEdge);
+
+
 
 
 

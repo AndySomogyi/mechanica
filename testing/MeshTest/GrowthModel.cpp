@@ -11,6 +11,7 @@
 #include "MeshIO.h"
 #include "MeshTest.h"
 #include "T1Transition.h"
+#include "T2Transition.h"
 
 
 static struct RedCellType : MxCellType
@@ -114,7 +115,8 @@ void GrowthModel::loadAssImpModel() {
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
     
     //const char* fileName = "football.t1.obj";
-    const char* fileName = "football.t2.obj";
+    //const char* fileName = "football.t2.obj";
+    const char* fileName = "t2.test1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
@@ -642,4 +644,19 @@ HRESULT GrowthModel::applyT1Edge2TransitionToSelectedEdge() {
         return applyT1Edge2Transition(mesh, EdgePtr(obj));
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
+}
+
+HRESULT GrowthModel::applyT2PolygonTransitionToSelectedPolygon()
+{
+    MxObject *obj = mesh->selectedObject();
+    if(obj && dyn_cast<MxPolygon>(obj)) {
+        HRESULT result = applyT2PolygonTransition(mesh, (PolygonPtr)obj);
+
+        if(SUCCEEDED(result)) {
+
+        }
+
+        return result;
+    }
+    return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
 }
