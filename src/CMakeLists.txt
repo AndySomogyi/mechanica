@@ -88,6 +88,7 @@ set(SRC
   MxColumnarCell.cpp
   T1Transition.cpp
   T2Transition.cpp
+  T3Transition.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -139,6 +140,9 @@ set(HEADERS
   MxColumnarCell.h
   T1Transition.h
   T2Transition.h
+  T3Transition.h
+  SymmetricEigen.h
+  GteSymmetricEigensolver3x3.h
   )
 
 

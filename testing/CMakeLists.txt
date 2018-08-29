@@ -9,5 +9,5 @@
 #add_subdirectory(blob1)
 #add_subdirectory(particles2)
 #add_subdirectory(test_magnum)
-#add_subdirectory(viewer)
+add_subdirectory(test1)
 add_subdirectory(MeshTest)

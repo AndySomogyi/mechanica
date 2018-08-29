@@ -11,6 +11,7 @@
 #include <iostream>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Matrix3.h>
 #include <Corrade/Utility/Debug.h>
 #include <sstream>
 
@@ -25,6 +26,15 @@ inline std::ostream& operator<<(std::ostream& os, const Magnum::Vector3ui& vec)
     os << "{" << vec[0] << "," << vec[1] << "," << vec[2] << "}";
     return os;
 }
+
+inline std::ostream& operator<<(std::ostream& os, const Magnum::Math::Matrix3<float>& m)
+{
+    os << "{" << m.row(0) << "," << std::endl
+       << "  " << m.row(1) << "," << std::endl
+       << "  " << m.row(2) << "}" << std::endl;
+    return os;
+}
+
 
 //inline std::ostream& operator<<(std::ostream& os, const Magnum::Vector3us& vec)
 //{
