@@ -232,10 +232,4 @@ MeshOperation::MeshOperation(MeshPtr _mesh)  :
     mesh{_mesh}, ops{&_mesh->meshOperations} {
 }
 
-MeshOperation* MeshOperations::createSkeletalEdgeToTriangleOperation(
-		const CEdgePtr) {
-}
 
-MeshOperation* MeshOperations::createTriangleToSkeletalEdgeOperation(
-		const CPolygonPtr) {
-}

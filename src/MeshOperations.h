@@ -90,8 +90,6 @@ struct MeshOperationFactory {
  */
 struct MeshOperations {
 
-    static MeshOperation *createSkeletalEdgeToTriangleOperation(const CEdgePtr);
-    static MeshOperation *createTriangleToSkeletalEdgeOperation(const CPolygonPtr);
 
 
     MeshOperations(MeshPtr mesh, float shortEdgeCutoff, float longEdgeCutoff);
