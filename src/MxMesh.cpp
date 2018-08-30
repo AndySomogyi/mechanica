@@ -10,7 +10,7 @@
 #include "MxMesh.h"
 #include "MeshRelationships.h"
 #include <Magnum/Math/Math.h>
-#include "MagnumExternal/Optional/optional.hpp"
+#include <Corrade/Containers/Optional.h>
 
 #include <deque>
 #include <limits>

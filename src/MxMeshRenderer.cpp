@@ -136,18 +136,14 @@ MxMeshRenderer& MxMeshRenderer::setProjectionMatrix(
     return *this;
 }
 
-void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
+void MagnumCellRenderer::draw(GL::AbstractShaderProgram& shader) {
 
 
-    //indexBuffer.unmap();
-
-    void* vertexPtr = vertexBuffer.map<void>(0,
+    void* vertexPtr = vertexBuffer.map(0,
             cell->vertexCount() * ShaderProgram::AttributeSize,
-            Buffer::MapFlag::Write|Buffer::MapFlag::InvalidateBuffer);
+            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
     cell->vertexAtributeData({}, cell->vertexCount(), ShaderProgram::AttributeSize, vertexPtr);
-
-    //dumpVertex(vertexPtr, cell.vertexCount());
 
     vertexBuffer.unmap();
 
@@ -157,9 +153,9 @@ void MagnumCellRenderer::draw(AbstractShaderProgram& shader) {
 HRESULT MagnumCellRenderer::invalidate() {
 
     vertexBuffer.setData({nullptr, cell->vertexCount() * sizeof(VertexAttribute)},
-                         BufferUsage::DynamicDraw);
+                         GL::BufferUsage::DynamicDraw);
 
-    mesh = Mesh{};
+    mesh = GL::Mesh{};
 
     mesh.setCount(cell->faceCount() * 3)
             .setPrimitive(MeshPrimitive::Triangles)

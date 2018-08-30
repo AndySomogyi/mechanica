@@ -2,8 +2,8 @@
 #include "MeshOperations.h"
 
 
-#include "Magnum/Version.h"
-#include "Magnum/Platform/Context.h"
+#include "Magnum/GL/Version.h"
+#include "Magnum/Platform/GLContext.h"
 
 
 using namespace std;
@@ -16,7 +16,7 @@ using namespace Magnum::Platform;
 MeshTest::Configuration::Configuration():
     _title{"Mesh Test"},
     _size{700, 700}, _sampleCount{0},
-    _version{Version::GL410},
+    _version{GL::Version::GL410},
     _windowFlags{WindowFlag::Focused},
     _cursorMode{CursorMode::Normal},
     _srgbCapable{true}
@@ -79,7 +79,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 HRESULT MeshTest::createContext(const Configuration& configuration) {
     CORRADE_ASSERT(context->version() ==
-            Version::None,
+            GL::Version::None,
             "Platform::GlfwApplication::tryCreateContext(): context already created",
             false);
 
@@ -113,14 +113,14 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
     glfwWindowHint(GLFW_STEREO, flags >= Configuration::Flag::Stereo);
 
     /* Set context version, if requested */
-    if(configuration.version() != Version::None) {
+    if(configuration.version() != GL::Version::None) {
         Int major, minor;
         std::tie(major, minor) = version(configuration.version());
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
 
-        if(configuration.version() >= Version::GL310) {
+        if(configuration.version() >= GL::Version::GL310) {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         }
@@ -174,7 +174,7 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
 
 
 MeshTest::MeshTest(const Configuration& configuration) :
-    context{new Magnum::Platform::Context{NoCreate, 0, nullptr}}
+    context{new Magnum::Platform::GLContext{NoCreate, 0, nullptr}}
 {
     /* Init GLFW */
     glfwSetErrorCallback(error_callback);
@@ -189,11 +189,11 @@ MeshTest::MeshTest(const Configuration& configuration) :
     // need to enabler depth testing. The graphics processor can draw each facet in any order it wants.
     // Depth testing makes sure that front facing facts are drawn after back ones, so that back facets
     // don't cover up front ones.
-    Renderer::enable(Renderer::Feature::DepthTest);
+    GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
 
     // don't draw facets that face away from us. We have A LOT of these INSIDE cells, no need to
     // draw them.
-    Renderer::enable(Renderer::Feature::FaceCulling);
+    GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
@@ -210,7 +210,7 @@ MeshTest::MeshTest(const Configuration& configuration) :
 
     propagator = new LangevinPropagator{model};
 
-    Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
+    GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
 }
 
 
@@ -230,12 +230,12 @@ void MeshTest::draw() {
 
     center = (max + min)/2;
 
-    defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
+    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color|GL::FramebufferClear::Depth);
 
-    renderer->setViewportSize(Vector2{defaultFramebuffer.viewport().size()});
+    renderer->setViewportSize(Vector2{GL::defaultFramebuffer.viewport().size()});
 
     projection = Matrix4::perspectiveProjection(35.0_degf,
-                     Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(),
+                                                Vector2{GL::defaultFramebuffer.viewport().size()}.aspectRatio(),
                     0.01f, 100.0f);
 
 
@@ -262,7 +262,7 @@ void MeshTest::mouseMove(double xpos, double ypos) {
 
     const Vector2 delta = 3.0f *
     Vector2{pos - previousMousePosition} /
-    Vector2{defaultFramebuffer.viewport().size()};
+    Vector2{GL::defaultFramebuffer.viewport().size()};
 
     previousMousePosition = pos;
 

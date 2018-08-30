@@ -120,7 +120,7 @@ int SymmetricEigensolver3x3<Real>::operator()(Real a00, Real a01, Real a02,
     std::array<Real, 3>& eval, std::array<std::array<Real, 3>, 3>& evec) const
 {
     // Compute the Householder reflection H and B = H*A*H, where b02 = 0.
-    Real const zero = (Real)0, one = (Real)1, half = (Real)0.5;
+    Real const zero = static_cast<Real>(0), one = static_cast<Real>(1), half = static_cast<Real>(0.5);
     bool isRotation = false;
     Real c, s;
     GetCosSin(a12, -a02, c, s);
@@ -364,14 +364,14 @@ void SymmetricEigensolver3x3<Real>::GetCosSin(Real u, Real v, Real& cs,
     Real& sn) const
 {
     Real maxAbsComp = std::max(std::abs(u), std::abs(v));
-    if (maxAbsComp > (Real)0)
+    if (maxAbsComp > static_cast<Real>(0))
     {
         u /= maxAbsComp;  // in [-1,1]
         v /= maxAbsComp;  // in [-1,1]
         Real length = sqrt(u * u + v * v);
         cs = u / length;
         sn = v / length;
-        if (cs > (Real)0)
+        if (cs > static_cast<Real>(0))
         {
             cs = -cs;
             sn = -sn;
@@ -379,8 +379,8 @@ void SymmetricEigensolver3x3<Real>::GetCosSin(Real u, Real v, Real& cs,
     }
     else
     {
-        cs = (Real)-1;
-        sn = (Real)0;
+        cs = static_cast<Real>(-1);
+        sn = static_cast<Real>(0);
     }
 }
 
@@ -390,7 +390,7 @@ bool SymmetricEigensolver3x3<Real>::Converged(bool aggressive, Real bDiag0,
 {
     if (aggressive)
     {
-        return bSuper == (Real)0;
+        return bSuper == static_cast<Real>(0);
     }
     else
     {
@@ -450,19 +450,19 @@ void NISymmetricEigensolver3x3<Real>::operator() (Real a00, Real a01, Real a02,
     Real max1 = std::max(fabs(a02), fabs(a11));
     Real max2 = std::max(fabs(a12), fabs(a22));
     Real maxAbsElement = std::max(std::max(max0, max1), max2);
-    if (maxAbsElement == (Real)0)
+    if (maxAbsElement == static_cast<Real>(0))
     {
         // A is the zero matrix.
-        eval[0] = (Real)0;
-        eval[1] = (Real)0;
-        eval[2] = (Real)0;
-        evec[0] = { (Real)1, (Real)0, (Real)0 };
-        evec[1] = { (Real)0, (Real)1, (Real)0 };
-        evec[2] = { (Real)0, (Real)0, (Real)1 };
+        eval[0] = static_cast<Real>(0);
+        eval[1] = static_cast<Real>(0);
+        eval[2] = static_cast<Real>(0);
+        evec[0] = {{ static_cast<Real>(1), static_cast<Real>(0), static_cast<Real>(0) }};
+        evec[1] = {{ static_cast<Real>(0), static_cast<Real>(1), static_cast<Real>(0) }};
+        evec[2] = {{ static_cast<Real>(0), static_cast<Real>(0), static_cast<Real>(1) }};
         return;
     }
 
-    Real invMaxAbsElement = (Real)1 / maxAbsElement;
+    Real invMaxAbsElement = static_cast<Real>(1) / maxAbsElement;
     a00 *= invMaxAbsElement;
     a01 *= invMaxAbsElement;
     a02 *= invMaxAbsElement;
@@ -471,31 +471,31 @@ void NISymmetricEigensolver3x3<Real>::operator() (Real a00, Real a01, Real a02,
     a22 *= invMaxAbsElement;
 
     Real norm = a01 * a01 + a02 * a02 + a12 * a12;
-    if (norm > (Real)0)
+    if (norm > static_cast<Real>(0))
     {
         // Compute the eigenvalues of A.  The acos(z) function requires |z| <= 1,
         // but will fail silently and return NaN if the input is larger than 1 in
         // magnitude.  To avoid this condition due to rounding errors, the halfDet
         // value is clamped to [-1,1].
-        Real traceDiv3 = (a00 + a11 + a22) / (Real)3;
+        Real traceDiv3 = (a00 + a11 + a22) / static_cast<Real>(3);
         Real b00 = a00 - traceDiv3;
         Real b11 = a11 - traceDiv3;
         Real b22 = a22 - traceDiv3;
-        Real denom = sqrt((b00 * b00 + b11 * b11 + b22 * b22 + norm * (Real)2) / (Real)6);
+        Real denom = sqrt((b00 * b00 + b11 * b11 + b22 * b22 + norm * static_cast<Real>(2)) / static_cast<Real>(6));
         Real c00 = b11 * b22 - a12 * a12;
         Real c01 = a01 * b22 - a12 * a02;
         Real c02 = a01 * a12 - b11 * a02;
         Real det = (b00 * c00 - a01 * c01 + a02 * c02) / (denom * denom * denom);
-        Real halfDet = det * (Real)0.5;
-        halfDet = std::min(std::max(halfDet, (Real)-1), (Real)1);
+        Real halfDet = det * static_cast<Real>(0.5);
+        halfDet = std::min(std::max(halfDet, static_cast<Real>(-1)), static_cast<Real>(1));
 
         // The eigenvalues of B are ordered as beta0 <= beta1 <= beta2.  The
         // number of digits in twoThirdsPi is chosen so that, whether float or
         // double, the floating-point number is the closest to theoretical 2*pi/3.
-        Real angle = acos(halfDet) / (Real)3;
-        Real const twoThirdsPi = (Real)2.09439510239319549;
-        Real beta2 = cos(angle) * (Real)2;
-        Real beta0 = cos(angle + twoThirdsPi) * (Real)2;
+        Real angle = acos(halfDet) / static_cast<Real>(3);
+        Real const twoThirdsPi = static_cast<Real>(2.09439510239319549);
+        Real beta2 = cos(angle) * static_cast<Real>(2);
+        Real beta0 = cos(angle + twoThirdsPi) * static_cast<Real>(2);
         Real beta1 = -(beta0 + beta2);
 
         // The eigenvalues of A are ordered as alpha0 <= alpha1 <= alpha2.
@@ -505,7 +505,7 @@ void NISymmetricEigensolver3x3<Real>::operator() (Real a00, Real a01, Real a02,
 
         // Compute the eigenvectors so that the set {evec[0], evec[1], evec[2]}
         // is right handed and orthonormal.
-        if (halfDet >= (Real)0)
+        if (halfDet >= static_cast<Real>(0))
         {
             ComputeEigenvector0(a00, a01, a02, a11, a12, a22, eval[2], evec[2]);
             ComputeEigenvector1(a00, a01, a02, a11, a12, a22, evec[2], eval[1], evec[1]);
@@ -524,9 +524,9 @@ void NISymmetricEigensolver3x3<Real>::operator() (Real a00, Real a01, Real a02,
         eval[0] = a00;
         eval[1] = a11;
         eval[2] = a22;
-        evec[0] = { (Real)1, (Real)0, (Real)0 };
-        evec[1] = { (Real)0, (Real)1, (Real)0 };
-        evec[2] = { (Real)0, (Real)0, (Real)1 };
+        evec[0] = {{ static_cast<Real>(1), static_cast<Real>(0), static_cast<Real>(0) }};
+        evec[1] = {{ static_cast<Real>(0), static_cast<Real>(1), static_cast<Real>(0) }};
+        evec[2] = {{ static_cast<Real>(0), static_cast<Real>(0), static_cast<Real>(1) }};
     }
 
     // The preconditioning scaled the matrix A, which scales the eigenvalues.
@@ -540,7 +540,7 @@ template <typename Real>
 std::array<Real, 3> NISymmetricEigensolver3x3<Real>::Multiply(
     Real s, std::array<Real, 3> const& U)
 {
-    std::array<Real, 3> product = { s * U[0], s * U[1], s * U[2] };
+    std::array<Real, 3> product = {{ s * U[0], s * U[1], s * U[2] }};
     return product;
 }
 
@@ -548,7 +548,7 @@ template <typename Real>
 std::array<Real, 3> NISymmetricEigensolver3x3<Real>::Subtract(
     std::array<Real, 3> const& U, std::array<Real, 3> const& V)
 {
-    std::array<Real, 3> difference = { U[0] - V[0], U[1] - V[1], U[2] - V[2] };
+    std::array<Real, 3> difference = {{ U[0] - V[0], U[1] - V[1], U[2] - V[2] }};
     return difference;
 }
 
@@ -556,8 +556,8 @@ template <typename Real>
 std::array<Real, 3> NISymmetricEigensolver3x3<Real>::Divide(
     std::array<Real, 3> const& U, Real s)
 {
-    Real invS = (Real)1 / s;
-    std::array<Real, 3> division = { U[0] * invS, U[1] * invS, U[2] * invS };
+    Real invS = static_cast<Real>(1) / s;
+    std::array<Real, 3> division = {{ U[0] * invS, U[1] * invS, U[2] * invS }};
     return division;
 }
 
@@ -574,11 +574,11 @@ std::array<Real, 3> NISymmetricEigensolver3x3<Real>::Cross(std::array<Real, 3> c
     std::array<Real, 3> const& V)
 {
     std::array<Real, 3> cross =
-    {
+    {{
         U[1] * V[2] - U[2] * V[1],
         U[2] * V[0] - U[0] * V[2],
         U[0] * V[1] - U[1] * V[0]
-    };
+    }};
     return cross;
 }
 
@@ -593,14 +593,14 @@ void NISymmetricEigensolver3x3<Real>::ComputeOrthogonalComplement(
     if (fabs(W[0]) > fabs(W[1]))
     {
         // The component of maximum absolute value is either W[0] or W[2].
-        invLength = (Real)1 / sqrt(W[0] * W[0] + W[2] * W[2]);
-        U = {{ -W[2] * invLength, (Real)0, +W[0] * invLength }};
+        invLength = static_cast<Real>(1) / sqrt(W[0] * W[0] + W[2] * W[2]);
+        U = {{ -W[2] * invLength, static_cast<Real>(0), +W[0] * invLength }};
     }
     else
     {
         // The component of maximum absolute value is either W[1] or W[2].
-        invLength = (Real)1 / sqrt(W[1] * W[1] + W[2] * W[2]);
-        U = {{ (Real)0, +W[2] * invLength, -W[1] * invLength }};
+        invLength = static_cast<Real>(1) / sqrt(W[1] * W[1] + W[2] * W[2]);
+        U = {{ static_cast<Real>(0), +W[2] * invLength, -W[1] * invLength }};
     }
     V = Cross(W, U);
 }
@@ -613,9 +613,9 @@ void NISymmetricEigensolver3x3<Real>::ComputeEigenvector0(Real a00, Real a01,
     // rank 2, so two of the rows are linearly independent.  For a robust
     // computation of the eigenvector, select the two rows whose cross product
     // has largest length of all pairs of rows.
-    std::array<Real, 3> row0 = { a00 - eval0, a01, a02 };
-    std::array<Real, 3> row1 = { a01, a11 - eval0, a12 };
-    std::array<Real, 3> row2 = { a02, a12, a22 - eval0 };
+    std::array<Real, 3> row0 = {{ a00 - eval0, a01, a02 }};
+    std::array<Real, 3> row1 = {{ a01, a11 - eval0, a12 }};
+    std::array<Real, 3> row2 = {{ a02, a12, a22 - eval0 }};
     std::array<Real, 3>  r0xr1 = Cross(row0, row1);
     std::array<Real, 3>  r0xr2 = Cross(row0, row2);
     std::array<Real, 3>  r1xr2 = Cross(row1, row2);
@@ -676,18 +676,18 @@ void NISymmetricEigensolver3x3<Real>::ComputeEigenvector1(Real a00, Real a01,
     // where X has row entries x0 and x1.
 
     std::array<Real, 3> AU =
-    {
+    {{
         a00 * U[0] + a01 * U[1] + a02 * U[2],
         a01 * U[0] + a11 * U[1] + a12 * U[2],
         a02 * U[0] + a12 * U[1] + a22 * U[2]
-    };
+    }};
 
     std::array<Real, 3> AV =
-    {
+    {{
         a00 * V[0] + a01 * V[1] + a02 * V[2],
         a01 * V[0] + a11 * V[1] + a12 * V[2],
         a02 * V[0] + a12 * V[1] + a22 * V[2]
-    };
+    }};
 
     Real m00 = U[0] * AU[0] + U[1] * AU[1] + U[2] * AU[2] - eval1;
     Real m01 = U[0] * AV[0] + U[1] * AV[1] + U[2] * AV[2];
@@ -705,18 +705,18 @@ void NISymmetricEigensolver3x3<Real>::ComputeEigenvector1(Real a00, Real a01,
     if (absM00 >= absM11)
     {
         maxAbsComp = std::max(absM00, absM01);
-        if (maxAbsComp > (Real)0)
+        if (maxAbsComp > static_cast<Real>(0))
         {
             if (absM00 >= absM01)
             {
                 m01 /= m00;
-                m00 = (Real)1 / sqrt((Real)1 + m01 * m01);
+                m00 = static_cast<Real>(1) / sqrt(static_cast<Real>(1) + m01 * m01);
                 m01 *= m00;
             }
             else
             {
                 m00 /= m01;
-                m01 = (Real)1 / sqrt((Real)1 + m00 * m00);
+                m01 = static_cast<Real>(1) / sqrt(static_cast<Real>(1) + m00 * m00);
                 m00 *= m01;
             }
             evec1 = Subtract(Multiply(m01, U), Multiply(m00, V));
@@ -729,18 +729,18 @@ void NISymmetricEigensolver3x3<Real>::ComputeEigenvector1(Real a00, Real a01,
     else
     {
         maxAbsComp = std::max(absM11, absM01);
-        if (maxAbsComp > (Real)0)
+        if (maxAbsComp > static_cast<Real>(0))
         {
             if (absM11 >= absM01)
             {
                 m01 /= m11;
-                m11 = (Real)1 / sqrt((Real)1 + m01 * m01);
+                m11 = static_cast<Real>(1) / sqrt(static_cast<Real>(1) + m01 * m01);
                 m01 *= m11;
             }
             else
             {
                 m11 /= m01;
-                m01 = (Real)1 / sqrt((Real)1 + m11 * m11);
+                m01 = static_cast<Real>(1) / sqrt(static_cast<Real>(1) + m11 * m11);
                 m11 *= m01;
             }
             evec1 = Subtract(Multiply(m11, U), Multiply(m01, V));

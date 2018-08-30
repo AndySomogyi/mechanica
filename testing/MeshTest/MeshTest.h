@@ -8,7 +8,7 @@
 #ifndef TESTING_GROWTH1_GROWTHTEST_H_
 #define TESTING_GROWTH1_GROWTHTEST_H_
 
-#include <Magnum/Buffer.h>
+#include <Magnum/GL/Buffer.h>
 #include <Magnum/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
@@ -16,8 +16,8 @@
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Shaders/VertexColor.h>
 #include <Magnum/Primitives/Cube.h>
-#include <Magnum/Version.h>
-#include <Magnum/Renderer.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/Renderer.h>
 #include <Magnum/Trade/MeshData3D.h>
 
 
@@ -37,7 +37,7 @@ struct MeshTest {
 
     GLFWwindow *window = nullptr;
 
-    std::unique_ptr<Platform::Context> context;
+    std::unique_ptr<Platform::GLContext> context;
 
     Magnum::Matrix4 transformation, projection;
     Magnum::Vector2 previousMousePosition;
@@ -73,7 +73,7 @@ struct MeshTest {
     void mouseMove(double xpos, double ypos);
 
     void mouseClick(int button, int action, int mods);
-    
+
     int timeSteps = 0;
 };
 
@@ -244,7 +244,7 @@ class MeshTest::Configuration {
         }
 
         /** @brief Context version */
-        Version version() const { return _version; }
+        GL::Version version() const { return _version; }
 
         /**
          * @brief Set context version
@@ -254,7 +254,7 @@ class MeshTest::Configuration {
          * backwards-compatible with requested one. Default is
          * @ref Version::None, i.e. any provided version is used.
          */
-        Configuration& setVersion(Version version) {
+        Configuration& setVersion(GL::Version version) {
             _version = version;
             return *this;
         }
@@ -293,7 +293,7 @@ class MeshTest::Configuration {
         std::string _title;
         Vector2i _size;
         Int _sampleCount;
-        Version _version;
+        GL::Version _version;
         Flags _flags;
         WindowFlags _windowFlags;
         CursorMode _cursorMode;

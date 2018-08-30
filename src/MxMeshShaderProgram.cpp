@@ -2,9 +2,9 @@
 
 #include <Corrade/Utility/Resource.h>
 
-#include "Magnum/Context.h"
-#include "Magnum/Extensions.h"
-#include "Magnum/Shader.h"
+#include "Magnum/GL/Context.h"
+#include "Magnum/GL/Extensions.h"
+#include "Magnum/GL/Shader.h"
 #include "MagnumExternal/Optional/optional.hpp"
 
 #include "Magnum/Shaders/Implementation/CreateCompatibilityShader.h"
@@ -23,17 +23,17 @@ void checkResource() {
 
 MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
     if(flags & Flag::Wireframe && !(flags & Flag::NoGeometryShader)) {
-        MAGNUM_ASSERT_VERSION_SUPPORTED(Version::GL330);
-        MAGNUM_ASSERT_EXTENSION_SUPPORTED(Extensions::GL::ARB::geometry_shader4);
+        MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
+        MAGNUM_ASSERT_GL_EXTENSION_SUPPORTED(GL::Extensions::ARB::geometry_shader4);
     }
 
     Utility::Resource rs("MxMeshShaderProgram");
 
-    const Version version = Context::current().supportedVersion({Version::GL330});
-    CORRADE_INTERNAL_ASSERT(!flags || flags & Flag::NoGeometryShader || version >= Version::GL330);
+    const GL::Version version = GL::Context::current().supportedVersion({GL::Version::GL330});
+    CORRADE_INTERNAL_ASSERT(!flags || flags & Flag::NoGeometryShader || version >= GL::Version::GL330);
 
-    Shader vert = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, Shader::Type::Vertex);
-    Shader frag = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, Shader::Type::Fragment);
+    GL::Shader vert = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, GL::Shader::Type::Vertex);
+    GL::Shader frag = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, GL::Shader::Type::Fragment);
 
     vert.addSource(flags & Flag::Wireframe ? "#define WIREFRAME_RENDERING\n" : "")
         .addSource(flags & Flag::NoGeometryShader ? "#define NO_GEOMETRY_SHADER\n" : "")
@@ -44,17 +44,17 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
         .addSource(flags & Flag::NoGeometryShader ? "#define NO_GEOMETRY_SHADER\n" : "")
         .addSource(rs.get("MxMeshShaderProgram.frag"));
 
-    std::optional<Shader> geom;
+    std::optional<GL::Shader> geom;
     if(flags & Flag::Wireframe && !(flags & Flag::NoGeometryShader)) {
-        geom = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, Shader::Type::Geometry);
+        geom = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, GL::Shader::Type::Geometry);
         geom->addSource(rs.get("MxMeshShaderProgram.geom"));
     }
 
     if(geom) {
-        CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, *geom, frag}));
+        CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({vert, *geom, frag}));
     }
     else {
-        CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, frag}));
+        CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({vert, frag}));
     }
 
     attachShaders({vert, frag});
@@ -62,7 +62,7 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
     if(geom) attachShader(*geom);
 
 
-    if(!Context::current().isExtensionSupported<Extensions::GL::ARB::explicit_attrib_location>(version))
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::explicit_attrib_location>(version))
     {
         bindAttributeLocation(Position::Location, "position");
 
@@ -70,7 +70,7 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
 
         #if !defined(MAGNUM_TARGET_GLES) || defined(MAGNUM_TARGET_GLES2)
         #ifndef MAGNUM_TARGET_GLES
-        if(!Context::current().isVersionSupported(Version::GL310))
+        if(!GL::Context::current().isVersionSupported(GL::Version::GL310))
         #endif
         {
             bindAttributeLocation(VertexIndex::Location, "vertexIndex");
@@ -80,7 +80,7 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(link());
 
-    if(!Context::current().isExtensionSupported<Extensions::GL::ARB::explicit_uniform_location>(version))
+    if(!GL::Context::current().isExtensionSupported<GL::Extensions::ARB::explicit_uniform_location>(version))
     {
         _transformationProjectionMatrixUniform = uniformLocation("transformationProjectionMatrix");
         _colorUniform = uniformLocation("color");

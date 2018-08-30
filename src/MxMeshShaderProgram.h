@@ -11,7 +11,7 @@
  * @brief Class @ref Magnum::Shaders::MeshVisualizer
  */
 
-#include "Magnum/AbstractShaderProgram.h"
+#include "Magnum/GL/AbstractShaderProgram.h"
 #include "Magnum/Math/Color.h"
 #include "Magnum/Math/Matrix4.h"
 
@@ -151,7 +151,7 @@ Rendering setup the same as above.
 @see @ref shaders
 @todo Understand and add support wireframe width/smoothness without GS
 */
-class MxMeshShaderProgram: public Magnum::AbstractShaderProgram {
+class MxMeshShaderProgram: public Magnum::GL::AbstractShaderProgram {
     public:
         /**
          * @brief Vertex position

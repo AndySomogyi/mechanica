@@ -201,7 +201,6 @@ target_link_libraries(mechanica
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  ObjImporter
   voro++
   sundials_cvode_static)
 

@@ -13,7 +13,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix4.h>
-#include <Magnum/Buffer.h>
+#include <Magnum/GL/Buffer.h>
 #include <Magnum/Mesh.h>
 
 
@@ -21,13 +21,13 @@ struct MagnumCellRenderer : MxCellRenderer {
 
 
     CellPtr cell;
-    Magnum::Mesh mesh;
+    Magnum::GL::Mesh mesh;
     //Magnum::Buffer indexBuffer;
-    Magnum::Buffer vertexBuffer;
+    Magnum::GL::Buffer vertexBuffer;
 
     MagnumCellRenderer(CellPtr cell) : cell{cell} {invalidate();};
 
-    void draw(AbstractShaderProgram& shader);
+    void draw(GL::AbstractShaderProgram& shader);
 
     virtual HRESULT invalidate();
 

@@ -176,19 +176,16 @@ HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge)
     // find the reference vertex;
     int refVertPolyIndex;
     int refVertEdgeIndex;
-    VertexPtr refVert;
 
     {
         int tmp = indexOf(poly->vertices, edge->vertices[0]);
         if(tmp >= 0) {
             refVertPolyIndex = tmp;
             refVertEdgeIndex = 0;
-            refVert = edge->vertices[0];
         }
         else if((tmp = indexOf(poly->vertices, edge->vertices[1])) >= 0) {
             refVertPolyIndex = tmp;
             refVertEdgeIndex = 1;
-            refVert = edge->vertices[1];
         }
         else {
             return mx_error(E_INVALIDARG, "edge does not contain a vertex connected to polygon");
@@ -211,7 +208,6 @@ HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge)
     // ones after it get pushed up. Find the next edge, and re-target it
     // to the new vertex. The new edge already connects the current ref vertex
     // and the new vertex.
-    EdgePtr nextEdge = poly->edges[refVertPolyIndex];
 
     // push all the items down one, and insert the new values.
     poly->vertices.insert(poly->vertices.begin() + nextPos, newVert);
@@ -275,7 +271,7 @@ bool connectedEdgeVertex(CEdgePtr edge, CVertexPtr v)
 
 HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v)
 {
-
+    return E_NOTIMPL;
 }
 
 HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,

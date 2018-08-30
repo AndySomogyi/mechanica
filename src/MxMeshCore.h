@@ -155,7 +155,7 @@ private:
 
     uint _edgeCount = 0;
 
-    friend class MxCell;
+    friend struct MxCell;
 
     friend HRESULT connectEdgeVertices(EdgePtr edge, VertexPtr,
             VertexPtr);
