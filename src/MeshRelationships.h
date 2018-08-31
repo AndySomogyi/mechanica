@@ -120,6 +120,8 @@ HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v);
 
 
 /**
+ * Collapses a polygon edge down to a vertex.
+ *
  * Disconnects and edge, and it's two associated vertices from a polygon, and replaces them
  * with a single vertex. Both of the vertices in the edge get disconnected
  * from the polygon, and replaced with newVert.
