@@ -38,6 +38,10 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
     // are formed when e1a and e2a get split with a new vertex.
     EdgePtr e1b = nullptr, e2b = nullptr;
 
+    // the two vertices v_{n+1}, v_{m+1} on the tail end of the edge (followed around CCW order on the
+    // center polygon)
+    VertexPtr vn1 = nullptr, vm1 = nullptr;
+
 
     for(int i = 0; i < poly->edges.size(); ++i) {
         EdgePtr e = poly->edges[i];
@@ -51,9 +55,11 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
         if(d0 * d1 < 0.) {
             if(!e1a) {
                 e1a = e;
+                vn1 = wrappedAt(poly->edges, i+1);
             }
             else if(!e2a) {
                 e2a = e;
+                vm1 = wrappedAt(poly->edges, i+1);
                 break;
             }
         }
@@ -64,8 +70,13 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
     }
 
     // create two new vertices that are at the center of the two edges to split.
-    VertexPtr v1 = mesh->createVertex((e1a->vertices[0]->position + e1a->vertices[1]->position) / 2., MxVertex_Type);
-    VertexPtr v2 = mesh->createVertex((e2a->vertices[0]->position + e2a->vertices[1]->position) / 2., MxVertex_Type);
+    VertexPtr vn2 = mesh->createVertex(vn1->position, MxVertex_Type);
+    VertexPtr vm2 = mesh->createVertex(vm1->position, MxVertex_Type);
+
+    // move the original vertices to the midpoint of the edge, here we effectively
+    // shrink the edge, and insert a new edge / vertex after it.
+    //vn1->position =
+
 
     // grab the two adjacent polygons that contact this poly via the two edges to be
     // bisected.

@@ -24,11 +24,46 @@
  */
 
 /**
- * Collection of three different implementation of eigen solvers optimized for the
- * 3x3 symmetric matricies we often find in computer graphics and simulation, such
- * as intertia tensors.
+ * @file
  *
- * This file provides a common interface for the three different solvers.
+ * Collection of three different implementation of eigen solvers optimized for the
+ * 3x3 symmetric matrices we often find in computer graphics and simulation, such
+ * as inertia tensors.
+ *
+ * In general, the eigen vectors of a square matrix define an orthogonal basis set.
+ * In computer graphics and simulation, a common task is to find a local coordinate
+ * for an object composed of discrete components where the inertia tensor is diagonal.
+ * Say we have an object composed of particles (in world space), and we want to find
+ * a natural local coordinate system. Here, we would calculate the inertia tensor
+ * from each particle, then we would calculate the eigen vectors. These vectors are
+ * by definition orthogonal, and define a set of basis vectors.
+ *
+ * For a 3x3 matrix, each of these functions returns a matrix of eigen vectors, where the
+ * eigen vectors form the columns of the matrix.
+ *
+ * This matrix can be used a rotation matrix, to convert from world space to local
+ * space. Furthermore, the inverse of a rotation matrix is it's transpose, so to
+ * move from local space to world space, we simply transpose the matrix.
+ *
+ * Note that eigen vectors are not unique, certain solvers may return the vectors
+ * scaled by a different constant, and even when  normalized, they vectors may
+ * point in opposite directions. What's important however is that the set of eigen
+ * vectors is orthogonal.
+ *
+ * Most eigen solver algorithms are designed for large matrices. These algorithms
+ * are inefficient in real-time simulation applications, where we normally just need
+ * to calculate the eigen system for a 3x3 symmetric matrix. This file provides two
+ * different kinds of solvers: analytic and iterative. The analytic solver,
+ * @brief Function @ref Magnum::Math::Algorithms::symmetricEigen3x3Analytic()
+ * uses Cardano's method to calculate the eigen system. This solver is usually faster,
+ * however is often less accurate than iterative solvers.
+ *
+ * The two iterative solvers, @ref Magnum::Math::Algorithms::symmetricEigen3x3TriDiagonal()
+ * and @ref Magnum::Math::Algorithms::symmetricEigen3x3Iterative() use an iterative approach
+ * (with a fixed maximum number of steps) to compute a solution. Users should experiment
+ * which iterative solver works better for them, however there should be negligible
+ * performance difference. It is unclear as to which iterative solver should be preferred
+ * over the other.
  */
 
 #include "Magnum/Math/Matrix.h"
@@ -40,15 +75,19 @@ namespace Magnum { namespace Math { namespace Algorithms {
 
 namespace Implementation {
 
-/* Implementation of Eigen-decomposition for symmetric 3x3 real matrices.
-   Public domain, copied from the public domain Java library JAMA. */
+/**
+ * Implementation of Eigen-decomposition for symmetric 3x3 real matrices.
+ * Public domain, copied from the public domain Java library JAMA.
+ */
 
 template<class T1, class T2>
 T1 hypot2(T1 x, T2 y) {
     return std::sqrt(x*x+y*y);
 }
 
-// Symmetric Householder reduction to tridiagonal form.
+/**
+ * Symmetric Householder reduction to tridiagonal form.
+ */
 template<class T, int n = 3>
 void tred2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
 
@@ -165,8 +204,10 @@ void tred2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
     e[0] = 0.0;
 }
 
-// Symmetric tridiagonal QL algorithm.
 
+/**
+ * Symmetric tridiagonal QL algorithm.
+ */
 template<class T, int n = 3>
 void tql2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
 
@@ -289,21 +330,39 @@ void tql2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
 }
 
 
-/**
- *  Symmetric matrix A => eigenvectors in columns of V, corresponding
- *  eigenvalues in d.
- */
-template<class T, int n=3> void eigen3(const Matrix3<T>& A, Matrix3<T>& V, Vector3<T> &d) {
-    Vector3<T> e;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            V[i][j] = A[i][j];
-        }
-    }
-    Implementation::tred2(V, d, e);
-    Implementation::tql2(V, d, e);
-}
 
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3
+ * matrix using an iterative algorithm.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22. Note, this function does not verify
+ * that the matrix is symmetric, however it only uses the a00, a01, a02,
+ * a11, a12, and a22 elements from the input matrix, all other entries
+ * are ignored.
+ *
+ * if 'aggressive' is 'true', the iterations occur until a superdiagonal
+ * entry is exactly zero.  If 'aggressive' is 'false', the iterations
+ * occur until a superdiagonal entry is effectively zero compared to the
+ * sum of magnitudes of its diagonal neighbors.  Generally, the
+ * nonaggressive convergence is acceptable.
+ *
+ * The order of the eigenvalues is specified by sortType: -1 (decreasing),
+ * 0 (no sorting), or +1 (increasing).  When sorted, the eigenvectors are
+ * ordered accordingly, and {evec[0], evec[1], evec[2]} is guaranteed to
+ * be a right-handed orthonormal set.  The return value is the number of
+ * iterations used by the algorithm.
+ *
+ * This function wraps David Eberly, Geometric Tools, iterative eigen solver.
+ * @see http://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
+ * describes algorithms for solving the eigensystem associated with a 3x3
+ * symmetric real-valued matrix.
+ *
+ * It is a based on modified Symmetric QR Algorithm, and uses Householder
+ * Tridiagonalization to reduce matrix A to tridiagonal form. Then uses
+ * Implicit Symmetric QR Step with Wilkinson Shift for the iterative reduction
+ * from tridiagonal to diagonal.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
         symmetricEigen3x3Iterative(T a00, T a01, T a02, T a11, T a12, T a22,
         bool aggressive=false, int sortType=0) {
@@ -323,6 +382,39 @@ template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
     return std::make_pair(V, d);
 }
 
+
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3
+ * matrix using an iterative algorithm.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22. Note, this function does not verify
+ * that the matrix is symmetric, however it only uses the a00, a01, a02,
+ * a11, a12, and a22 elements from the input matrix, all other entries
+ * are ignored.
+ *
+ * if 'aggressive' is 'true', the iterations occur until a superdiagonal
+ * entry is exactly zero.  If 'aggressive' is 'false', the iterations
+ * occur until a superdiagonal entry is effectively zero compared to the
+ * sum of magnitudes of its diagonal neighbors.  Generally, the
+ * nonaggressive convergence is acceptable.
+ *
+ * The order of the eigenvalues is specified by sortType: -1 (decreasing),
+ * 0 (no sorting), or +1 (increasing).  When sorted, the eigenvectors are
+ * ordered accordingly, and {evec[0], evec[1], evec[2]} is guaranteed to
+ * be a right-handed orthonormal set.  The return value is the number of
+ * iterations used by the algorithm.
+ *
+ * This function wraps David Eberly, Geometric Tools, iterative eigen solver.
+ * @see http://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
+ * describes algorithms for solving the eigensystem associated with a 3x3
+ * symmetric real-valued matrix.
+ *
+ * It is a based on modified Symmetric QR Algorithm, and uses Householder
+ * Tridiagonalization to reduce matrix A to tridiagonal form. Then uses
+ * Implicit Symmetric QR Step with Wilkinson Shift for the iterative reduction
+ * from tridiagonal to diagonal.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
         symmetricEigen3x3Iterative(const Matrix3<T>& A, bool aggressive=false, int sortType=0) {
     std::array<T, n> eval;
@@ -341,6 +433,23 @@ template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
     return std::make_pair(V, d);
 }
 
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3
+ * matrix using an analytic algorithm.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22. Note, this function does not verify
+ * that the matrix is symmetric, however it only uses the a00, a01, a02,
+ * a11, a12, and a22 elements from the input matrix, all other entries
+ * are ignored.
+ *
+ * Calculates the analytic solution based on Cardanos's method.
+ *
+ * This function wraps David Eberly, Geometric Tools, analytic eigen solver.
+ * @see http://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
+ * describes algorithms for solving the eigensystem associated with a 3x3
+ * symmetric real-valued matrix.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
         symmetricEigen3x3Analytic(T a00, T a01, T a02, T a11, T a12, T a22) {
     std::array<T, n> eval;
@@ -359,6 +468,20 @@ template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
     return std::make_pair(V, d);
 }
 
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3
+ * matrix using an analytic algorithm.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22.
+ *
+ * Calculates the analytic solution based on Cardanos's method.
+ *
+ * This function wraps David Eberly, Geometric Tools, analytic eigen solver.
+ * @see http://www.geometrictools.com/Documentation/RobustEigenSymmetric3x3.pdf
+ * describes algorithms for solving the eigensystem associated with a 3x3
+ * symmetric real-valued matrix.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
         symmetricEigen3x3Analytic(const Matrix3<T>& A) {
     std::array<T, n> eval;
@@ -379,6 +502,24 @@ template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
 
 
 
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3 matrix.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22.
+ *
+ * Based on code from  Giorgio Grisetti, Cyrill Stachniss, Wolfram Burgard,
+ * @see http://docs.ros.org/kinetic/api/openslam_gmapping/html/eig3_8cpp_source.html
+ *
+ * This is a similar approach to David Eberly, but does not return normalized eigen
+ * vectors.
+ *
+ * A implementation of a tri-diagonal eigen solver code for symmetric 3x3 matrices,
+ * copied from the public domain Java Matrix library JAMA. This in turn was
+ * This is derived from the Algol procedures tql2, by Bowdler, Martin, Reinsch,
+ * and Wilkinson, Handbook for Auto. Comp., Vol.ii-Linear Algebra, and
+ * the corresponding Fortran subroutine in EISPACK.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
         symmetricEigen3x3TriDiagonal(const Matrix3<T>& A) {
     Matrix3<T> V;
@@ -395,6 +536,28 @@ template <class T, int n=3> std::pair<Matrix<n, T>, Vector3<T>>
     return std::make_pair(V.transposed(), d);
 }
 
+
+/**
+ * @brief Calculates the eigenvectors and eigenvalues of a symmetric 3x3 matrix.
+ *
+ * Because the input matrix must be symmetric, the unique elements are
+ * a00, a01, a02, a11, a12, and a22. Note, this function does not verify
+ * that the matrix is symmetric, however it only uses the a00, a01, a02,
+ * a11, a12, and a22 elements from the input matrix, all other entries
+ * are ignored.
+ *
+ * Based on code from  Giorgio Grisetti, Cyrill Stachniss, Wolfram Burgard,
+ * @see http://docs.ros.org/kinetic/api/openslam_gmapping/html/eig3_8cpp_source.html
+ *
+ * This is a similar approach to David Eberly, but does not return normalized eigen
+ * vectors.
+ *
+ * A implementation of a tri-diagonal eigen solver code for symmetric 3x3 matrices,
+ * copied from the public domain Java Matrix library JAMA. This in turn was
+ * This is derived from the Algol procedures tql2, by Bowdler, Martin, Reinsch,
+ * and Wilkinson, Handbook for Auto. Comp., Vol.ii-Linear Algebra, and
+ * the corresponding Fortran subroutine in EISPACK.
+ */
 template <class T, int n=3> std::pair<Matrix<n, T>, Vector<n, T>>
         symmetricEigen3x3TriDiagonal(T a00, T a01, T a02, T a11, T a12, T a22) {
     // construct a matrix from column vectors
