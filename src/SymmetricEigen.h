@@ -87,14 +87,15 @@ T1 hypot2(T1 x, T2 y) {
 
 /**
  * Symmetric Householder reduction to tridiagonal form.
+ *
+ * This is derived from the Algol procedures tred2 by
+ * Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+ * Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+ * Fortran subroutine in EISPACK.
  */
 template<class T, int n = 3>
 void tred2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
 
-    //  This is derived from the Algol procedures tred2 by
-    //  Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-    //  Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-    //  Fortran subroutine in EISPACK.
 
     for (int j = 0; j < n; j++) {
         d[j] = V[n-1][j];
@@ -105,7 +106,6 @@ void tred2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
     for (int i = n-1; i > 0; i--) {
 
         // Scale to avoid under/overflow.
-
         T scale = 0.0;
         T h = 0.0;
         for (int k = 0; k < i; k++) {
@@ -207,14 +207,14 @@ void tred2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
 
 /**
  * Symmetric tridiagonal QL algorithm.
+ *
+ * This is derived from the Algol procedures tql2, by
+ * Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+ * Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+ * Fortran subroutine in EISPACK.
  */
 template<class T, int n = 3>
 void tql2(Matrix3<T> &V, Vector3<T> &d, Vector3<T> &e) {
-
-    //  This is derived from the Algol procedures tql2, by
-    //  Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-    //  Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-    //  Fortran subroutine in EISPACK.
 
     for (int i = 1; i < n; i++) {
         e[i-1] = e[i];
