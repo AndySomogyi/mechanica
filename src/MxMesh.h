@@ -208,6 +208,12 @@ struct MxMesh  {
 
 
     /**
+     * Creates a new empty polygon.
+     */
+    PolygonPtr createPolygon(MxPolygonType *type);
+
+
+    /**
      * Creates a new edge between a given pair of vertices.
      *
      * The new edge is connected to the vertices, and the two vertices
@@ -224,7 +230,6 @@ struct MxMesh  {
 
     void dump(uint what);
 
-    std::tuple<Magnum::Vector3, Magnum::Vector3> extents();
 
     /**
      * inform the mesh that the vertex position was changed. This causes the mesh
@@ -279,7 +284,6 @@ struct MxMesh  {
      */
     MxObject *alloc(const MxType *type);
 
-    bool validate();
 
     CellPtr rootCell() const {return _rootCell;};
 
@@ -316,6 +320,8 @@ struct MxMesh  {
      * type can be NULL to clear selection.
      */
     HRESULT selectObject(MxType *type, uint index);
+
+    std::tuple<Magnum::Vector3, Magnum::Vector3> extents() const;
 
 
 

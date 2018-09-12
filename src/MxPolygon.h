@@ -310,9 +310,14 @@ private:
 
     friend HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
         EdgePtr *e1, EdgePtr *e2);
-    
+
     friend HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
         VertexPtr newVert, EdgePtr* prevEdge, EdgePtr* nextEdge);
+
+    friend HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
+            Vector3* normal, PolygonPtr* pn1, PolygonPtr* pn2);
+
+    friend HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr e, EdgePtr en);
 
 };
 

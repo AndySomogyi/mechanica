@@ -75,7 +75,7 @@ void MxMesh::dump(uint what) {
     }
 }
 
-std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() {
+std::tuple<Magnum::Vector3, Magnum::Vector3> MxMesh::extents() const {
 
     auto min = Vector3{std::numeric_limits<float>::max()};
     auto max = Vector3{std::numeric_limits<float>::min()};
@@ -357,4 +357,13 @@ HRESULT MxMesh::selectObject(MxType* type, uint index) {
     }
 
     return mx_error(E_FAIL, "type must be either MxEdge_Type or MxPolygon_Type");
+}
+
+PolygonPtr MxMesh::createPolygon(MxPolygonType* type)
+{
+    PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
+
+    polygons.push_back(poly);
+
+    return poly;
 }

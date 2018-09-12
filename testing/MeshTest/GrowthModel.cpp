@@ -12,6 +12,7 @@
 #include "MeshTest.h"
 #include "T1Transition.h"
 #include "T2Transition.h"
+#include "T3Transition.h"
 
 
 static struct RedCellType : MxCellType
@@ -128,7 +129,7 @@ void GrowthModel::loadAssImpModel() {
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
     mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, handler);
 
-    mesh->selectObject(MxEdge_Type, 0);
+    mesh->selectObject(MxPolygon_Type, 24);
 
 
 
@@ -656,6 +657,26 @@ HRESULT GrowthModel::applyT2PolygonTransitionToSelectedPolygon()
 
         }
 
+        return result;
+    }
+    return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
+}
+
+HRESULT GrowthModel::applyT3PolygonTransitionToSelectedPolygon() {
+    MxPolygon *poly = dyn_cast<MxPolygon>(mesh->selectedObject());
+    if(poly) {
+        
+        // make an cut plane perpendicular to the zeroth vertex
+        Magnum::Vector3 normal = poly->vertices[0]->position - poly->centroid;
+        
+        MxPolygon *p1, *p2;
+        
+        HRESULT result = applyT3PolygonBisectPlaneTransition(mesh, poly, &normal, &p1, &p2);
+ 
+        if(SUCCEEDED(result)) {
+            
+        }
+        
         return result;
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");

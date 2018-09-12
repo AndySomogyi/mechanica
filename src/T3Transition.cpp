@@ -32,15 +32,24 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
     Vector4 plane = Magnum::Math::planeEquation(*normal, poly->centroid);
 
     // the pair of edges on the base polygon that are bisected by the plane.
-    EdgePtr e1a = nullptr, e2a = nullptr;
+    EdgePtr en = nullptr, em = nullptr;
 
     // the pair of edges that are after (CCW winding relative to poly) thar
     // are formed when e1a and e2a get split with a new vertex.
-    EdgePtr e1b = nullptr, e2b = nullptr;
+    EdgePtr en1 = nullptr, em1 = nullptr;
+
+    // the new center splitting edge
+    EdgePtr es = nullptr;
 
     // the two vertices v_{n+1}, v_{m+1} on the tail end of the edge (followed around CCW order on the
-    // center polygon)
-    VertexPtr vn1 = nullptr, vm1 = nullptr;
+    // center polygon).
+    // also the two new end vertices, v_{n+2}, v_{m_2} that will have the same positions as the two existing
+    // end vertices.
+    VertexPtr vn = nullptr, vn1 = nullptr, vn2 = nullptr,
+              vm = nullptr, vm1 = nullptr, vm2 = nullptr;
+
+    // indices of the found edges
+    int in = -1, im = -1, in1 = -1, im1 = -1;
 
 
     for(int i = 0; i < poly->edges.size(); ++i) {
@@ -53,40 +62,157 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
         }
 
         if(d0 * d1 < 0.) {
-            if(!e1a) {
-                e1a = e;
-                vn1 = wrappedAt(poly->edges, i+1);
+            if(!en) {
+                in = i;
+                in1 = loopIndex(i+1, poly->vertices.size());
+                en = e;
+                vn =  poly->vertices[i];
+                vn2 = wrappedAt(poly->vertices, i+1);
+                assert(connectedEdgeVertex(en, vn));
+                assert(connectedEdgeVertex(en, vn2));
             }
-            else if(!e2a) {
-                e2a = e;
-                vm1 = wrappedAt(poly->edges, i+1);
+            else if(!em) {
+                im = i;
+                im1 = loopIndex(i+1, poly->vertices.size());
+                em = e;
+                vm =  poly->vertices[i];
+                vm2 = wrappedAt(poly->vertices, i+1);
+                assert(connectedEdgeVertex(em, vm));
+                assert(connectedEdgeVertex(em, vm2));
                 break;
             }
         }
     }
 
-    if(!e1a || !e2a) {
+    if(!en || !em) {
         return mx_error(E_FAIL, "cut plane does not intersect at least two polygon edges");
     }
 
-    // create two new vertices that are at the center of the two edges to split.
-    VertexPtr vn2 = mesh->createVertex(vn1->position, MxVertex_Type);
-    VertexPtr vm2 = mesh->createVertex(vm1->position, MxVertex_Type);
-
-    // move the original vertices to the midpoint of the edge, here we effectively
-    // shrink the edge, and insert a new edge / vertex after it.
-    //vn1->position =
-
+    std::cout << "found edges to split: " << std::endl;
+    std::cout << "en: " << en << std::endl;
+    std::cout << "em: " << em << std::endl;
 
     // grab the two adjacent polygons that contact this poly via the two edges to be
     // bisected.
-    PolygonPtr p1 = otherPolygon2D(e1a, poly);
-    PolygonPtr p2 = otherPolygon2D(e2a, poly);
+    PolygonPtr p1 = otherPolygon2D(en, poly);
+    PolygonPtr p2 = otherPolygon2D(em, poly);
 
     if(!p1 || !p2) {
         return mx_error(E_FAIL, "could not locate adjacent polygons");
     }
 
+    std::cout << "poly p: " << poly << std::endl;
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
 
-    return E_NOTIMPL;
+
+    // create two new vertices that are at the same position as the end vertices,
+    // we shrink the edges so the end vertices are at the previous midpoint.
+    vn1 = mesh->createVertex((vn->position + vn2->position) / 2., MxVertex_Type);
+    vm1 = mesh->createVertex((vm->position + vm2->position) / 2., MxVertex_Type);
+
+    // make the new edges
+    en1 = mesh->createEdge(MxEdge_Type, vn1, vn2);
+    em1 = mesh->createEdge(MxEdge_Type, vm1, vm2);
+    es = mesh->createEdge(MxEdge_Type, vn1, vm1);
+
+    std::cout << "edge en: " << en << std::endl;
+    std::cout << "edge em: " << em << std::endl;
+    std::cout << "edge en1: " << en1 << std::endl;
+    std::cout << "edge em1: " << em1 << std::endl;
+    std::cout << "edge es: " << es << std::endl;
+
+    assert(en1 && em1);
+
+    // insert the edges into the two neighboring polygons
+    VERIFY(splitPolygonEdge(p1, en1, en));
+    VERIFY(splitPolygonEdge(p2, em1, em));
+
+    std::cout << "split p1 and p2 edges: " << std::endl;
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+
+    // insert the edges into polygon to be split
+    VERIFY(splitPolygonEdge(poly, en1, en));
+    VERIFY(splitPolygonEdge(poly, em1, em));
+
+    std::cout << "split poly edges: " << std::endl;
+    std::cout << "poly poly: " << poly << std::endl;
+
+    // reconnect the vertex pointers on the old edges
+    VERIFY(reconnectEdgeVertex(en, vn1, vn2));
+    VERIFY(reconnectEdgeVertex(em, vm1, vm2));
+
+    std::cout << "after reconnecting edge vertices: " << std::endl;
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+    std::cout << "poly poly: " << poly << std::endl;
+    std::cout << "ready to split with new edge: " << es << std::endl;
+
+    // the new daughter polygon, initially empty
+    PolygonPtr pn = mesh->createPolygon((MxPolygonType*)poly->ob_type);
+
+    {
+        // tmp data structures to copy the elements into,
+        // cheaper to copy than to delete and move,
+        // simpler code wise also.
+        std::vector<VertexPtr> tmpVertices;
+        std::vector<MxEdge*> tmpEdges;
+
+        const int vn1Index = indexOf(poly->vertices, vn1);
+        const int vm1Index = indexOf(poly->vertices, vm1);
+        const int vn2Index = indexOf(poly->vertices, vn2);
+        const int vm2Index = indexOf(poly->vertices, vm2);
+
+
+        for(int i = vm1Index; i != vn2Index; i = loopIndex(i+1, poly->size())) {
+            tmpVertices.push_back(poly->vertices[i]);
+            if(loopIndex(i+1, poly->size()) != vn2Index) {
+                tmpEdges.push_back(poly->edges[i]);
+            }
+        }
+        tmpEdges.push_back(es);
+        VERIFY(es->insertPolygon(poly));
+
+        for(int i = vn1Index; i != vm2Index; i = loopIndex(i+1, poly->size())) {
+            pn->vertices.push_back(poly->vertices[i]);
+            if(loopIndex(i+1, poly->size()) != vm2Index) {
+                pn->edges.push_back(poly->edges[i]);
+            }
+        }
+        pn->edges.push_back(es);
+        VERIFY(es->insertPolygon(pn));
+
+        poly->vertices = std::move(tmpVertices);
+        poly->edges = std::move(tmpEdges);
+    }
+
+    poly->_vertexAreas.resize(poly->vertices.size());
+    poly->_vertexNormals.resize(poly->vertices.size());
+
+    pn->_vertexAreas.resize(pn->vertices.size());
+    pn->_vertexNormals.resize(pn->vertices.size());
+
+    pn->cells = poly->cells;
+
+    assert(poly->checkEdges());
+    assert(p1->checkEdges());
+    assert(p2->checkEdges());
+    assert(pn->checkEdges());
+
+    for(int i = 0; i < 2; ++i) {
+        pn->cells[i]->surface.push_back(&pn->partialPolygons[i]);
+        pn->cells[i]->topologyChanged();
+    }
+
+    VERIFY(mesh->positionsChanged());
+
+    std::cout << "resized polygons:" << std::endl;
+    std::cout << "poly p: " << poly << std::endl;
+    std::cout << "poly pn: " << pn << std::endl;
+    std::cout << "poly p1: " << p1 << std::endl;
+    std::cout << "poly p2: " << p2 << std::endl;
+
+
+    return S_OK;
 }

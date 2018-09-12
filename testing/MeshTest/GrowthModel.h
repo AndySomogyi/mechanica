@@ -63,6 +63,8 @@ struct GrowthModel : public MxModel {
     HRESULT applyT1Edge2TransitionToSelectedEdge();
 
     HRESULT applyT2PolygonTransitionToSelectedPolygon();
+    
+    HRESULT applyT3PolygonTransitionToSelectedPolygon();
 
 
     void loadSheetModel();

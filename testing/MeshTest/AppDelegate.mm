@@ -200,14 +200,18 @@ void testIndexOf() {
         if (e) {
             self.selectedEdgeVal.integerValue = e->id;
             self.selectedEdgeSlider.integerValue = e->id;
+            selectType = MxEdge_Type;
         }
         
         PolygonPtr p = dyn_cast<MxPolygon>(obj);
         if (p) {
             self.selectedPolygonVal.integerValue = p->id;
             self.selectedPolygonSlider.integerValue = p->id;
+            selectType = MxPolygon_Type;
         }
     }
+    
+    [self selectChanged];
 }
 
 -(void)updateGuiStats {
@@ -346,6 +350,15 @@ void testIndexOf() {
 
 -(IBAction)T3transitionSelectedPolygon:(id)sender {
     
+    HRESULT result = meshTest->model->applyT3PolygonTransitionToSelectedPolygon();
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully applied T2 transition" << std::endl;
+    }
+    
+    [self updateGuiFromModel];
+    
+    meshTest->draw();
 }
 
 

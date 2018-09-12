@@ -199,7 +199,7 @@ HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge)
         return mx_error(E_INVALIDARG, "both vertices of edge connected to poly");
     }
 
-    // using std::vector::insert, if given begin() + size(), inserts at the end of the array. 
+    // using std::vector::insert, if given begin() + size(), inserts at the end of the array.
     int nextPos = refVertPolyIndex+1;
 
     VERIFY(edge->insertPolygon(poly));
@@ -315,6 +315,96 @@ HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge,
 
     *prevEdge = wrappedAt(poly->edges, index-1);
     *nextEdge = wrappedAt(poly->edges, index+1);
+
+    return S_OK;
+}
+
+HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr newEdge, EdgePtr refEdge)
+{
+    std::cout << "splitting polygon edge {" << std::endl;
+    std::cout << "    poly: " << poly << std::endl;
+    std::cout << "    newEdge: " << newEdge << std::endl;
+    std::cout << "    refEdge: " << refEdge << std::endl;
+    std::cout << "}" << std::endl;
+
+    if(!poly || !refEdge || !newEdge) {
+        return mx_error(E_INVALIDARG, "null arguments");
+    }
+
+    if(!newEdge->vertices[0] || !newEdge->vertices[1]) {
+        return mx_error(E_INVALIDARG, "one or more null vertices on edge");
+    }
+
+    // find the reference vertex;
+    int refVertPolyIndex;
+    int refVertEdgeIndex;
+
+    {
+        // TODO: inefficient, only need to check against edge, but
+        // check whole poly for now for consistency.
+        int tmp = indexOf(poly->vertices, newEdge->vertices[0]);
+        if(tmp >= 0) {
+            refVertPolyIndex = tmp;
+            refVertEdgeIndex = 0;
+            if(!connectedEdgeVertex(refEdge, newEdge->vertices[0])) {
+                return mx_error(E_INVALIDARG, "new edge is not connected to existing edge");
+            }
+        }
+        else if((tmp = indexOf(poly->vertices, newEdge->vertices[1])) >= 0) {
+            refVertPolyIndex = tmp;
+            refVertEdgeIndex = 1;
+            if(!connectedEdgeVertex(refEdge, newEdge->vertices[1])) {
+                return mx_error(E_INVALIDARG, "new edge is not connected to existing edge");
+            }
+        }
+        else {
+            return mx_error(E_INVALIDARG, "new edge does not contain a vertex connected to polygon");
+        }
+    }
+
+    VertexPtr newVert = newEdge->vertices[(refVertEdgeIndex + 1) % 2];
+
+    // make sure other edge vertex is not is this poly already
+    if(indexOf(poly->vertices, newVert) >= 0) {
+        return mx_error(E_INVALIDARG, "both vertices of edge connected to poly");
+    }
+
+    int edgeIndex = indexOf(poly->edges, refEdge);
+
+    if(edgeIndex < 0) {
+        return mx_error(E_INVALIDARG, "reference edge not in polygon");
+    }
+
+    int edgeInsertPos, vertInsertPos;
+
+    if(edgeIndex == refVertPolyIndex) {
+        edgeInsertPos = refVertPolyIndex;
+        vertInsertPos = refVertPolyIndex + 1;
+    }
+    else if(loopIndex(edgeIndex + 1, poly->edges.size()) == refVertPolyIndex) {
+        edgeInsertPos = refVertPolyIndex;
+        vertInsertPos = refVertPolyIndex;
+    }
+    else {
+        return mx_error(E_INVALIDARG, "reference edge not in adjacent to new edge");
+    }
+
+    // using std::vector::insert, if given begin() + size(), inserts at the end of the array.
+
+    VERIFY(newEdge->insertPolygon(poly));
+
+    // the given edge gets inserted at the found vertex pos, and all the
+    // ones after it get pushed up. Find the next edge, and re-target it
+    // to the new vertex. The new edge already connects the current ref vertex
+    // and the new vertex.
+
+    // push all the items down one, and insert the new values.
+    poly->vertices.insert(poly->vertices.begin() + vertInsertPos, newVert);
+    poly->edges.insert(poly->edges.begin() + edgeInsertPos, newEdge);
+    poly->_vertexNormals.insert(poly->_vertexNormals.begin() + vertInsertPos, Vector3{});
+    poly->_vertexAreas.insert(poly->_vertexAreas.begin() + vertInsertPos, 0);
+
+    std::cout << "updated polygon: " << poly << std::endl;
 
     return S_OK;
 }

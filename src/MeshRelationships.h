@@ -135,21 +135,27 @@ HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v);
  * Previous configuration in polygon
  *
  * ---------- o ---------- o ------------
- *   e[i-1]  v[i]  e[i]  v[i+1]  e[i+1]
+ *   e_prev[i-1]  v[i]  e[i]  v[i+1]  e_next[i+1]
  *
  *
- *         ---------- o ----------
- *          e[i-1]  v[i]  e[i]
+ * ---------- o ----------
+ *   e_prev[i-1]  vn[i]  e_next[i]
  *
  * in the polygon, e[i-1] remains in the same position, but the edge at e[i+1] gets
  * moved down to the e[i] position. The new vertex newVert gets stored in the
  * v[i] position. The caller is responsible for connecting
-
- *
- *
  */
 HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
         VertexPtr newVert, EdgePtr *prevEdge, EdgePtr *nextEdge);
+
+
+/**
+ * Inserts a vertex and edge into a polygon after the reference edge location.
+ *
+ *
+ */
+//HRESULT insertPolygonVertexAndEdge(PolygonPtr poly, EdgePtr edge,
+//        VertexPtr newVert, EdgePtr *prevEdge, EdgePtr *nextEdge);
 
 
 HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge, EdgePtr *prevEdge,
@@ -157,7 +163,12 @@ HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge, EdgePtr *prevEd
 
 
 
-
+/**
+ * splits a polygon edge, into two, (e, en), and inserts a new vertex into the polygon.
+ * The new edge, en should contain one vertex in common with the existing edge, and one
+ * new vertex.
+ */
+HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr newEdge, EdgePtr refEdge);
 
 
 
