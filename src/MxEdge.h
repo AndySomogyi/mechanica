@@ -80,6 +80,13 @@ struct MxEdge : MxObject
      */
     HRESULT insertPolygon(CPolygonPtr poly);
 
+    /**
+     * replace oldPoly with newPoly in this edge's polygon list.
+     *
+     * return failure if oldPoly is not in this edge's polygon list.
+     */
+    HRESULT replacePolygon(CPolygonPtr newPoly, CPolygonPtr oldPoly);
+
     int polygonIndex(CPolygonPtr poly) const {
         for(int i = 0; i < EDGE_MAX_POLYGONS; ++i) {
             if(polygons[i] == poly) {

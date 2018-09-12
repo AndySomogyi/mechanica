@@ -101,7 +101,7 @@ bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr poly)
     for(int i = 0; i < 3; ++i) {
         if(edge->polygons[i] == poly) {
 #ifndef NDEBUG
-            for(int j = 0; j > poly->edges.size(); ++j) {
+            for(int j = 0; j < poly->edges.size(); ++j) {
                 if(poly->edges[j] == edge) {
                     return true;
                 }

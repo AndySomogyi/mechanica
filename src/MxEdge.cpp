@@ -127,3 +127,14 @@ std::ostream& operator <<(std::ostream& os, CEdgePtr edge)
     os << "}";
     return os;
 }
+
+HRESULT MxEdge::replacePolygon(CPolygonPtr newPoly, CPolygonPtr oldPoly)
+{
+    for(int i = 0; i < 3; ++i) {
+        if(polygons[i] == oldPoly) {
+            polygons[i] = const_cast<PolygonPtr>(newPoly);
+            return S_OK;
+        }
+    }
+    return mx_error(E_FAIL, "old polygon is not is this edge's polygon list");
+}

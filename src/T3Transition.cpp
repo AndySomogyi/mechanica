@@ -178,6 +178,7 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
             pn->vertices.push_back(poly->vertices[i]);
             if(loopIndex(i+1, poly->size()) != vm2Index) {
                 pn->edges.push_back(poly->edges[i]);
+                pn->edges.back()->replacePolygon(pn, poly);
             }
         }
         pn->edges.push_back(es);
@@ -199,6 +200,12 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
     assert(p1->checkEdges());
     assert(p2->checkEdges());
     assert(pn->checkEdges());
+
+    assert(en->polygonCount() == 2);
+    assert(em->polygonCount() == 2);
+    assert(en1->polygonCount() == 2);
+    assert(em1->polygonCount() == 2);
+    assert(es->polygonCount() == 2);
 
     for(int i = 0; i < 2; ++i) {
         pn->cells[i]->surface.push_back(&pn->partialPolygons[i]);

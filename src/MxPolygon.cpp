@@ -298,6 +298,10 @@ bool MxPolygon::checkEdges() const
             std::cout << "edge " << i << " in polygon " << this->id << " does not match verts" << std::endl;
             return false;
         }
+        if(!connectedEdgePolygonPointers(edges[i], this)) {
+            std::cout << "edge " << edges[i] << " is in polygon, but not connected" << std::endl;
+            return false;
+        }
     }
     return true;
 }
