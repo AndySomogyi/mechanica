@@ -45,7 +45,7 @@ if(APPLE)
   find_path(
     ASSIMP_INCLUDE_DIR
     NAMES assimp/anim.h
-    PATHS /usr/local/include/
+    PATHS $ENV{HOME}/local/include /usr/local/include/
     )
 else()
   find_path(ASSIMP_INCLUDE_DIR NAMES assimp/anim.h HINTS include)
@@ -78,7 +78,7 @@ elseif(APPLE)
     find_library(
       ASSIMP_LIBRARY
       NAMES assimp
-      PATHS /usr/local/lib/
+      PATHS $ENV{HOME}/local/lib /usr/local/lib/
       )
 
     set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})

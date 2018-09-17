@@ -16,4 +16,6 @@ typedef std::function<MxCellType* (const char* name, int)> MeshCellTypeHandler;
 
 MxMesh *MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler cellTypeHandler);
 
+HRESULT MxMesh_WriteFile(const MxMesh *mesh, const char* fname);
+
 #endif /* SRC_MESHIO_H_ */

@@ -18,6 +18,8 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
+#include <assimp/Exporter.hpp>
+
 #include <unordered_map>
 
 
@@ -1267,4 +1269,104 @@ inline void addImpFaceToCell(ImpFace* face, CellPtr cell)
 {
     assert(face->polygon);
     VERIFY(connectPolygonCell(face->polygon, cell));
+}
+
+HRESULT MxMesh_WriteFile(const MxMesh* mesh, const char* fname)
+{
+    Assimp::Exporter exporter;
+
+    int exportFormats = exporter.GetExportFormatCount();
+
+    for(int i = 0; i < exportFormats; ++i) {
+        const aiExportFormatDesc *desc = exporter.GetExportFormatDescription(i);
+
+        std::cout << "{ description: " << desc->description;
+        std::cout << ", extension: " << desc->fileExtension;
+        std::cout << ", id: " << desc->id << "}" << std::endl;
+    }
+
+    "objnomtl";
+
+    aiScene scene;
+
+    scene.mNumMeshes = mesh->cells.size() - 1;
+    scene.mMeshes = new aiMesh*[mesh->cells.size() - 1];
+
+    // scene needs at least one material, or else exporter will crash.
+    scene.mNumMaterials = 1;
+    scene.mMaterials = new aiMaterial*[1];
+    scene.mMaterials[0] = new aiMaterial();
+
+    aiNode *rootNode = scene.mRootNode = new aiNode();
+
+    rootNode->mNumChildren = mesh->cells.size() - 1;
+    rootNode->mChildren = new aiNode*[mesh->cells.size() - 1];
+
+
+
+    // skip over the universe cell, only process 'real' cells
+    for(int ci = 1; ci < mesh->cells.size(); ++ci) {
+        int meshIndex = ci - 1;
+        CCellPtr cell = mesh->cells[meshIndex];
+        std::map<CVertexPtr, int> vertices;
+
+        aiMesh *aim = new aiMesh();
+        aiNode *node = new aiNode();
+
+        scene.mMeshes[meshIndex] = aim;
+        rootNode->mChildren[meshIndex] = node;
+
+        node->mNumMeshes = 1;
+        node->mMeshes = new unsigned int[1];
+        node->mMeshes[0] = meshIndex;
+
+        // add all the vertices to the set.
+        {
+            int vertexIndex = 0;
+            for(CPPolygonPtr pp : cell->surface) {
+                for(CVertexPtr v : pp->polygon->vertices) {
+                    if(vertices.find(v) == vertices.end()) {
+                        vertices.insert(std::make_pair(v, vertexIndex++));
+                    }
+                }
+            }
+        }
+        
+        for(auto v : vertices) {
+            std::cout << "vertex[" << v.second << "] : " << v.first << std::endl;
+        }
+
+        aim->mNumVertices = vertices.size();
+        aim->mVertices = new aiVector3D[vertices.size()];
+
+        for (auto it = vertices.cbegin(); it != vertices.cend(); ++it) {
+            std::cout << " [" << (*it).first << ':' << (*it).second << ']';
+            CVertexPtr v = it->first;
+            aim->mVertices[it->second] = aiVector3D{v->position[0], v->position[1], v->position[2]};
+        }
+
+
+        aim->mNumFaces = cell->surface.size();
+        aim->mFaces = new aiFace[cell->surface.size()];
+
+        for(int i = 0; i < cell->surface.size(); ++i) {
+            CPolygonPtr poly = cell->surface[i]->polygon;
+            aiFace *face = &aim->mFaces[i];
+
+            face->mNumIndices = poly->size();
+            face->mIndices = new unsigned int[poly->size()];
+
+            for(int j = 0; j < poly->size(); ++j) {
+                face->mIndices[j] = vertices[poly->vertices[j]];
+            }
+        }
+
+
+    }
+
+    aiReturn result = exporter.Export(&scene, "objnomtl", "/Users/andy/Desktop/test.obj");
+
+
+
+    return S_OK;
 }
