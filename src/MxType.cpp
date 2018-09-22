@@ -21,14 +21,21 @@ MxType::MxType(const char* name, MxType* base) : MxObject{MxType_Type}
     tp_base = base;
 }
 
-
+/**
+ * T1 : MxObject
+ * T2 : T1
+ * T3 : T2
+ * T4 : T1
+ *
+ *
+ 
+ */
 
 MxAPI_FUNC(int) MxType_IsSubtype(MxType *a, MxType *b) {
     do {
-        if(a == b->tp_base) {
+        if (a == b)
             return 1;
-        }
-        b = b->tp_base;
-    } while(b && b != MxObject_Type);
-    return 0;
+        a = a->tp_base;
+    } while (a != NULL && a != MxObject_Type);
+    return b == MxObject_Type;
 }

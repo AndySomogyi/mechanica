@@ -78,24 +78,27 @@ MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
 
 
 GrowthModel::GrowthModel()  {
+}
 
+
+HRESULT GrowthModel::loadModel() {
     loadAssImpModel();
-
-
+    
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
         std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
     }
-
+    
     testEdges();
+    
+    VERIFY(propagator->structureChanged());
+    
+    return S_OK;
 }
 
 
 void GrowthModel::loadAssImpModel() {
 
-
-
-    
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
     
     //const char* fileName = "football.t1.obj";
@@ -114,16 +117,12 @@ void GrowthModel::loadAssImpModel() {
 
 
     // Hook up the cell volume constraints
-    propagator->bindConstraint(&cellVolumeConstraint, &redCellType);
+    VERIFY(propagator->bindConstraint(&cellVolumeConstraint, &redCellType));
 
     mesh->selectObject(MxPolygon_Type, 24);
-
-
-
-    targetVolume = 6;
-    minTargetVolume = 5;
-    maxTargetVolume = 20.0;
-    targetVolumeLambda = 0.1;
+    
+    setTargetVolume(6);
+    setTargetVolumeLambda(0.05);
 
 
     mesh->setShortCutoff(0);
@@ -140,8 +139,6 @@ void GrowthModel::loadAssImpModel() {
     cellCellSurfaceTensionMin = 0;
     cellCellSurfaceTension = 0.1;
     cellCellSurfaceTensionMax = 1;
-
-    setTargetVolume(targetVolume);
 }
 
 
@@ -280,245 +277,11 @@ HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
     return S_OK;
 }
 
-HRESULT GrowthModel::applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp)
-{
-    if(cell->isRoot()) {
-        return S_OK;
-    }
-
-    float force = -2. * targetVolumeLambda * (cell->volume - targetVolume);
-
-    for(int i = 0; i < p->vertices.size(); ++i) {
-        VertexPtr v = p->vertices[i];
-        v->force += force * p->vertexNormal(i, cell);
-    }
-
-    /*
-
-
-    if(mesh->rootCell() == cell) {
-        return S_OK;
-    }
-
-    Vector3 force = -5. * Vector3{0, 0, cell->centroid[2]};
-
-    applyForceToAllVertices(cell, force);
-
-    return S_OK;
-
-    assert(cell->area >= 0);
-
-    //std::cout << "cell id: " << cell->id << ", volume: " << cell->volume << std::endl;
-
-    if(this->volumeForceType == ConstantVolume) {
-
-        float diff = targetVolume - cell->volume;
-
-
-
-        for(auto pt: cell->surface) {
-            PolygonPtr tri = pt->polygon;
-            Vector3 normal = tri->cellNormal(cell);
-            Vector3 force = (pressure + diff) * tri->area * normal;
-
-            for(int v = 0; v < 3; ++v) {
-                pt->force[v] +=  force;
-            }
-        }
-    }
-
-    else {
-        for(auto pt: cell->surface) {
-            PolygonPtr tri = pt->polygon;
-            Vector3 normal = tri->cellNormal(cell);
-            Vector3 force = pressure * tri->area * normal;
-
-            for(int v = 0; v < 3; ++v) {
-                pt->force[v] +=  force;
-            }
-        }
-    }
-
-
-*/
-
-
-
-    return S_OK;
-}
-
 void GrowthModel::testEdges() {
 
     return;
 }
 
-void GrowthModel::loadSheetModel() {
-    mesh = new MxMesh();
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-        }
-    };
-    */
-
-    mesh->setShortCutoff(0);
-    //mesh->setLongCutoff(0.12);
-    mesh->setLongCutoff(0.2);
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 10;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 1.0;
-    cellMediaSurfaceTensionMax = 6;
-
-    setTargetVolume(0.01);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 0.05;
-    targetVolumeLambda = 1.7;
-}
-
-void GrowthModel::loadSimpleSheetModel() {
-    mesh = new MxMesh();
-
-
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-
-            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
-        }
-    };
-
-
-    mesh->setShortCutoff(0.2);
-    mesh->setLongCutoff(0.7);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
-
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 4;
-    cellMediaSurfaceTensionMax = 15;
-
-    setTargetVolume(0.4);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
-    harmonicBondStrength = 0;
-
-}
-
-
-void GrowthModel::loadTwoModel() {
-    mesh = new MxMesh();
-
-    /*
-
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-
-            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
-        }
-    };
-
-
-    mesh->setShortCutoff(0.2);
-    mesh->setLongCutoff(0.7);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/two.msh");
-
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 4;
-    cellMediaSurfaceTensionMax = 15;
-
-    cellCellSurfaceTensionMin = -15;
-    cellCellSurfaceTension = 0;
-    cellCellSurfaceTensionMax = 15;
-
-    setTargetVolume(0.4);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
-    harmonicBondStrength = 0;
-
-    for(int i = 0; i < 10; ++i) {
-        mesh->applyMeshOperations();
-    }
-}
-
-void GrowthModel::loadCubeModel() {
-
-    mesh = new MxMesh();
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            return (MxCellType*)&redCellType;
-        }
-    };
-
-    mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.3);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 5;
-    cellMediaSurfaceTensionMax = 15;
-
-    targetVolume = 0.6;
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
-
-    mesh->cells[1]->targetVolume = targetVolume;
-
-
-}
-
-void GrowthModel::loadMonodisperseVoronoiModel() {
-    mesh = new MxMesh();
-
-
-    //MxMeshVoronoiImporter importer(*mesh);
-
-    //importer.monodisperse();
-}
 
 HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
 {
@@ -597,14 +360,6 @@ HRESULT GrowthModel::getStateVectorRate(float time, const float *y, float* dydt)
     return S_OK;
 }
 
-void GrowthModel::setTargetVolume(float tv)
-{
-    targetVolume = tv;
-    for(int i = 0; i < mesh->cells.size(); ++i) {
-        mesh->cells[i]->targetVolume = targetVolume;
-    }
-}
-
 HRESULT GrowthModel::applySurfaceTensionForce(PolygonPtr pp) {
     float k = 0;
 
@@ -667,4 +422,40 @@ HRESULT GrowthModel::applyT3PolygonTransitionToSelectedPolygon() {
         return result;
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
+}
+
+float GrowthModel::minTargetVolume()
+{
+    return 0.1 * cellVolumeConstraint.targetVolume;
+}
+
+float GrowthModel::maxTargetVolume()
+{
+    return 2 * cellVolumeConstraint.targetVolume;
+}
+
+float GrowthModel::targetVolume()
+{
+    return cellVolumeConstraint.targetVolume;
+}
+
+float GrowthModel::targetVolumeLambda()
+{
+    return cellVolumeConstraint.lambda;
+}
+
+void GrowthModel::setTargetVolumeLambda(float targetVolumeLambda)
+{
+    cellVolumeConstraint.lambda = targetVolumeLambda;
+}
+
+void GrowthModel::setTargetVolume(float tv)
+{
+    cellVolumeConstraint.targetVolume = tv;
+    
+#ifndef NEW_CONSTRAINTS
+    for(CellPtr cell : mesh->cells) {
+        cell->targetVolume = tv;
+    }
+#endif
 }

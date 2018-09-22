@@ -109,7 +109,7 @@ void testIndexOf() {
     }
     else if(sender == self.volumeLambda)
     {
-        meshTest->model->targetVolumeLambda = self.volumeLambda.floatValue;
+        meshTest->model->setTargetVolumeLambda(self.volumeLambda.floatValue);
     }
     else if(sender == self.harmonicBondTxt)
     {
@@ -150,13 +150,13 @@ void testIndexOf() {
 }
 
 -(void)updateGuiFromModel {
-    self.volumeMax.floatValue = meshTest->model->maxTargetVolume;
-    self.volumeMin.floatValue = meshTest->model->minTargetVolume;
-    self.volumeVal.floatValue = meshTest->model->targetVolume;
+    self.volumeMax.floatValue = meshTest->model->maxTargetVolume();
+    self.volumeMin.floatValue = meshTest->model->minTargetVolume();
+    self.volumeVal.floatValue = meshTest->model->targetVolume();
     
-    self.volumeSlider.maxValue = meshTest->model->maxTargetVolume;
-    self.volumeSlider.minValue = meshTest->model->minTargetVolume;
-    self.volumeSlider.floatValue = meshTest->model->targetVolume;
+    self.volumeSlider.maxValue = meshTest->model->maxTargetVolume();
+    self.volumeSlider.minValue = meshTest->model->minTargetVolume();
+    self.volumeSlider.floatValue = meshTest->model->targetVolume();
     
     self.cellMediaSurfaceTensionMax.floatValue = meshTest->model->cellMediaSurfaceTensionMax;
     self.cellMediaSurfaceTensionMin.floatValue = meshTest->model->cellMediaSurfaceTensionMin;
@@ -179,7 +179,7 @@ void testIndexOf() {
     
     self.constantVolumeBtn.state = meshTest->model->volumeForceType == GrowthModel::ConstantVolume ? NSOnState : NSOffState;
     
-    self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda;
+    self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda();
     
     self.harmonicBondTxt.floatValue = meshTest->model->harmonicBondStrength;
     

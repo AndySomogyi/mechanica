@@ -257,6 +257,8 @@ Matrix3 MxCell::momentOfInertia() const
     return inertia;
 }
 
+#ifndef NEW_CONSTRAINTS
+
 float MxCell::volumeConstraint()
 {
     return 0.05 * (volume - targetVolume);
@@ -276,8 +278,9 @@ void MxCell::projectVolumeConstraint()
             checkVec(v->position);
         }
     }
-
 }
+
+#endif
 
 uint MxCell::faceCount()
 {

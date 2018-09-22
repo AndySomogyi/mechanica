@@ -198,17 +198,22 @@ MeshTest::MeshTest(const Configuration& configuration) :
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
 
-    renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe},
+    renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe};
+    
     model = new GrowthModel{};
 
+    propagator = new LangevinPropagator{};
+    
+    VERIFY(MxBind_PropagatorModel(propagator, model));
+    
+    VERIFY(model->loadModel());
+    
     Vector3 min, max;
     std::tie(min, max) = model->mesh->extents();
-
+    
     center = (max + min)/2;
-
+    
     renderer->setMesh(model->mesh);
-
-    propagator = new LangevinPropagator{model};
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
 
@@ -308,7 +313,7 @@ void MeshTest::reset() {
 
     delete propagator;
 
-    propagator = new LangevinPropagator{model};
+    propagator = new LangevinPropagator{};
 
     draw();
 }

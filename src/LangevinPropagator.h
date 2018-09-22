@@ -33,7 +33,12 @@ class LangevinPropagator {
 
 public:
 
-    LangevinPropagator(MxModel *model);
+    LangevinPropagator();
+    
+    /**
+     * Attaches model to this propagator
+     */
+    HRESULT setModel(MxModel *model);
 
     HRESULT step(MxReal dt);
 
@@ -51,6 +56,7 @@ private:
 
     struct ConstraintItems {
         IConstraint *constraint;
+        MxType *type;
         std::vector<MxObject*> args;
     };
 
@@ -72,6 +78,14 @@ private:
     HRESULT getPositions(float time, uint32_t len, Vector3 *pos);
 
     HRESULT applyConstraints();
+    
+    /**
+     * The model structure changed, so we need to update all the
+     * constraints
+     */
+    HRESULT updateConstraints();
+    
+    HRESULT updateConstraint(ConstraintItems& ci);
 
 
     MxModel *model;
@@ -117,6 +131,14 @@ private:
 
     HRESULT bindTypeForce(IForce *force, MxType *obj);
 
+    /**
+     * Find the constraint item that matches this constraint,
+     * create if it doesn't exist.
+     */
+    ConstraintItems& getConstraintItem(IConstraint* cons);
+
 };
+
+HRESULT MxBind_PropagatorModel(LangevinPropagator *propagator, MxModel *model);
 
 #endif /* SRC_MESHDAMPEDLANGEVINPROPAGATOR_H_ */

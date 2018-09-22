@@ -89,7 +89,6 @@ struct MxMeshNode {
 
     const uint id;
 
-protected:
     MeshPtr mesh;
 
     friend struct MxVertex;

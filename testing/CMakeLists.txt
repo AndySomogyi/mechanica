@@ -9,6 +9,6 @@
 #add_subdirectory(blob1)
 #add_subdirectory(particles2)
 #add_subdirectory(test_magnum)
-add_subdirectory(test1)
+#add_subdirectory(test1)
 add_subdirectory(MeshTest)
-add_subdirectory(CylinderTest)
+#add_subdirectory(CylinderTest)

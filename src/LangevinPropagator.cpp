@@ -12,11 +12,24 @@
 #include <cstdlib>
 #include <cstring>
 
-LangevinPropagator::LangevinPropagator(MxModel* m) :
-    model{m}, mesh{m->mesh} {
 
+
+LangevinPropagator::LangevinPropagator() {
+}
+
+HRESULT LangevinPropagator::setModel(MxModel *m) {
+    this->model = m;
+    this->mesh = m->mesh;
     m->propagator = this;
-    resize();
+    
+    return structureChanged();
+}
+
+HRESULT LangevinPropagator::updateConstraints() {
+    for(ConstraintItems& ci : constraints) {
+        updateConstraint(ci);
+    }
+    return S_OK;
 }
 
 HRESULT LangevinPropagator::step(MxReal dt) {
@@ -24,10 +37,6 @@ HRESULT LangevinPropagator::step(MxReal dt) {
     HRESULT result = S_OK;
 
     resize();
-
-    //for(int i = 0; i < 100; ++i) {
-    //    stateVectorStep(dt);
-    //}
 
 
     for(int i = 0; i < 10; ++i) {
@@ -40,6 +49,13 @@ HRESULT LangevinPropagator::step(MxReal dt) {
     if((timeSteps % 20) == 0) {
         result = mesh->applyMeshOperations();
     }
+
+#ifdef NEW_CONSTRAINTS
+
+    applyConstraints();
+
+#else
+
 
     float sumError = 0;
     int iter = 0;
@@ -69,6 +85,10 @@ HRESULT LangevinPropagator::step(MxReal dt) {
         std::cout << "constraint iter / sum sqr error: " << iter << "/" << sumError << std::endl;
 
     } while(iter < 2);
+
+
+
+#endif
 
 
 
@@ -127,6 +147,10 @@ HRESULT LangevinPropagator::rungeKuttaStep(MxReal dt)
 
 void LangevinPropagator::resize()
 {
+    if(!mesh) {
+        return;
+    }
+    
     if(size != mesh->vertices.size()) {
         size = mesh->vertices.size();
         positions = (Vector3*)std::realloc(positions, size * sizeof(Vector3));
@@ -164,6 +188,22 @@ HRESULT LangevinPropagator::getPositions(float time, uint32_t len, Vector3* pos)
 
 HRESULT LangevinPropagator::applyConstraints()
 {
+
+
+    float sumError = 0;
+    int iter = 0;
+
+    do {
+
+        for(ConstraintItems &ci : constraints) {
+            MxObject **data = ci.args.data();
+            ci.constraint->project(data, ci.args.size());
+        }
+        
+        iter += 1;
+
+    } while(iter < 2);
+    return S_OK;
 }
 
 HRESULT LangevinPropagator::stateVectorStep(MxReal dt)
@@ -206,21 +246,15 @@ HRESULT LangevinPropagator::stateVectorStep(MxReal dt)
 
 HRESULT LangevinPropagator::structureChanged()
 {
-
-    for(auto p : forces) {
-        p.args.clear();
+    if(!model) {
+        return S_OK;
     }
+    
+    mesh = model->mesh;
+    
+    resize();
 
-    for(auto p : constraints) {
-        p.args.clear();
-    }
-
-
-
-
-
-
-    return S_OK;
+    return updateConstraints();
 }
 
 HRESULT LangevinPropagator::bindConstraint(IConstraint* constraint,
@@ -238,13 +272,71 @@ HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
     return E_NOTIMPL;
 }
 
+HRESULT LangevinPropagator::updateConstraint(ConstraintItems& ci) {
+    HRESULT result = E_FAIL;
+    
+    if(!mesh) {
+        return S_OK;
+    }
+    
+    ci.args.clear();
+    
+    if (MxType_IsSubtype(ci.type, MxCell::type())) {
+        for(CellPtr cell : mesh->cells) {
+            if(cell->isRoot()) {
+                continue;
+            }
+            
+            if(MxType_IsSubtype(cell->ob_type, ci.type)) {
+                ci.args.push_back(cell);
+                result = S_OK;
+            }
+        }
+    }
+    
+    if (MxType_IsSubtype(ci.type, MxPolygon::type())) {
+        for(PolygonPtr poly : mesh->polygons) {
+            if(MxType_IsSubtype(poly->ob_type, ci.type)) {
+                ci.args.push_back(poly);
+                result = S_OK;
+            }
+        }
+    }
+    
+    std::cout << "constraint for " << ci.type->tp_name << " , args size: " << ci.args.size() << std::endl;
+    
+    return result;
+}
+
 HRESULT LangevinPropagator::bindTypeConstraint(IConstraint* constraint,
         MxType* type)
 {
-    return E_NOTIMPL;
+    ConstraintItems& ci = getConstraintItem(constraint);
+    ci.type = type;
+    return updateConstraint(ci);
 }
 
 HRESULT LangevinPropagator::bindTypeForce(IForce* force, MxType* obj)
 {
     return E_NOTIMPL;
+}
+
+LangevinPropagator::ConstraintItems& LangevinPropagator::getConstraintItem(IConstraint* cons)
+{
+    auto it = std::find_if(
+            constraints.begin(), constraints.end(),
+            [cons](const ConstraintItems& x) { return x.constraint == cons;});
+    if(it != constraints.end()) {
+        return *it;
+    }
+    else {
+        constraints.push_back(ConstraintItems{cons});
+        return constraints.back();
+    }
+}
+
+HRESULT MxBind_PropagatorModel(LangevinPropagator* propagator, MxModel* model)
+{
+    model->propagator = propagator;
+    return propagator->setModel(model);
 }

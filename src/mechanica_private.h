@@ -84,7 +84,7 @@ int _CaAstInit();
 
 template <class X, class Y>
 inline X* dyn_cast(const Y &o) {
-    return (X::type() == o->ob_type || MxType_IsSubtype(X::type(), o->ob_type)) ? reinterpret_cast<X*>(o) : nullptr;
+    return (MxType_IsSubtype(o->ob_type, X::type())) ? reinterpret_cast<X*>(o) : nullptr;
 };
 
 /**

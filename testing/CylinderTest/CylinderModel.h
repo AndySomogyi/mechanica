@@ -45,6 +45,10 @@ struct CylinderModel : public MxModel {
     float targetVolume();
     float targetVolumeLambda();
 
+    void setTargetVolume(float targetVolume);
+
+    void setTargetVolumeLambda(float targetVolumeLambda);
+
     float harmonicBondStrength;
 
     float pressure = 0;
@@ -61,9 +65,7 @@ struct CylinderModel : public MxModel {
 
     void testEdges();
 
-    void setTargetVolume(float targetVolume);
 
-    void setTargetVolumeLambda(float targetVolumeLambda);
 
     HRESULT applyT1Edge2TransitionToSelectedEdge();
 
