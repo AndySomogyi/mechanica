@@ -18,6 +18,7 @@
 #include <iostream>
 
 
+
 namespace Magnum {
 /** @brief Three-component unsigned integer vector */
 typedef Math::Vector3<UnsignedShort> Vector3us;
@@ -131,6 +132,8 @@ struct MxVertex : MxObject {
     static bool classof(const MxObject *o) {
         return o->ob_type == MxVertex_Type;
     }
+
+    static MxType *type() {return MxVertex_Type;};
 
     void positionsChanged() {
         mass = 0;

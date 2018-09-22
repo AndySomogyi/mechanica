@@ -15,6 +15,8 @@
 
 struct MxModel;
 
+class LangevinPropagator;
+
 /**
  * The type object for a MxSymbol.
  */
@@ -98,7 +100,9 @@ struct MxModel : MxModule {
      * The model is responsible for creating a mesh. The mesh is shared
      * between different modules, but owned here.
      */
-    MxMesh *mesh;
+    MxMesh *mesh = nullptr;
+
+    LangevinPropagator *propagator = nullptr;
 
 
 

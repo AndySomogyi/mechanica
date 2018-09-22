@@ -1,96 +1,220 @@
-#include  <iostream>
-
-#include "MxModel.h"
-
-#include <tuple>
-
-#include <Magnum/Magnum.h>
-#include "SymmetricEigen.h"
-
-using namespace Magnum::Math;
-using namespace Magnum::Math::Algorithms;
+#include <list>
+#include <string>
 
 
-template<typename T>
-Magnum::Math::Matrix3<T> diagMat(Magnum::Math::Vector3<T> &d) {
-    Magnum::Math::Matrix3<T> result{{d[0], 0, 0}, {0, d[1], 0}, {0, 0, d[2]}};
-    return result;
-}
+/**
+ * Define four types to represent the four different kinds of items
+ * in our syntax tree. The base just contains a 'kind' field
+ * that identifies the type of term.
+ */
 
-
-enum EigenSolver {
-    Iterative, Analytic, TriDiagonal
+enum Kind {
+    IDENTIFIER, CONSTANT, APPLICATION, ABSTRACTION
 };
 
-template <EigenSolver type, typename T>
-bool testEigenSolver(T a00, T a01, T a02, T a11, T a12, T a22) {
-    Magnum::Math::Matrix3<T> V;
-    Magnum::Math::Vector3<T> d;
-    Magnum::Math::Matrix3<T> A = {{a00, a01, a02}, {a01, a11, a12}, {a02, a12, a22}};
+/**
+ * Base term, derived types can be one of the four
+ * types below.
+ */
+struct Term {
+    Kind kind;
+};
 
-    switch (type) {
-    case Iterative:
-            std::cout << "Iterative Solver" << std::endl;
-        std::tie(V,d) = Algorithms::symmetricEigen3x3Iterative(A[0][0], A[0][1], A[0][2], A[1][1], A[1][2], A[2][2]);
-            break;
-    case Analytic:
-            std::cout << "Analytic Solver" << std::endl;
-        std::tie(V,d) = Algorithms::symmetricEigen3x3Analytic(A[0][0], A[0][1], A[0][2], A[1][1], A[1][2], A[2][2]);
-            break;
-    case TriDiagonal:
-            std::cout << "TriDiagonal Solver" << std::endl;
-        std::tie(V,d) = Algorithms::symmetricEigen3x3TriDiagonal(A[0][0], A[0][1], A[0][2], A[1][1], A[1][2], A[2][2]);
-            break;
-        default:
-            assert(0);
-    }
+/**
+ * An identifier or symbol.
+ */
+struct Identifier : Term {
+    Identifier() : Term{IDENTIFIER} {};
 
-    std::cout << "A: " << std::endl;
-    std::cout << A << std::endl;
+    std::string id;
+};
 
-    std::cout << "eigen vectors Q:" << std::endl;
-    std::cout << V << std::endl;
+struct Constant : Term {
+    Constant() : Term{CONSTANT} {};
 
-    std::cout << "eigen values d:" << std::endl;
-    std::cout << d << std::endl << std::endl;
+    double val = 0;
+};
 
-    Magnum::Matrix3 t = V * diagMat(d) * V.transposed();
-    std::cout << "Q * d * Q^-1:" << std::endl;
-    std::cout << t << std::endl;
-    
-    t = V.transposed() * diagMat(d) * V;
-    std::cout << "Q^-1 * d * Q:" << std::endl;
-    std::cout << t << std::endl;
+typedef std::list<Term*> Terms;
 
-    return true;
+struct Application : Term {
+    Application() : Term{APPLICATION} {};
+
+    Terms terms;
+};
+
+typedef std::list<Identifier*> Identifiers;
+
+struct Abstraction : Term {
+    Abstraction() : Term{ABSTRACTION} {};
+
+    Identifiers args;
+    Term *body = nullptr;
+};
+
+bool IsIsomorphic(Term *lhs, Term *rhs);
+
+
+static bool IsIsomorphic_Term(Term *lhs, Identifiers &lhsAcc, Term *rhs, Identifiers& rhsAcc);
+
+static bool IsIsomorphic_Application(Application *lhs, Identifiers &lhsAcc,
+        Application *rhs, Identifiers& rhsAcc);
+
+static bool IsIsomorphic_Identifier(Identifier *lhs, Identifiers &lhsAcc,
+        Identifier *rhs, Identifiers& rhsAcc);
+
+static bool IsIsomorphic_Constant(Constant *lhs, Constant *rhs);
+
+static bool IsIsomorphic_Abstraction(Abstraction *lhs, Identifiers &lhsAcc,
+        Abstraction *rhs, Identifiers& rhsAcc);
+
+
+/**
+ * A pair of Constants are isomorphic if they contain the same value.
+ */
+bool IsIsomorphic_Constant(Constant *lhs, Constant *rhs) {
+    return lhs->val == rhs->val;
 }
 
+/**
+ * Determines if two Application are isomorphic. This function
+ * traverses the terms list of both applications in the exact same order, and
+ * checks to see if each pair is isomorphic.
+ *
+ * Will return early at the first non-isomorphic pair.
+ *
+ * Because the loop is over both lists concurrently, the last statement
+ * ensures that the same number of items were processed in both sides.
+ */
+bool IsIsomorphic_Application(Application *lhs, Identifiers &lhsAcc,
+        Application *rhs, Identifiers& rhsAcc) {
+    Terms::iterator i = lhs->terms.begin();
+    Terms::iterator j = rhs->terms.begin();
 
-
-int main( int argc, char *argv[] ) {
-    std::cout << "foo" << std::endl;
-
-    Magnum::Matrix3 A{{1,2,3},{3,2,1},{1,0,-1}};
-
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            std::cout << "m[" << i << "][" << j << "]: " << A[i][j] << std::endl;
+    for(; i != lhs->terms.end() && j != rhs->terms.end(); ++i , ++j) {
+        if (!IsIsomorphic_Term(*i, lhsAcc, *j, rhsAcc)) {
+            return false;
         }
     }
 
-    for(int i = 0; i < 3; ++i) {
-        std::cout << "row(" << i << "): " << A.row(i) << std::endl;
+    return i == lhs->terms.end() && j == rhs->terms.end();
+}
+
+/**
+ * Search a list of identifiers for a particular identifier,
+ * compare based on equality of the strings, return the position,
+ * -1 if not found.
+ */
+static int identifierPos(const Identifiers& ids, const Identifier *id) {
+    int pos = 0;
+    for(auto i = ids.begin(); i != ids.end(); ++i, ++pos) {
+        if((*i)->id == id->id) {
+            return pos;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Two identifiers are considered isomorphic is they appear
+ * in the same position in the argument list of a function definition.
+ *
+ * For example, x,y`(+ x y) is isomorphic to `a,b`(+ a b) because
+ * x appears in the 0'th position and y appears in the 1st position, just like
+ * a appears in the 0'th position and b appears in the 1st position.
+ *
+ * This approach also handles nested lexically scoped function definitions, where
+ * a variable might be defined in a higher level block. In this case, the
+ * search function simply looks further back in the list. Variables are
+ * matched for position on the first scoping block they are found in.
+ */
+bool IsIsomorphic_Identifier(Identifier *lhs, Identifiers &lhsAcc,
+        Identifier *rhs, Identifiers& rhsAcc) {
+
+    int lhsPos = identifierPos(lhsAcc, lhs);
+    int rhsPos = identifierPos(rhsAcc, rhs);
+
+    return lhsPos == rhsPos;
+}
+
+/**
+ * Determine if two terms are isomorphic.
+ *
+ * The basic idea here is we perform a recursion in the same order down
+ * both the left and right hand sides concurrently. Because the tree traversal
+ * order is identical for both sides, we encounter each terms on both sides
+ * in the exact same order. This lets us compare the structure of each term
+ * and we don't have to find the position of each item. The item position
+ * is not relevant because we perform the traversal in the same order.
+ *
+ * This first checks the kind of both the left and right hand sides, and if so,
+ * calls one of the specialized functions for that type.
+ *
+ * This approach uses two accumulators, one for each side. The accumulators
+ * hold a list of function definition arguments. This also lets us check
+ * nested function definitions, as each level of nesting simply pushes those
+ * arguments onto the accumulator.
+ */
+bool IsIsomorphic_Term(Term *lhs, Identifiers &lhsAcc, Term *rhs, Identifiers& rhsAcc) {
+
+    if(lhs->kind == IDENTIFIER && rhs->kind == IDENTIFIER) {
+        return IsIsomorphic_Identifier((Identifier*)lhs, lhsAcc, (Identifier*)rhs, rhsAcc);
     }
 
-    std::cout << "Iterative Solver:" << std::endl;
-    testEigenSolver<Iterative, float>(1, 2, 3, 4, 5, 6);
-    
-    std::cout << "Analytic Solver:" << std::endl;
-    testEigenSolver<Analytic, float>(1, 2, 3, 4, 5, 6);
-    
-    std::cout << "TriDiagonal Solver:" << std::endl;
-    testEigenSolver<TriDiagonal, float>(1, 2, 3, 4, 5, 6);
+    else if(lhs->kind == CONSTANT && rhs->kind == CONSTANT) {
+        return IsIsomorphic_Constant((Constant*)lhs, (Constant*)rhs);
+    }
+
+    else if(lhs->kind == APPLICATION && rhs->kind == APPLICATION) {
+        return IsIsomorphic_Application((Application*)lhs, lhsAcc, (Application*)rhs, rhsAcc);
+    }
+
+    else if(lhs->kind == ABSTRACTION && rhs->kind == ABSTRACTION) {
+        return IsIsomorphic_Abstraction((Abstraction*)lhs, lhsAcc, (Abstraction*)rhs, rhsAcc);
+    }
+
+    return false;
+}
 
 
-     return 0;
+/**
+ * Checks to see if two abstractions are isomorphic.
+ *
+ * The idea here is the two accumulators store the function definition arguments.
+ * This pushes the arguments of the left and right hand side abstractions onto
+ * their respective accumulators, and checks if the abstraction body
+ * are isomorphic. Then it cleans up the accumulator by removing the
+ * args that were pushed onto it.
+ */
+bool IsIsomorphic_Abstraction(Abstraction *lhs, Identifiers &lhsAcc,
+        Abstraction *rhs, Identifiers& rhsAcc) {
+
+    lhsAcc.insert(lhsAcc.begin(), lhs->args.begin(), lhs->args.end());
+    rhsAcc.insert(rhsAcc.begin(), rhs->args.begin(), rhs->args.end());
+
+    bool result = IsIsomorphic_Term(lhs->body, lhsAcc, rhs->body, rhsAcc);
+
+    lhsAcc.erase(lhsAcc.begin(), std::next(lhsAcc.begin(), lhs->args.size()));
+    rhsAcc.erase(rhsAcc.begin(), std::next(rhsAcc.begin(), rhs->args.size()));
+
+    return result;
+}
+
+/**
+ * The top level public IsIsomorphic function. This determines
+ * if the structure of two terms is isomorphic.
+ *
+ * This function allocates two lists used as accumulators, and calls
+ * the private accumulator IsIsomorphic_Term func.
+ */
+bool IsIsomorphic(Term *lhs, Term *rhs) {
+    Identifiers lhsAcc;
+    Identifiers rhsAcc;
+    return IsIsomorphic_Term(lhs, lhsAcc, rhs, rhsAcc);
+}
+
+
+
+int main(int argc, const char** argv) {
+    return 0;
 }

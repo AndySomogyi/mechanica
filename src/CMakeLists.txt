@@ -89,6 +89,11 @@ set(SRC
   T1Transition.cpp
   T2Transition.cpp
   T3Transition.cpp
+  MxConstraints.cpp
+  MxForces.cpp
+  MxPolygonSurfaceTensionForce.cpp
+  MxPolygonAreaConstraint.cpp
+  MxCellVolumeConstraint.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -143,6 +148,11 @@ set(HEADERS
   T3Transition.h
   SymmetricEigen.h
   GteSymmetricEigensolver3x3.h
+  MxConstraints.h
+  MxForces.h
+  MxPolygonSurfaceTensionForce.h
+  MxPolygonAreaConstraint.h
+  MxCellVolumeConstraint.h
   )
 
 

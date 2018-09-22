@@ -211,6 +211,8 @@ MeshTest::MeshTest(const Configuration& configuration) :
     propagator = new LangevinPropagator{model};
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
+
+    testMeshTypes();
 }
 
 
@@ -309,4 +311,53 @@ void MeshTest::reset() {
     propagator = new LangevinPropagator{model};
 
     draw();
+}
+
+template <typename Type, typename Obj>
+void testCast(Obj obj) {
+    void *p = dyn_cast<Type>(obj);
+    const char* name = Type::type()->tp_name;
+    const char* is = (p) ? "true" : "false";
+    std::cout << "as " <<  name << ": " << is << std::endl;
+}
+
+
+template <typename Type>
+void testObject(Type *obj) {
+
+    std::cout << "obj name: " << obj->ob_type->tp_name << std::endl;
+    
+    testCast<MxObject>(obj);
+    testCast<MxEdge>(obj);
+    testCast<MxCell>(obj);
+    testCast<MxPolygon>(obj);
+    testCast<MxVertex>(obj);
+}
+
+void MeshTest::testMeshTypes()
+{
+
+    for(auto p : model->mesh->cells) {
+        testObject(p);
+    }
+
+    for(auto p : model->mesh->edges) {
+        testObject(p);
+    }
+
+    for(auto p : model->mesh->polygons) {
+        testObject(p);
+
+        testObject(&p->partialPolygons[0]);
+        testObject(&p->partialPolygons[1]);
+    }
+
+    for(auto p : model->mesh->vertices) {
+        testObject(p);
+    }
+
+
+    
+    std::cout << "done testing" << std::endl;
+
 }

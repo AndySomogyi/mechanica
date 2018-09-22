@@ -198,8 +198,11 @@ CylinderTest::CylinderTest(const Configuration& configuration) :
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
 
-    renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe},
+    renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe};
+    
     model = new CylinderModel{};
+    
+    propagator = new LangevinPropagator{model};
 
     Vector3 min, max;
     std::tie(min, max) = model->mesh->extents();
@@ -207,8 +210,6 @@ CylinderTest::CylinderTest(const Configuration& configuration) :
     center = (max + min)/2;
 
     renderer->setMesh(model->mesh);
-
-    propagator = new LangevinPropagator{model};
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
 }

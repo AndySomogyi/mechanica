@@ -33,7 +33,7 @@ MxAPI_DATA(MxCellType) *MxUniverseCell_Type;
 /**
  * The type object for a universe partial triangle.
  */
-MxAPI_DATA(MxPartialPolygonType) *MxUniversePartialTriangle_Type;
+MxAPI_DATA(MxType) *MxUniversePartialTriangle_Type;
 
 /**
  * Internal implementation of MxObject
@@ -203,14 +203,14 @@ struct MxMesh  {
      *
      * returns a new, orphaned triangle.
      */
-    PolygonPtr createPolygon(MxPolygonType *type,
+    PolygonPtr createPolygon(MxType *type,
             const std::vector<VertexPtr> &vertices);
 
 
     /**
      * Creates a new empty polygon.
      */
-    PolygonPtr createPolygon(MxPolygonType *type);
+    PolygonPtr createPolygon(MxType *type);
 
 
     /**
@@ -221,12 +221,12 @@ struct MxMesh  {
      * of the vertices, that must be done with connectEdgeTriangle.
      * returns a new edge.
      */
-    EdgePtr createEdge(MxEdgeType *type, VertexPtr a, VertexPtr b);
+    EdgePtr createEdge(MxType *type, VertexPtr a, VertexPtr b);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
-    CellPtr createCell(MxCellType *type = nullptr, const std::string& name = "");
+    CellPtr createCell(MxType *type = nullptr, const std::string& name = "");
 
     void dump(uint what);
 

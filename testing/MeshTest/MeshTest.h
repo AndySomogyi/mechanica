@@ -75,6 +75,8 @@ struct MeshTest {
     void mouseClick(int button, int action, int mods);
 
     int timeSteps = 0;
+
+    void testMeshTypes();
 };
 
 

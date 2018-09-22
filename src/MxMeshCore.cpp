@@ -11,13 +11,8 @@
 #include "MxDebug.h"
 
 
-struct MxVertexType : MxType {
-
-};
-
-static MxVertexType type;
-
-MxType *MxVertex_Type = &type;
+static MxType vertexType{"MxVertex", MxObject_Type};
+MxType *MxVertex_Type = &vertexType;
 
 MxVertex::MxVertex(MxType* derivedType) : MxObject{derivedType}
 {

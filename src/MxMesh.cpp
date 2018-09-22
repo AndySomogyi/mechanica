@@ -58,7 +58,7 @@ MxObject *MxMesh::alloc(const MxType* type)
     }
 }
 
-CellPtr MxMesh::createCell(MxCellType *type, const std::string& name) {
+CellPtr MxMesh::createCell(MxType *type, const std::string& name) {
     CellPtr cell = new MxCell{(uint)cells.size(), type, this, nullptr, name};
     cells.push_back(cell);
     return cell;
@@ -93,21 +93,22 @@ struct UniverseCellType : MxCellType {
     virtual Magnum::Color4 color(struct MxCell *cell) {
         return Color4{0., 0., 0., 0.};
     }
+
+    UniverseCellType() : MxCellType{"UniverseCellType", MxCell_Type} {};
 };
 
-UniverseCellType universeCellType = {};
-
+UniverseCellType universeCellType;
 MxCellType *MxUniverseCell_Type = &universeCellType;
 
-MxPartialPolygonType universePartialTriangleType = {};
+MxType universePartialTriangleType = {"UniversePartialTriangle", MxObject_Type};
 
-MxPartialPolygonType *MxUniversePartialTriangle_Type =
+MxType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;
 
-MxMesh::MxMesh() :
-        meshOperations(this, 0, 1.5)
+MxMesh::MxMesh() : meshOperations(this, 0, 1.5)
 {
-    _rootCell = createCell();
+    _rootCell = new MxCell{(uint)cells.size(), MxUniverseCell_Type, this, nullptr, "RootCell"};
+    cells.push_back(_rootCell);
 }
 
 
@@ -232,7 +233,7 @@ HRESULT MxMesh::applyMeshOperations() {
     return positionsChanged();
 }
 
-PolygonPtr MxMesh::createPolygon(MxPolygonType* type,  const std::vector<VertexPtr> &vertices) {
+PolygonPtr MxMesh::createPolygon(MxType* type,  const std::vector<VertexPtr> &vertices) {
 
     PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
 
@@ -282,7 +283,7 @@ EdgePtr MxMesh::findEdge(CVertexPtr a, CVertexPtr b) const
 }
 
 
-EdgePtr MxMesh::createEdge(MxEdgeType* type, VertexPtr a, VertexPtr b)
+EdgePtr MxMesh::createEdge(MxType* type, VertexPtr a, VertexPtr b)
 {
     EdgePtr e = (EdgePtr)alloc(type);
     VERIFY(connectEdgeVertices(e, a, b));
@@ -359,7 +360,7 @@ HRESULT MxMesh::selectObject(MxType* type, uint index) {
     return mx_error(E_FAIL, "type must be either MxEdge_Type or MxPolygon_Type");
 }
 
-PolygonPtr MxMesh::createPolygon(MxPolygonType* type)
+PolygonPtr MxMesh::createPolygon(MxType* type)
 {
     PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
 

@@ -150,7 +150,7 @@ HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
     std::cout << "ready to split with new edge: " << es << std::endl;
 
     // the new daughter polygon, initially empty
-    PolygonPtr pn = mesh->createPolygon((MxPolygonType*)poly->ob_type);
+    PolygonPtr pn = mesh->createPolygon(poly->ob_type);
 
     {
         // tmp data structures to copy the elements into,

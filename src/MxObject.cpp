@@ -9,6 +9,22 @@
 #include <stdarg.h>
 #include <iostream>
 
+static MxType objectType{"MxObject", nullptr};
+MxType* MxObject_Type = &objectType;
+
+struct MxObjectInitializer {
+
+    MxObjectInitializer() {
+        objectType.tp_base = MxObject_Type;
+    }
+
+};
+
+MxObjectInitializer obj;
+
+//MxObject_Type->tp_base = MxObject_Type;
+
+
 
 
 

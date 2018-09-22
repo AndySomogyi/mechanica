@@ -308,7 +308,7 @@ MxAPI_FUNC(int) MxObject_Not(MxObject *o);
  * type of object o. On failure, returns NULL.  This is
  * equivalent to the Mechanica expression: type(o).
  */
-MxAPI_FUNC(MxObject *) MxObject_Type(MxObject *o);
+MxAPI_DATA(struct MxType*) MxObject_Type;
 
 /**
  * Return the size of object o.  If the object, o, provides
@@ -357,8 +357,7 @@ MxAPI_FUNC(int) MxObject_DelItem(MxObject *o, MxObject *key);
 MxAPI_FUNC(int) MxObject_IsInstance(MxObject *object, MxObject *typeorclass);
 /* isinstance(object, typeorclass) */
 
-MxAPI_FUNC(int) MxObject_IsSubclass(MxObject *object, MxObject *typeorclass);
-/* issubclass(object, typeorclass) */
+
 
 MxAPI_FUNC(void) Mx_Dealloc(MxObject *);
 

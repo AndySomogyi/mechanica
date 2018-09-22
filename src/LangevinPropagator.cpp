@@ -14,6 +14,8 @@
 
 LangevinPropagator::LangevinPropagator(MxModel* m) :
     model{m}, mesh{m->mesh} {
+
+    m->propagator = this;
     resize();
 }
 
@@ -151,6 +153,19 @@ void LangevinPropagator::resize()
     }
 }
 
+HRESULT LangevinPropagator::getAccelerations(float time, uint32_t len,
+        const Vector3* pos, Vector3* acc)
+{
+}
+
+HRESULT LangevinPropagator::getPositions(float time, uint32_t len, Vector3* pos)
+{
+}
+
+HRESULT LangevinPropagator::applyConstraints()
+{
+}
+
 HRESULT LangevinPropagator::stateVectorStep(MxReal dt)
 {
     uint32_t count;
@@ -187,4 +202,49 @@ HRESULT LangevinPropagator::stateVectorStep(MxReal dt)
     model->setStateVector(stateVector);
 
     return S_OK;
+}
+
+HRESULT LangevinPropagator::structureChanged()
+{
+
+    for(auto p : forces) {
+        p.args.clear();
+    }
+
+    for(auto p : constraints) {
+        p.args.clear();
+    }
+
+
+
+
+
+
+    return S_OK;
+}
+
+HRESULT LangevinPropagator::bindConstraint(IConstraint* constraint,
+        MxObject* obj)
+{
+    MxType *type = dyn_cast<MxType>(obj);
+    if(type) {
+        return bindTypeConstraint(constraint, type);
+    }
+    return E_NOTIMPL;
+}
+
+HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT LangevinPropagator::bindTypeConstraint(IConstraint* constraint,
+        MxType* type)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT LangevinPropagator::bindTypeForce(IForce* force, MxType* obj)
+{
+    return E_NOTIMPL;
 }

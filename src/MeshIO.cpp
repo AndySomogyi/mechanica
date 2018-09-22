@@ -371,7 +371,7 @@ static ImpVertex *findVertex(VectorMap &vecMap, const aiVector3D vec) {
 }
 
 
-MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler cellTypeHandler)
+MxMesh* MxMesh_FromFile(const char* fname, float density, IMeshObjectTypeHandler *typeHandler)
 {
     Assimp::Importer imp;
 
@@ -567,7 +567,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, MeshCellTypeHandler ce
         
         std::cout << "creating new cell \"" << obj->mName.C_Str() << "\"" << std::endl;
 
-        CellPtr cell = mesh->createCell(cellTypeHandler(obj->mName.C_Str(), i), obj->mName.C_Str());
+        CellPtr cell = mesh->createCell(typeHandler->cellType(obj->mName.C_Str(), i), obj->mName.C_Str());
         
         for(int m = 0; m < obj->mNumMeshes; ++m) {
             

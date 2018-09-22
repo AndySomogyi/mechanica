@@ -10,9 +10,8 @@
 
 
 
-static MxEdgeType type;
-
-MxEdgeType *MxEdge_Type = &type;
+static MxType edgeType{"MxEdge", MxObject_Type} ;
+MxType *MxEdge_Type = &edgeType;
 
 
 

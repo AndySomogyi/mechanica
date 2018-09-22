@@ -12,7 +12,203 @@
 
 #include "MxObject.h"
 
-struct MxType : _typeobject{};
+/**
+ * The Python type object:
+
+ */
+
+
+//typedef struct _typeobject {
+//    PyObject_VAR_HEAD
+//    const char *tp_name; /* For printing, in format "<module>.<name>" */
+//    Py_ssize_t tp_basicsize, tp_itemsize; /* For allocation */
+//
+//    /* Methods to implement standard operations */
+//
+//    destructor tp_dealloc;
+//    printfunc tp_print;
+//    getattrfunc tp_getattr;
+//    setattrfunc tp_setattr;
+//    cmpfunc tp_compare;
+//    reprfunc tp_repr;
+//
+//    /* Method suites for standard classes */
+//
+//    PyNumberMethods *tp_as_number;
+//    PySequenceMethods *tp_as_sequence;
+//    PyMappingMethods *tp_as_mapping;
+//
+//    /* More standard operations (here for binary compatibility) */
+//
+//    hashfunc tp_hash;
+//    ternaryfunc tp_call;
+//    reprfunc tp_str;
+//    getattrofunc tp_getattro;
+//    setattrofunc tp_setattro;
+//
+//    /* Functions to access object as input/output buffer */
+//    PyBufferProcs *tp_as_buffer;
+//
+//    /* Flags to define presence of optional/expanded features */
+//    long tp_flags;
+//
+//    const char *tp_doc; /* Documentation string */
+//
+//    /* Assigned meaning in release 2.0 */
+//    /* call function for all accessible objects */
+//    traverseproc tp_traverse;
+//
+//    /* delete references to contained objects */
+//    inquiry tp_clear;
+//
+//    /* Assigned meaning in release 2.1 */
+//    /* rich comparisons */
+//    richcmpfunc tp_richcompare;
+//
+//    /* weak reference enabler */
+//    Py_ssize_t tp_weaklistoffset;
+//
+//    /* Added in release 2.2 */
+//    /* Iterators */
+//    getiterfunc tp_iter;
+//    iternextfunc tp_iternext;
+//
+//    /* Attribute descriptor and subclassing stuff */
+//    struct PyMethodDef *tp_methods;
+//    struct PyMemberDef *tp_members;
+//    struct PyGetSetDef *tp_getset;
+//    struct _typeobject *tp_base;
+//    PyObject *tp_dict;
+//    descrgetfunc tp_descr_get;
+//    descrsetfunc tp_descr_set;
+//    Py_ssize_t tp_dictoffset;
+//    initproc tp_init;
+//    allocfunc tp_alloc;
+//    newfunc tp_new;
+//    freefunc tp_free; /* Low-level free-memory routine */
+//    inquiry tp_is_gc; /* For PyObject_IS_GC */
+//    PyObject *tp_bases;
+//    PyObject *tp_mro; /* method resolution order */
+//    PyObject *tp_cache;
+//    PyObject *tp_subclasses;
+//    PyObject *tp_weaklist;
+//    destructor tp_del;
+//
+//    /* Type attribute cache version tag. Added in version 2.6 */
+//    unsigned int tp_version_tag;
+//
+//#ifdef COUNT_ALLOCS
+//    /* these must be last and never explicitly initialized */
+//    Py_ssize_t tp_allocs;
+//    Py_ssize_t tp_frees;
+//    Py_ssize_t tp_maxalloc;
+//    struct _typeobject *tp_prev;
+//    struct _typeobject *tp_next;
+//#endif
+//} PyTypeObject;
+
+MxAPI_DATA(struct MxType*) MxType_Type;
+
+struct MxType : MxObject {
+
+    static bool classof(const MxObject *o) {
+        return o->ob_type == MxType_Type;
+    }
+
+    static MxType *type() {return MxType_Type;};
+
+    MxType(const char* name, MxType *base);
+
+    const char *tp_name; /* For printing, in format "<module>.<name>" */
+    Py_ssize_t tp_basicsize, tp_itemsize; /* For allocation */
+
+    /* Methods to implement standard operations */
+
+    destructor tp_dealloc;
+    printfunc tp_print;
+    getattrfunc tp_getattr;
+    setattrfunc tp_setattr;
+    cmpfunc tp_compare;
+    reprfunc tp_repr;
+
+    /* Method suites for standard classes */
+
+    PyNumberMethods *tp_as_number;
+    PySequenceMethods *tp_as_sequence;
+    PyMappingMethods *tp_as_mapping;
+
+    /* More standard operations (here for binary compatibility) */
+
+    hashfunc tp_hash;
+    ternaryfunc tp_call;
+    reprfunc tp_str;
+    getattrofunc tp_getattro;
+    setattrofunc tp_setattro;
+
+    /* Functions to access object as input/output buffer */
+    PyBufferProcs *tp_as_buffer;
+
+    /* Flags to define presence of optional/expanded features */
+    long tp_flags;
+
+    const char *tp_doc; /* Documentation string */
+
+    /* Assigned meaning in release 2.0 */
+    /* call function for all accessible objects */
+    traverseproc tp_traverse;
+
+    /* delete references to contained objects */
+    inquiry tp_clear;
+
+    /* Assigned meaning in release 2.1 */
+    /* rich comparisons */
+    richcmpfunc tp_richcompare;
+
+    /* weak reference enabler */
+    Py_ssize_t tp_weaklistoffset;
+
+    /* Added in release 2.2 */
+    /* Iterators */
+    getiterfunc tp_iter;
+    iternextfunc tp_iternext;
+
+    /* Attribute descriptor and subclassing stuff */
+    struct PyMethodDef *tp_methods;
+    struct PyMemberDef *tp_members;
+    struct PyGetSetDef *tp_getset;
+
+    struct MxType *tp_base;
+
+
+    PyObject *tp_dict;
+    descrgetfunc tp_descr_get;
+    descrsetfunc tp_descr_set;
+    Py_ssize_t tp_dictoffset;
+    initproc tp_init;
+    allocfunc tp_alloc;
+    newfunc tp_new;
+    freefunc tp_free; /* Low-level free-memory routine */
+    inquiry tp_is_gc; /* For PyObject_IS_GC */
+    PyObject *tp_bases;
+    PyObject *tp_mro; /* method resolution order */
+    PyObject *tp_cache;
+    PyObject *tp_subclasses;
+    PyObject *tp_weaklist;
+    destructor tp_del;
+
+    /* Type attribute cache version tag. Added in version 2.6 */
+    unsigned int tp_version_tag;
+
+#ifdef COUNT_ALLOCS
+    /* these must be last and never explicitly initialized */
+    Py_ssize_t tp_allocs;
+    Py_ssize_t tp_frees;
+    Py_ssize_t tp_maxalloc;
+    struct _typeobject *tp_prev;
+    struct _typeobject *tp_next;
+#endif
+
+};
 
 
 
@@ -60,7 +256,7 @@ type and back.
 
 A standard interface exists for objects that contain an array of items
 whose size is determined when the object is allocated.
-*/
+ */
 
 /* Mx_DEBUG implies Mx_TRACE_REFS. */
 #if defined(Mx_DEBUG) && !defined(Mx_TRACE_REFS)
@@ -75,8 +271,8 @@ whose size is determined when the object is allocated.
 #ifdef Mx_TRACE_REFS
 /* Define pointers to support a doubly-linked list of all live heap objects. */
 #define _MxObject_HEAD_EXTRA            \
-    struct _object *_ob_next;           \
-    struct _object *_ob_prev;
+        struct _object *_ob_next;           \
+        struct _object *_ob_prev;
 
 #define _MxObject_EXTRA_INIT 0, 0,
 
@@ -87,16 +283,16 @@ whose size is determined when the object is allocated.
 
 /* MxObject_HEAD defines the initial segment of every MxObject. */
 #define MxObject_HEAD                   \
-    _MxObject_HEAD_EXTRA                \
-    Mx_ssize_t ob_refcnt;               \
-    struct _typeobject *ob_type;
+        _MxObject_HEAD_EXTRA                \
+        Mx_ssize_t ob_refcnt;               \
+        struct _typeobject *ob_type;
 
 #define MxObject_HEAD_INIT(type)        \
-    _MxObject_EXTRA_INIT                \
-    1, type,
+        _MxObject_EXTRA_INIT                \
+        1, type,
 
 #define MxVarObject_HEAD_INIT(type, size)       \
-    MxObject_HEAD_INIT(type) size,
+        MxObject_HEAD_INIT(type) size,
 
 /* MxObject_VAR_HEAD defines the initial segment of all variable-size
  * container objects.  These end with a declaration of an array with 1
@@ -105,8 +301,8 @@ whose size is determined when the object is allocated.
  * not necessarily a byte count.
  */
 #define MxObject_VAR_HEAD               \
-    MxObject_HEAD                       \
-    Mx_ssize_t ob_size; /* Number of items in variable part */
+        MxObject_HEAD                       \
+        Mx_ssize_t ob_size; /* Number of items in variable part */
 #define Mx_INVALID_SIZE (Mx_ssize_t)-1
 
 /* Nothing is actually declared to be a MxObject, but every pointer to
@@ -139,12 +335,12 @@ reach zero (e.g., for statically allocated type objects).
 
 NB: the methods for certain type groups are now contained in separate
 method blocks.
-*/
+ */
 
 
 
 
-    /* Flags for getting buffers */
+/* Flags for getting buffers */
 #define MxBUF_SIMPLE 0
 #define MxBUF_WRITABLE 0x0001
 /*  we used to include an E, backwards compatible alias  */
@@ -179,26 +375,28 @@ method blocks.
 
 /* access macro to the members which are floating "behind" the object */
 #define MxHeapType_GET_MEMBERS(etype) \
-    ((PyMemberDef *)(((char *)etype) + Mx_TYPE(etype)->tp_basicsize))
+        ((PyMemberDef *)(((char *)etype) + Mx_TYPE(etype)->tp_basicsize))
 
 
 /* Generic type check */
 MxAPI_FUNC(int) MxType_IsSubtype(MxType *, MxType *);
 #define MxObject_TypeCheck(ob, tp) \
-    (Mx_TYPE(ob) == (tp) || MxType_IsSubtype(Mx_TYPE(ob), (tp)))
+        (Mx_TYPE(ob) == (tp) || MxType_IsSubtype(Mx_TYPE(ob), (tp)))
 
-MxAPI_DATA(MxType) MxType_Type; /* built-in 'type' */
+
+//MxAPI_DATA(MxType) MxType_Type; /* built-in 'type' */
+
 MxAPI_DATA(MxType) MxBaseObject_Type; /* built-in 'object' */
 MxAPI_DATA(MxType) MxSuper_Type; /* built-in 'super' */
 
 #define MxType_Check(op) \
-    MxType_FastSubclass(Mx_TYPE(op), Mx_TPFLAGS_TYPE_SUBCLASS)
+        MxType_FastSubclass(Mx_TYPE(op), Mx_TPFLAGS_TYPE_SUBCLASS)
 #define MxType_CheckExact(op) (Mx_TYPE(op) == &PyType_Type)
 
 MxAPI_FUNC(int) MxType_Ready(MxType *);
 MxAPI_FUNC(MxObject *) MxType_GenericAlloc(MxType *, Mx_ssize_t);
 MxAPI_FUNC(MxObject *) MxType_GenericNew(MxType *,
-                                               MxObject *, MxObject *);
+        MxObject *, MxObject *);
 MxAPI_FUNC(MxObject *) _MxType_Lookup(MxType *, MxObject *);
 MxAPI_FUNC(MxObject *) _MxObject_LookupSpecial(MxObject *, char *, MxObject **);
 MxAPI_FUNC(unsigned int) MxType_ClearCache(void);
@@ -228,7 +426,7 @@ MxAPI_FUNC(MxObject *) MxObject_SelfIter(MxObject *);
 MxAPI_FUNC(MxObject *) _MxObject_NextNotImplemented(MxObject *);
 MxAPI_FUNC(MxObject *) MxObject_GenericGetAttr(MxObject *, MxObject *);
 MxAPI_FUNC(int) MxObject_GenericSetAttr(MxObject *,
-                                              MxObject *, MxObject *);
+        MxObject *, MxObject *);
 MxAPI_FUNC(long) MxObject_Hash(MxObject *);
 MxAPI_FUNC(long) MxObject_HashNotImplemented(MxObject *);
 MxAPI_FUNC(int) MxObject_IsTrue(MxObject *);
@@ -247,14 +445,14 @@ MxAPI_FUNC(MxObject *)
 _MxObject_GenericGetAttrWithDict(MxObject *, MxObject *, MxObject *);
 MxAPI_FUNC(int)
 _MxObject_GenericSetAttrWithDict(MxObject *, MxObject *,
-                                 MxObject *, MxObject *);
+        MxObject *, MxObject *);
 
 
 /* MxObject_Dir(obj) acts like Mxthon __builtin__.dir(obj), returning a
    list of strings.  MxObject_Dir(NULL) is like __builtin__.dir(),
    returning the names of the current locals.  In this case, if there are
    no current locals, NULL is returned, and MxErr_Occurred() is false.
-*/
+ */
 MxAPI_FUNC(MxObject *) MxObject_Dir(MxObject *);
 
 
@@ -278,7 +476,7 @@ MxAPI_DATA(int) _Mx_HashSecret_Initialized;
 
 /* Helper for passing objects to printf and the like.
    Leaks refcounts.  Don't use it!
-*/
+ */
 #define MxObject_REPR(obj) MxString_AS_STRING(MxObject_Repr(obj))
 
 /* Flag bits for printing: */
@@ -309,7 +507,7 @@ Mx_TPFLAGS_HAVE_VERSION_TAG; outside the core, it doesn't.  This is so
 that extensions that modify tp_dict of their own types directly don't
 break, since this was allowed in 2.5.  In 3.0 they will have to
 manually remove this flag though!
-*/
+ */
 
 /* MxBufferProcs contains bf_getcharbuffer */
 #define Mx_TPFLAGS_HAVE_GETCHARBUFFER  (1L<<0)
@@ -386,18 +584,18 @@ manually remove this flag though!
 #define Mx_TPFLAGS_TYPE_SUBCLASS        (1L<<31)
 
 #define Mx_TPFLAGS_DEFAULT_EXTERNAL ( \
-                 Mx_TPFLAGS_HAVE_GETCHARBUFFER | \
-                 Mx_TPFLAGS_HAVE_SEQUENCE_IN | \
-                 Mx_TPFLAGS_HAVE_INPLACEOPS | \
-                 Mx_TPFLAGS_HAVE_RICHCOMPARE | \
-                 Mx_TPFLAGS_HAVE_WEAKREFS | \
-                 Mx_TPFLAGS_HAVE_ITER | \
-                 Mx_TPFLAGS_HAVE_CLASS | \
-                 Mx_TPFLAGS_HAVE_STACKLESS_EXTENSION | \
-                 Mx_TPFLAGS_HAVE_INDEX | \
-                 0)
+        Mx_TPFLAGS_HAVE_GETCHARBUFFER | \
+        Mx_TPFLAGS_HAVE_SEQUENCE_IN | \
+        Mx_TPFLAGS_HAVE_INPLACEOPS | \
+        Mx_TPFLAGS_HAVE_RICHCOMPARE | \
+        Mx_TPFLAGS_HAVE_WEAKREFS | \
+        Mx_TPFLAGS_HAVE_ITER | \
+        Mx_TPFLAGS_HAVE_CLASS | \
+        Mx_TPFLAGS_HAVE_STACKLESS_EXTENSION | \
+        Mx_TPFLAGS_HAVE_INDEX | \
+        0)
 #define Mx_TPFLAGS_DEFAULT_CORE (Mx_TPFLAGS_DEFAULT_EXTERNAL | \
-                 Mx_TPFLAGS_HAVE_VERSION_TAG)
+        Mx_TPFLAGS_HAVE_VERSION_TAG)
 
 #ifdef Mx_BUILD_CORE
 #define Mx_TPFLAGS_DEFAULT Mx_TPFLAGS_DEFAULT_CORE
@@ -436,12 +634,12 @@ complications in the deallocation function.  (This is actually a
 decision that's up to the implementer of each new type so if you want,
 you can count such references to the type object.)
 
-*** WARNING*** The Mx_DECREF macro must have a side-effect-free argument
+ *** WARNING*** The Mx_DECREF macro must have a side-effect-free argument
 since it may evaluate its argument multiple times.  (The alternative
 would be to mace it a proper function or assign it to a global temporary
 variable first, both of which are slower; and in a multi-threaded
 environment the global variable trick is not safe.)
-*/
+ */
 
 /* First define a pile of simple helper macros, one set per special
  * build symbol.  These either expand to the obvious things, or to
@@ -455,7 +653,7 @@ environment the global variable trick is not safe.)
 #ifdef Mx_REF_DEBUG
 MxAPI_DATA(Mx_ssize_t) _Mx_RefTotal;
 MxAPI_FUNC(void) _Mx_NegativeRefcount(const char *fname,
-                                            int lineno, MxObject *op);
+        int lineno, MxObject *op);
 MxAPI_FUNC(MxObject *) _PyDict_Dummy(void);
 MxAPI_FUNC(MxObject *) _PySet_Dummy(void);
 MxAPI_FUNC(Mx_ssize_t) _Mx_GetRefTotal(void);
@@ -463,10 +661,10 @@ MxAPI_FUNC(Mx_ssize_t) _Mx_GetRefTotal(void);
 #define _Mx_DEC_REFTOTAL        _Mx_RefTotal--
 #define _Mx_REF_DEBUG_COMMA     ,
 #define _Mx_CHECK_REFCNT(OP)                                    \
-{       if (((MxObject*)OP)->ob_refcnt < 0)                             \
-                _Mx_NegativeRefcount(__FILE__, __LINE__,        \
-                                     (MxObject *)(OP));         \
-}
+        {       if (((MxObject*)OP)->ob_refcnt < 0)                             \
+    _Mx_NegativeRefcount(__FILE__, __LINE__,        \
+            (MxObject *)(OP));         \
+        }
 #else
 #define _Mx_INC_REFTOTAL
 #define _Mx_DEC_REFTOTAL
@@ -502,29 +700,29 @@ MxAPI_FUNC(void) _Mx_AddToAllObjects(MxObject *, int force);
  * inline.
  */
 #define _Mx_NewReference(op) (                          \
-    _Mx_INC_TPALLOCS(op) _Mx_COUNT_ALLOCS_COMMA         \
-    _Mx_INC_REFTOTAL  _Mx_REF_DEBUG_COMMA               \
-    Mx_REFCNT(op) = 1)
+        _Mx_INC_TPALLOCS(op) _Mx_COUNT_ALLOCS_COMMA         \
+        _Mx_INC_REFTOTAL  _Mx_REF_DEBUG_COMMA               \
+        Mx_REFCNT(op) = 1)
 
 #define _Mx_ForgetReference(op) _Mx_INC_TPFREES(op)
 
 #define _Mx_Dealloc(op) (                               \
-    _Mx_INC_TPFREES(op) _Mx_COUNT_ALLOCS_COMMA          \
-    (*Mx_TYPE(op)->tp_dealloc)((MxObject *)(op)))
+        _Mx_INC_TPFREES(op) _Mx_COUNT_ALLOCS_COMMA          \
+        (*Mx_TYPE(op)->tp_dealloc)((MxObject *)(op)))
 #endif /* !Mx_TRACE_REFS */
 
 #define Mx_INCREF(op) (                         \
-    _Mx_INC_REFTOTAL  _Mx_REF_DEBUG_COMMA       \
-    ((MxObject*)(op))->ob_refcnt++)
+        _Mx_INC_REFTOTAL  _Mx_REF_DEBUG_COMMA       \
+        ((MxObject*)(op))->ob_refcnt++)
 
 #define Mx_DECREF(op)                                   \
-    do {                                                \
-        if (_Mx_DEC_REFTOTAL  _Mx_REF_DEBUG_COMMA       \
-        --((MxObject*)(op))->ob_refcnt != 0)            \
-            _Mx_CHECK_REFCNT(op)                        \
-        else                                            \
-        _Mx_Dealloc((MxObject *)(op));                  \
-    } while (0)
+        do {                                                \
+            if (_Mx_DEC_REFTOTAL  _Mx_REF_DEBUG_COMMA       \
+                    --((MxObject*)(op))->ob_refcnt != 0)            \
+                    _Mx_CHECK_REFCNT(op)                        \
+                    else                                            \
+                    _Mx_Dealloc((MxObject *)(op));                  \
+        } while (0)
 
 /* Safely decref `op` and set `op` to NULL, especially useful in tp_clear
  * and tp_dealloc implementations.
@@ -593,23 +791,23 @@ MxAPI_FUNC(void) _Mx_AddToAllObjects(MxObject *, int force);
  */
 
 #define Mx_SETREF(op, op2)                      \
-    do {                                        \
-        MxObject *_py_tmp = (MxObject *)(op);   \
-        (op) = (op2);                           \
-        Mx_DECREF(_py_tmp);                     \
-    } while (0)
+        do {                                        \
+            MxObject *_py_tmp = (MxObject *)(op);   \
+            (op) = (op2);                           \
+            Mx_DECREF(_py_tmp);                     \
+        } while (0)
 
 #define Mx_XSETREF(op, op2)                     \
-    do {                                        \
-        MxObject *_py_tmp = (MxObject *)(op);   \
-        (op) = (op2);                           \
-        Mx_XDECREF(_py_tmp);                    \
-    } while (0)
+        do {                                        \
+            MxObject *_py_tmp = (MxObject *)(op);   \
+            (op) = (op2);                           \
+            Mx_XDECREF(_py_tmp);                    \
+        } while (0)
 
 /*
 These are provided as conveniences to Mxthon runtime embedders, so that
 they can have object code that is not dependent on Mxthon compilation flags.
-*/
+ */
 //MxAPI_FUNC(void) Mx_IncRef(MxObject *);
 //MxAPI_FUNC(void) Mx_DecRef(MxObject *);
 
@@ -618,7 +816,7 @@ _Mx_NoneStruct is an object of undefined type which can be used in contexts
 where NULL (nil) is not suitable (since NULL often means 'error').
 
 Don't forget to apply Mx_INCREF() when returning this value!!!
-*/
+ */
 MxAPI_DATA(MxObject) _Mx_NoneStruct; /* Don't use this directly */
 #define Mx_None (&_Mx_NoneStruct)
 
@@ -628,7 +826,7 @@ MxAPI_DATA(MxObject) _Mx_NoneStruct; /* Don't use this directly */
 /*
 Mx_NotImplemented is a singleton used to signal that an operation is
 not implemented for a given type combination.
-*/
+ */
 MxAPI_DATA(MxObject) _Mx_NotImplementedStruct; /* Don't use this directly */
 #define Mx_NotImplemented (&_Mx_NotImplementedStruct)
 
@@ -655,7 +853,7 @@ static keyword when it was used with a forward declaration of a static
 initialized structure.  Standard C allows the forward declaration with
 static, and we've decided to stop catering to broken C compilers.
 (In fact, we expect that the compilers are all fixed eight years later.)
-*/
+ */
 
 #define staticforward static
 #define statichere static
@@ -711,7 +909,7 @@ argument consume a reference count; however, this may quickly get
 confusing (even the current practice is already confusing).  Consider
 it carefully, it may save lots of calls to Mx_INCREF() and Mx_DECREF() at
 times.
-*/
+ */
 
 
 /* Trashcan mechanism, thanks to Christian Tismer.
@@ -753,7 +951,7 @@ notices this, and calls another routine to deallocate all the objects that
 may have been added to the list of deferred deallocations.  In effect, a
 chain of N deallocations is broken into N / MxTrash_UNWIND_LEVEL pieces,
 with the call stack never exceeding a depth of MxTrash_UNWIND_LEVEL.
-*/
+ */
 
 
 
@@ -762,24 +960,24 @@ with the call stack never exceeding a depth of MxTrash_UNWIND_LEVEL.
 
 /* Note the workaround for when the thread state is NULL (issue #17703) */
 #define Mx_TRASHCAN_SAFE_BEGIN(op) \
-    do { \
-        MxThreadState *_tstate = MxThreadState_GET(); \
-        if (!_tstate || \
-            _tstate->trash_delete_nesting < MxTrash_UNWIND_LEVEL) { \
-            if (_tstate) \
+        do { \
+            MxThreadState *_tstate = MxThreadState_GET(); \
+            if (!_tstate || \
+                    _tstate->trash_delete_nesting < MxTrash_UNWIND_LEVEL) { \
+                if (_tstate) \
                 ++_tstate->trash_delete_nesting;
-            /* The body of the deallocator is here. */
+/* The body of the deallocator is here. */
 #define Mx_TRASHCAN_SAFE_END(op) \
-            if (_tstate) { \
-                --_tstate->trash_delete_nesting; \
-                if (_tstate->trash_delete_later \
+        if (_tstate) { \
+            --_tstate->trash_delete_nesting; \
+            if (_tstate->trash_delete_later \
                     && _tstate->trash_delete_nesting <= 0) \
                     _PyTrash_thread_destroy_chain(); \
-            } \
         } \
-        else \
+            } \
+            else \
             _PyTrash_thread_deposit_object((MxObject*)op); \
-    } while (0);
+        } while (0);
 
 
 /**

@@ -13,10 +13,7 @@
 
 #define EDGE_MAX_POLYGONS 3
 
-struct MxEdgeType : MxType {
-};
-
-MxAPI_DATA(struct MxEdgeType*) MxEdge_Type;
+MxAPI_DATA(struct MxType*) MxEdge_Type;
 
 struct MxVertex;
 
@@ -52,6 +49,8 @@ struct MxEdge : MxObject
     static bool classof(const MxObject *o) {
         return o->ob_type == MxEdge_Type;
     }
+
+    static MxType *type() {return MxEdge_Type;};
 
     uint polygonCount() const {
         return polygons[0] == nullptr ? 0 :

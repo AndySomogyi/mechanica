@@ -25,10 +25,6 @@
 #include <MxMeshRenderer.h>
 
 #include <LangevinPropagator.h>
-
-
-
-
 #include "CylinderModel.h"
 
 struct CylinderTest {

@@ -13,6 +13,8 @@
 // public MxObject api
 #include "mx_object.h"
 
+
+
 /**
  * Define the Mechanica base MxObject to have the same binary layout as
  * python objects.
@@ -28,10 +30,13 @@
  *  }
  *
  */
-struct MxObject : _object
+struct MxObject
 {
-    MxObject(MxType *type) {
-        this->ob_type = (_typeobject*)type;
+    Py_ssize_t ob_refcnt;
+    struct MxType *ob_type;
+
+    MxObject(struct MxType *type) {
+        this->ob_type = type;
         this->ob_refcnt = 1;
     }
 
@@ -39,6 +44,8 @@ struct MxObject : _object
         this->ob_type = nullptr;
         this->ob_refcnt = 1;
     }
+
+    static MxType *type() { return MxObject_Type; };
 };
 
 

@@ -13,105 +13,64 @@
 #include "T1Transition.h"
 #include "T2Transition.h"
 #include "T3Transition.h"
+#include "MxCellVolumeConstraint.h"
 
+MxType basicPolygonType{"BasicPolygon", MxPolygon_Type};
+MxType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
 
-static struct RedCellType : MxCellType
+MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
+
+static struct CylinderCellType : MxCellType
 {
     virtual Magnum::Color4 color(struct MxCell *cell) {
         //return Color4{1.0f, 0.0f, 0.0f, 0.08f};
         return Color4::green();
     }
-} redCellType;
 
-static struct BlueCellType : MxCellType
-{
-    virtual Magnum::Color4 color(struct MxCell *cell) {
-        return Color4{0.0f, 0.0f, 1.0f, 0.08f};
+    virtual ~CylinderCellType() {};
+
+    CylinderCellType() : MxCellType{"CylinderCell", MxCell_Type} {};
+} cylinderCellType;
+
+static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
+    virtual MxType *cellType(const char* cellName, int cellIndex) {
+        return &cylinderCellType;
     }
-} blueCellType;
 
-static struct ClearCellType : MxCellType
-{
-    virtual Magnum::Color4 color(struct MxCell *cell) {
-        switch(cell->id) {
-            case 4: return Color4{0.0f, 0.0f, 1.0f, 0.08f};
-            default: return Color4{0.0f, 0.0f, 0.0f, 0.00f};
-        }
-
+    virtual MxType *polygonType(int polygonIndex) {
+        return &basicPolygonType;
     }
-} clearCellType;
 
-static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
-    std::set<VertexPtr> verts;
+    virtual MxType *partialPolygonType(const MxType *cellType, const MxType *polyType) {
+        return nullptr;
+    }
 
+    virtual ~MeshObjectTypeHandler() {};
 
-}
-
-static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
-
-    float r1 = std::sqrt(c1->area / (4. * M_PI));
-    float r2 = std::sqrt(c2->area / (4. * M_PI));
-    Vector3 dir = c1->centroid - c2->centroid;
-
-    float len = dir.length();
-
-    dir = dir / len;
-
-    Vector3 force = k * (len - 0.5 * (r1 + r2)) * dir;
-
-    applyForceToAllVertices(c1, -force);
-    applyForceToAllVertices(c2, force);
-}
+} meshObjectTypeHandler;
 
 
 
 
 
-CylinderModel::CylinderModel()  {
+CylinderModel::CylinderModel() {
 
-    //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
-    //loadSheetModel();
-    //loadCubeModel();
     loadAssImpModel();
-    //loadTwoModel();
 
-
-    /*
-    Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        mesh->vertices[i]->position = rot.transformPoint(mesh->vertices[i]->position);
-
-    }
-     */
 
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
         std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
     }
 
-    //for(int i = 0; i < 10; ++i) {
-    //    mesh->applyMeshOperations();
-    //}
-
     testEdges();
 }
-
-//const float targetArea = 0.45;
-
-//const float targetArea = 2.0;
 
 
 void CylinderModel::loadAssImpModel() {
 
 
 
-    MeshCellTypeHandler handler = [](const char* name, int) {
-            return (MxCellType*)&redCellType;
-    };
-
-    //hex3.obj
     
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
     
@@ -119,20 +78,21 @@ void CylinderModel::loadAssImpModel() {
     //const char* fileName = "football.t2.obj";
     //const char* fileName = "cylinder.1.obj";
     //const char* fileName = "cube1.obj";
-    const char* fileName = "sphere.t1.obj";
+    const char* fileName = "hex_cylinder.1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
     
-    mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, handler);
+    mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, &meshObjectTypeHandler);
+
+    cellVolumeConstraint.targetVolume = mesh->cells[1]->volume;
+    cellVolumeConstraint.lambda = 0.5;
+
+    propagator->bindConstraint(&cellVolumeConstraint, &cylinderCellType);
+
+
+
 
     mesh->selectObject(MxPolygon_Type, 24);
-
-
-
-    targetVolume = 6;
-    minTargetVolume = 5;
-    maxTargetVolume = 20.0;
-    targetVolumeLambda = 0.1;
 
 
     mesh->setShortCutoff(0);
@@ -149,8 +109,6 @@ void CylinderModel::loadAssImpModel() {
     cellCellSurfaceTensionMin = 0;
     cellCellSurfaceTension = 0.1;
     cellCellSurfaceTensionMax = 1;
-
-    setTargetVolume(targetVolume);
 }
 
 
@@ -289,72 +247,6 @@ HRESULT CylinderModel::cellAreaForce(CellPtr cell) {
     return S_OK;
 }
 
-HRESULT CylinderModel::applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp)
-{
-    if(cell->isRoot()) {
-        return S_OK;
-    }
-
-    float force = -2. * targetVolumeLambda * (cell->volume - targetVolume);
-
-    for(int i = 0; i < p->vertices.size(); ++i) {
-        VertexPtr v = p->vertices[i];
-        v->force += force * p->vertexNormal(i, cell);
-    }
-
-    /*
-
-
-    if(mesh->rootCell() == cell) {
-        return S_OK;
-    }
-
-    Vector3 force = -5. * Vector3{0, 0, cell->centroid[2]};
-
-    applyForceToAllVertices(cell, force);
-
-    return S_OK;
-
-    assert(cell->area >= 0);
-
-    //std::cout << "cell id: " << cell->id << ", volume: " << cell->volume << std::endl;
-
-    if(this->volumeForceType == ConstantVolume) {
-
-        float diff = targetVolume - cell->volume;
-
-
-
-        for(auto pt: cell->surface) {
-            PolygonPtr tri = pt->polygon;
-            Vector3 normal = tri->cellNormal(cell);
-            Vector3 force = (pressure + diff) * tri->area * normal;
-
-            for(int v = 0; v < 3; ++v) {
-                pt->force[v] +=  force;
-            }
-        }
-    }
-
-    else {
-        for(auto pt: cell->surface) {
-            PolygonPtr tri = pt->polygon;
-            Vector3 normal = tri->cellNormal(cell);
-            Vector3 force = pressure * tri->area * normal;
-
-            for(int v = 0; v < 3; ++v) {
-                pt->force[v] +=  force;
-            }
-        }
-    }
-
-
-*/
-
-
-
-    return S_OK;
-}
 
 void CylinderModel::testEdges() {
 
@@ -390,9 +282,7 @@ void CylinderModel::loadSheetModel() {
     cellMediaSurfaceTensionMax = 6;
 
     setTargetVolume(0.01);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 0.05;
-    targetVolumeLambda = 1.7;
+
 }
 
 void CylinderModel::loadSimpleSheetModel() {
@@ -430,9 +320,7 @@ void CylinderModel::loadSimpleSheetModel() {
     cellMediaSurfaceTensionMax = 15;
 
     setTargetVolume(0.4);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
+
     harmonicBondStrength = 0;
 
 }
@@ -476,9 +364,7 @@ void CylinderModel::loadTwoModel() {
     cellCellSurfaceTensionMax = 15;
 
     setTargetVolume(0.4);
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
+
     harmonicBondStrength = 0;
 
     for(int i = 0; i < 10; ++i) {
@@ -486,39 +372,6 @@ void CylinderModel::loadTwoModel() {
     }
 }
 
-void CylinderModel::loadCubeModel() {
-
-    mesh = new MxMesh();
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            return (MxCellType*)&redCellType;
-        }
-    };
-
-    mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.3);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/cube.msh");
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 5;
-    cellMediaSurfaceTensionMax = 15;
-
-    targetVolume = 0.6;
-    minTargetVolume = 0.005;
-    maxTargetVolume = 10.0;
-    targetVolumeLambda = 5.;
-
-    mesh->cells[1]->targetVolume = targetVolume;
-
-
-}
 
 void CylinderModel::loadMonodisperseVoronoiModel() {
     mesh = new MxMesh();
@@ -608,10 +461,7 @@ HRESULT CylinderModel::getStateVectorRate(float time, const float *y, float* dyd
 
 void CylinderModel::setTargetVolume(float tv)
 {
-    targetVolume = tv;
-    for(int i = 0; i < mesh->cells.size(); ++i) {
-        mesh->cells[i]->targetVolume = targetVolume;
-    }
+    cellVolumeConstraint.targetVolume = tv;
 }
 
 HRESULT CylinderModel::applySurfaceTensionForce(PolygonPtr pp) {
@@ -676,4 +526,29 @@ HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
         return result;
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
+}
+
+float CylinderModel::minTargetVolume()
+{
+    return 0.1 * cellVolumeConstraint.targetVolume;
+}
+
+float CylinderModel::maxTargetVolume()
+{
+    return 5 * cellVolumeConstraint.targetVolume;
+}
+
+float CylinderModel::targetVolume()
+{
+    return cellVolumeConstraint.targetVolume;
+}
+
+float CylinderModel::targetVolumeLambda()
+{
+    return cellVolumeConstraint.lambda;
+}
+
+void CylinderModel::setTargetVolumeLambda(float targetVolumeLambda)
+{
+    cellVolumeConstraint.lambda = targetVolumeLambda;
 }

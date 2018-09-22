@@ -16,6 +16,9 @@
 #include "MxDebug.h"
 #include "MxMeshRenderer.h"
 
+static MxCellType cellType{"MxCell", MxObject_Type};
+MxType *MxCell_Type = &cellType;
+
 bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {
   return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
 }
@@ -293,3 +296,5 @@ uint MxCell::vertexCount()
     }
     return vc;
 }
+
+

@@ -20,6 +20,7 @@
 #include "MeshRelationships.h"
 
 
+
 struct MxCellRendererType : MxObject {
 
 };
@@ -31,9 +32,13 @@ struct MxCellRenderer : MxObject {
     virtual ~MxCellRenderer() {};
 };
 
+MxAPI_DATA(struct MxType*) MxCell_Type;
 
 struct MxCellType : MxType {
 
+    MxCellType(const char* name, MxType *type) : MxType{name, type} {};
+
+    //MxCellType() : MxType{MxType_Type} {};
 
     /**
      * Store the stoichiometry matrix in the type, initially Mechanica will
@@ -49,16 +54,18 @@ struct MxCellType : MxType {
      * plugable cell renderer object. The cell renderer would likely be a closure of
      * some sort.
      */
-    virtual Magnum::Color4 color(struct MxCell *cell) = 0;
+    virtual Magnum::Color4 color(struct MxCell *cell) {
+        return Magnum::Color4::yellow();
+    }
 
 
     //Magnum::Color4 polygonEdgeColor = Magnum::Color4{{13.f/255, 161.f/255, 30.f/255, 1.f}};
     Magnum::Color4 polygonEdgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 1.f}};
     Magnum::Color4 polygonCenterColor = Magnum::Color4{{73.f/255, 169.f/255, 163.f/255, 1.f}};
     Magnum::Color4 selectedEdgeColor = Magnum::Color4{{218.f/255, 142.f/255, 2.f/255, 1.f}};
-
-
 };
+
+
 
 
 /**
@@ -90,7 +97,9 @@ struct MxCellType : MxType {
  */
 struct MxCell : MxObject, MxMeshNode {
 
-    MxCell(uint id, MxCellType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
+    static MxType *type() { return MxCell_Type; };
+
+    MxCell(uint id, MxType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
         MxObject{type}, MxMeshNode{msh, id}, stateVector{stateVector}, name{nm} {};
 
     /**

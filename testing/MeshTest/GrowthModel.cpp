@@ -13,6 +13,7 @@
 #include "T1Transition.h"
 #include "T2Transition.h"
 #include "T3Transition.h"
+#include "MxCellVolumeConstraint.h"
 
 
 static struct RedCellType : MxCellType
@@ -21,6 +22,11 @@ static struct RedCellType : MxCellType
         //return Color4{1.0f, 0.0f, 0.0f, 0.08f};
         return Color4::green();
     }
+
+    virtual ~RedCellType() {};
+
+    RedCellType() : MxCellType{"RedCellType", MxCell_Type} {};
+
 } redCellType;
 
 static struct BlueCellType : MxCellType
@@ -28,6 +34,11 @@ static struct BlueCellType : MxCellType
     virtual Magnum::Color4 color(struct MxCell *cell) {
         return Color4{0.0f, 0.0f, 1.0f, 0.08f};
     }
+
+    virtual ~BlueCellType() {};
+
+    BlueCellType() : MxCellType{"BlueCellType", MxCell_Type} {};
+
 } blueCellType;
 
 static struct ClearCellType : MxCellType
@@ -37,81 +48,53 @@ static struct ClearCellType : MxCellType
             case 4: return Color4{0.0f, 0.0f, 1.0f, 0.08f};
             default: return Color4{0.0f, 0.0f, 0.0f, 0.00f};
         }
-
     }
+
+    virtual ~ClearCellType() {};
+
+    ClearCellType() : MxCellType{"ClearCellType", MxCell_Type} {};
+
 } clearCellType;
 
-static void applyForceToAllVertices(CellPtr c, const Vector3 &force) {
-    std::set<VertexPtr> verts;
+static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
+    virtual MxType *cellType(const char* cellName, int cellIndex) {
+        return &redCellType;
+    }
+
+    virtual MxType *polygonType(int polygonIndex) {
+        return nullptr;
+    }
+
+    virtual MxType *partialPolygonType(const MxType *cellType, const MxType *polyType) {
+        return nullptr;
+    }
+
+    virtual ~MeshObjectTypeHandler() {};
+
+} meshObjectTypeHandler;
 
 
-}
-
-static void centerOfMassForce(CellPtr c1, CellPtr c2, float k) {
-
-    float r1 = std::sqrt(c1->area / (4. * M_PI));
-    float r2 = std::sqrt(c2->area / (4. * M_PI));
-    Vector3 dir = c1->centroid - c2->centroid;
-
-    float len = dir.length();
-
-    dir = dir / len;
-
-    Vector3 force = k * (len - 0.5 * (r1 + r2)) * dir;
-
-    applyForceToAllVertices(c1, -force);
-    applyForceToAllVertices(c2, force);
-}
-
-
-
+MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
 
 
 GrowthModel::GrowthModel()  {
 
-    //loadMonodisperseVoronoiModel();
-    //loadSimpleSheetModel();
-    //loadSheetModel();
-    //loadCubeModel();
     loadAssImpModel();
-    //loadTwoModel();
 
-
-    /*
-    Matrix4 rot = Matrix4::rotationY(Rad{3.14/3});
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        mesh->vertices[i]->position = rot.transformPoint(mesh->vertices[i]->position);
-
-    }
-     */
 
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
         std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
     }
 
-    //for(int i = 0; i < 10; ++i) {
-    //    mesh->applyMeshOperations();
-    //}
-
     testEdges();
 }
-
-//const float targetArea = 0.45;
-
-//const float targetArea = 2.0;
 
 
 void GrowthModel::loadAssImpModel() {
 
 
 
-    MeshCellTypeHandler handler = [](const char* name, int) {
-            return (MxCellType*)&redCellType;
-    };
-
-    //hex3.obj
     
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
     
@@ -127,7 +110,11 @@ void GrowthModel::loadAssImpModel() {
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
-    mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, handler);
+    mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, &meshObjectTypeHandler);
+
+
+    // Hook up the cell volume constraints
+    propagator->bindConstraint(&cellVolumeConstraint, &redCellType);
 
     mesh->selectObject(MxPolygon_Type, 24);
 

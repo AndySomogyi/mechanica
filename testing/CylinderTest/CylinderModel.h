@@ -9,8 +9,11 @@
 #define TESTING_GROWTH1_GROWTHMODEL_H_
 
 #include "MxModel.h"
+#include <LangevinPropagator.h>
 
 struct CylinderModel : public MxModel {
+
+    LangevinPropagator *propagator;
 
     enum VolumeForce {
         ConstantVolume, ConstantPressure
@@ -37,10 +40,10 @@ struct CylinderModel : public MxModel {
 
     void applyDifferentialSurfaceTension();
 
-    float minTargetVolume;
-    float maxTargetVolume;
-    float targetVolume;
-    float targetVolumeLambda;
+    float minTargetVolume();
+    float maxTargetVolume();
+    float targetVolume();
+    float targetVolumeLambda();
 
     float harmonicBondStrength;
 
@@ -59,6 +62,8 @@ struct CylinderModel : public MxModel {
     void testEdges();
 
     void setTargetVolume(float targetVolume);
+
+    void setTargetVolumeLambda(float targetVolumeLambda);
 
     HRESULT applyT1Edge2TransitionToSelectedEdge();
 

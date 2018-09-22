@@ -11,11 +11,11 @@
 #include <iostream>
 #include "MxEdge.h"
 
-static MxPartialPolygonType partialPolygonType;
-MxPartialPolygonType *MxPartialPolygon_Type = &partialPolygonType;
+static MxType partialPolygonType{"MxPartialPolygon", MxObject_Type};
+MxType *MxPartialPolygon_Type = &partialPolygonType;
 
-static MxPolygonType polygonType;
-MxPolygonType *MxPolygon_Type = &polygonType;
+static MxType polygonType{"MxPolygonType", MxObject_Type};
+MxType *MxPolygon_Type = &polygonType;
 
 static std::string to_string(CCellPtr cell) {
     return cell ? std::to_string(cell->id) : "null";
@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& os, CPolygonPtr tri)
 }
 
 
-MxPolygon::MxPolygon(uint _id, MxPolygonType* type) :
+MxPolygon::MxPolygon(uint _id, MxType* type) :
             id{_id}, MxObject{type}, cells{{nullptr, nullptr}},
             partialPolygons{{{MxPartialPolygon_Type, this}, {MxPartialPolygon_Type, this}}} {
 

@@ -17,16 +17,8 @@ enum struct Orientation {
 };
 
 
-struct MxPartialPolygonType : MxType {
 
-
-    /**
-     * Store the stoichiometry matrix in the type, initially Mechanica will
-     * not support time-dependent stochiometries.
-     */
-};
-
-MxAPI_DATA(MxPartialPolygonType*) MxPartialPolygon_Type;
+MxAPI_DATA(MxType*) MxPartialPolygon_Type;
 
 /**
  * A partial face data structure, represents 1/2 of a triangular face. This represents the
@@ -79,7 +71,7 @@ MxAPI_DATA(MxPartialPolygonType*) MxPartialPolygon_Type;
  */
 struct MxPartialPolygon : MxObject {
 
-    MxPartialPolygon(MxPartialPolygonType *type, MxPolygon *ti,
+    MxPartialPolygon(MxType *type, MxPolygon *ti,
             float mass = 0, MxReal *scalars = nullptr) :
                 MxObject{type}, polygon{ti},
                 mass{mass}, scalarFields{scalars} {};
@@ -116,11 +108,9 @@ struct MxPartialPolygon : MxObject {
 };
 
 
-struct MxPolygonType : MxType {
 
-};
 
-MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
+MxAPI_DATA(MxType*) MxPolygon_Type;
 
 
 /**
@@ -145,6 +135,8 @@ struct MxPolygon : MxObject {
     static bool classof(const MxObject *o) {
         return o->ob_type == MxPolygon_Type;
     }
+
+    static MxType *type() {return MxPolygon_Type;};
 
     const uint id;
 
@@ -253,7 +245,7 @@ struct MxPolygon : MxObject {
     {}
 
 
-    MxPolygon(uint _id, MxPolygonType *type);
+    MxPolygon(uint _id, MxType *type);
 
 
     inline int cellIndex(CCellPtr cell) const {

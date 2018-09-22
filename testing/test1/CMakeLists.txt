@@ -18,7 +18,4 @@ add_executable(test1
   )
 
 target_link_libraries(test1
-  mechanica
-  Magnum::Magnum
-  Magnum::MeshTools
   )
