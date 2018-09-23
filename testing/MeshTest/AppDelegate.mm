@@ -140,13 +140,6 @@ void testIndexOf() {
 }
 
 -(IBAction)volumeForceClick:(id)sender {
-    if(sender == self.constantVolumeBtn) {
-        self->meshTest->model->volumeForceType = GrowthModel::ConstantVolume;
-    }
-    
-    else if(sender == self.constantPressureBtn) {
-        self->meshTest->model->volumeForceType = GrowthModel::ConstantPressure;
-    }
 }
 
 -(void)updateGuiFromModel {
@@ -176,8 +169,6 @@ void testIndexOf() {
     
     self.shortCutoff.floatValue = meshTest->model->mesh->getShortCutoff();
     self.longCutoff.floatValue = meshTest->model->mesh->getLongCutoff();
-    
-    self.constantVolumeBtn.state = meshTest->model->volumeForceType == GrowthModel::ConstantVolume ? NSOnState : NSOffState;
     
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda();
     
@@ -332,6 +323,10 @@ void testIndexOf() {
 
 -(IBAction)awakeFromNib {
     std::cout << "awake" << std::endl;
+    
+    NSNumberFormatter *f = self.cellMediaSurfaceTensionVal.formatter;
+    
+    std::cout << "frac digits: " << f.maximumFractionDigits << std::endl;
     
     [self selectChanged];
 }

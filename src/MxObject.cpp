@@ -88,5 +88,11 @@ long MxObject_HashNotImplemented(MxObject *self)
 }
 
 void MxObject_init(PyObject *m) {
-};
+}
+;
 
+HRESULT MxObject_ChangeType(MxObject* obj, const MxType* type)
+{
+    obj->ob_type = const_cast<MxType*>(type);
+    return S_OK;
+}

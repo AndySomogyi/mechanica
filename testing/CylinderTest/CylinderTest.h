@@ -40,7 +40,7 @@ struct CylinderTest {
 
     Magnum::Matrix4 rotation;
 
-    Vector3 centerShift{0., 0., -3};
+    Vector3 centerShift{0., 0., -13};
 
 
     Color4 color; // = Color4::fromHsv(color.hue() + 50.0_degf, 1.0f, 1.0f);
@@ -60,7 +60,7 @@ struct CylinderTest {
     explicit CylinderTest();
     explicit CylinderTest(const Configuration& configuration);
 
-    void reset();
+    void loadModel();
 
     void step(float dt);
 

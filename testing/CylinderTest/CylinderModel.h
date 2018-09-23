@@ -13,13 +13,9 @@
 
 struct CylinderModel : public MxModel {
 
-    LangevinPropagator *propagator;
-
     enum VolumeForce {
         ConstantVolume, ConstantPressure
     };
-
-    VolumeForce volumeForceType = VolumeForce::ConstantVolume;
 
     CylinderModel();
 
@@ -28,10 +24,9 @@ struct CylinderModel : public MxModel {
      */
     HRESULT calcForce() ;
 
-
     HRESULT cellAreaForce(CellPtr cell);
 
-    HRESULT applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp);
+    HRESULT loadModel();
 
     /**
      * Apply a surface tension due to each partial polygon
@@ -44,47 +39,33 @@ struct CylinderModel : public MxModel {
     float maxTargetVolume();
     float targetVolume();
     float targetVolumeLambda();
-
     void setTargetVolume(float targetVolume);
-
     void setTargetVolumeLambda(float targetVolumeLambda);
-
-    float harmonicBondStrength;
-
-    float pressure = 0;
-    float pressureMax;
-    float pressureMin;
 
     float cellMediaSurfaceTension = 0;
     float cellMediaSurfaceTensionMax;
     float cellMediaSurfaceTensionMin;
 
-    float cellCellSurfaceTension = 0;
-    float cellCellSurfaceTensionMax;
-    float cellCellSurfaceTensionMin;
+    float minTargetArea();
+    float maxTargetArea();
+    float targetArea();
+    float targetAreaLambda();
+    void setTargetArea(float targetArea);
+    void setTargetAreaLambda(float targetAreaLambda);
 
     void testEdges();
-
-
 
     HRESULT applyT1Edge2TransitionToSelectedEdge();
 
     HRESULT applyT2PolygonTransitionToSelectedPolygon();
-    
+
     HRESULT applyT3PolygonTransitionToSelectedPolygon();
 
-
-    void loadSheetModel();
-
-    void loadTwoModel();
-
-    void loadSimpleSheetModel();
-
-    void loadCubeModel();
-
-    void loadMonodisperseVoronoiModel();
-
     void loadAssImpModel();
+
+    HRESULT changePolygonTypes();
+
+    HRESULT activateAreaConstraint();
 
     virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force);
 

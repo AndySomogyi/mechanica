@@ -14,8 +14,8 @@
 static MxType partialPolygonType{"MxPartialPolygon", MxObject_Type};
 MxType *MxPartialPolygon_Type = &partialPolygonType;
 
-static MxType polygonType{"MxPolygonType", MxObject_Type};
-MxType *MxPolygon_Type = &polygonType;
+static MxPolygonType polygonType{"MxPolygonType", MxObject_Type};
+MxPolygonType *MxPolygon_Type = &polygonType;
 
 static std::string to_string(CCellPtr cell) {
     return cell ? std::to_string(cell->id) : "null";
@@ -69,7 +69,7 @@ HRESULT MxPolygon::positionsChanged() {
     }
 
     centroid /= (float)vertices.size();
-    
+
     if(vertices.size() < 3) {
         return S_OK;
     }
@@ -79,7 +79,7 @@ HRESULT MxPolygon::positionsChanged() {
     for (int i = 0; i < vertices.size(); ++i) {
         int prevIndex = loopIndex(i-1, vertices.size());
         int nextIndex = loopIndex(i+1, vertices.size());
-        
+
         assert(prevIndex != nextIndex);
 
         CVertexPtr vp = vertices[prevIndex];
@@ -150,7 +150,7 @@ HRESULT MxPolygon::positionsChanged() {
     std::cout << "normal: " << normal << ", vertex normal: " << vertNormal << ", dot: " << Math::dot(normal, vertNormal) << std::endl;
      */
 #endif
-    
+
     assert(area >= 0);
 
     return S_OK;

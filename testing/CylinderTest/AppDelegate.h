@@ -17,20 +17,15 @@ typedef unsigned char Byte;
 @property (assign, atomic) NSTimer *stepTimer; 
 @property (assign, nonatomic) IBOutlet NSWindow *window;
 
-@property (assign, nonatomic) IBOutlet NSButton *constantVolumeBtn;
-@property (assign, nonatomic) IBOutlet NSButton *constantPressureBtn;
-
-
 @property (assign, nonatomic) IBOutlet NSSlider *cellMediaSurfaceTensionSlider;
 @property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionMin;
 @property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionMax;
 @property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionVal;
 
-
-@property (assign, nonatomic) IBOutlet NSSlider *cellCellSurfaceTensionSlider;
-@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionMin;
-@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionMax;
-@property (assign, nonatomic) IBOutlet NSTextField *cellCellSurfaceTensionVal;
+@property (assign, nonatomic) IBOutlet NSSlider *areaSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *areaMin;
+@property (assign, nonatomic) IBOutlet NSTextField *areaMax;
+@property (assign, nonatomic) IBOutlet NSTextField *areaVal;
 
 @property (assign, nonatomic) IBOutlet NSSlider *volumeSlider;
 @property (assign, nonatomic) IBOutlet NSTextField *volumeMin;
@@ -47,11 +42,6 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSTextField *selectedPolygonMax;
 @property (assign, nonatomic) IBOutlet NSTextField *selectedPolygonVal;
 
-@property (assign, nonatomic) IBOutlet NSTextField *shortCutoff;
-@property (assign, nonatomic) IBOutlet NSTextField *longCutoff;
-
-@property (assign, nonatomic) IBOutlet NSPopUpButton *selectedKind;
-
 @property (assign, nonatomic) IBOutlet NSTextField *volumeLambda;
 @property (assign) IBOutlet NSTextField *centerOfGeometryTxt;
 @property (assign) IBOutlet NSTextField *centerOfMassTxt;
@@ -61,7 +51,6 @@ typedef unsigned char Byte;
 @property (assign) IBOutlet NSTextField *inertiaLzTxt;
 @property (assign) IBOutlet NSTextField *actualVolumeTxt;
 @property (assign) IBOutlet NSTextField *areaTxt;
-@property (assign) IBOutlet NSTextField *harmonicBondTxt;
 
 -(IBAction)run:(id)sender;
 
@@ -97,9 +86,8 @@ typedef unsigned char Byte;
 
 -(IBAction)saveDocument:(id)sender;
 
+-(IBAction)changePolygonTypes:(id)sender;
 
-
-
-
+-(IBAction)activateAreaConstraint:(id)sender;
 
 @end

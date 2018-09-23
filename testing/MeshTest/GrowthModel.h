@@ -16,8 +16,6 @@ struct GrowthModel : public MxModel {
         ConstantVolume, ConstantPressure
     };
 
-    VolumeForce volumeForceType = VolumeForce::ConstantVolume;
-
     GrowthModel();
 
     /**
@@ -25,11 +23,6 @@ struct GrowthModel : public MxModel {
      */
     HRESULT calcForce() ;
 
-
-    HRESULT cellAreaForce(CellPtr cell);
-
-    HRESULT applyVolumeConservationForce(CCellPtr cell, PolygonPtr p, PPolygonPtr pp);
-    
     HRESULT loadModel();
 
     /**
@@ -67,9 +60,8 @@ struct GrowthModel : public MxModel {
     HRESULT applyT1Edge2TransitionToSelectedEdge();
 
     HRESULT applyT2PolygonTransitionToSelectedPolygon();
-    
-    HRESULT applyT3PolygonTransitionToSelectedPolygon();
 
+    HRESULT applyT3PolygonTransitionToSelectedPolygon();
 
     void loadSheetModel();
 

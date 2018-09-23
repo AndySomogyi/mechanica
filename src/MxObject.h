@@ -48,8 +48,7 @@ struct MxObject
     static MxType *type() { return MxObject_Type; };
 };
 
-
-
+HRESULT MxObject_ChangeType(MxObject *obj, const MxType *type);
 
 
 /**

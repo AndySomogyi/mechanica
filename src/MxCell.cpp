@@ -51,6 +51,7 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 
     for(CPPolygonPtr pp : surface) {
         CPolygonPtr poly = pp->polygon;
+        MxPolygonType *polyType = static_cast<MxPolygonType*>(poly->ob_type);
 
         for(int i = 0; i < poly->vertices.size(); ++i) {
             CVertexPtr p1 = poly->vertices[i];
@@ -58,14 +59,14 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
 
             Color4 edgeColor =
                     (poly == mesh->selectedObject() || poly->edges[i] == mesh->selectedObject())
-                    ? type->selectedEdgeColor : type->polygonEdgeColor;
+                    ? type->selectedEdgeColor : polyType->edgeColor;
 
             attrs[0].position = p1->position;
             attrs[0].color = edgeColor;
             attrs[1].position = p2->position;
             attrs[1].color = edgeColor;
             attrs[2].position = poly->centroid;
-            attrs[2].color = type->polygonCenterColor;
+            attrs[2].color = polyType->centerColor;
 
             ptr += 3 * stride;
             attrs = (VertexAttribute*)ptr;

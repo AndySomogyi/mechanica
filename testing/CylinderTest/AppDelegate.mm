@@ -57,36 +57,22 @@ void testIndexOf() {
 
 
 -(IBAction)reset:(id)sender {
-    meshTest->reset();
+    meshTest->loadModel();
     [self updateGuiFromModel];
     [self updateGuiStats];
 }
 
 -(IBAction)valueChanged:(id)sender {
     
-   
-    
-    if (sender == self.cellCellSurfaceTensionSlider)
+    if (sender == self.areaSlider)
     {
-        self.cellCellSurfaceTensionVal.floatValue = self.cellCellSurfaceTensionSlider.floatValue;
-        meshTest->model->cellCellSurfaceTension = self.cellCellSurfaceTensionSlider.floatValue;
+        self.areaVal.floatValue = self.areaSlider.floatValue;
+        meshTest->model->setTargetArea(self.areaSlider.floatValue);
     }
-    else if (sender == self.cellCellSurfaceTensionVal)
+    else if (sender == self.areaVal)
     {
-        self.cellCellSurfaceTensionSlider.floatValue = self.cellCellSurfaceTensionVal.floatValue;
-        meshTest->model->cellCellSurfaceTension = self.cellCellSurfaceTensionVal.floatValue;
-    }
-    else if (sender == self.shortCutoff)
-    {
-        meshTest->model->mesh->setShortCutoff(self.shortCutoff.floatValue);
-        meshTest->model->mesh->applyMeshOperations();
-        meshTest->draw();
-    }
-    else if (sender == self.longCutoff)
-    {
-        meshTest->model->mesh->setLongCutoff(self.longCutoff.floatValue);
-        meshTest->model->mesh->applyMeshOperations();
-        meshTest->draw();
+        self.areaSlider.floatValue = self.areaVal.floatValue;
+        meshTest->model->setTargetArea(self.areaVal.floatValue);
     }
     else if (sender == self.cellMediaSurfaceTensionVal)
     {
@@ -112,10 +98,6 @@ void testIndexOf() {
     {
         meshTest->model->setTargetVolumeLambda(self.volumeLambda.floatValue);
     }
-    else if(sender == self.harmonicBondTxt)
-    {
-        meshTest->model->harmonicBondStrength = self.harmonicBondTxt.floatValue;
-    }
     else if(sender == self.selectedEdgeSlider) {
         self.selectedEdgeVal.integerValue = self.selectedEdgeSlider.integerValue;
         meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeSlider.integerValue);
@@ -135,19 +117,10 @@ void testIndexOf() {
     
     meshTest->draw();
     
-    
-    std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->cellMediaSurfaceTension
-    << ", surface tension: " << meshTest->model->cellCellSurfaceTension << std::endl;
+    std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->cellMediaSurfaceTension << std::endl;
 }
 
 -(IBAction)volumeForceClick:(id)sender {
-    if(sender == self.constantVolumeBtn) {
-        self->meshTest->model->volumeForceType = CylinderModel::ConstantVolume;
-    }
-    
-    else if(sender == self.constantPressureBtn) {
-        self->meshTest->model->volumeForceType = CylinderModel::ConstantPressure;
-    }
 }
 
 -(void)updateGuiFromModel {
@@ -167,22 +140,15 @@ void testIndexOf() {
     self.cellMediaSurfaceTensionSlider.minValue = meshTest->model->cellMediaSurfaceTensionMin;
     self.cellMediaSurfaceTensionSlider.floatValue = meshTest->model->cellMediaSurfaceTension;
     
-    self.cellCellSurfaceTensionMax.floatValue = meshTest->model->cellCellSurfaceTensionMax;
-    self.cellCellSurfaceTensionMin.floatValue = meshTest->model->cellCellSurfaceTensionMin;
-    self.cellCellSurfaceTensionVal.floatValue = meshTest->model->cellCellSurfaceTension;
+    self.areaMax.floatValue = meshTest->model->maxTargetArea();
+    self.areaMin.floatValue = meshTest->model->minTargetArea();
+    self.areaVal.floatValue = meshTest->model->targetArea();
     
-    self.cellCellSurfaceTensionSlider.maxValue = meshTest->model->cellCellSurfaceTensionMax;
-    self.cellCellSurfaceTensionSlider.minValue = meshTest->model->cellCellSurfaceTensionMin;
-    self.cellCellSurfaceTensionSlider.floatValue = meshTest->model->cellCellSurfaceTension;
-    
-    self.shortCutoff.floatValue = meshTest->model->mesh->getShortCutoff();
-    self.longCutoff.floatValue = meshTest->model->mesh->getLongCutoff();
-    
-    self.constantVolumeBtn.state = meshTest->model->volumeForceType == CylinderModel::ConstantVolume ? NSOnState : NSOffState;
+    self.areaSlider.maxValue = meshTest->model->maxTargetArea();
+    self.areaSlider.minValue = meshTest->model->minTargetArea();
+    self.areaSlider.floatValue = meshTest->model->targetArea();
     
     self.volumeLambda.floatValue = meshTest->model->targetVolumeLambda();
-    
-    self.harmonicBondTxt.floatValue = meshTest->model->harmonicBondStrength;
     
     self.selectedEdgeMin.integerValue = 0;
     self.selectedEdgeMax.integerValue = meshTest->model->mesh->edges.size();
@@ -334,6 +300,14 @@ void testIndexOf() {
 -(IBAction)awakeFromNib {
     std::cout << "awake" << std::endl;
     
+    NSNumberFormatter *f = self.cellMediaSurfaceTensionVal.formatter;
+    
+    std::cout << "frac digits: " << f.maximumFractionDigits << std::endl;
+    
+    f.maximumFractionDigits = 10;
+    
+    std::cout << "frac digits: " << f.maximumFractionDigits << std::endl;
+    
     [self selectChanged];
 }
 
@@ -365,6 +339,24 @@ void testIndexOf() {
 - (IBAction)saveDocument:(id)sender {
     MxMesh_WriteFile(meshTest->model->mesh, "foo");
 }
+
+-(IBAction)changePolygonTypes:(id)sender {
+    HRESULT result = meshTest->model->changePolygonTypes();
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully changed polygon type" << std::endl;
+    }
+    else {
+        std::cout << "failed to changed polygon type" << std::endl;
+    }
+    
+    meshTest->draw();
+}
+
+-(IBAction)activateAreaConstraint:(id)sender {
+    VERIFY(meshTest->model->activateAreaConstraint());
+}
+
 
 
 

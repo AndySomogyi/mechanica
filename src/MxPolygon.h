@@ -108,9 +108,19 @@ struct MxPartialPolygon : MxObject {
 };
 
 
+struct MxPolygonType : MxType {
+
+    MxPolygonType(const char* name, MxType *base) : MxType{name, base} {};
 
 
-MxAPI_DATA(MxType*) MxPolygon_Type;
+    Magnum::Color4 edgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 1.f}};
+    Magnum::Color4 centerColor = Magnum::Color4{{73.f/255, 169.f/255, 163.f/255, 1.f}};
+};
+
+
+
+
+MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
 
 
 /**

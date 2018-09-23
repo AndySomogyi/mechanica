@@ -15,7 +15,7 @@ using namespace Magnum::Platform;
 
 CylinderTest::Configuration::Configuration():
     _title{"Mesh Test"},
-    _size{700, 700}, _sampleCount{0},
+    _size{600, 900}, _sampleCount{0},
     _version{GL::Version::GL410},
     _windowFlags{WindowFlag::Focused},
     _cursorMode{CursorMode::Normal},
@@ -90,14 +90,14 @@ HRESULT CylinderTest::createContext(const Configuration& configuration) {
         glfwWindowHint(GLFW_AUTO_ICONIFY, configuration.windowFlags() >= Configuration::WindowFlag::AutoIconify);
     } else {
         const Configuration::WindowFlags& flags = configuration.windowFlags();
-        
+
         glfwWindowHint(GLFW_VISIBLE, !(flags >= Configuration::WindowFlag::Hidden));
         #ifdef GLFW_MAXIMIZED
         glfwWindowHint(GLFW_MAXIMIZED, flags >= Configuration::WindowFlag::Maximized);
         #endif
         glfwWindowHint(GLFW_FLOATING, flags >= Configuration::WindowFlag::Floating);
     }
-    
+
     glfwWindowHint(GLFW_RESIZABLE, true);
     glfwWindowHint(GLFW_FOCUSED, configuration.windowFlags() >= Configuration::WindowFlag::Focused);
 
@@ -199,19 +199,10 @@ CylinderTest::CylinderTest(const Configuration& configuration) :
     glEnable( GL_BLEND );
 
     renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe};
-    
-    model = new CylinderModel{};
-    
-    propagator = new LangevinPropagator{model};
-
-    Vector3 min, max;
-    std::tie(min, max) = model->mesh->extents();
-
-    center = (max + min)/2;
-
-    renderer->setMesh(model->mesh);
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
+
+    loadModel();
 }
 
 
@@ -292,22 +283,20 @@ void CylinderTest::mouseClick(int button, int action, int mods) {
     }
 }
 
-void CylinderTest::reset() {
-
+void CylinderTest::loadModel()
+{
     delete model;
+    delete propagator;
 
     model = new CylinderModel{};
 
-    Vector3 min, max;
-    std::tie(min, max) = model->mesh->extents();
+    propagator = new LangevinPropagator{};
 
-    center = (max + min)/2;
+    VERIFY(MxBind_PropagatorModel(propagator, model));
+
+    VERIFY(model->loadModel());
 
     renderer->setMesh(model->mesh);
-
-    delete propagator;
-
-    propagator = new LangevinPropagator{model};
 
     draw();
 }

@@ -14,11 +14,13 @@
 #include "T2Transition.h"
 #include "T3Transition.h"
 #include "MxCellVolumeConstraint.h"
+#include "MxPolygonAreaConstraint.h"
 
-MxType basicPolygonType{"BasicPolygon", MxPolygon_Type};
-MxType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
+MxPolygonType basicPolygonType{"BasicPolygon", MxPolygon_Type};
+MxPolygonType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
 
 MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
+MxPolygonAreaConstraint areaConstraint{0,0};
 
 static struct CylinderCellType : MxCellType
 {
@@ -52,11 +54,13 @@ static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
 
 
 
+CylinderModel::CylinderModel()  {
+    growingPolygonType.centerColor = Magnum::Color4::red();
+}
 
-CylinderModel::CylinderModel() {
 
+HRESULT CylinderModel::loadModel() {
     loadAssImpModel();
-
 
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
@@ -64,16 +68,17 @@ CylinderModel::CylinderModel() {
     }
 
     testEdges();
+
+    VERIFY(propagator->structureChanged());
+
+    return S_OK;
 }
 
 
 void CylinderModel::loadAssImpModel() {
 
-
-
-    
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
-    
+
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t2.obj";
     //const char* fileName = "cylinder.1.obj";
@@ -81,7 +86,7 @@ void CylinderModel::loadAssImpModel() {
     const char* fileName = "hex_cylinder.1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
-    
+
     mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, &meshObjectTypeHandler);
 
     cellVolumeConstraint.targetVolume = mesh->cells[1]->volume;
@@ -89,26 +94,19 @@ void CylinderModel::loadAssImpModel() {
 
     propagator->bindConstraint(&cellVolumeConstraint, &cylinderCellType);
 
+    mesh->selectObject(MxPolygon_Type, 367);
 
+    CellPtr cell = mesh->cells[1];
 
-
-    mesh->selectObject(MxPolygon_Type, 24);
-
+    setTargetVolume(cell->volume);
+    setTargetVolumeLambda(0.01);
 
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);
 
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
     cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 0.1;
-    cellMediaSurfaceTensionMax = 1;
-
-    cellCellSurfaceTensionMin = 0;
-    cellCellSurfaceTension = 0.1;
-    cellCellSurfaceTensionMax = 1;
+    cellMediaSurfaceTension = 0.5;
+    cellMediaSurfaceTensionMax = 3.0;
 }
 
 
@@ -249,145 +247,12 @@ HRESULT CylinderModel::cellAreaForce(CellPtr cell) {
 
 
 void CylinderModel::testEdges() {
-
     return;
-}
-
-void CylinderModel::loadSheetModel() {
-    mesh = new MxMesh();
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-        }
-    };
-    */
-
-    mesh->setShortCutoff(0);
-    //mesh->setLongCutoff(0.12);
-    mesh->setLongCutoff(0.2);
-    //importer.read("/Users/andy/src/mechanica/testing/gmsh1/sheet.msh");
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 10;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 1.0;
-    cellMediaSurfaceTensionMax = 6;
-
-    setTargetVolume(0.01);
-
-}
-
-void CylinderModel::loadSimpleSheetModel() {
-    mesh = new MxMesh();
-
-
-
-    /*
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-
-            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
-        }
-    };
-
-
-    mesh->setShortCutoff(0.2);
-    mesh->setLongCutoff(0.7);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/simplesheet.msh");
-
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 4;
-    cellMediaSurfaceTensionMax = 15;
-
-    setTargetVolume(0.4);
-
-    harmonicBondStrength = 0;
-
-}
-
-
-void CylinderModel::loadTwoModel() {
-    mesh = new MxMesh();
-
-    /*
-
-    MxMeshGmshImporter importer{*mesh,
-        [](Gmsh::ElementType, int id) {
-
-            if((id % 2) == 0) {
-                return (MxCellType*)&redCellType;
-            } else {
-                return (MxCellType*)&blueCellType;
-            }
-
-            //return (id == 16) ? (MxCellType*)&blueCellType : (MxCellType*)&clearCellType;
-        }
-    };
-
-
-    mesh->setShortCutoff(0.2);
-    mesh->setLongCutoff(0.7);
-    importer.read("/Users/andy/src/mechanica/testing/MeshTest/two.msh");
-
-    */
-
-    pressureMin = 0;
-    pressure = 5;
-    pressureMax = 15;
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 4;
-    cellMediaSurfaceTensionMax = 15;
-
-    cellCellSurfaceTensionMin = -15;
-    cellCellSurfaceTension = 0;
-    cellCellSurfaceTensionMax = 15;
-
-    setTargetVolume(0.4);
-
-    harmonicBondStrength = 0;
-
-    for(int i = 0; i < 10; ++i) {
-        mesh->applyMeshOperations();
-    }
-}
-
-
-void CylinderModel::loadMonodisperseVoronoiModel() {
-    mesh = new MxMesh();
-
-
-    //MxMeshVoronoiImporter importer(*mesh);
-
-    //importer.monodisperse();
 }
 
 HRESULT CylinderModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
 {
     HRESULT result;
-
-
-
     return S_OK;
 }
 
@@ -470,7 +335,7 @@ HRESULT CylinderModel::applySurfaceTensionForce(PolygonPtr pp) {
     if(pp->cells[0]->isRoot() || pp->cells[1]->isRoot()) {
         k = cellMediaSurfaceTension;
     } else {
-        k = cellCellSurfaceTension;
+        k = 0;
     }
 
     for(uint i = 0; i < pp->vertices.size(); ++i) {
@@ -511,18 +376,18 @@ HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
 HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
     MxPolygon *poly = dyn_cast<MxPolygon>(mesh->selectedObject());
     if(poly) {
-        
+
         // make an cut plane perpendicular to the zeroth vertex
         Magnum::Vector3 normal = poly->vertices[0]->position - poly->centroid;
-        
+
         MxPolygon *p1, *p2;
-        
+
         HRESULT result = applyT3PolygonBisectPlaneTransition(mesh, poly, &normal, &p1, &p2);
- 
+
         if(SUCCEEDED(result)) {
-            
+
         }
-        
+
         return result;
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
@@ -535,7 +400,7 @@ float CylinderModel::minTargetVolume()
 
 float CylinderModel::maxTargetVolume()
 {
-    return 5 * cellVolumeConstraint.targetVolume;
+    return 3 * cellVolumeConstraint.targetVolume;
 }
 
 float CylinderModel::targetVolume()
@@ -551,4 +416,50 @@ float CylinderModel::targetVolumeLambda()
 void CylinderModel::setTargetVolumeLambda(float targetVolumeLambda)
 {
     cellVolumeConstraint.lambda = targetVolumeLambda;
+}
+
+float CylinderModel::minTargetArea()
+{
+    return 0.1 * areaConstraint.targetArea;
+}
+
+float CylinderModel::maxTargetArea()
+{
+    return 3 * areaConstraint.targetArea;
+}
+
+float CylinderModel::targetArea()
+{
+    return areaConstraint.targetArea;
+}
+
+float CylinderModel::targetAreaLambda()
+{
+    return areaConstraint.lambda;
+}
+
+void CylinderModel::setTargetArea(float targetArea)
+{
+    areaConstraint.targetArea = targetArea;
+}
+
+void CylinderModel::setTargetAreaLambda(float targetAreaLambda)
+{
+    areaConstraint.lambda = targetAreaLambda;
+}
+
+HRESULT CylinderModel::changePolygonTypes()
+{
+    MxObject *obj = mesh->selectedObject();
+    
+    if(MxType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
+        return MxObject_ChangeType(obj, &growingPolygonType);
+    }
+    else {
+        return E_FAIL;
+    }
+}
+
+HRESULT CylinderModel::activateAreaConstraint()
+{
 }

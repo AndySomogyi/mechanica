@@ -7,12 +7,18 @@
 
 #include <MxPolygonAreaConstraint.h>
 
-float MxPolygonAreaConstraint::energy(const MxObject* obj)
+MxPolygonAreaConstraint::MxPolygonAreaConstraint(float targetArea, float lambda)
 {
-    return 0;
 }
 
-HRESULT MxPolygonAreaConstraint::project(MxObject* obj)
+HRESULT MxPolygonAreaConstraint::setTime(float time)
 {
-    return S_OK;
+}
+
+float MxPolygonAreaConstraint::energy(const MxObject** objs, int32_t len)
+{
+}
+
+HRESULT MxPolygonAreaConstraint::project(MxObject** obj, int32_t len)
+{
 }

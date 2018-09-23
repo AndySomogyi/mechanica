@@ -83,16 +83,16 @@ GrowthModel::GrowthModel()  {
 
 HRESULT GrowthModel::loadModel() {
     loadAssImpModel();
-    
+
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
         std::cout << "cell[" << i << "], id:" << cell->id << ", center: " << cell->centroid << std::endl;
     }
-    
+
     testEdges();
-    
+
     VERIFY(propagator->structureChanged());
-    
+
     return S_OK;
 }
 
@@ -100,7 +100,7 @@ HRESULT GrowthModel::loadModel() {
 void GrowthModel::loadAssImpModel() {
 
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
-    
+
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t2.obj";
     const char* fileName = "t2.test1.obj";
@@ -108,19 +108,18 @@ void GrowthModel::loadAssImpModel() {
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
-    
+
 
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/sphere.t1.obj", 1.0, handler);
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/football.t1.obj", 1.0, handler);
     //mesh = MxMesh_FromFile("/Users/andy/src/mechanica/testing/models/cube1.obj", 1.0, handler);
     mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, &meshObjectTypeHandler);
 
-
     // Hook up the cell volume constraints
     VERIFY(propagator->bindConstraint(&cellVolumeConstraint, &redCellType));
 
     mesh->selectObject(MxPolygon_Type, 24);
-    
+
     setTargetVolume(6);
     setTargetVolumeLambda(0.05);
 
@@ -148,25 +147,13 @@ HRESULT GrowthModel::calcForce() {
 
     HRESULT result;
 
-    /*
-
-    for(PolygonPtr poly : mesh->polygons) {
-        applyVolumeConservationForce(poly->cells[0], poly, &poly->partialPolygons[0]);
-        applyVolumeConservationForce(poly->cells[1], poly, &poly->partialPolygons[1]);
-    }
-    */
 
     for(PolygonPtr poly : mesh->polygons) {
         applySurfaceTensionForce(poly);
     }
 
 
-
     //applyDifferentialSurfaceTension();
-
-    //centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
-
-    //centerOfMassForce(mesh->cells[22], mesh->cells[7], 1);
 
     return S_OK;
 }
@@ -210,85 +197,15 @@ void GrowthModel::applyDifferentialSurfaceTension() {
     }
 }
 
-HRESULT GrowthModel::cellAreaForce(CellPtr cell) {
-
-    //return S_OK;
-
-    if(mesh->rootCell() == cell) {
-        return S_OK;
-    }
-
-    assert(cell->area >= 0);
-
-    float diff =  - cell->area;
-    //float diff = -0.35;
-
-    for(auto pt: cell->surface) {
-
-        PolygonPtr tri = pt->polygon;
-
-        assert(tri->area >= 0);
-
-        //float areaFraction = tri->area / cell->area;
-
-        //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
-
-        Vector3 dir[3];
-        float len[3];
-        float totLen = 0;
-        for(int v = 0; v < 3; ++v) {
-            dir[v] = tri->vertices[v]->position - tri->centroid;
-            //dir[v] = ((tri->vertices[v]->position - tri->vertices[(v+1)%3]->position) +
-            //          (tri->vertices[v]->position - tri->vertices[(v+2)%3]->position)) / 2;
-            len[v] = dir[v].length();
-            //dir[v] = dir[v].normalized();
-            totLen += len[v];
-        }
-
-
-
-        for(int v = 0; v < 3; ++v) {
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid).normalized();
-
-            Vector3 p1 = tri->vertices[(v+1)%3]->position;
-            Vector3 p2 = tri->vertices[(v+2)%3]->position;
-            float len = (p1-p2).length();
-            //pt->force[v] -= surfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid);
-
-            //for(int i = 0; i < 3; ++i) {
-            //    if(i != v) {
-            //        pt->force[v] -= 0.5 * (tri->vertices[v]->position - tri->vertices[i]->position);
-            //    }
-            //}
-            //pt->force[v] +=  -100 * areaFraction * dir[v] / totLen;
-            //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            // pt->force[v] +=  -30.5 * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
-            //pt->force[v] += -300 * areaFraction * (pt->triangle->vertices[v]->position - pt->triangle->centroid).normalized();
-
-            //for(int o = 0; o < 3; ++o) {
-            //    if(o != v) {
-            //        pt->force[v] +=  -10.5 * (pt->triangle->vertices[v]->position - pt->triangle->vertices[o]->position);
-            //    }
-            //}
-        }
-
-    }
-    return S_OK;
-}
 
 void GrowthModel::testEdges() {
 
     return;
 }
 
-
 HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
 {
     HRESULT result;
-
-
-
     return S_OK;
 }
 
@@ -407,18 +324,18 @@ HRESULT GrowthModel::applyT2PolygonTransitionToSelectedPolygon()
 HRESULT GrowthModel::applyT3PolygonTransitionToSelectedPolygon() {
     MxPolygon *poly = dyn_cast<MxPolygon>(mesh->selectedObject());
     if(poly) {
-        
+
         // make an cut plane perpendicular to the zeroth vertex
         Magnum::Vector3 normal = poly->vertices[0]->position - poly->centroid;
-        
+
         MxPolygon *p1, *p2;
-        
+
         HRESULT result = applyT3PolygonBisectPlaneTransition(mesh, poly, &normal, &p1, &p2);
- 
+
         if(SUCCEEDED(result)) {
-            
+
         }
-        
+
         return result;
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
@@ -452,7 +369,7 @@ void GrowthModel::setTargetVolumeLambda(float targetVolumeLambda)
 void GrowthModel::setTargetVolume(float tv)
 {
     cellVolumeConstraint.targetVolume = tv;
-    
+
 #ifndef NEW_CONSTRAINTS
     for(CellPtr cell : mesh->cells) {
         cell->targetVolume = tv;
