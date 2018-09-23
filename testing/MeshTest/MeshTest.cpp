@@ -36,11 +36,6 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
-//static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-//{
-//}
-
-
 static void window_refresh_callback(GLFWwindow* window)
 {
     MeshTest *foo = (MeshTest*)glfwGetWindowUserPointer(window);
@@ -51,11 +46,6 @@ static void char_callback(GLFWwindow *window, unsigned int c) {
     ::setMeshOpDebugMode(c);
     window_refresh_callback(window);
 }
-
-
-//static void window_close_callback(GLFWwindow* window)
-//{
-//}
 
 
 // The callback function receives two-dimensional scroll offsets.
@@ -90,14 +80,14 @@ HRESULT MeshTest::createContext(const Configuration& configuration) {
         glfwWindowHint(GLFW_AUTO_ICONIFY, configuration.windowFlags() >= Configuration::WindowFlag::AutoIconify);
     } else {
         const Configuration::WindowFlags& flags = configuration.windowFlags();
-        
+
         glfwWindowHint(GLFW_VISIBLE, !(flags >= Configuration::WindowFlag::Hidden));
         #ifdef GLFW_MAXIMIZED
         glfwWindowHint(GLFW_MAXIMIZED, flags >= Configuration::WindowFlag::Maximized);
         #endif
         glfwWindowHint(GLFW_FLOATING, flags >= Configuration::WindowFlag::Floating);
     }
-    
+
     glfwWindowHint(GLFW_RESIZABLE, true);
     glfwWindowHint(GLFW_FOCUSED, configuration.windowFlags() >= Configuration::WindowFlag::Focused);
 
@@ -199,25 +189,10 @@ MeshTest::MeshTest(const Configuration& configuration) :
     glEnable( GL_BLEND );
 
     renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe};
-    
-    model = new GrowthModel{};
-
-    propagator = new LangevinPropagator{};
-    
-    VERIFY(MxBind_PropagatorModel(propagator, model));
-    
-    VERIFY(model->loadModel());
-    
-    Vector3 min, max;
-    std::tie(min, max) = model->mesh->extents();
-    
-    center = (max + min)/2;
-    
-    renderer->setMesh(model->mesh);
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
 
-    testMeshTypes();
+    loadModel();
 }
 
 
@@ -298,25 +273,6 @@ void MeshTest::mouseClick(int button, int action, int mods) {
     }
 }
 
-void MeshTest::reset() {
-
-    delete model;
-
-    model = new GrowthModel{};
-
-    Vector3 min, max;
-    std::tie(min, max) = model->mesh->extents();
-
-    center = (max + min)/2;
-
-    renderer->setMesh(model->mesh);
-
-    delete propagator;
-
-    propagator = new LangevinPropagator{};
-
-    draw();
-}
 
 template <typename Type, typename Obj>
 void testCast(Obj obj) {
@@ -331,7 +287,7 @@ template <typename Type>
 void testObject(Type *obj) {
 
     std::cout << "obj name: " << obj->ob_type->tp_name << std::endl;
-    
+
     testCast<MxObject>(obj);
     testCast<MxEdge>(obj);
     testCast<MxCell>(obj);
@@ -361,8 +317,31 @@ void MeshTest::testMeshTypes()
         testObject(p);
     }
 
-
-    
     std::cout << "done testing" << std::endl;
 
+}
+
+void MeshTest::loadModel()
+{
+    delete model;
+    delete propagator;
+
+    model = new GrowthModel{};
+
+    propagator = new LangevinPropagator{};
+
+    VERIFY(MxBind_PropagatorModel(propagator, model));
+
+    VERIFY(model->loadModel());
+
+    Vector3 min, max;
+    std::tie(min, max) = model->mesh->extents();
+
+    center = (max + min)/2;
+
+    renderer->setMesh(model->mesh);
+
+    testMeshTypes();
+
+    draw();
 }

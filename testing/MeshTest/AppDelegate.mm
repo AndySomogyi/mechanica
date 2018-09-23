@@ -56,7 +56,7 @@ void testIndexOf() {
 
 
 -(IBAction)reset:(id)sender {
-    meshTest->reset();
+    meshTest->loadModel();
     [self updateGuiFromModel];
     [self updateGuiStats];
 }

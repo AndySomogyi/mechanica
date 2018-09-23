@@ -64,7 +64,7 @@ struct MeshTest {
     explicit MeshTest();
     explicit MeshTest(const Configuration& configuration);
 
-    void reset();
+    void loadModel();
 
     void step(float dt);
 
