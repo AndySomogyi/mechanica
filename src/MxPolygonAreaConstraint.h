@@ -22,6 +22,8 @@ struct MxPolygonAreaConstraint : IConstraint
 
     float targetArea;
     float lambda;
+
+    float energy(const MxObject* obj);
 };
 
 #endif /* SRC_MXPOLYGONAREACONSTRAINT_H_ */

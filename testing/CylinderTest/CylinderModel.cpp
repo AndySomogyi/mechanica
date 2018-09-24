@@ -20,7 +20,7 @@ MxPolygonType basicPolygonType{"BasicPolygon", MxPolygon_Type};
 MxPolygonType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
 
 MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
-MxPolygonAreaConstraint areaConstraint{0,0};
+MxPolygonAreaConstraint areaConstraint{0.1, 0.001};
 
 static struct CylinderCellType : MxCellType
 {
@@ -105,7 +105,7 @@ void CylinderModel::loadAssImpModel() {
     mesh->setLongCutoff(0.3);
 
     cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 0.5;
+    cellMediaSurfaceTension = 0.05;
     cellMediaSurfaceTensionMax = 3.0;
 }
 
@@ -156,95 +156,12 @@ void CylinderModel::applyDifferentialSurfaceTension() {
                 len[v] = dir[v].length();
                 totLen += len[v];
             }
-
-            /*
-
-            for(int v = 0; v < 3; ++v) {
-                Vector3 p1 = tri->vertices[(v+1)%3]->position;
-                Vector3 p2 = tri->vertices[(v+2)%3]->position;
-                float len = (p1-p2).length();
-
-                tri->partialTriangles[0].force[v]
-                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-
-                tri->partialTriangles[1].force[v]
-                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-            }
-            */
         }
         else {
             //std::cout << "continuing...";
         }
     }
 }
-
-HRESULT CylinderModel::cellAreaForce(CellPtr cell) {
-
-    //return S_OK;
-
-    if(mesh->rootCell() == cell) {
-        return S_OK;
-    }
-
-    assert(cell->area >= 0);
-
-    float diff =  - cell->area;
-    //float diff = -0.35;
-
-    for(auto pt: cell->surface) {
-
-        PolygonPtr tri = pt->polygon;
-
-        assert(tri->area >= 0);
-
-        //float areaFraction = tri->area / cell->area;
-
-        //std::cout << "id: " << tri->id << ",AR " << tri->aspectRatio << std::endl;
-
-        Vector3 dir[3];
-        float len[3];
-        float totLen = 0;
-        for(int v = 0; v < 3; ++v) {
-            dir[v] = tri->vertices[v]->position - tri->centroid;
-            //dir[v] = ((tri->vertices[v]->position - tri->vertices[(v+1)%3]->position) +
-            //          (tri->vertices[v]->position - tri->vertices[(v+2)%3]->position)) / 2;
-            len[v] = dir[v].length();
-            //dir[v] = dir[v].normalized();
-            totLen += len[v];
-        }
-
-
-
-        for(int v = 0; v < 3; ++v) {
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid).normalized();
-
-            Vector3 p1 = tri->vertices[(v+1)%3]->position;
-            Vector3 p2 = tri->vertices[(v+2)%3]->position;
-            float len = (p1-p2).length();
-            //pt->force[v] -= surfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-            //pt->force[v] -= surfaceTension * (tri->vertices[v]->position - tri->centroid);
-
-            //for(int i = 0; i < 3; ++i) {
-            //    if(i != v) {
-            //        pt->force[v] -= 0.5 * (tri->vertices[v]->position - tri->vertices[i]->position);
-            //    }
-            //}
-            //pt->force[v] +=  -100 * areaFraction * dir[v] / totLen;
-            //pt->force[v] +=  10.5 * diff * (tri->area / cell->area) *  dir[v].normalized();
-            // pt->force[v] +=  -30.5 * (pt->triangle->vertices[v]->position - pt->triangle->centroid);
-            //pt->force[v] += -300 * areaFraction * (pt->triangle->vertices[v]->position - pt->triangle->centroid).normalized();
-
-            //for(int o = 0; o < 3; ++o) {
-            //    if(o != v) {
-            //        pt->force[v] +=  -10.5 * (pt->triangle->vertices[v]->position - pt->triangle->vertices[o]->position);
-            //    }
-            //}
-        }
-
-    }
-    return S_OK;
-}
-
 
 void CylinderModel::testEdges() {
     return;
@@ -387,6 +304,8 @@ HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
         if(SUCCEEDED(result)) {
 
         }
+        
+        VERIFY(propagator->structureChanged());
 
         return result;
     }
@@ -451,9 +370,12 @@ void CylinderModel::setTargetAreaLambda(float targetAreaLambda)
 HRESULT CylinderModel::changePolygonTypes()
 {
     MxObject *obj = mesh->selectedObject();
-    
+    MxPolygon *poly = dyn_cast<MxPolygon>(obj);
+
     if(MxType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
-        return MxObject_ChangeType(obj, &growingPolygonType);
+        VERIFY(MxObject_ChangeType(obj, &growingPolygonType));
+        VERIFY(propagator->structureChanged());
+        return S_OK;
     }
     else {
         return E_FAIL;
@@ -462,4 +384,8 @@ HRESULT CylinderModel::changePolygonTypes()
 
 HRESULT CylinderModel::activateAreaConstraint()
 {
+    MxObject *obj = mesh->selectedObject();
+ 
+    propagator->bindConstraint(&areaConstraint, &growingPolygonType);
+    return propagator->structureChanged();
 }

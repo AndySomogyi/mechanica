@@ -343,6 +343,8 @@ void testIndexOf() {
 -(IBAction)changePolygonTypes:(id)sender {
     HRESULT result = meshTest->model->changePolygonTypes();
     
+    [self updateGuiFromModel];
+    
     if(SUCCEEDED(result)) {
         std::cout << "successfully changed polygon type" << std::endl;
     }
@@ -354,7 +356,18 @@ void testIndexOf() {
 }
 
 -(IBAction)activateAreaConstraint:(id)sender {
-    VERIFY(meshTest->model->activateAreaConstraint());
+    HRESULT result = meshTest->model->activateAreaConstraint();
+    
+    [self updateGuiFromModel];
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully activated area constraint type" << std::endl;
+    }
+    else {
+        std::cout << "failed to activate area constraint" << std::endl;
+    }
+    
+    meshTest->draw();
 }
 
 
