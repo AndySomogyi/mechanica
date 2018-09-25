@@ -22,6 +22,11 @@ typedef unsigned char Byte;
 @property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionMax;
 @property (assign, nonatomic) IBOutlet NSTextField *cellMediaSurfaceTensionVal;
 
+@property (assign, nonatomic) IBOutlet NSSlider *growingSurfaceTensionSlider;
+@property (assign, nonatomic) IBOutlet NSTextField *growingSurfaceTensionMin;
+@property (assign, nonatomic) IBOutlet NSTextField *growingSurfaceTensionMax;
+@property (assign, nonatomic) IBOutlet NSTextField *growingSurfaceTensionVal;
+
 @property (assign, nonatomic) IBOutlet NSSlider *areaSlider;
 @property (assign, nonatomic) IBOutlet NSTextField *areaMin;
 @property (assign, nonatomic) IBOutlet NSTextField *areaMax;

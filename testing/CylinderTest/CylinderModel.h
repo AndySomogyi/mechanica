@@ -1,7 +1,7 @@
 /*
- * GrowthModel.h
+ * CylinderModel.h
  *
- *  Created on: Oct 13, 2017
+ *  Created on: Sep 20, 2018
  *      Author: andy
  */
 
@@ -19,21 +19,7 @@ struct CylinderModel : public MxModel {
 
     CylinderModel();
 
-    /**
-     * Evaluate the force functions,
-     */
-    HRESULT calcForce() ;
-
-    HRESULT cellAreaForce(CellPtr cell);
-
     HRESULT loadModel();
-
-    /**
-     * Apply a surface tension due to each partial polygon
-     */
-    HRESULT applySurfaceTensionForce(PolygonPtr pp);
-
-    void applyDifferentialSurfaceTension();
 
     float minTargetVolume();
     float maxTargetVolume();
@@ -41,10 +27,16 @@ struct CylinderModel : public MxModel {
     float targetVolumeLambda();
     void setTargetVolume(float targetVolume);
     void setTargetVolumeLambda(float targetVolumeLambda);
-
-    float cellMediaSurfaceTension = 0;
-    float cellMediaSurfaceTensionMax;
-    float cellMediaSurfaceTensionMin;
+    
+    float stdSurfaceTension();
+    void setStdSurfaceTension(float val);
+    float stdSurfaceTensionMin();
+    float stdSurfaceTensionMax();
+    
+    float growSurfaceTension();
+    void growStdSurfaceTension(float val);
+    float growSurfaceTensionMin();
+    float growSurfaceTensionMax();
 
     float minTargetArea();
     float maxTargetArea();
@@ -66,16 +58,6 @@ struct CylinderModel : public MxModel {
     HRESULT changePolygonTypes();
 
     HRESULT activateAreaConstraint();
-
-    virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force);
-
-    virtual HRESULT getAccelerations(float time, uint32_t len, const Vector3 *pos, Vector3 *acc);
-
-    virtual HRESULT getMasses(float time, uint32_t len, float *masses);
-
-    virtual HRESULT getPositions(float time, uint32_t len, Vector3 *pos);
-
-    virtual HRESULT setPositions(float time, uint32_t len, const Vector3 *pos);
 
     /**
       * The state vector is a vector of elements that are defined by

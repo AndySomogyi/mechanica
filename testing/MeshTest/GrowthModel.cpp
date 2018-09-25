@@ -14,6 +14,7 @@
 #include "T2Transition.h"
 #include "T3Transition.h"
 #include "MxCellVolumeConstraint.h"
+#include "MxPolygonSurfaceTensionForce.h"
 
 
 static struct RedCellType : MxCellType
@@ -76,6 +77,8 @@ static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
 
 MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
 
+MxPolygonSurfaceTensionForce stdPolygonForce{0.05};
+
 
 GrowthModel::GrowthModel()  {
 }
@@ -118,6 +121,8 @@ void GrowthModel::loadAssImpModel() {
     // Hook up the cell volume constraints
     VERIFY(propagator->bindConstraint(&cellVolumeConstraint, &redCellType));
 
+    VERIFY(propagator->bindForce(&stdPolygonForce, MxPolygon_Type));
+
     mesh->selectObject(MxPolygon_Type, 24);
 
     setTargetVolume(6);
@@ -131,132 +136,16 @@ void GrowthModel::loadAssImpModel() {
     pressure = 5;
     pressureMax = 15;
 
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 0.1;
-    cellMediaSurfaceTensionMax = 1;
-
-    cellCellSurfaceTensionMin = 0;
-    cellCellSurfaceTension = 0.1;
-    cellCellSurfaceTensionMax = 1;
 }
-
-
-
-
-HRESULT GrowthModel::calcForce() {
-
-    HRESULT result;
-
-
-    for(PolygonPtr poly : mesh->polygons) {
-        applySurfaceTensionForce(poly);
-    }
-
-
-    //applyDifferentialSurfaceTension();
-
-    return S_OK;
-}
-
-void GrowthModel::applyDifferentialSurfaceTension() {
-
-    for(PolygonPtr tri : mesh->polygons) {
-
-        if((tri->cells[0] == mesh->cells[1] && tri->cells[1] == mesh->cells[2]) ||
-           (tri->cells[0] == mesh->cells[2] && tri->cells[1] == mesh->cells[1])) {
-
-            assert(tri->area >= 0);
-
-            Vector3 dir[3];
-            float len[3];
-            float totLen = 0;
-            for(int v = 0; v < 3; ++v) {
-                dir[v] = tri->vertices[v]->position - tri->centroid;
-                len[v] = dir[v].length();
-                totLen += len[v];
-            }
-
-            /*
-
-            for(int v = 0; v < 3; ++v) {
-                Vector3 p1 = tri->vertices[(v+1)%3]->position;
-                Vector3 p2 = tri->vertices[(v+2)%3]->position;
-                float len = (p1-p2).length();
-
-                tri->partialTriangles[0].force[v]
-                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-
-                tri->partialTriangles[1].force[v]
-                    += differentialSurfaceTension * len * (tri->vertices[v]->position - tri->centroid).normalized();
-            }
-            */
-        }
-        else {
-            //std::cout << "continuing...";
-        }
-    }
-}
-
 
 void GrowthModel::testEdges() {
 
     return;
 }
 
-HRESULT GrowthModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
+
+HRESULT GrowthModel::setStateVector(const float *stateVector)
 {
-    HRESULT result;
-    return S_OK;
-}
-
-HRESULT GrowthModel::getMasses(float time, uint32_t len, float* masses)
-{
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
-
-    for(int i = 0; i < len; ++i) {
-        masses[i] = mesh->vertices[i]->mass;
-    }
-    return S_OK;
-}
-
-HRESULT GrowthModel::getPositions(float time, uint32_t len, Vector3* pos)
-{
-    for(int i = 0; i < len; ++i) {
-        pos[i] = mesh->vertices[i]->position;
-    }
-    return S_OK;
-}
-
-HRESULT GrowthModel::setPositions(float time, uint32_t len, const Vector3* pos)
-{
-    return mesh->setPositions(len, pos);
-}
-
-HRESULT GrowthModel::getAccelerations(float time, uint32_t len,
-        const Vector3* pos, Vector3* acc)
-{
-    HRESULT result;
-
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
-
-    if(pos) {
-        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
-            return result;
-        }
-    }
-
-    calcForce();
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        VertexPtr v = mesh->vertices[i];
-
-        acc[i] = v->force;
-    }
-
     return S_OK;
 }
 
@@ -266,35 +155,8 @@ HRESULT GrowthModel::getStateVector(float *stateVector, uint32_t *count)
     return S_OK;
 }
 
-HRESULT GrowthModel::setStateVector(const float *stateVector)
-{
-    return S_OK;
-}
-
-
 HRESULT GrowthModel::getStateVectorRate(float time, const float *y, float* dydt)
 {
-    return S_OK;
-}
-
-HRESULT GrowthModel::applySurfaceTensionForce(PolygonPtr pp) {
-    float k = 0;
-
-    if(pp->cells[0]->isRoot() || pp->cells[1]->isRoot()) {
-        k = cellMediaSurfaceTension;
-    } else {
-        k = cellCellSurfaceTension;
-    }
-
-    for(uint i = 0; i < pp->vertices.size(); ++i) {
-        VertexPtr vi = pp->vertices[i];
-        VertexPtr vn = pp->vertices[(i+1)%pp->vertices.size()];
-        Vector3 dx = vn->position - vi->position;
-
-        vi->force += k * dx;
-        vn->force -= k * dx;
-    }
-
     return S_OK;
 }
 
@@ -369,10 +231,25 @@ void GrowthModel::setTargetVolumeLambda(float targetVolumeLambda)
 void GrowthModel::setTargetVolume(float tv)
 {
     cellVolumeConstraint.targetVolume = tv;
-
-#ifndef NEW_CONSTRAINTS
-    for(CellPtr cell : mesh->cells) {
-        cell->targetVolume = tv;
-    }
-#endif
 }
+
+float GrowthModel::stdSurfaceTension()
+{
+    return stdPolygonForce.surfaceTension;
+}
+
+void GrowthModel::setStdSurfaceTension(float val)
+{
+    stdPolygonForce.surfaceTension = val;
+}
+
+float GrowthModel::stdSurfaceTensionMin()
+{
+    return 0;
+}
+
+float GrowthModel::stdSurfaceTensionMax()
+{
+    return stdPolygonForce.surfaceTension * 5;
+}
+

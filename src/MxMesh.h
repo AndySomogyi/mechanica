@@ -25,6 +25,8 @@
 
 
 
+
+
 /**
  * The type object for a universe cell.
  */
@@ -324,6 +326,9 @@ struct MxMesh  {
     std::tuple<Magnum::Vector3, Magnum::Vector3> extents() const;
 
 
+    HRESULT addObjectDeleteListener(MxObjectChangedHandler, void* userData);
+
+    HRESULT removeObjectDeleteListener(void* userData);
 
 private:
 
@@ -353,6 +358,8 @@ private:
     friend struct RadialEdgeCollapse;
     friend struct RadialEdgeSplit;
     friend struct MxEdge;
+
+    std::vector<MxObjectChangedHolder> objectDeleteHandlers;
 
 };
 

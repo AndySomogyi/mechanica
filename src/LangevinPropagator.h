@@ -52,18 +52,27 @@ public:
 
     HRESULT bindForce(IForce *force, MxObject *obj);
 
+    HRESULT unbindConstraint(IConstraint* constraint);
+
+    HRESULT unbindForce(IForce *force);
+
+
+
 private:
 
     struct ConstraintItems {
-        IConstraint *constraint;
+        IConstraint *thing;
         MxType *type;
         std::vector<MxObject*> args;
     };
 
     struct ForceItems {
-        IForce *force;
+        IForce *thing;
+        MxType *type;
         std::vector<MxObject*> args;
     };
+
+    HRESULT applyForces();
 
 
     HRESULT eulerStep(MxReal dt);
@@ -77,15 +86,15 @@ private:
 
     HRESULT getPositions(float time, uint32_t len, Vector3 *pos);
 
+    HRESULT setPositions(float time, uint32_t len, const Vector3 *pos);
+
     HRESULT applyConstraints();
     
     /**
      * The model structure changed, so we need to update all the
      * constraints
      */
-    HRESULT updateConstraints();
-    
-    HRESULT updateConstraint(ConstraintItems& ci);
+
 
 
     MxModel *model;
@@ -127,18 +136,25 @@ private:
     std::vector<ConstraintItems> constraints;
     std::vector<ForceItems> forces;
 
-    HRESULT bindTypeConstraint(IConstraint *constraint, MxType *type);
+    static HRESULT objectDeleteListener(MxObject* pThis,
+            const MxObject* obj, uint32_t what);
 
-    HRESULT bindTypeForce(IForce *force, MxType *obj);
+    template<typename T>
+    HRESULT updateItems(std::vector<T> &items);
 
-    /**
-     * Find the constraint item that matches this constraint,
-     * create if it doesn't exist.
-     */
-    ConstraintItems& getConstraintItem(IConstraint* cons);
+    template<typename T>
+    HRESULT updateItem(T &item);
+
+    template<typename T, typename KeyType>
+    T& getItem(std::vector<T> &items, KeyType *key);
+
+    template<typename T, typename KeyType>
+    HRESULT bindTypeItem(std::vector<T> &items, KeyType *key, MxType* type);
 
 };
 
 HRESULT MxBind_PropagatorModel(LangevinPropagator *propagator, MxModel *model);
+
+
 
 #endif /* SRC_MESHDAMPEDLANGEVINPROPAGATOR_H_ */

@@ -1,7 +1,7 @@
 /*
- * GrowthModel.cpp
+ * CylinderModel.cpp
  *
- *  Created on: Oct 13, 2017
+ * Created on: Sep 20, 2018
  *      Author: andy
  */
 
@@ -15,12 +15,16 @@
 #include "T3Transition.h"
 #include "MxCellVolumeConstraint.h"
 #include "MxPolygonAreaConstraint.h"
+#include <MxPolygonSurfaceTensionForce.h>
 
 MxPolygonType basicPolygonType{"BasicPolygon", MxPolygon_Type};
 MxPolygonType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
 
 MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
 MxPolygonAreaConstraint areaConstraint{0.1, 0.001};
+
+MxPolygonSurfaceTensionForce stdPolygonForce{0.05};
+MxPolygonSurfaceTensionForce growingPolygonForce{0.05};
 
 static struct CylinderCellType : MxCellType
 {
@@ -94,6 +98,8 @@ void CylinderModel::loadAssImpModel() {
 
     propagator->bindConstraint(&cellVolumeConstraint, &cylinderCellType);
 
+    propagator->bindForce(&stdPolygonForce, MxPolygon_Type);
+
     mesh->selectObject(MxPolygon_Type, 367);
 
     CellPtr cell = mesh->cells[1];
@@ -103,125 +109,10 @@ void CylinderModel::loadAssImpModel() {
 
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);
-
-    cellMediaSurfaceTensionMin = 0;
-    cellMediaSurfaceTension = 0.05;
-    cellMediaSurfaceTensionMax = 3.0;
-}
-
-
-
-
-HRESULT CylinderModel::calcForce() {
-
-    HRESULT result;
-
-    /*
-
-    for(PolygonPtr poly : mesh->polygons) {
-        applyVolumeConservationForce(poly->cells[0], poly, &poly->partialPolygons[0]);
-        applyVolumeConservationForce(poly->cells[1], poly, &poly->partialPolygons[1]);
-    }
-    */
-
-    for(PolygonPtr poly : mesh->polygons) {
-        applySurfaceTensionForce(poly);
-    }
-
-
-
-    //applyDifferentialSurfaceTension();
-
-    //centerOfMassForce(mesh->cells[1], mesh->cells[3], harmonicBondStrength);
-
-    //centerOfMassForce(mesh->cells[22], mesh->cells[7], 1);
-
-    return S_OK;
-}
-
-void CylinderModel::applyDifferentialSurfaceTension() {
-
-    for(PolygonPtr tri : mesh->polygons) {
-
-        if((tri->cells[0] == mesh->cells[1] && tri->cells[1] == mesh->cells[2]) ||
-           (tri->cells[0] == mesh->cells[2] && tri->cells[1] == mesh->cells[1])) {
-
-            assert(tri->area >= 0);
-
-            Vector3 dir[3];
-            float len[3];
-            float totLen = 0;
-            for(int v = 0; v < 3; ++v) {
-                dir[v] = tri->vertices[v]->position - tri->centroid;
-                len[v] = dir[v].length();
-                totLen += len[v];
-            }
-        }
-        else {
-            //std::cout << "continuing...";
-        }
-    }
 }
 
 void CylinderModel::testEdges() {
     return;
-}
-
-HRESULT CylinderModel::getForces(float time, uint32_t len, const Vector3* pos, Vector3* force)
-{
-    HRESULT result;
-    return S_OK;
-}
-
-HRESULT CylinderModel::getMasses(float time, uint32_t len, float* masses)
-{
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
-
-    for(int i = 0; i < len; ++i) {
-        masses[i] = mesh->vertices[i]->mass;
-    }
-    return S_OK;
-}
-
-HRESULT CylinderModel::getPositions(float time, uint32_t len, Vector3* pos)
-{
-    for(int i = 0; i < len; ++i) {
-        pos[i] = mesh->vertices[i]->position;
-    }
-    return S_OK;
-}
-
-HRESULT CylinderModel::setPositions(float time, uint32_t len, const Vector3* pos)
-{
-    return mesh->setPositions(len, pos);
-}
-
-HRESULT CylinderModel::getAccelerations(float time, uint32_t len,
-        const Vector3* pos, Vector3* acc)
-{
-    HRESULT result;
-
-    if(len != mesh->vertices.size()) {
-        return E_FAIL;
-    }
-
-    if(pos) {
-        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
-            return result;
-        }
-    }
-
-    calcForce();
-
-    for(int i = 0; i < mesh->vertices.size(); ++i) {
-        VertexPtr v = mesh->vertices[i];
-
-        acc[i] = v->force;
-    }
-
-    return S_OK;
 }
 
 HRESULT CylinderModel::getStateVector(float *stateVector, uint32_t *count)
@@ -244,27 +135,6 @@ HRESULT CylinderModel::getStateVectorRate(float time, const float *y, float* dyd
 void CylinderModel::setTargetVolume(float tv)
 {
     cellVolumeConstraint.targetVolume = tv;
-}
-
-HRESULT CylinderModel::applySurfaceTensionForce(PolygonPtr pp) {
-    float k = 0;
-
-    if(pp->cells[0]->isRoot() || pp->cells[1]->isRoot()) {
-        k = cellMediaSurfaceTension;
-    } else {
-        k = 0;
-    }
-
-    for(uint i = 0; i < pp->vertices.size(); ++i) {
-        VertexPtr vi = pp->vertices[i];
-        VertexPtr vn = pp->vertices[(i+1)%pp->vertices.size()];
-        Vector3 dx = vn->position - vi->position;
-
-        vi->force += k * dx;
-        vn->force -= k * dx;
-    }
-
-    return S_OK;
 }
 
 HRESULT CylinderModel::applyT1Edge2TransitionToSelectedEdge() {
@@ -388,4 +258,44 @@ HRESULT CylinderModel::activateAreaConstraint()
  
     propagator->bindConstraint(&areaConstraint, &growingPolygonType);
     return propagator->structureChanged();
+}
+
+float CylinderModel::stdSurfaceTension()
+{
+    return stdPolygonForce.surfaceTension;
+}
+
+void CylinderModel::setStdSurfaceTension(float val)
+{
+    stdPolygonForce.surfaceTension = val;
+}
+
+float CylinderModel::stdSurfaceTensionMin()
+{
+    return 0;
+}
+
+float CylinderModel::stdSurfaceTensionMax()
+{
+    return stdPolygonForce.surfaceTension * 5;
+}
+
+float CylinderModel::growSurfaceTension()
+{
+    return growingPolygonForce.surfaceTension;
+}
+
+void CylinderModel::growStdSurfaceTension(float val)
+{
+    growingPolygonForce.surfaceTension = val;
+}
+
+float CylinderModel::growSurfaceTensionMin()
+{
+    return 0;
+}
+
+float CylinderModel::growSurfaceTensionMax()
+{
+    return 5 * growingPolygonForce.surfaceTension;
 }

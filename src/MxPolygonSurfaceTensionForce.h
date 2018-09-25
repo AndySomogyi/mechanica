@@ -12,10 +12,19 @@
 
 struct MxPolygonSurfaceTensionForce : IForce
 {
-    virtual HRESULT applyForce(MxObject *obj) const;
+    MxPolygonSurfaceTensionForce(float surfaceTension);
 
-    float cellMediaSurfaceTension = 0;
-    float cellCellSurfaceTension = 0;
+    /**
+     * Called when the main time step changes.
+     */
+    virtual HRESULT setTime(float time);
+
+    /**
+     * Apply forces to a set of objects.
+     */
+    virtual HRESULT applyForce(float time, MxObject **objs, uint32_t len) const;
+
+    float surfaceTension;
 };
 
 #endif /* SRC_MXPOLYGONSURFACETENSIONFORCE_H_ */

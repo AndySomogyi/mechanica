@@ -77,12 +77,12 @@ void testIndexOf() {
     else if (sender == self.cellMediaSurfaceTensionVal)
     {
         self.cellMediaSurfaceTensionSlider.floatValue = self.cellMediaSurfaceTensionVal.floatValue;
-        meshTest->model->cellMediaSurfaceTension = self.cellMediaSurfaceTensionVal.floatValue;
+        meshTest->model->setStdSurfaceTension(self.cellMediaSurfaceTensionVal.floatValue);
     }
     else if (sender == self.cellMediaSurfaceTensionSlider)
     {
         self.cellMediaSurfaceTensionVal.floatValue = self.cellMediaSurfaceTensionSlider.floatValue;
-        meshTest->model->cellMediaSurfaceTension = self.cellMediaSurfaceTensionSlider.floatValue;
+        meshTest->model->setStdSurfaceTension(self.cellMediaSurfaceTensionSlider.floatValue);
     }
     else if (sender == self.volumeVal)
     {
@@ -117,7 +117,7 @@ void testIndexOf() {
     
     meshTest->draw();
     
-    std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->cellMediaSurfaceTension << std::endl;
+    std::cout << "value changed, cellMediaSurfaceTension: " << meshTest->model->stdSurfaceTension() << std::endl;
 }
 
 -(IBAction)volumeForceClick:(id)sender {
@@ -132,13 +132,13 @@ void testIndexOf() {
     self.volumeSlider.minValue = meshTest->model->minTargetVolume();
     self.volumeSlider.floatValue = meshTest->model->targetVolume();
     
-    self.cellMediaSurfaceTensionMax.floatValue = meshTest->model->cellMediaSurfaceTensionMax;
-    self.cellMediaSurfaceTensionMin.floatValue = meshTest->model->cellMediaSurfaceTensionMin;
-    self.cellMediaSurfaceTensionVal.floatValue = meshTest->model->cellMediaSurfaceTension;
+    self.cellMediaSurfaceTensionMax.floatValue = meshTest->model->stdSurfaceTensionMax();
+    self.cellMediaSurfaceTensionMin.floatValue = meshTest->model->stdSurfaceTensionMin();
+    self.cellMediaSurfaceTensionVal.floatValue = meshTest->model->stdSurfaceTension();
     
-    self.cellMediaSurfaceTensionSlider.maxValue = meshTest->model->cellMediaSurfaceTensionMax;
-    self.cellMediaSurfaceTensionSlider.minValue = meshTest->model->cellMediaSurfaceTensionMin;
-    self.cellMediaSurfaceTensionSlider.floatValue = meshTest->model->cellMediaSurfaceTension;
+    self.cellMediaSurfaceTensionSlider.maxValue = meshTest->model->stdSurfaceTensionMax();
+    self.cellMediaSurfaceTensionSlider.minValue = meshTest->model->stdSurfaceTensionMin();
+    self.cellMediaSurfaceTensionSlider.floatValue = meshTest->model->stdSurfaceTension();
     
     self.areaMax.floatValue = meshTest->model->maxTargetArea();
     self.areaMin.floatValue = meshTest->model->minTargetArea();

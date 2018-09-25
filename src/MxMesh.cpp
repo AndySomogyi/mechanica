@@ -368,3 +368,11 @@ PolygonPtr MxMesh::createPolygon(MxType* type)
 
     return poly;
 }
+
+HRESULT MxMesh::addObjectDeleteListener(MxObjectChangedHandler, void* userData)
+{
+}
+
+HRESULT MxMesh::removeObjectDeleteListener(void* userData)
+{
+}

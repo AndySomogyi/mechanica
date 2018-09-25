@@ -105,22 +105,6 @@ struct MxModel : MxModule {
     LangevinPropagator *propagator = nullptr;
 
 
-
-
-    /**
-     * If pos is null, use the current positions.
-     */
-    virtual HRESULT getForces(float time, uint32_t len, const Vector3 *pos, Vector3 *force) = 0;
-
-    virtual HRESULT getAccelerations(float time, uint32_t len, const Vector3 *pos, Vector3 *acc) = 0;
-
-    virtual HRESULT getMasses(float time, uint32_t len, float *masses) = 0;
-
-    virtual HRESULT getPositions(float time, uint32_t len, Vector3 *pos) = 0;
-
-    virtual HRESULT setPositions(float time, uint32_t len, const Vector3 *pos) = 0;
-
-
     /**
       * The state vector is a vector of elements that are defined by
       * differential equations (rate rules) or independent floating species

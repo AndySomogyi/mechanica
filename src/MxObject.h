@@ -14,6 +14,13 @@
 #include "mx_object.h"
 
 
+typedef HRESULT (*MxObjectChangedHandler)(MxObject *pThis, const MxObject *obj, uint32_t what);
+
+struct MxObjectChangedHolder {
+    void *userData;
+    MxObjectChangedHandler callBack;
+};
+
 
 /**
  * Define the Mechanica base MxObject to have the same binary layout as

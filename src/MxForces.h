@@ -24,7 +24,7 @@ struct IForce {
     /**
      * Called when the main time step changes.
      */
-    virtual HRESULT setTime(float time);
+    virtual HRESULT setTime(float time) = 0;
 
     /**
      * Apply forces to a set of objects.

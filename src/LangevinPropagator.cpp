@@ -13,8 +13,79 @@
 #include <cstring>
 
 
-
 LangevinPropagator::LangevinPropagator() {
+}
+
+
+template<typename T>
+HRESULT LangevinPropagator::updateItem(T &item) {
+    HRESULT result = E_FAIL;
+
+    if(!mesh) {
+        return S_OK;
+    }
+
+    item.args.clear();
+
+    if (MxType_IsSubtype(item.type, MxCell::type())) {
+        for(CellPtr cell : mesh->cells) {
+            if(cell->isRoot()) {
+                continue;
+            }
+
+            if(MxType_IsSubtype(cell->ob_type, item.type)) {
+                item.args.push_back(cell);
+                result = S_OK;
+            }
+        }
+    }
+
+    if (MxType_IsSubtype(item.type, MxPolygon::type())) {
+        for(PolygonPtr poly : mesh->polygons) {
+            if(MxType_IsSubtype(poly->ob_type, item.type)) {
+                item.args.push_back(poly);
+                result = S_OK;
+            }
+        }
+    }
+
+    std::cout << "items for " << item.type->tp_name << " , args size: " << item.args.size() << std::endl;
+
+    return result;
+}
+
+
+template<typename T>
+HRESULT LangevinPropagator::updateItems(std::vector<T> &items)
+{
+    for(T& i : items) {
+        updateItem(i);
+    }
+    return S_OK;
+}
+
+template<typename T, typename KeyType>
+T& LangevinPropagator::getItem(std::vector<T>& items, KeyType* key)
+{
+    auto it = std::find_if(
+            items.begin(), items.end(),
+            [key](const T& x) { return x.thing == key;});
+    if(it != items.end()) {
+        return *it;
+    }
+    else {
+        items.push_back(T{key});
+        return items.back();
+    }
+}
+
+template<typename T, typename KeyType>
+HRESULT LangevinPropagator::bindTypeItem(std::vector<T>& items,
+        KeyType* key, MxType* type)
+{
+    T& ci = getItem(items, key);
+    ci.type = type;
+    return updateItem(ci);
 }
 
 HRESULT LangevinPropagator::setModel(MxModel *m) {
@@ -22,15 +93,11 @@ HRESULT LangevinPropagator::setModel(MxModel *m) {
     this->mesh = m->mesh;
     m->propagator = this;
     
+    mesh->addObjectDeleteListener(objectDeleteListener, this);
+
     return structureChanged();
 }
 
-HRESULT LangevinPropagator::updateConstraints() {
-    for(ConstraintItems& ci : constraints) {
-        updateConstraint(ci);
-    }
-    return S_OK;
-}
 
 HRESULT LangevinPropagator::step(MxReal dt) {
 
@@ -50,47 +117,7 @@ HRESULT LangevinPropagator::step(MxReal dt) {
         result = mesh->applyMeshOperations();
     }
 
-#ifdef NEW_CONSTRAINTS
-
     applyConstraints();
-
-#else
-
-
-    float sumError = 0;
-    int iter = 0;
-    
-    do {
-        for(int i=1; i < mesh->cells.size(); ++i) {
-            CellPtr cell = mesh->cells[i];
-            float init = cell->volumeConstraint();
-            cell->projectVolumeConstraint();
-            mesh->setPositions(0, 0);
-            float final = cell->volumeConstraint();
-
-
-
-            std::cout << "cell " << cell->id << " volume constraint before/after: " <<
-                    init << "/" << final << std::endl;
-        }
-
-        sumError = 0;
-        iter += 1;
-        for(int i=1; i < mesh->cells.size(); ++i) {
-            CellPtr cell = mesh->cells[i];
-            float error = cell->volumeConstraint();
-            sumError += error * error;
-        }
-
-        std::cout << "constraint iter / sum sqr error: " << iter << "/" << sumError << std::endl;
-
-    } while(iter < 2);
-
-
-
-#endif
-
-
 
     timeSteps += 1;
 
@@ -99,48 +126,48 @@ HRESULT LangevinPropagator::step(MxReal dt) {
 
 HRESULT LangevinPropagator::eulerStep(MxReal dt) {
 
-    model->getPositions(dt, size, positions);
+    getPositions(dt, size, positions);
 
-    model->getAccelerations(dt, size, positions, accel);
+    getAccelerations(dt, size, positions, accel);
 
     for(int i = 0; i < size; ++i) {
         positions[i] = positions[i] + dt * accel[i];
     }
 
-    model->setPositions(dt, size, positions);
+    setPositions(dt, size, positions);
 
     return S_OK;
 }
 
 HRESULT LangevinPropagator::rungeKuttaStep(MxReal dt)
 {
-    model->getAccelerations(dt, size, nullptr, k1);
+    getAccelerations(dt, size, nullptr, k1);
 
-    model->getPositions(dt, size, posInit);
+    getPositions(dt, size, posInit);
 
     for(int i = 0; i < size; ++i) {
         positions[i] = posInit[i] + dt * k1[i] / 2.0 ;
     }
 
-    model->getAccelerations(dt, size, positions, k2);
+    getAccelerations(dt, size, positions, k2);
 
     for(int i = 0; i < size; ++i) {
         positions[i] = posInit[i] + dt * k2[i] / 2.0 ;
     }
 
-    model->getAccelerations(dt, size, positions, k3);
+    getAccelerations(dt, size, positions, k3);
 
     for(int i = 0; i < size; ++i) {
         positions[i] = posInit[i] + dt * k3[i];
     }
 
-    model->getAccelerations(dt, size, positions, k4);
+    getAccelerations(dt, size, positions, k4);
 
     for(int i = 0; i < size; ++i) {
         positions[i] = posInit[i] + dt / 6. * (k1[i] + 2. * k2[i] + 2. * k3[i] + k4[i]);
     }
 
-    model->setPositions(dt, size, positions);
+    setPositions(dt, size, positions);
 
     return S_OK;
 }
@@ -180,16 +207,39 @@ void LangevinPropagator::resize()
 HRESULT LangevinPropagator::getAccelerations(float time, uint32_t len,
         const Vector3* pos, Vector3* acc)
 {
+    HRESULT result;
+
+    if(len != mesh->vertices.size()) {
+        return E_FAIL;
+    }
+
+    if(pos) {
+        if(!SUCCEEDED(result = mesh->setPositions(len, pos))) {
+            return result;
+        }
+    }
+
+    VERIFY(applyForces());
+
+    for(int i = 0; i < mesh->vertices.size(); ++i) {
+        VertexPtr v = mesh->vertices[i];
+
+        acc[i] = v->force;
+    }
+
+    return S_OK;
 }
 
 HRESULT LangevinPropagator::getPositions(float time, uint32_t len, Vector3* pos)
 {
+    for(int i = 0; i < len; ++i) {
+        pos[i] = mesh->vertices[i]->position;
+    }
+    return S_OK;
 }
 
 HRESULT LangevinPropagator::applyConstraints()
 {
-
-
     float sumError = 0;
     int iter = 0;
 
@@ -197,7 +247,7 @@ HRESULT LangevinPropagator::applyConstraints()
 
         for(ConstraintItems &ci : constraints) {
             MxObject **data = ci.args.data();
-            ci.constraint->project(data, ci.args.size());
+            ci.thing->project(data, ci.args.size());
         }
         
         iter += 1;
@@ -254,7 +304,21 @@ HRESULT LangevinPropagator::structureChanged()
     
     resize();
 
-    return updateConstraints();
+    VERIFY(updateItems(forces));
+
+    VERIFY(updateItems(constraints));
+
+    return S_OK;
+}
+
+
+HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
+{
+    MxType *type = dyn_cast<MxType>(obj);
+    if(type) {
+        return bindTypeItem(forces, force, type);
+    }
+    return E_NOTIMPL;
 }
 
 HRESULT LangevinPropagator::bindConstraint(IConstraint* constraint,
@@ -262,81 +326,41 @@ HRESULT LangevinPropagator::bindConstraint(IConstraint* constraint,
 {
     MxType *type = dyn_cast<MxType>(obj);
     if(type) {
-        return bindTypeConstraint(constraint, type);
+        return bindTypeItem(constraints, constraint, type);
     }
     return E_NOTIMPL;
-}
-
-HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
-{
-    return E_NOTIMPL;
-}
-
-HRESULT LangevinPropagator::updateConstraint(ConstraintItems& ci) {
-    HRESULT result = E_FAIL;
-    
-    if(!mesh) {
-        return S_OK;
-    }
-    
-    ci.args.clear();
-    
-    if (MxType_IsSubtype(ci.type, MxCell::type())) {
-        for(CellPtr cell : mesh->cells) {
-            if(cell->isRoot()) {
-                continue;
-            }
-            
-            if(MxType_IsSubtype(cell->ob_type, ci.type)) {
-                ci.args.push_back(cell);
-                result = S_OK;
-            }
-        }
-    }
-    
-    if (MxType_IsSubtype(ci.type, MxPolygon::type())) {
-        for(PolygonPtr poly : mesh->polygons) {
-            if(MxType_IsSubtype(poly->ob_type, ci.type)) {
-                ci.args.push_back(poly);
-                result = S_OK;
-            }
-        }
-    }
-    
-    std::cout << "constraint for " << ci.type->tp_name << " , args size: " << ci.args.size() << std::endl;
-    
-    return result;
-}
-
-HRESULT LangevinPropagator::bindTypeConstraint(IConstraint* constraint,
-        MxType* type)
-{
-    ConstraintItems& ci = getConstraintItem(constraint);
-    ci.type = type;
-    return updateConstraint(ci);
-}
-
-HRESULT LangevinPropagator::bindTypeForce(IForce* force, MxType* obj)
-{
-    return E_NOTIMPL;
-}
-
-LangevinPropagator::ConstraintItems& LangevinPropagator::getConstraintItem(IConstraint* cons)
-{
-    auto it = std::find_if(
-            constraints.begin(), constraints.end(),
-            [cons](const ConstraintItems& x) { return x.constraint == cons;});
-    if(it != constraints.end()) {
-        return *it;
-    }
-    else {
-        constraints.push_back(ConstraintItems{cons});
-        return constraints.back();
-    }
 }
 
 HRESULT MxBind_PropagatorModel(LangevinPropagator* propagator, MxModel* model)
 {
     model->propagator = propagator;
     return propagator->setModel(model);
+}
+
+HRESULT LangevinPropagator::objectDeleteListener(MxObject* pThis,
+        const MxObject* obj, uint32_t what)
+{
+}
+
+HRESULT LangevinPropagator::unbindConstraint(IConstraint* constraint)
+{
+}
+
+HRESULT LangevinPropagator::unbindForce(IForce* force)
+{
+}
+
+HRESULT LangevinPropagator::setPositions(float time, uint32_t len, const Vector3* pos)
+{
+    return mesh->setPositions(len, pos);
+}
+
+HRESULT LangevinPropagator::applyForces()
+{
+    for(ForceItems &f : forces) {
+        MxObject **data = f.args.data();
+        f.thing->applyForce(0, data, f.args.size());
+    }
+
+    return S_OK;
 }

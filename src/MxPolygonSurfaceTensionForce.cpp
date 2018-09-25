@@ -8,25 +8,34 @@
 #include <MxPolygonSurfaceTensionForce.h>
 #include "MxCell.h"
 
-HRESULT MxPolygonSurfaceTensionForce::applyForce(MxObject* obj) const
+
+
+MxPolygonSurfaceTensionForce::MxPolygonSurfaceTensionForce(float _surfaceTension):
+    surfaceTension{_surfaceTension}
 {
+}
 
-    float k = 0;
-    MxPolygon *pp = static_cast<MxPolygon*>(obj);
+HRESULT MxPolygonSurfaceTensionForce::setTime(float time)
+{
+    return S_OK;
+}
 
-    if(pp->cells[0]->isRoot() || pp->cells[1]->isRoot()) {
-        k = cellMediaSurfaceTension;
-    } else {
-        k = cellCellSurfaceTension;
-    }
+HRESULT MxPolygonSurfaceTensionForce::applyForce(float time, MxObject** objs,
+        uint32_t len) const
+{
+    for(int i = 0; i < len; ++i) {
 
-    for(uint i = 0; i < pp->vertices.size(); ++i) {
-        VertexPtr vi = pp->vertices[i];
-        VertexPtr vn = pp->vertices[(i+1)%pp->vertices.size()];
-        Vector3 dx = vn->position - vi->position;
 
-        vi->force += k * dx;
-        vn->force -= k * dx;
+        MxPolygon *pp = static_cast<MxPolygon*>(objs[i]);
+
+        for(uint i = 0; i < pp->vertices.size(); ++i) {
+            VertexPtr vi = pp->vertices[i];
+            VertexPtr vn = pp->vertices[(i+1)%pp->vertices.size()];
+            Vector3 dx = vn->position - vi->position;
+
+            vi->force += surfaceTension * dx;
+            vn->force -= surfaceTension * dx;
+        }
     }
 
     return S_OK;

@@ -19,9 +19,6 @@
 #include "MxMeshCore.h"
 #include "MeshRelationships.h"
 
-#define NEW_CONSTRAINTS
-
-
 
 struct MxCellRendererType : MxObject {
 
@@ -218,18 +215,6 @@ struct MxCell : MxObject, MxMeshNode {
 
     bool render = true;
     
-#ifndef NEW_CONSTRAINTS
-
-    float targetVolume = 0;
-    
-    /**
-     * get the value of the volume constraint, i.e. targetVolume - volume.
-     */
-    float volumeConstraint();
-
-    void projectVolumeConstraint();
-#endif
-
 private:
 
 
