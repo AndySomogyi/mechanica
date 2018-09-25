@@ -84,6 +84,19 @@ void testIndexOf() {
         self.cellMediaSurfaceTensionVal.floatValue = self.cellMediaSurfaceTensionSlider.floatValue;
         meshTest->model->setStdSurfaceTension(self.cellMediaSurfaceTensionSlider.floatValue);
     }
+    
+    else if (sender == self.growingSurfaceTensionVal)
+    {
+        self.growingSurfaceTensionSlider.floatValue = self.growingSurfaceTensionVal.floatValue;
+        meshTest->model->setGrowStdSurfaceTension(self.growingSurfaceTensionVal.floatValue);
+    }
+    else if (sender == self.growingSurfaceTensionSlider)
+    {
+        self.growingSurfaceTensionVal.floatValue = self.growingSurfaceTensionSlider.floatValue;
+        meshTest->model->setGrowStdSurfaceTension(self.growingSurfaceTensionSlider.floatValue);
+    }
+    
+    
     else if (sender == self.volumeVal)
     {
         self.volumeSlider.floatValue = self.volumeVal.floatValue;
@@ -139,6 +152,14 @@ void testIndexOf() {
     self.cellMediaSurfaceTensionSlider.maxValue = meshTest->model->stdSurfaceTensionMax();
     self.cellMediaSurfaceTensionSlider.minValue = meshTest->model->stdSurfaceTensionMin();
     self.cellMediaSurfaceTensionSlider.floatValue = meshTest->model->stdSurfaceTension();
+    
+    self.growingSurfaceTensionMax.floatValue = meshTest->model->growSurfaceTensionMax();
+    self.growingSurfaceTensionMin.floatValue = meshTest->model->growSurfaceTensionMin();
+    self.growingSurfaceTensionVal.floatValue = meshTest->model->growSurfaceTension();
+    
+    self.growingSurfaceTensionSlider.maxValue = meshTest->model->growSurfaceTensionMax();
+    self.growingSurfaceTensionSlider.minValue = meshTest->model->growSurfaceTensionMin();
+    self.growingSurfaceTensionSlider.floatValue = meshTest->model->growSurfaceTension();
     
     self.areaMax.floatValue = meshTest->model->maxTargetArea();
     self.areaMin.floatValue = meshTest->model->minTargetArea();

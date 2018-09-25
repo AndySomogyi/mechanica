@@ -34,7 +34,7 @@ struct CylinderModel : public MxModel {
     float stdSurfaceTensionMax();
     
     float growSurfaceTension();
-    void growStdSurfaceTension(float val);
+    void setGrowStdSurfaceTension(float val);
     float growSurfaceTensionMin();
     float growSurfaceTensionMax();
 

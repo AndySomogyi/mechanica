@@ -98,7 +98,9 @@ void CylinderModel::loadAssImpModel() {
 
     propagator->bindConstraint(&cellVolumeConstraint, &cylinderCellType);
 
-    propagator->bindForce(&stdPolygonForce, MxPolygon_Type);
+    propagator->bindForce(&stdPolygonForce, &basicPolygonType);
+
+    propagator->bindForce(&growingPolygonForce, &growingPolygonType);
 
     mesh->selectObject(MxPolygon_Type, 367);
 
@@ -237,13 +239,21 @@ void CylinderModel::setTargetAreaLambda(float targetAreaLambda)
     areaConstraint.lambda = targetAreaLambda;
 }
 
+static float PolyDistance = 1;
+
 HRESULT CylinderModel::changePolygonTypes()
 {
     MxObject *obj = mesh->selectedObject();
     MxPolygon *poly = dyn_cast<MxPolygon>(obj);
 
     if(MxType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
-        VERIFY(MxObject_ChangeType(obj, &growingPolygonType));
+        for(PolygonPtr p : mesh->polygons) {
+            
+            float distance = (poly->centroid - p->centroid).length();
+            if(distance <= PolyDistance) {
+                VERIFY(MxObject_ChangeType(p, &growingPolygonType));
+            }
+        }
         VERIFY(propagator->structureChanged());
         return S_OK;
     }
@@ -285,7 +295,7 @@ float CylinderModel::growSurfaceTension()
     return growingPolygonForce.surfaceTension;
 }
 
-void CylinderModel::growStdSurfaceTension(float val)
+void CylinderModel::setGrowStdSurfaceTension(float val)
 {
     growingPolygonForce.surfaceTension = val;
 }

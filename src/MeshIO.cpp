@@ -244,12 +244,12 @@ static bool ImpTriangulateFace(const aiFace &face, const aiVector3D* verts, aiFa
  */
 struct ImpFace {
 
-    ImpFace(MxMesh *mesh, const VectorMap &vecMap,
+    ImpFace(IMeshObjectTypeHandler *typeHandler, MxMesh *mesh, const VectorMap &vecMap,
             const aiFace *face, const aiMesh *aim) {
 
         vertices = verticesForFace(vecMap, aim, face);
 
-        polygon = mesh->createPolygon(MxPolygon_Type, vertices);
+        polygon = mesh->createPolygon(typeHandler->polygonType(face->mNumIndices), vertices);
 
         assert(polygon != nullptr);
     }
@@ -582,7 +582,7 @@ MxMesh* MxMesh_FromFile(const char* fname, float density, IMeshObjectTypeHandler
                 ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
 
                 if(!triFace) {
-                    triFaces.faces.push_back(ImpFace(mesh, vecMap, face, aim));
+                    triFaces.faces.push_back(ImpFace(typeHandler, mesh, vecMap, face, aim));
                     assert(triFaces.findTriangulatedFace(vecMap, aim, face));
                     triFace = &triFaces.faces.back();
                 }
