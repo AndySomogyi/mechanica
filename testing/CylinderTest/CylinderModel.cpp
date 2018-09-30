@@ -21,7 +21,7 @@ MxPolygonType basicPolygonType{"BasicPolygon", MxPolygon_Type};
 MxPolygonType growingPolygonType{"GrowingPolygon", MxPolygon_Type};
 
 MxCellVolumeConstraint cellVolumeConstraint{0., 0.};
-MxPolygonAreaConstraint areaConstraint{0.1, 0.001};
+MxPolygonAreaConstraint areaConstraint{0.1, 0.01};
 
 MxPolygonSurfaceTensionForce stdPolygonForce{0.05};
 MxPolygonSurfaceTensionForce growingPolygonForce{0.05};

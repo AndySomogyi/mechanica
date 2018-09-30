@@ -13,22 +13,33 @@ set(CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/extern/magnum/modules
   ${PROJECT_SOURCE_DIR}/extern/magnum-plugins/modules)
 
+message("CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
+message("CMAKE_OSX_DEPLOYMENT_TARGET: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+message("MACOSX_DEPLOYMENT_TARGET: ${MACOSX_DEPLOYMENT_TARGET}")
+message("CMAKE_OSX_SYSROOT: ${CMAKE_OSX_SYSROOT}")
+message("XCODE_VERSION: ${XCODE_VERSION}")
+message("CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
+message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+message("CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
+
 
 #find_package(GLFW REQUIRED)
 
-find_package(PythonLibs 2.7 REQUIRED)
+find_package(PythonInterp 3.5 REQUIRED)
+message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
+message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
+message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2
+message("PYTHON_VERSION_MINOR: ${PYTHON_VERSION_MINOR}") # - Python minor version found e.g. 5
+message("PYTHON_VERSION_PATCH: ${PYTHON_VERSION_PATCH}") # - Python patch version found e.g. 2
+
+
+find_package(PythonLibs 3.5 REQUIRED)
 message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")
 message("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
 message("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
 message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
 
 
-find_package(PythonInterp 2.7 REQUIRED)
-message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
-message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
-message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2
-message("PYTHON_VERSION_MINOR: ${PYTHON_VERSION_MINOR}") # - Python minor version found e.g. 5
-message("PYTHON_VERSION_PATCH: ${PYTHON_VERSION_PATCH}") # - Python patch version found e.g. 2
 
 find_package(NumPy)
 message("NUMPY_FOUND: ${NUMPY_FOUND}") # - was NumPy found
