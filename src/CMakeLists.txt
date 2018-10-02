@@ -94,6 +94,7 @@ set(SRC
   MxPolygonSurfaceTensionForce.cpp
   MxPolygonAreaConstraint.cpp
   MxCellVolumeConstraint.cpp
+  MxRenderTarget.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -153,6 +154,7 @@ set(HEADERS
   MxPolygonSurfaceTensionForce.h
   MxPolygonAreaConstraint.h
   MxCellVolumeConstraint.h
+  MxRenderTarget.h
   )
 
 

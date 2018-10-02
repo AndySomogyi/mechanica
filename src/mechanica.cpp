@@ -20,7 +20,7 @@
 struct X {
     X() {printf("foo");};
 };
-    
+
     X x;
 
 PyMethodDef methods = {
@@ -32,9 +32,9 @@ PyMethodDef methods = {
   static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "_zope_proxy_proxy", /* m_name */
-    module___doc__,      /* m_doc */
+    "foo",      /* m_doc */
     -1,                  /* m_size */
-    module_functions,    /* m_methods */
+    NULL,    /* m_methods */
     NULL,                /* m_reload */
     NULL,                /* m_traverse */
     NULL,                /* m_clear */

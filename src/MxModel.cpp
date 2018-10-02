@@ -28,6 +28,8 @@ Noddy_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Noddy *self;
 
+    /*
+
     self = (Noddy *)type->tp_alloc(type, 0);
     if (self != NULL) {
         self->first = PyString_FromString("");
@@ -44,6 +46,7 @@ Noddy_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
         self->number = 0;
     }
+    */
 
     return (PyObject *)self;
 }
@@ -98,11 +101,13 @@ Noddy_setfirst(Noddy *self, PyObject *value, void *closure)
         return -1;
     }
 
+    /*
     if (! PyString_Check(value)) {
         PyErr_SetString(PyExc_TypeError,
                         "The first attribute value must be a string");
         return -1;
     }
+    */
 
     Py_DECREF(self->first);
     Py_INCREF(value);
@@ -126,11 +131,11 @@ Noddy_setlast(Noddy *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (! PyString_Check(value)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "The last attribute value must be a string");
-        return -1;
-    }
+    //if (! PyString_Check(value)) {
+    //    PyErr_SetString(PyExc_TypeError,
+    //                    "The last attribute value must be a string");
+    //    return -1;
+    //}
 
     Py_DECREF(self->last);
     Py_INCREF(value);
@@ -158,7 +163,7 @@ Noddy_name(Noddy* self)
     PyObject *args, *result;
 
     if (format == NULL) {
-        format = PyString_FromString("%s %s");
+        //format = PyString_FromString("%s %s");
         if (format == NULL)
             return NULL;
     }
@@ -167,7 +172,7 @@ Noddy_name(Noddy* self)
     if (args == NULL)
         return NULL;
 
-    result = PyString_Format(format, args);
+    //result = PyString_Format(format, args);
     Py_DECREF(args);
 
     return result;
