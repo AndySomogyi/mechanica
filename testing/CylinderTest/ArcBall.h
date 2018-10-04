@@ -1,90 +1,99 @@
-#ifndef IAUNS_ARC_BALL_H
-#define IAUNS_ARC_BALL_H
+/**********************************************************************
 
-#include <stdint.h>
+  arcball.h
 
-#define GLM_SWIZZLE
+  GLUI User Interface Toolkit
+  Copyright (c) 1998 Paul Rademacher
+     Feb 1998, Paul Rademacher (rademach@cs.unc.edu)
+     Oct 2003, Nigel Stewart - GLUI Code Cleaning
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-namespace CPM_ARC_BALL_NS {
+  WWW:    https://github.com/libglui/glui
+  Issues: https://github.com/libglui/glui/issues
 
-/// A reimplementation of Ken Shoemake's arcball camera. SCIRun 4's camera
-/// system is based off of Ken's code. The Code appears in Graphics Gems 4, 
-/// III.1.
-/// Unless specified otherwise, all calculations and variables stored in this
-/// class are relative to the target coordinate system (TCS) for which there is
-/// a transformation from screen space to TCS given by the screenToTCS
-/// constructor parameter.
-/// If the screenToTCS parameter in the constructor is left as the identity
-/// matrix then all values are given in screen coordinates.
-/// Screen coordinates are (x \in [-1,1]) and (y \in [-1,1]) where (0,0) is the
-/// center of the screen.
-class ArcBall
+  This software is provided 'as-is', without any express or implied
+  warranty. In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+  claim that you wrote the original software. If you use this software
+  in a product, an acknowledgment in the product documentation would be
+  appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+  misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+ ---------------------------------------------------------------------
+
+  A C++ class that implements the Arcball, as described by Ken
+  Shoemake in Graphics Gems IV.
+  This class takes as input mouse events (mouse down, mouse drag,
+  mouse up), and creates the appropriate quaternions and 4x4 matrices
+  to represent the rotation given by the mouse.
+
+  This class is used as follows:
+  - initialize [either in the constructor or with set_params()], the
+    center position (x,y) of the arcball on the screen, and the radius
+  - on mouse down, call mouse_down(x,y) with the mouse position
+  - as the mouse is dragged, repeatedly call mouse_motion() with the
+    current x and y positions.  One can optionally pass in the current
+    state of the SHIFT, ALT, and CONTROL keys (passing zero if keys
+    are not pressed, non-zero otherwise), which constrains
+    the rotation to certain axes (X for CONTROL, Y for ALT).
+  - when the mouse button is released, call mouse_up()
+
+  Axis constraints can also be explicitly set with the
+  set_constraints() function.
+
+  The current rotation is stored in the 4x4 float matrix 'rot'.
+  It is also stored in the quaternion 'q_now'.
+
+**********************************************************************/
+
+#ifndef GLUI_ARCBALL_H
+#define GLUI_ARCBALL_H
+
+#include "glui_internal.h"
+#include "algebra3.h"
+#include "quaternion.h"
+
+class Arcball
 {
 public:
-  /// \param center         Center of the arcball in TCS (screen coordinates if 
-  ///                       screenToTCS = identity). Generally this will 
-  ///                       always be (0,0,0). But you may move the center
-  ///                       in and out of the screen plane to various effect.
-  /// \param radius         Radius in TCS. For screen coordinates, a good
-  ///                       default is 0.75.
-  /// \param screenToTCS    Transformation from screen coordinates
-  ///                       to TCS. \p center and \p radius are given in TCS.
-  ArcBall(const glm::vec3& center, float radius,
-          const glm::mat4& screenToTCS = glm::mat4());
-  virtual ~ArcBall();
-  
-  /// Initiate an arc ball drag given the mouse click in screen coordinates.
-  /// \param mouseScreenCoords  Mouse screen coordinates.
-  void beginDrag(const glm::vec2& mouseScreenCoords);
+    Arcball();
+    Arcball(mat4 *mtx);
+    Arcball(const vec2 &center, float radius);
 
-  /// Informs the arcball when the mouse has been dragged.
-  /// \param mouseScreenCoords  Mouse screen coordinates.
-  void drag(const glm::vec2& mouseScreenCoords);
+    void  set_damping(float d);
+    void  idle();
+    void  mouse_down(int x, int y);
+    void  mouse_up();
+    void  mouse_motion(int x, int y, int shift, int ctrl, int alt);
+    void  mouse_motion(int x, int y);
+    void  set_constraints(bool constrain_x, bool constrain_y);
+    void  set_params(const vec2 &center, float radius);
+    void  reset_mouse();
+    void  init();
 
-  /// Retrieves the current transformation in TCS.
-  /// Obtains full transformation of object in question. If the arc ball is 
-  /// being used to control camera rotation, then this will contain all
-  /// concatenated camera transformations. The current state of the camera
-  /// is stored in the quaternions mQDown and mQNow. mMatNow is calculated
-  /// from mQNow.
-  glm::mat4 getTransformation() const;
+    vec3  constrain_vector(const vec3 &vector, const vec3 &axis);
+    vec3  mouse_to_sphere(const vec2 &p);
 
-private:
+  //public:
+    int   is_mouse_down;  /* true for down, false for up */
+    int   is_spinning;
+    quat  q_now, q_down, q_drag, q_increment;
+    vec2  down_pt;
+    mat4  rot, rot_increment;
+    mat4  *rot_ptr;
 
-  /// Calculates our position on the ArcBall from 2D mouse position.
-  /// \param tscMouse   TSC coordinates of mouse click.
-  glm::vec3 mouseOnSphere(const glm::vec3& tscMouse);
-
-  /// Construct a unit quaternion from two points on the unit sphere.
-  static glm::quat quatFromUnitSphere(const glm::vec3& from, const glm::vec3& to);
-
-  glm::vec3     mCenter;        ///< Center of the arcball in target coordinate system.
-  float  mRadius;        ///< Radius of the arcball in target coordinate system.
-
-  glm::quat     mQNow;          ///< Current state of the rotation taking into account mouse.
-                                ///< Essentially QDrag * QDown (QDown is a applied first, just
-                                ///< as in matrix multiplication).
-  glm::quat     mQDown;         ///< State of the rotation since mouse down.
-  glm::quat     mQDrag;         ///< Dragged transform. Knows nothing of any prior 
-                                ///< transformations.
-
-  glm::vec3     mVNow;          ///< Most current TCS position of mouse (during drag).
-  glm::vec3     mVDown;         ///< TCS position of mouse when the drag was begun.
-  glm::vec3     mVSphereFrom;   ///< vDown mapped to the sphere of 'mRadius' centered at 'mCenter' in TCS.
-  glm::vec3     mVSphereTo;     ///< vNow mapped to the sphere of 'mRadius' centered at 'mCenter' in TCS.
-
-  glm::mat4     mMatNow;        ///< Matrix representing the current rotation.
-
-  /// Transform from screen coordinates to the target coordinate system.
-  glm::mat4     mScreenToTCS;
+    bool  constraint_x, constraint_y;
+    vec2  center;
+    float radius, damp_factor;
+    int   zero_increment;
 };
-
-} // namespace CPM_ARC_BALL_NS 
 
 #endif
