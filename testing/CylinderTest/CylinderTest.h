@@ -26,6 +26,7 @@
 
 #include <LangevinPropagator.h>
 #include "CylinderModel.h"
+#include "ArcBallInteractor.h"
 
 struct CylinderTest {
 
@@ -72,6 +73,8 @@ struct CylinderTest {
 
     int timeSteps = 0;
 
+    ArcBallInteractor arcBall;
+    
 };
 
 

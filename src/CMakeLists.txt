@@ -95,6 +95,10 @@ set(SRC
   MxPolygonAreaConstraint.cpp
   MxCellVolumeConstraint.cpp
   MxRenderTarget.cpp
+  MxWindowView.cpp
+  MxImageView.cpp
+  ArcBallInteractor.cpp
+  MxUI.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -155,6 +159,10 @@ set(HEADERS
   MxPolygonAreaConstraint.h
   MxCellVolumeConstraint.h
   MxRenderTarget.h
+  MxWindowView.h
+  MxImageView.h
+  ArcBallInteractor.h
+  MxUI.h
   )
 
 
@@ -178,10 +186,12 @@ set(HEADERS
 #target_include_directories(mechanica_OBJECTS PRIVATE ${NUMPY_INCLUDE_DIR})
 
 
+
+# this is the "object library" target: compiles the sources only once
 # need at least one src file in a project for xcode to build it, xcode
 # won't work if any product *only* has an object src
-add_library(mechanica
-  #$<TARGET_OBJECTS:mechanica_OBJECTS>
+add_library(mechanica_obj
+  OBJECT
   ${SRC}
   ${HEADERS}
   ${MxMeshShaderProgramRes}
@@ -190,10 +200,10 @@ add_library(mechanica
 
 message("Shader Program Res: ${MxMeshShaderProgramRes}")
 
-set_target_properties(mechanica PROPERTIES POSITION_INDEPENDENT_CODE ON)
+# set_target_properties(mechanica PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # temporarily add add these includes until we get a stable public API
-target_include_directories(mechanica PUBLIC
+target_include_directories(mechanica_obj PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   ${PYTHON_INCLUDE_DIRS}
@@ -203,12 +213,14 @@ target_include_directories(mechanica PUBLIC
 
 # add_dependencies(mechanica mechanica_OBJECTS)
 
-
-
 #target_link_libraries(mechanica glfw)
-#target_link_libraries(mechanica ${OPENGL_LIBRARIES})
-target_link_libraries(mechanica
+#target_link_libraries(mechanica
+
+
+target_link_libraries(mechanica_obj
   ${PYTHON_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  glfw
   Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
@@ -253,3 +265,64 @@ source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
 #link_directories(${LLVM_LIBRARY_DIRS})
 #target_link_libraries(mechanica ${LLVM_LIBRARIES})
 
+
+
+
+# shared libraries need PIC
+set_property(TARGET mechanica_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+
+# shared and static libraries built from the same object files
+add_library(mechanica_shared SHARED $<TARGET_OBJECTS:mechanica_obj>)
+set_target_properties(mechanica_shared PROPERTIES OUTPUT_NAME mechanica)
+
+
+
+# shared and static libraries built from the same object files
+add_library(mechanica_py SHARED $<TARGET_OBJECTS:mechanica_obj>)
+
+target_link_libraries(mechanica_py
+  ${PYTHON_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  glfw
+  Assimp::Assimp
+  Magnum::Application
+  Magnum::Magnum
+  Magnum::Shaders
+  voro++
+  sundials_cvode_static)
+
+set_target_properties(mechanica_py PROPERTIES PREFIX "")
+set_target_properties(mechanica_py PROPERTIES OUTPUT_NAME "_mechanica")
+set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
+
+target_link_libraries(mechanica_shared
+  ${PYTHON_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  glfw
+  Assimp::Assimp
+  Magnum::Application
+  Magnum::Magnum
+  Magnum::Shaders
+  voro++
+  sundials_cvode_static)
+
+
+add_library(mechanica_static STATIC $<TARGET_OBJECTS:mechanica_obj>)
+set_target_properties(mechanica_static PROPERTIES OUTPUT_NAME mechanica)
+
+
+target_link_libraries(mechanica_static
+  ${PYTHON_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  glfw
+  Assimp::Assimp
+  Magnum::Application
+  Magnum::Magnum
+  Magnum::Shaders
+  voro++
+  sundials_cvode_static)
+
+
+
+add_library(mechanica ALIAS mechanica_obj)

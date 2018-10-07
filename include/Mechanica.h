@@ -36,6 +36,7 @@ typedef double MxReal;
 #include <mx_mesh.h>
 #include <mx_particles.h>
 #include <mx_simulator.h>
+#include <mx_ui.h>
 
 
 

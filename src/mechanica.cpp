@@ -16,41 +16,33 @@
 #include "MxModel.h"
 #include "MxSystem.h"
 #include "MxPropagator.h"
+#include "MxUI.h"
 
-struct X {
-    X() {printf("foo");};
+
+static PyMethodDef methods[] = {
+        { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
+        { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_NOARGS, NULL },
+        { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, METH_NOARGS, NULL },
+        { NULL, NULL, 0, NULL }
 };
 
-    X x;
-
-PyMethodDef methods = {
-    NULL
+static struct PyModuleDef mechanica_module = {
+        PyModuleDef_HEAD_INIT,
+        "_mechanica",   /* name of module */
+        NULL, /* module documentation, may be NULL */
+        -1,       /* size of per-interpreter state of the module,
+                 or -1 if the module keeps state in global variables. */
+        methods
 };
 
-
-#if PY_MAJOR_VERSION >= 3
-  static struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT,
-    "_zope_proxy_proxy", /* m_name */
-    "foo",      /* m_doc */
-    -1,                  /* m_size */
-    NULL,    /* m_methods */
-    NULL,                /* m_reload */
-    NULL,                /* m_traverse */
-    NULL,                /* m_clear */
-    NULL,                /* m_free */
-  };
-#endif
 
 static PyObject * moduleinit(void)
 {
     PyObject *m;
 
-#if PY_MAJOR_VERSION >= 3
-    m = PyModule_Create(&moduledef);
-#else
-    m = Py_InitModule3("mechanica", &methods, "This is a module");
-#endif
+
+    m = PyModule_Create(&mechanica_module);
+
 
     if (m == NULL)
         return NULL;
@@ -76,7 +68,7 @@ static PyObject * moduleinit(void)
     Py_INCREF(api_object);
     PyModule_AddObject(m, "_CAPI", api_object);
 
-    */
+     */
 
     MxObject_init(m);
     MxType_init(m);
@@ -88,27 +80,15 @@ static PyObject * moduleinit(void)
     //MxObject_init(m);
     //MxObject_init(m);
 
-  return m;
+    return m;
 }
 
-#if PY_MAJOR_VERSION < 3
 
-	/* When Python imports a C module named 'X' it loads the module
-	 * then looks for a method named "init"+X and calls it.  Hence
-	 * for the module "mechanica" the initialization function is
-	 * "initmechanica".
-	 */
-    PyMODINIT_FUNC initmechanica(void)
-    {
-    	//import_array();
-        moduleinit();
-    }
-#else
-    PyMODINIT_FUNC PyInit_mechanica(void)
-    {
-        return moduleinit();
-    }
-#endif
+PyMODINIT_FUNC PyInit__mechanica(void)
+{
+    return moduleinit();
+}
+
 
 
 

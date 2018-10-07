@@ -12,3 +12,5 @@
 #add_subdirectory(test1)
 add_subdirectory(MeshTest)
 add_subdirectory(CylinderTest)
+add_subdirectory(qtest)
+add_subdirectory(twave)

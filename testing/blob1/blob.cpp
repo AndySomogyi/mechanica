@@ -42,7 +42,7 @@ GLuint VBO, VAO;
 GLuint program;
 
 // Camera
-ArcBall ball(glm::vec3(0,0,0), 0.75);
+ArcBallInteractor ball(glm::vec3(0,0,0), 0.75);
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 

@@ -8,9 +8,13 @@
 #ifndef SRC_MXRENDERTARGET_H_
 #define SRC_MXRENDERTARGET_H_
 
-#include <mx_object.h>
+#include "mechanica_private.h"
+#include "MxModel.h"
+#include "MxPropagator.h"
+#include "MxController.h"
+#include "MxView.h"
 
-class MxRenderTarget: public MxObject
+struct MxRenderTarget: public MxObject
 {
 public:
     MxRenderTarget();

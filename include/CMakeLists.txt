@@ -48,6 +48,7 @@ set (_PUBLIC_HEADERS
   mx_propagator.h
   mx_lattice.h
   mx_expression.h
+  mx_ui.h
   ${AST_HEADERS}
   ${X3D_HEADERS}
   )

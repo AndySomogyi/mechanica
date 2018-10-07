@@ -5,7 +5,6 @@
 #include "Magnum/GL/Version.h"
 #include "Magnum/Platform/GLContext.h"
 
-
 using namespace std;
 using namespace Magnum;
 using namespace Magnum::Trade;
@@ -45,6 +44,12 @@ static void window_refresh_callback(GLFWwindow* window)
 {
     CylinderTest *foo = (CylinderTest*)glfwGetWindowUserPointer(window);
     foo->draw();
+}
+
+static void size_callback(GLFWwindow* window, int width, int height)
+{
+    CylinderTest *foo = (CylinderTest*)glfwGetWindowUserPointer(window);
+    foo->arcBall.setWindowSize(width, height);
 }
 
 static void char_callback(GLFWwindow *window, unsigned int c) {
@@ -138,6 +143,8 @@ HRESULT CylinderTest::createContext(const Configuration& configuration) {
     glfwSetWindowUserPointer(window, this);
 
     glfwSetWindowPos(window, 500, 100);
+    
+    arcBall.setWindowSize(configuration.size().x(), configuration.size().y());
 
     /* Proceed with configuring other stuff that couldn't be done with window
        hints */
@@ -158,6 +165,8 @@ HRESULT CylinderTest::createContext(const Configuration& configuration) {
 
     glfwSetScrollCallback(window, scroll_callback);
 
+    glfwSetWindowSizeCallback(window, size_callback);
+
 
     //glfwSetFramebufferSizeCallback(_window, staticViewportEvent);
     //glfwSetKeyCallback(_window, staticKeyEvent);
@@ -171,7 +180,6 @@ HRESULT CylinderTest::createContext(const Configuration& configuration) {
     /* Return true if the initialization succeeds */
     return context->tryCreate();
 }
-
 
 CylinderTest::CylinderTest(const Configuration& configuration) :
     context{new Magnum::Platform::GLContext{NoCreate, 0, nullptr}}
@@ -233,6 +241,10 @@ void CylinderTest::draw() {
 
     renderer->setProjectionMatrix(projection);
 
+    //rotation = build_rotmatrix(curquat);
+    
+    rotation = arcBall.rotation();
+
     Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
 
     renderer->setViewMatrix(mat);
@@ -257,13 +269,11 @@ void CylinderTest::mouseMove(double xpos, double ypos) {
     Vector2{GL::defaultFramebuffer.viewport().size()};
 
     previousMousePosition = pos;
-
+    
+    
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
-
-    rotation =
-        rotation *
-        Matrix4::rotationX(Rad{delta.y()}) *
-        Matrix4::rotationY(Rad{delta.x()}) ;
+        
+        arcBall.mouseMotion(xpos, ypos);
     }
 
     else if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
@@ -279,7 +289,14 @@ void CylinderTest::mouseClick(int button, int action, int mods) {
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
+        
+        
+        
+        std::cout << "mouse click: {" << xpos << ", " << ypos << "}" << std::endl;
+        
         previousMousePosition = Vector2{(float)xpos, (float)ypos};
+        
+        arcBall.mouseDown(xpos, ypos);
     }
 }
 
