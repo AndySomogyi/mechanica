@@ -52,5 +52,17 @@ MxAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout);
  */
 MxAPI_FUNC(HRESULT) MxUI_PostEmptyEvent();
 
+struct MxGraphicsConfiguration {
+    char* appTitle;
+    int sampleCount;
+    uint32_t version;
+    uint32_t flags;
+    uint32_t windowFlags;
+    uint32_t cursorMode;
+    bool srgbCapable;
+};
+
+MxAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration *conf);
+
 
 #endif /* INCLUDE_MX_UI_H_ */

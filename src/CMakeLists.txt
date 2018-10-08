@@ -99,6 +99,7 @@ set(SRC
   MxImageView.cpp
   ArcBallInteractor.cpp
   MxUI.cpp
+  MxTestView.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -163,6 +164,7 @@ set(HEADERS
   MxImageView.h
   ArcBallInteractor.h
   MxUI.h
+  MxTestView.h
   )
 
 
@@ -295,6 +297,33 @@ target_link_libraries(mechanica_py
 set_target_properties(mechanica_py PROPERTIES PREFIX "")
 set_target_properties(mechanica_py PROPERTIES OUTPUT_NAME "_mechanica")
 set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
+
+
+#add_custom_command(
+#  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/mechanica.py"
+#  POST_BUILD
+#  COMMAND ${CMAKE_COMMAND} -E copy
+#  ${CMAKE_CURRENT_SRC_DIR}/mechanica.py
+#  ${CMAKE_CURRENT_BINARY_DIR}/mechanica.py
+#  DEPENDS mechanica.py)
+
+
+#add_custom_command(
+# TARGET ${destination} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy ${source} ${destination}
+# DEPENDS ${source}
+# COMMENT "symbolic link resources folder from ${source} => ${destination}"
+# )
+
+#add_custom_target(mechanica.py
+#  DEPENDS mechanica.py)
+
+#add_custom_command(
+#  TARGET mechanica_py
+#  DEPENDS mechanica.py
+#  POST_BUILD
+#  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/mechanica.py ${CMAKE_CURRENT_BINARY_DIR}/mechanica.py
+#  )
 
 target_link_libraries(mechanica_shared
   ${PYTHON_LIBRARIES}

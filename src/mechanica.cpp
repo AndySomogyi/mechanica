@@ -17,12 +17,18 @@
 #include "MxSystem.h"
 #include "MxPropagator.h"
 #include "MxUI.h"
+#include "MxTestView.h"
+
 
 
 static PyMethodDef methods[] = {
         { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
-        { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_NOARGS, NULL },
+        { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_VARARGS, NULL },
         { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, METH_NOARGS, NULL },
+        { "initializeGraphics", (PyCFunction)MxPyUI_InitializeGraphics, METH_VARARGS, NULL },
+        { "createTestWindow", (PyCFunction)MxPyUI_CreateTestWindow, METH_VARARGS, NULL },
+        { "testWin", (PyCFunction)PyTestWin, METH_VARARGS, NULL },
+        { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -38,6 +44,7 @@ static struct PyModuleDef mechanica_module = {
 
 static PyObject * moduleinit(void)
 {
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
     PyObject *m;
 
 

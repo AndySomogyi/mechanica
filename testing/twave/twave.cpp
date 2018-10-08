@@ -22,6 +22,8 @@
 
 #include <linmath.h>
 
+#include <iostream>
+
 // Maximum delta T to allow for differential calculations
 #define MAX_DELTA_T 0.01
 
@@ -398,10 +400,17 @@ int main(int argc, char* argv[])
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 1);
+    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // We want OpenGL 3.3
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
 
     window = glfwCreateWindow(640, 480, "Wave Simulation", NULL, NULL);
+
+    std::cout << "created window" << std::endl;
+
+
     if (!window)
     {
         glfwTerminate();
