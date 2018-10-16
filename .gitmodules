@@ -1,15 +1,9 @@
-[submodule "deps/mdcore"]
+[submodule "extern/mdcore"]
 	path = extern/mdcore
 	url = https://github.com/AndySomogyi/mdcore.git
-[submodule "docs"]
-	path = docs
-	url = https://github.com/AndySomogyi/mechanica.git
 [submodule "extern/glfw"]
 	path = extern/glfw
 	url = https://github.com/AndySomogyi/glfw.git
-[submodule "extern/nanogui"]
-	path = extern/nanogui
-	url = https://github.com/AndySomogyi/nanogui.git
 [submodule "extern/magnum"]
 	path = extern/magnum
 	url = https://github.com/AndySomogyi/magnum.git
@@ -26,6 +20,3 @@
 [submodule "extern/sundials"]
 	path = extern/sundials
 	url = https://github.com/AndySomogyi/sundials.git
-[submodule "extern/imgui"]
-	path = extern/imgui
-	url = git@github.com:AndySomogyi/imgui.git
