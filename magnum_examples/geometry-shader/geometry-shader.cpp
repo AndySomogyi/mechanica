@@ -235,8 +235,9 @@ void GeometryShaderExample::drawEvent() {
     auto t_now = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
 
+
     auto model = Matrix4::rotation(
-            Rad{0.25f * time * Constants::pi()},
+            Rad{time * Constants::pi()},
             Vector3{0.0f, 0.0f, 1.0f}
     );
 
@@ -249,7 +250,5 @@ void GeometryShaderExample::drawEvent() {
     swapBuffers();
 }
 
-int main(int argc, char** argv) {
-    GeometryShaderExample app({argc, argv});
-    return app.exec();
-}
+
+MAGNUM_APPLICATION_MAIN(GeometryShaderExample)

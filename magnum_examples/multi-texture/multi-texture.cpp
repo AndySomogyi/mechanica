@@ -37,6 +37,7 @@ const GLchar* vertSrc = R"(
     layout(location=2) in vec2 texcoord;
     out vec3 Color;
     out vec2 Texcoord;
+
     void main()
     {
         Color = color;
@@ -51,9 +52,10 @@ const GLchar* fragSrc = R"(
     out vec4 outColor;
     uniform sampler2D texKitten;
     uniform sampler2D texPuppy;
+
     void main()
     {
-        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
+        outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 1.5) * vec4(Color , 1.0);
     }
 )";
 
@@ -174,10 +176,4 @@ void MultiTexture::drawEvent() {
     swapBuffers();
 }
 
-
-int main(int argc, char** argv) {
-    MultiTexture app({argc, argv});
-    return app.exec();
-}
-
-
+MAGNUM_APPLICATION_MAIN(MultiTexture)
