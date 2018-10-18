@@ -72,4 +72,3 @@ We can thus approximate an epethelial sheet as a two dimensional curved surface,
     can represent this sheet of biological cells with a set of polygons constrained
     to a two dimensional surface. Taken from :cite:`Fletcher:2014hub`
 
-.. bibliography:: papers.bib bibdesk.bib 

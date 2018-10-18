@@ -13,8 +13,10 @@ Contents:
    :maxdepth: 4
 
    introduction
+   formalism
    examples
    api_reference
+   references
 
 
 
