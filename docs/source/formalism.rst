@@ -10,6 +10,7 @@ to natural phenomena.
 Let's start by looking at the folliwing diagram of a single biological
 cell. This cell could be moving on a surface, or inside some tissue. 
 
+.. _cell_1:
 .. figure:: cell_1.jpg
     :width: 70 %
     :align: center
@@ -26,18 +27,26 @@ properties.
 
 We also understand that for any living or active things, these objects typically
 not static. Cells can move around, active fibers contract, cells can excert
-forces on it's neighboring cells and enviormnet, cells 
+forces on it's neighboring cells and enviormnet, cells can sense and respond
+with chemical signaling, and so forth as in the following figure
 
 
+.. figure:: cell_responses.jpg
+    :width: 70 %
+    :align: center
+
+    Biological cells can sense a variaety of signals in their envionrment and
+    respond with a variety of behaviors. 
+
+We call anything that *causes* something to change a **process**. Processes
+represent anything that causes a change in state. A process may, for example,
+represent a transformation in which sub-strates are consumed and products are
+produced, or it may alter the state of an object, either continuously or
+discretely. Unlike traditional programming languages, processes in Mechanica can
+operate concurrently and continuously.
 
 Mechanica represents physical concepts using two key concepts: **objects** and
-**processes**.
-
-Processes represent anything that causes a change in state. A
-process may, for example, represent a transformation in which sub-strates are
-consumed and products are produced, or it may alter the state of an object,
-either continuously or discretely. Unlike traditional programming languages,
-processes in Mechanica can operate concurrently and continuously. This paradigm
+**processes**. This paradigm
 of representing the world in terms of objects and processes forms the basis of
 the Cellular Behavior Ontology (CBO) :cite:`Sluka:2014wz`, and also the Object
 Process Methodology (OPM) :cite:`Dori:0pbBYLeH`.
@@ -73,47 +82,121 @@ child processes, and child processes may be ordered either concurrently or
 sequentially. Processes fall into two categories: continuous and discrete.
 
 
+Types
+=====
+Every *thing* that we have previosly discussed, objects and process has a
+well-defined **type**. Types are a basic concept common to most programming
+languages, serving to classify variable instances into categories. The type of a
+variable determines the kind of data which may be stored in that
+variable. Essentially, a type in programming languages is roughly analogous to
+genotype in biology. The type of an object defines what operations are valid on
+that instance, i.e. we can sum two numeric types, but adding a numeric type to,
+say, a string is ill defined. Most programming languages do not have a concept
+related to the biological notion of a phenotype. A phenotype in biology is a
+metric, an observable categorization that determines the cell type of a
+particular cell instance. A phenotype is defined by a set of rules, or
+conditions; when these conditions are met, we say that a cell is of such type.
 
-A set of conditions may be attached to any process definition. Conditions are
-specified in a \texttt{when} clause, much as they are in Modelica. Conditions
-operate differently for discrete processes than they do for continuous
-processes. Discrete processes are very similar to SBML events, in that a
-discrete process is triggered only when its condition expression transitions
-from false to true. The discrete process will also trigger at any future time
-when the condition expression makes this transition. Conditions on a continous
-process determine when the process should be active.
+The CCOPM extends the basic concept of dynamic or static types with a rule-based
+type. Here, the a type may be defined via a set of rules, and when all of these
+rules are met, we say that a variable instance is a certain type. This notion is
+important because biological cells frequently undergo phenotypic change, that
+is, they change type over time. Again, processes are defined to operate on a
+specific type. Here we can create a type definition based on a set of
+conditions; when all of these conditions are met, the type expression becomes
+true, and the processes corresponding to that type definition now automatically
+become active on all object instances for which the type evaluates to true.
 
 
-Discrete processes are  similar to functions in functional languages in that
-they are a sequence of statements. The runtime triggers discrete processes when
-their condition is met. Discrete processes can consume, create or modify
-discrete objects. For example, users may define a discrete creation process
-which creates new cell instances in a spatial region, or a discrete deletion
-process which deletes a cell instance in response to some condition. The runtime
-manages a pool of threads which execute triggered processes. The runtime also
-continuously monitors each discrete process condition expression, and when the
-condition evaluates to true, the runtime places the triggered process into a
-priority queue and the next available thread executes the triggered processes.
+The type of an object in a programming language must be unambiguous, since the
+type assigns meaning to a block of memory. A type formally defines the layout of
+a memory block and the types of data it stores. Strongly-typed programming
+languages require that we associate a type to each object or process when we
+define its identifier (symbol). Weakly-typed programming languages determine
+object and process types according to a set of rules and do not require that we
+declare the type of the object when we create it. In some weakly-typed
+languages, an object can even change type. A type system is a collection of
+rules that define the set of object types which can participate in a given
+process.
 
 
-Continuous processes ($\kappa$-processes) operate on continuous valued objects, and can be thought of as a generalization of the concept of chemical reactions. $\kappa$-processes consume reactants and produce products. Continuous processes must define a rate function which defines how fast the transformation (reaction) is occurring. The arguments to a $\kappa$-process must be labeled as either a reactant or a modifier, and a $\kappa$-process yields a set of zero or more products. An unlimited number of continuous $\kappa$-processes can act on an object instance, and the rate of change of this object instance is defined as the stoichiometric sum of all the currently active transformation processes that are consuming or producing this object. $\kappa$-processes may be used to define chemical reactions in a spatial compartment (such as cells) or membrane transport. 
+Most programming languages lack a concept corresponding to phenotype. A
+programming language cannot, in general, look at a memory block and determine
+the type of object it contains by analyzing its contents. A phenotype, on the
+other hand, is a list of conditions that determine how to categorize an object
+from the object’s properties. However both programming languages and biology
+have type systems. Indeed, biological modeling is the creation of a type system
+for a specific situation –collecting and defining a set of rules which specify
+which types of objects participate in which types of processes.
 
-Rate processes ($\rho$-processes) use a rate function to define the rate of change of a set of arguments. Only one $\rho$-process may be active on an object at a time; $\rho$-processes and $\kappa$-processes are mutually exclusive. 
+CCOPM extends the programming language concept of type with a rule-based
+definition of type. The type definition needs to be fuzzy so that we can ask how
+much an object instance participates in a type. Current programming languages
+support only Boolean type inquiries, in the CCOPM inquiring if an object is of a
+specified type returns a real value between 0 and 1.
+
+
+\textbf{Types} serve to classify variable instances into categories. The type of
+a variable determines the kind of data that may be stored in that variable. The
+type of an object defines what operations are valid on instances of that object
+type, i.e., we can sum two numeric types, but adding a numeric type to a string
+is ill-defined. Most programming languages do not have a concept related to the
+biological notion of a phenotype. A phenotype in biology is a \emph{metric}, an
+observable categorization that determines a cell's type. A phenotype is defined
+by a set of rules or conditions such that when these conditions are met, we say
+that a cell is of such type.
+
+
+The CCOPM extends the basic concept of dynamic or static types with a rule-based
+type, which is related to the concept of typestate oriented programming
+:cite:`Strom:1986ht`. Here, the type may be defined via a set of rules, and when
+all of those rules are met, we say that a variable instance is a certain
+type. This notion is important because biological cells frequently undergo
+phenotypic change, that is, they change type over time. Processes are
+defined to operate on a specific type, and the runtime automatically
+applies these processes to all instances of the specified type. Here we
+can create a type definition based on a set of conditions; when all of
+these conditions are met, the type expression becomes true, and the
+processes corresponding to that type definition now automatically become
+active on all object instances for which the type evaluates to true.
+
+
+Mechanisms
+==========
+
+Now that we have established a vocabulary and a formalism, lets again look at
+:numref:`cell_1`, and start formalizing what kinds of objects make up the cell,
+and developing *models* or abstractions to represent these concepts.
+
+
+.. |vertex1| image:: vertex_1.jpg   
+   :width: 120%
+   :align: middle
+.. |vertex2| image:: vertex_2.jpg
+   :width: 75%
+   :align: middle
+
+.. table:: This is my table
+   :widths:  30 20 
+
+   +-----------+-----------+
+   | |vertex1| | |vertex2| |
+   +-----------+-----------+
+
+
+
+
+
+
+Forces
+======
+
+Forces are kind of process that applies a force to a physical object. 
+
+
 
 Force processes ($\phi$-processes) provide a way to describe spatial change, such as motion, deformation, adhesion or response to  external forces. $\phi$-processes are similar to force functions in molecular dynamics. A $\phi$-process can be defined to act on one or between two spatial objects, hence a $\phi$-process may have one or two arguments, and both of them must be spatial object subtypes. $\phi$-processes return the force that acts on its arguments. Any motion processes (adhesion, taxis, deformation) can be specified via a suitable force process. For example, when an adhesion process is active between a surfaces of a pair of cells, the adhesion process applies a force between the cell surfaces at the locations where the surfaces are in contact. This adhesive force acts to keep the cells in contact and resists surface separation. 
 
 The language runtime automatically applies the force functions to spatial objects and calculates the net force acting on each spatial object. The runtime then calculates the time evolution of each spatial object, typically as $\mathbf{v} \propto \mathbf{F}/m$, where velocity is proportional to the net force acting on each spatial object. 
-
-\textbf{Types} serve to classify variable instances into categories. The type of a variable determines the kind of data that may be stored in that variable. The type of an object defines what operations are valid on instances of that object type, i.e., we can sum two numeric types, but adding a numeric type to a string is ill-defined. Most programming languages do not have a concept related to the biological notion of a phenotype. A phenotype in biology is a \emph{metric}, an observable categorization that determines a cell's type. A phenotype is defined by a set of rules or conditions such that when these conditions are met, we say that a cell is of such type.
-
-The CCOPM extends the basic concept of dynamic or static types with a rule-based
-type, which is related to the concept of typestate oriented programming :cite:`Strom:1986ht`. Here, the type may be defined via a set of rules, and when all of those rules are met, we say that a variable instance is a certain type. This notion is important because biological cells frequently undergo phenotypic change, that is, they change type over time. Processes are defined to operate on a specific type, and the runtime automatically applies these processes to all instances of the specified type. Here we can create a type definition based on a set of conditions; when all of these conditions are met, the type expression becomes true, and the processes corresponding to that type definition now automatically become active on all object instances for which the type evaluates to true. 
-
-\textbf{Scope Resolution} determines how symbol names resolve to a
-value. Programming languages typically have either static or dynamic scoping :cite:`grune2012modern`. Component composition in agent-based tissue simulations poses challenges that are not commonly encountered in traditional programming languages. Here, variables may also carry a spatial extent, for example, a chemical concentration exists over a region of space. So, whenever a chemical of a certain name is read or written, the value depends on where in space the read/write operation is occurring. Hence, the scope resolution in a spatial environment is related to the underlying spatial configuration. Furthermore, multiple different chemical networks may be placed inside of a cell or other spatial region. If this region is defined as a well-stirred compartment, all of the networks operate in the same space. Hence, any chemical species that these networks operate on must be connected to the same species in all of the other networks within that space. Additionally, chemical species may transfer across physical boundaries (e.g., cell membranes) that exist between distinct spatial regions. 
-
-In order to account for the spatial nature of objects, we introduce a new scope
-resolution rule which we call \emph{spatial scoping}. Spatial scoping extends
-the traditional dynamic scoping with  environmental acquisition :cite:`Gil:1996wl`. Environmental acquisition was originally used in graphical user interface design to enable hierarchical composition of user interface widgets. In spatial scoping, scoping blocks correspond to a spatial region. In dynamic scoping, non-local symbols resolve to the scoping block where the function was called. In spatial scoping, non-local symbols resolve to the spatial region where the function is evaluated. This concept applies uniformly to spatially extended components such as chemical fields, as well as objects with well-defined boundaries such as cells. For example, a chemical network could exist inside of a cell. Here, each instance of that cell type will likely have different chemical values. The values that the chemical network processes read resolves to the local values found in each cell. Similarly, say we add a transport process to model an ion channel to a cell's surface, and this transport process's rate function defines a symbol corresponding to a chemical field. Even as the cell moves, the symbol always resolves to the value of the chemical field that corresponds to the cell surface location. 
 
 
