@@ -15,6 +15,7 @@ Contents:
    introduction
    formalism
    examples
+   integrating_apps
    api_reference
    references
 
