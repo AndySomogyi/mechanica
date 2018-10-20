@@ -155,7 +155,7 @@ metric, an observable categorization that determines the cell type of a
 particular cell instance. A phenotype is defined by a set of rules, or
 conditions; when these conditions are met, we say that a cell is of such type.
 
-The CCOPM extends the basic concept of dynamic or static types with a rule-based
+The Mechanica extends the basic concept of dynamic or static types with a rule-based
 type. Here, the a type may be defined via a set of rules, and when all of these
 rules are met, we say that a variable instance is a certain type. This notion is
 important because biological cells frequently undergo phenotypic change, that
@@ -187,14 +187,16 @@ have type systems. Indeed, biological modeling is the creation of a type system
 for a specific situation –collecting and defining a set of rules which specify
 which types of objects participate in which types of processes.
 
-CCOPM extends the programming language concept of type with a rule-based
+Mechanica extends the programming language concept of type with a rule-based
 definition of type. The type definition needs to be fuzzy so that we can ask how
 much an object instance participates in a type. Current programming languages
-support only Boolean type inquiries, in the CCOPM inquiring if an object is of a
+support only Boolean type inquiries, in the Mechanica inquiring if an object is of a
 specified type returns a real value between 0 and 1.
 
 
-\textbf{Types} serve to classify variable instances into categories. The type of
+
+
+Types serve to classify variable instances into categories. The type of
 a variable determines the kind of data that may be stored in that variable. The
 type of an object defines what operations are valid on instances of that object
 type, i.e., we can sum two numeric types, but adding a numeric type to a string
@@ -205,7 +207,7 @@ by a set of rules or conditions such that when these conditions are met, we say
 that a cell is of such type.
 
 
-The CCOPM extends the basic concept of dynamic or static types with a rule-based
+Mechanica extends the basic concept of dynamic or static types with a rule-based
 type, which is related to the concept of typestate oriented programming
 :cite:`Strom:1986ht`. Here, the type may be defined via a set of rules, and when
 all of those rules are met, we say that a variable instance is a certain
@@ -220,9 +222,6 @@ active on all object instances for which the type evaluates to true.
 
 
 
-
-
-
 Forces
 ======
 
@@ -230,8 +229,26 @@ Forces are kind of process that applies a force to a physical object.
 
 
 
-Force processes ($\phi$-processes) provide a way to describe spatial change, such as motion, deformation, adhesion or response to  external forces. $\phi$-processes are similar to force functions in molecular dynamics. A $\phi$-process can be defined to act on one or between two spatial objects, hence a $\phi$-process may have one or two arguments, and both of them must be spatial object subtypes. $\phi$-processes return the force that acts on its arguments. Any motion processes (adhesion, taxis, deformation) can be specified via a suitable force process. For example, when an adhesion process is active between a surfaces of a pair of cells, the adhesion process applies a force between the cell surfaces at the locations where the surfaces are in contact. This adhesive force acts to keep the cells in contact and resists surface separation. 
+Force processes provide a way to describe spatial change, such as motion,
+deformation, adhesion or response to  external forces. forces are similar to
+force functions in molecular dynamics. A force can be defined to act on one or
+between two spatial objects, hence a force may have one or two arguments, and
+both of them must be spatial object subtypes. forces return the force that acts
+on its arguments. Any motion processes (adhesion, taxis, deformation) can be
+specified via a suitable force process. For example, when an adhesion process is
+active between a surfaces of a pair of cells, the adhesion process applies a
+force between the cell surfaces at the locations where the surfaces are in
+contact. This adhesive force acts to keep the cells in contact and resists
+surface separation.
 
-The language runtime automatically applies the force functions to spatial objects and calculates the net force acting on each spatial object. The runtime then calculates the time evolution of each spatial object, typically as $\mathbf{v} \propto \mathbf{F}/m$, where velocity is proportional to the net force acting on each spatial object. 
+
+The language runtime automatically applies the force functions to spatial
+objects and calculates the net force acting on each spatial object. The runtime
+then calculates the time evolution of each spatial object, typically as
+$\mathbf{v} \propto \mathbf{F}/m$, where velocity is proportional to the net
+force acting on each spatial object.
+
+We provide a suite of pre-built forces, and users can easily develop their own
+custom forces. 
 
 
