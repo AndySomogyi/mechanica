@@ -21,7 +21,7 @@ cell. This cell could be moving on a surface, or inside some tissue.
 We can imedietly idenfity a number of *things*. Things such as cell nuclie, cell
 membrane, cytoplasm, actin fibers, lamellpoidium, filopodium, etc.. We call
 these things **objects**. Objects represent the “things” such as molecules, proteins,
-cells, fluids, or materials. An object is defined as any instantiable physical
+cells, fluids, or materials. We define an object as any instantiable physical
 or logical entity that has certain state-full or structural
 properties.
 
@@ -45,6 +45,60 @@ produced, or it may alter the state of an object, either continuously or
 discretely. Unlike traditional programming languages, processes in Mechanica can
 operate concurrently and continuously.
 
+Everything we've discussed also has a **type** or in other words, what *kind* of
+thing it is. When we look at a say a particular individual molecule, we say that this
+molecue is a kind or type of molecue, say water molecule, calcium ion, or a
+protein, etc. A type serves to identify the category that an instance of a thing
+belongs. to. Processes too have a type, we have have an adhesion process, a
+surface tension process, etc..
+
+These notions of objects, process and types are discussed in more detail in the
+following sections, but for now, we have a basic understanding that we may
+proceeed with developing a model of this cell.
+
+
+Mechanisms
+==========
+
+Now that we have established a vocabulary and a formalism, lets again look at
+:numref:`cell_1`, and start formalizing what kinds of objects make up the cell,
+and developing *models* or abstractions to represent these concepts.
+
+The first thing we likely notice is that the cell exists in space, it occoupies
+a specifiec region of space, it has a well defined (though iregulary shapped)
+boundary. At the molecular level of course, the cell boundary (membrane) is
+composed of lipid bylayer, and these lipids in turn are usually composed of a
+hydrocarbon chain and a terminal carboxyl group and phosphate group. The
+questions we are interested in are at the cell, rather than the molecular length
+scale, so we we develop a suitable cellular scale description of geometry,
+rather than a molecular description.
+
+We could of course explicity model every single atom, as is normally done in
+molecular dynamics simulations, however this is simply not tractable from a
+computational perspespective. Rather, we will represent the surface of a cell as
+closed surface composed of *polygons*. Each polygon is connected to it's
+neighboring polygons, and the boundary of a polygon is defined by a set of
+*edges* and *vertices*. Vertices define a single point in space, and an edge
+connects two vertices. We can see an example of a cell boundary defined as set
+of connected polygons in :numref:`vertex_fig`. 
+
+
+.. _vertex_fig:
+.. figure:: vertex.jpg
+    :width: 70 %
+    :align: center
+
+    We can represent the surface of a cell as a set of interconnected polygons. 
+
+
+
+
+
+
+
+
+
+
 Mechanica represents physical concepts using two key concepts: **objects** and
 **processes**. This paradigm
 of representing the world in terms of objects and processes forms the basis of
@@ -52,8 +106,12 @@ the Cellular Behavior Ontology (CBO) :cite:`Sluka:2014wz`, and also the Object
 Process Methodology (OPM) :cite:`Dori:0pbBYLeH`.
 
 
+
+
+
 Objects
 =======
+
 
    	
 **Objects** are the nouns, the actual things being described. Objects are such
@@ -159,29 +217,6 @@ can create a type definition based on a set of conditions; when all of
 these conditions are met, the type expression becomes true, and the
 processes corresponding to that type definition now automatically become
 active on all object instances for which the type evaluates to true.
-
-
-Mechanisms
-==========
-
-Now that we have established a vocabulary and a formalism, lets again look at
-:numref:`cell_1`, and start formalizing what kinds of objects make up the cell,
-and developing *models* or abstractions to represent these concepts.
-
-
-.. |vertex1| image:: vertex_1.jpg   
-   :width: 120%
-   :align: middle
-.. |vertex2| image:: vertex_2.jpg
-   :width: 75%
-   :align: middle
-
-.. table:: This is my table
-   :widths:  30 20 
-
-   +-----------+-----------+
-   | |vertex1| | |vertex2| |
-   +-----------+-----------+
 
 
 

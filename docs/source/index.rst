@@ -14,6 +14,7 @@ Contents:
 
    introduction
    formalism
+   concepts
    examples
    api_reference
    references
