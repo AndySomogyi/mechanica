@@ -13,10 +13,12 @@
 [submodule "extern/magnum-plugins"]
 	path = extern/magnum-plugins
 	url = https://github.com/AndySomogyi/magnum-plugins.git
-	branch = assimp-importer
 [submodule "extern/Voroxx"]
 	path = extern/Voroxx
 	url = https://github.com/AndySomogyi/Voroxx.git
 [submodule "extern/sundials"]
 	path = extern/sundials
 	url = https://github.com/AndySomogyi/sundials.git
+[submodule "extern/nanogui"]
+	path = extern/nanogui
+	url = https://github.com/AndySomogyi/nanogui.git
