@@ -1,3 +1,12 @@
+#
+#if(DEFINED ENV{VCPKG_ROOT})
+#  message("found vcpkg, using toolchain: ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+#  set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+#    CACHE STRING "")
+#else()
+#  message("NOT using vcpkg")
+#endif()
+
 project(Mechanica)
 cmake_minimum_required (VERSION 3.2)
 
@@ -25,19 +34,34 @@ message("CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
 
 #find_package(GLFW REQUIRED)
 
-find_package(PythonInterp 3.5 REQUIRED)
-message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
-message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
-message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2
-message("PYTHON_VERSION_MINOR: ${PYTHON_VERSION_MINOR}") # - Python minor version found e.g. 5
-message("PYTHON_VERSION_PATCH: ${PYTHON_VERSION_PATCH}") # - Python patch version found e.g. 2
+#find_package(PythonInterp 3.5 REQUIRED)
+#message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
+#message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
+#message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2
+#message("PYTHON_VERSION_MINOR: ${PYTHON_VERSION_MINOR}") # - Python minor version found e.g. 5
+#message("PYTHON_VERSION_PATCH: ${PYTHON_VERSION_PATCH}") # - Python patch version found e.g. 2
 
 
-find_package(PythonLibs 3.5 REQUIRED)
-message("PYTHONLIBS_FOUND: ${PYTHONLIBS_FOUND}")
-message("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
-message("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
-message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
+find_package (Python 3.5 REQUIRED COMPONENTS Development)
+
+message("Python_FOUND: ${Python_FOUND}")
+message("Python_Interpeter_FOUND: ${Python_Interpeter_FOUND}")
+message("Python_VERSION: ${Python_VERSION}")
+message("Python_Development_FOUND: ${Python_Development_FOUND}")
+
+message("Python_Development_FOUND: ${Python_Development_FOUND}")
+message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+message("Python_LIBRARIES: ${Python_LIBRARIES}")
+message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
+message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
+
+if(Python_Development_FOUND)
+  get_target_property(TMP Python::Python IMPORTED_LOCATION_DEBUG)
+  message("Python IMPORTED_LOCATION_DEBUG: ${TMP}")
+
+  get_target_property(TMP Python::Python IMPORTED_LOCATION_RELEASE)
+  message("Python IMPORTED_LOCATION_RELEASE: ${TMP}")
+endif()
 
 
 
@@ -51,10 +75,10 @@ message("NUMPY_VERSION_DECIMAL: ${NUMPY_VERSION_DECIMAL}") # - e.g. version 1.6.
 message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include files
 
 
-set(PYTHON_LIBRARY "" CACHE PATH "path to custom python library")
-set(PYTHON_INCLUDE_DIR "" CACHE PATH "path to where a custom Python.h")
-mark_as_advanced(CLEAR FORCE PYTHON_LIBRARY)
-mark_as_advanced(CLEAR FORCE PYTHON_INCLUDE_DIR)
+#set(PYTHON_LIBRARY "" CACHE PATH "path to custom python library")
+#set(PYTHON_INCLUDE_DIR "" CACHE PATH "path to where a custom Python.h")
+#mark_as_advanced(CLEAR FORCE PYTHON_LIBRARY)
+#mark_as_advanced(CLEAR FORCE PYTHON_INCLUDE_DIR)
 
 
 
@@ -69,11 +93,6 @@ message("GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}")
 
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
-
-
-set(BULLET_ROOT "$ENV{HOME}/local" CACHE PATH "Root directory of Bullet Physics engine")
-
-
 
 
 find_package(OpenGL REQUIRED)
@@ -124,8 +143,20 @@ include_directories(${OPENGL_INCLUDE_DIR})
 find_package(Assimp)
 
 if(Assimp_FOUND)
- get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
-  message("ASSIMP_LIBRARIES: ${TMP}")
+
+  if(WIN32)
+
+    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_DEBUG)
+    message("ASSIMP IMPORTED_LOCATION_DEBUG: ${TMP}")
+
+    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_RELEASE)
+    message("ASSIMP IMPORTED_LOCATION_RELEASE: ${TMP}")
+
+  else()
+
+    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
+    message("ASSIMP_LIBRARIES: ${TMP}")
+  endif(WIN32)
 
   get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
 
@@ -160,6 +191,14 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 foreach(dir ${dirs})
   message( "dir='${dir}'")
 endforeach()
+
+#if(MSVC)
+#  string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+#  string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+#  string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+#endif(MSVC)
+
+
 
 # process dependencies first
 add_subdirectory(extern)

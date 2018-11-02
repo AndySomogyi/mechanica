@@ -196,6 +196,19 @@ typedef int32_t HRESULT;
 #define HRESULT_SEVERITY(hr)  (((hr) >> 31) & 0x1)
 
 
+#else
+#undef min
+#undef max
+#undef inline
+#include <Windows.h>
+#undef min
+#undef max
+#undef inline
+
+#define MX_FUNCTION __func__
+#endif
+
+
 /**
  * debug verify an operation succeedes
  *
@@ -205,9 +218,6 @@ typedef int32_t HRESULT;
 #define VERIFY(hr) assert(SUCCEEDED(hr))
 #else
 #define VERIFY(hr) hr
-#endif
-
-
 #endif
 
 /**

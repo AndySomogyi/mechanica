@@ -8,7 +8,9 @@
 #ifndef SRC_MXOBJECT_H_
 #define SRC_MXOBJECT_H_
 
+
 #include <Python.h>
+
 
 // public MxObject api
 #include "mx_object.h"

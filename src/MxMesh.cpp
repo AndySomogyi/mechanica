@@ -371,8 +371,10 @@ PolygonPtr MxMesh::createPolygon(MxType* type)
 
 HRESULT MxMesh::addObjectDeleteListener(MxObjectChangedHandler, void* userData)
 {
+	return E_NOTIMPL;
 }
 
 HRESULT MxMesh::removeObjectDeleteListener(void* userData)
 {
+	return E_NOTIMPL;
 }

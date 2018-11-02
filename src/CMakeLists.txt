@@ -184,7 +184,6 @@ set(HEADERS
 #target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:voro++,INTERFACE_INCLUDE_DIRECTORIES> )
 #target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:Magnum::Magnum,INTERFACE_INCLUDE_DIRECTORIES>)
 #target_include_directories(mechanica_OBJECTS PRIVATE "${PROJECT_SOURCE_DIR}/include")
-#target_include_directories(mechanica_OBJECTS PRIVATE ${PYTHON_INCLUDE_DIRS})
 #target_include_directories(mechanica_OBJECTS PRIVATE ${NUMPY_INCLUDE_DIR})
 
 
@@ -208,8 +207,8 @@ message("Shader Program Res: ${MxMeshShaderProgramRes}")
 target_include_directories(mechanica_obj PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  ${PYTHON_INCLUDE_DIRS}
-  ${NUMPY_INCLUDE_DIR}
+  #${PYTHON_INCLUDE_DIRS}
+  #${NUMPY_INCLUDE_DIR}
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
@@ -220,15 +219,17 @@ target_include_directories(mechanica_obj PUBLIC
 
 
 target_link_libraries(mechanica_obj
-  ${PYTHON_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+  Python::Python
   glfw
   Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
   voro++
-  sundials_cvode_static)
+  sundials_cvode_static
+  ${OPENGL_LIBRARIES}
+  )
+
 
 
 
@@ -284,15 +285,16 @@ set_target_properties(mechanica_shared PROPERTIES OUTPUT_NAME mechanica)
 add_library(mechanica_py SHARED $<TARGET_OBJECTS:mechanica_obj>)
 
 target_link_libraries(mechanica_py
-  ${PYTHON_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+  Python::Python
   glfw
   Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
   voro++
-  sundials_cvode_static)
+  sundials_cvode_static
+  ${OPENGL_LIBRARIES}
+  )
 
 set_target_properties(mechanica_py PROPERTIES PREFIX "")
 set_target_properties(mechanica_py PROPERTIES OUTPUT_NAME "_mechanica")
@@ -326,15 +328,15 @@ set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
 #  )
 
 target_link_libraries(mechanica_shared
-  ${PYTHON_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+  Python::Python
   glfw
   Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
   voro++
-  sundials_cvode_static)
+  sundials_cvode_static
+  ${OPENGL_LIBRARIES})
 
 
 add_library(mechanica_static STATIC $<TARGET_OBJECTS:mechanica_obj>)
@@ -342,16 +344,14 @@ set_target_properties(mechanica_static PROPERTIES OUTPUT_NAME mechanica)
 
 
 target_link_libraries(mechanica_static
-  ${PYTHON_LIBRARIES}
-  ${OPENGL_LIBRARIES}
+  Python::Python
   glfw
   Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
   voro++
-  sundials_cvode_static)
-
-
+  sundials_cvode_static
+  ${OPENGL_LIBRARIES})
 
 add_library(mechanica ALIAS mechanica_obj)

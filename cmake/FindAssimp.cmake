@@ -47,50 +47,71 @@ if(APPLE)
     NAMES assimp/anim.h
     PATHS $ENV{HOME}/local/include /usr/local/include/
     )
+elseif(DEFINED ENV{VCPKG_ROOT})
+  message("looking in vcpgk for assimp")
+  find_path(
+    ASSIMP_INCLUDE_DIR
+    NAMES assimp/anim.h
+    PATHS $ENV{VCPKG_ROOT}/packages/assimp_x64-windows/include
+    )
+  message("found assimp include dir: ${ASSIMP_INCLUDE_DIR}")
 else()
   find_path(ASSIMP_INCLUDE_DIR NAMES assimp/anim.h HINTS include)
 endif()
 
 if(WIN32)
-    if(MSVC12)
-        set(ASSIMP_MSVC_VERSION "vc120")
-    elseif(MSVC14)
-        set(ASSIMP_MSVC_VERSION "vc140")
-    else()
-        message(ERROR "Unsupported MSVC version.")
-    endif()
+  message("assimp looking for msvc...")
+  if(MSVC12)
+    set(ASSIMP_MSVC_VERSION "vc120")
 
+  elseif(MSVC14)
+    message("Found MSVC 14")
+    set(ASSIMP_MSVC_VERSION "vc140")
+
+  else()
+    message(ERROR "Unsupported MSVC version.")
+  endif()
+
+
+  if(DEFINED ENV{VCPKG_ROOT})
+    set(ASSIMP_LIBRARY_DIRS
+      "$ENV{VCPKG_ROOT}/packages/assimp_x64-windows/lib"
+      "$ENV{VCPKG_ROOT}/packages/assimp_x64-windows/debug/lib")
+    message("set ASSIMP_LIBRARY_DIRS: ${ASSIMP_LIBRARY_DIRS}")
+  else()
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(ASSIMP_LIBRARY_DIR "lib64")
+      set(ASSIMP_LIBRARY_DIRS "lib64")
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(ASSIMP_LIBRARY_DIR "lib32")
+      set(ASSIMP_LIBRARY_DIRS "lib32")
     endif()
+  endif()
 
-    find_library(ASSIMP_LIBRARY_RELEASE
-      assimp-${ASSIMP_MSVC_VERSION}-mt.lib
-      PATHS ${ASSIMP_LIBRARY_DIR})
-    
-    find_library(ASSIMP_LIBRARY_DEBUG
-      assimp-${ASSIMP_MSVC_VERSION}-mtd.lib
-      PATHS ${ASSIMP_LIBRARY_DIR})
+  find_library(ASSIMP_LIBRARY_RELEASE
+    assimp-${ASSIMP_MSVC_VERSION}-mt.lib
+    PATHS ${ASSIMP_LIBRARY_DIRS})
+
+  find_library(ASSIMP_LIBRARY_DEBUG
+    assimp-${ASSIMP_MSVC_VERSION}-mtd.lib
+    PATHS ${ASSIMP_LIBRARY_DIRS})
+
 elseif(APPLE)
-    # look for brew's assimp, always get a release build here
-    find_library(
-      ASSIMP_LIBRARY
-      NAMES assimp
-      PATHS $ENV{HOME}/local/lib /usr/local/lib/
-      )
+  # look for brew's assimp, always get a release build here
+  find_library(
+    ASSIMP_LIBRARY
+    NAMES assimp
+    PATHS $ENV{HOME}/local/lib /usr/local/lib/
+    )
 
-    set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})
-    set(ASSIMP_LIBRARY_RELEASE ${ASSIMP_LIBRARY})
+  set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})
+  set(ASSIMP_LIBRARY_RELEASE ${ASSIMP_LIBRARY})
 
-    message("ASSIMP_LIBRARY_DEBUG: ${ASSIMP_LIBRARY_DEBUG}")
-    message("ASSIMP_LIBRARY_RELEASE: ${ASSIMP_LIBRARY_RELEASE}")
+  message("ASSIMP_LIBRARY_DEBUG: ${ASSIMP_LIBRARY_DEBUG}")
+  message("ASSIMP_LIBRARY_RELEASE: ${ASSIMP_LIBRARY_RELEASE}")
 
 else()
-    
-    find_library(ASSIMP_LIBRARY_RELEASE libassimp PATHS lib)
-    find_library(ASSIMP_LIBRARY_DEBUG libassimpd PATHS lib)
+
+  find_library(ASSIMP_LIBRARY_RELEASE libassimp PATHS lib)
+  find_library(ASSIMP_LIBRARY_DEBUG libassimpd PATHS lib)
 endif()
 
 include(SelectLibraryConfigurations)
@@ -101,30 +122,30 @@ select_library_configurations(Assimp)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Assimp DEFAULT_MSG
-    ASSIMP_LIBRARY_DEBUG
-    ASSIMP_LIBRARY_RELEASE
-    ASSIMP_INCLUDE_DIR)
-  
+  ASSIMP_LIBRARY_DEBUG
+  ASSIMP_LIBRARY_RELEASE
+  ASSIMP_INCLUDE_DIR)
+
 # make the targets if we found Assimp
 if(Assimp_FOUND AND NOT TARGET Assimp::Assimp)
-    add_library(Assimp::Assimp UNKNOWN IMPORTED)
+  add_library(Assimp::Assimp UNKNOWN IMPORTED)
 
-    # not sure why, but separate IMPORTED_LOCATION_DEBUG and RELEASSE
-    # don't work right at least on Unixes when statically linking plugins,
-    # on Unixes, juse use a single IMPORTED_LOCATION
-    if(WIN32)
-      set_target_properties(Assimp::Assimp PROPERTIES
-	IMPORTED_LOCATION_DEBUG ${ASSIMP_LIBRARY_DEBUG}
-	IMPORTED_LOCATION_RELEASE ${ASSIMP_LIBRARY_RELEASE})
-    else()
+  # not sure why, but separate IMPORTED_LOCATION_DEBUG and RELEASSE
+  # don't work right at least on Unixes when statically linking plugins,
+  # on Unixes, juse use a single IMPORTED_LOCATION
+  if(WIN32)
+    set_target_properties(Assimp::Assimp PROPERTIES
+	  IMPORTED_LOCATION_DEBUG ${ASSIMP_LIBRARY_DEBUG}
+	  IMPORTED_LOCATION_RELEASE ${ASSIMP_LIBRARY_RELEASE})
+  else()
     set_target_properties(Assimp::Assimp PROPERTIES
       IMPORTED_LOCATION ${ASSIMP_LIBRARY})
-    endif()
+  endif()
 
-    set_target_properties(Assimp::Assimp PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIR})
+  set_target_properties(Assimp::Assimp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIR})
 
-    set(ASSIMP_LIBRARIES ${ASSIMP_LIBRARY})
+  set(ASSIMP_LIBRARIES ${ASSIMP_LIBRARY})
 endif()
 
 

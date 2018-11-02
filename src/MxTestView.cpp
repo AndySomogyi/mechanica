@@ -112,7 +112,7 @@ PyObject *PyTestWin(PyObject *self, PyObject *a)
 MxTestView::MxTestView(int width, int height) :
         context{nullptr}
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
 
 
     glfwWindowHint(GLFW_RESIZABLE, true);

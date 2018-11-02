@@ -6,7 +6,7 @@
  */
 
 
-#include <unistd.h>
+
 #include "mechanica_private.h"
 
 int Mx_InteractiveFlag = 0;

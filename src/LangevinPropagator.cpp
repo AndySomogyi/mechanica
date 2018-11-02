@@ -340,14 +340,17 @@ HRESULT MxBind_PropagatorModel(LangevinPropagator* propagator, MxModel* model)
 HRESULT LangevinPropagator::objectDeleteListener(MxObject* pThis,
         const MxObject* obj, uint32_t what)
 {
+	return E_NOTIMPL;
 }
 
 HRESULT LangevinPropagator::unbindConstraint(IConstraint* constraint)
 {
+	return E_NOTIMPL;
 }
 
 HRESULT LangevinPropagator::unbindForce(IForce* force)
 {
+	return E_NOTIMPL;
 }
 
 HRESULT LangevinPropagator::setPositions(float time, uint32_t len, const Vector3* pos)

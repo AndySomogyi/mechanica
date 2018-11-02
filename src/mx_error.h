@@ -10,7 +10,7 @@
 
 #include "mechanica_private.h"
 
-#define mx_error(code, msg) mx_set_error(code, msg, __LINE__, __FILE__, __PRETTY_FUNCTION__)
+#define mx_error(code, msg) mx_set_error(code, msg, __LINE__, __FILE__, MX_FUNCTION)
 
 
 HRESULT mx_set_error(HRESULT code, const char* msg, int line, const char* file, const char* func);

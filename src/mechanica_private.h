@@ -23,7 +23,9 @@
 #ifndef _INCLUDED_CAYMAN_PRIVATE_H_
 #define _INCLUDED_CAYMAN_PRIVATE_H_
 
+
 #include <Python.h>
+
 
 // Games with importing numpy and setting up function pointers.
 // Only the main Mechanica python init module, mechanica.cpp defines

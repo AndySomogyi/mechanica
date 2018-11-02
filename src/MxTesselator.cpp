@@ -9,4 +9,5 @@
 
 MxTesselatorResult MxTriangulateFaceSimple(const std::vector<Vector3>& vertices)
 {
+	return MxTesselatorResult{};
 }

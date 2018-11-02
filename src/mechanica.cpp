@@ -44,7 +44,7 @@ static struct PyModuleDef mechanica_module = {
 
 static PyObject * moduleinit(void)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
     PyObject *m;
 
 

@@ -13,7 +13,7 @@ MxTestView *view = nullptr;
 
 void MxUI_init(MxObject* m)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
 }
 
 
@@ -53,7 +53,7 @@ PyObject *MxPyUI_PollEvents(PyObject *module)
 
 PyObject* MxPyUI_PostEmptyEvent(PyObject *module)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
     std::cout << "MxPyUI_PostEmptyEvent" << std::endl;
 
     Py_RETURN_NONE;
@@ -67,7 +67,7 @@ static void error_callback(int error, const char* description)
 
 MxAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration* conf)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
 
     glfwSetErrorCallback(error_callback);
 
@@ -93,7 +93,7 @@ PyObject *MxPyUI_InitializeGraphics(PyObject *module, PyObject *args)
 
 PyObject *MxPyUI_CreateTestWindow(PyObject *module, PyObject *args)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
 
     if(!view) {
         view = new MxTestView(500,500);
@@ -117,7 +117,7 @@ PyObject* MxPyUI_WaitEvents(PyObject* module, PyObject* args)
 
 PyObject* MxPyUI_DestroyTestWindow(PyObject* module, PyObject* args)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
+    std::cout << MX_FUNCTION << std::endl;
 
     delete view;
     view = nullptr;
