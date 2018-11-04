@@ -21,7 +21,6 @@ target_include_directories(MeshTest
 
 target_link_libraries(CylinderTest
   mechanica
-  glfw
   Magnum::Magnum
   Magnum::MeshTools
   Magnum::SceneGraph

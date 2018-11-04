@@ -18,3 +18,7 @@ target_link_libraries(CylinderComponent
   Magnum::Primitives
   )
 
+target_include_directories(CylinderComponent PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>  # <prefix>/include/mylib
+)

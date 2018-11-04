@@ -196,7 +196,13 @@ typedef int32_t HRESULT;
 #define HRESULT_SEVERITY(hr)  (((hr) >> 31) & 0x1)
 
 
+/**
+ * print the function name
+ */
+#define MX_FUNCTION __PRETTY_FUNCTION__
+
 #else
+// Windows
 #undef min
 #undef max
 #undef inline

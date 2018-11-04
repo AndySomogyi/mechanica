@@ -26,8 +26,23 @@ set(GLFW_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/extern/glfw/include/GLFW)
 set(GLFW_FOUND TRUE)
 
 
+message("GLFW_VERSION_MAJOR: ${GLFW_VERSION_MAJOR}")
+message("GLFW_VERSION_MINOR: ${GLFW_VERSION_MINOR}")
+message("GLFW_VERSION_PATCH: ${GLFW_VERSION_PATCH}")
+message("GLFW_VERSION: ${GLFW_VERSION}")
+
+
 message("GLFW_INCLUDE_DIR: ${GLFW_INCLUDE_DIR}")
 message("GLFW_LIBRARY: ${GLFW_LIBRARY}")
+
+if(TARGET glfw)
+  message("glfw is a target")
+  get_target_property(GLFW_VERSION glfw VERSION)
+  message("GLFW_VERSION: ${GLFW_VERSION}")
+
+else()
+  message("glfw is NOT a target")
+endif()
 
 add_subdirectory(soil)
 
@@ -38,16 +53,15 @@ add_subdirectory(soil)
 
 
 # Disable building extras we won't need (pure C++ project)
-#set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
-#set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
+set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_SHARED  OFF CACHE BOOL " " FORCE)
 
 # Add the configurations from nanogui
-#add_subdirectory(nanogui)
+add_subdirectory(nanogui)
 
 # For reliability of parallel build, make the NanoGUI targets dependencies
 #set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
-
-
 
 add_subdirectory(Voroxx)
 

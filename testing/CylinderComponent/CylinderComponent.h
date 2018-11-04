@@ -15,7 +15,11 @@
 
 MxAPI_STRUCT(CylinderTest);
 
-#define CYL_EXPORT __declspec(dllexport)
+#ifdef _MSC_VER
+    #define CYL_EXPORT __declspec(dllexport)
+#else
+    #define CYL_EXPORT
+#endif
 
 
  MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Create(int32_t width, int32_t height, CylinderTest **result);
