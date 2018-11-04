@@ -39,15 +39,30 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
         .addSource(flags & Flag::NoGeometryShader ? "#define NO_GEOMETRY_SHADER\n" : "")
         .addSource(rs.get("generic.glsl"))
         .addSource(rs.get("MxMeshShaderProgram.vert"));
+    
+    std::cout << "Vertex Shader Source: " << std::endl;
+    for (auto s : vert.sources()) {
+        std::cout << s << std::endl;
+    }
 
     frag.addSource(flags & Flag::Wireframe ? "#define WIREFRAME_RENDERING\n" : "")
         .addSource(flags & Flag::NoGeometryShader ? "#define NO_GEOMETRY_SHADER\n" : "")
         .addSource(rs.get("MxMeshShaderProgram.frag"));
+    
+    std::cout << "Fragment Shader Source: " << std::endl;
+    for (auto s : frag.sources()) {
+        std::cout << s << std::endl;
+    }
 
     std::optional<GL::Shader> geom;
     if(flags & Flag::Wireframe && !(flags & Flag::NoGeometryShader)) {
         geom = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, GL::Shader::Type::Geometry);
         geom->addSource(rs.get("MxMeshShaderProgram.geom"));
+        
+        std::cout << "Geometry Shader Source: " << std::endl;
+        for (auto s : geom->sources()) {
+            std::cout << s << std::endl;
+        }
     }
 
     if(geom) {
