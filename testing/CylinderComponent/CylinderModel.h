@@ -19,7 +19,7 @@ struct CylinderModel : public MxModel {
 
     CylinderModel();
 
-    HRESULT loadModel();
+    HRESULT loadModel(const char* path);
 
     float minTargetVolume();
     float maxTargetVolume();
@@ -53,7 +53,7 @@ struct CylinderModel : public MxModel {
 
     HRESULT applyT3PolygonTransitionToSelectedPolygon();
 
-    void loadAssImpModel();
+    HRESULT loadAssImpModel(const char* path);
 
     HRESULT changePolygonTypes();
 

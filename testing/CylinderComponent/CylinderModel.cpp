@@ -63,8 +63,11 @@ CylinderModel::CylinderModel()  {
 }
 
 
-HRESULT CylinderModel::loadModel() {
-    loadAssImpModel();
+HRESULT CylinderModel::loadModel(const char* path) {
+    HRESULT result = loadAssImpModel(path);
+	if (!SUCCEEDED(result)) {
+		return result;
+	}
 
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
@@ -79,7 +82,7 @@ HRESULT CylinderModel::loadModel() {
 }
 
 
-void CylinderModel::loadAssImpModel() {
+HRESULT CylinderModel::loadAssImpModel(const char* path) {
 
     const std::string dirName = "/Users/andy/src/mechanica/testing/models/";
 
@@ -91,7 +94,11 @@ void CylinderModel::loadAssImpModel() {
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
 
-    mesh = MxMesh_FromFile((dirName + fileName).c_str(), 1.0, &meshObjectTypeHandler);
+    mesh = MxMesh_FromFile(path, 1.0, &meshObjectTypeHandler);
+	if (!mesh) {
+		std::cout << "could not load mesh " << path << std::endl;
+		return E_FAIL;
+	}
 
     cellVolumeConstraint.targetVolume = mesh->cells[1]->volume;
     cellVolumeConstraint.lambda = 0.5;
@@ -111,6 +118,7 @@ void CylinderModel::loadAssImpModel() {
 
     mesh->setShortCutoff(0);
     mesh->setLongCutoff(0.3);
+	return S_OK;
 }
 
 void CylinderModel::testEdges() {

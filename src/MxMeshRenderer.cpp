@@ -70,6 +70,10 @@ void dumpIndex(void* ind, uint indCount) {
 }
 
 void MxMeshRenderer::draw() {
+	if (!mesh) {
+		return;
+	}
+
     for(CellPtr cell : mesh->cells) {
         if(cell == mesh->rootCell()) {
             continue;

@@ -209,8 +209,6 @@ CylinderTest::CylinderTest(const Configuration& configuration) :
     renderer = new MxMeshRenderer{MxMeshRenderer::Flag::Wireframe};
 
     GL::Renderer::setClearColor(Color4{1.0f, 1.0f, 1.0f, 1.0f});
-
-    loadModel();
 }
 
 
@@ -225,8 +223,11 @@ void CylinderTest::step(float dt) {
 
 void CylinderTest::draw() {
 
-    Vector3 min, max;
-    std::tie(min, max) = model->mesh->extents();
+	Vector3 min, max;
+
+	if (model) {
+		std::tie(min, max) = model->mesh->extents();
+	}
 
     center = (max + min)/2;
 
@@ -300,7 +301,7 @@ void CylinderTest::mouseClick(int button, int action, int mods) {
     }
 }
 
-void CylinderTest::loadModel()
+HRESULT CylinderTest::loadModel(const char* path)
 {
     delete model;
     delete propagator;
@@ -311,9 +312,11 @@ void CylinderTest::loadModel()
 
     VERIFY(MxBind_PropagatorModel(propagator, model));
 
-    VERIFY(model->loadModel());
+    VERIFY(model->loadModel(path));
 
     renderer->setMesh(model->mesh);
 
     draw();
+
+	return S_OK;
 }

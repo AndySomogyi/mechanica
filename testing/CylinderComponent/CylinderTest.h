@@ -61,7 +61,7 @@ struct CylinderTest {
     explicit CylinderTest();
     explicit CylinderTest(const Configuration& configuration);
 
-    void loadModel();
+    HRESULT loadModel(const char* path);
 
     void step(float dt);
 
