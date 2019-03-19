@@ -89,6 +89,7 @@ set(SRC
   T1Transition.cpp
   T2Transition.cpp
   T3Transition.cpp
+  HITransition.cpp
   MxConstraints.cpp
   MxForces.cpp
   MxPolygonSurfaceTensionForce.cpp
@@ -152,6 +153,7 @@ set(HEADERS
   T1Transition.h
   T2Transition.h
   T3Transition.h
+  HITransition.h
   SymmetricEigen.h
   GteSymmetricEigensolver3x3.h
   MxConstraints.h

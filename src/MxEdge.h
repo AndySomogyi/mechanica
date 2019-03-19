@@ -19,6 +19,11 @@ struct MxVertex;
 
 /**
  * A skeletal edge is at the boundary of three or more cells.
+ *
+ * An edge connects exactly two vertices, and an edge may be incident to two
+ * or three polygons. If an edge is incident to two polygons, it lies on a surface,
+ * and is incident to two cells. If an edge is incident to three polygons, then
+ * it lies in a volumetric region of material, and is incident to three cells.
  */
 struct MxEdge : MxObject
 {

@@ -11,6 +11,9 @@
 #include "MeshOperations.h"
 #include "MxEdge.h"
 
+
+
+
 HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge);
 
 HRESULT applyT1Edge3Transition(MeshPtr mesh, EdgePtr edge);
