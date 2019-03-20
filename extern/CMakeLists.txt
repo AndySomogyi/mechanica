@@ -88,7 +88,7 @@ set(WITH_PNGIMPORTER       OFF CACHE BOOL "build PNG importer"    FORCE)
 
 add_subdirectory(magnum)
 
-add_subdirectory(magnum-plugins)
+# add_subdirectory(magnum-plugins)
 
 # SUNDIALS options
 set(BUILD_ARKODE         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)

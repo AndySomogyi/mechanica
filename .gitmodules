@@ -10,9 +10,6 @@
 [submodule "extern/corrade"]
 	path = extern/corrade
 	url = https://github.com/AndySomogyi/corrade.git
-[submodule "extern/magnum-plugins"]
-	path = extern/magnum-plugins
-	url = https://github.com/AndySomogyi/magnum-plugins.git
 [submodule "extern/Voroxx"]
 	path = extern/Voroxx
 	url = https://github.com/AndySomogyi/Voroxx.git
