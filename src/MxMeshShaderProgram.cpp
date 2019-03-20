@@ -5,7 +5,7 @@
 #include "Magnum/GL/Context.h"
 #include "Magnum/GL/Extensions.h"
 #include "Magnum/GL/Shader.h"
-#include "MagnumExternal/Optional/optional.hpp"
+#include "Corrade/Containers/Optional.h"
 
 #include "Magnum/Shaders/Implementation/CreateCompatibilityShader.h"
 
@@ -54,7 +54,8 @@ MxMeshShaderProgram::MxMeshShaderProgram(const Flags flags): _flags{flags} {
         std::cout << s << std::endl;
     }
 
-    std::optional<GL::Shader> geom;
+    Corrade::Containers::Optional<GL::Shader> geom;
+
     if(flags & Flag::Wireframe && !(flags & Flag::NoGeometryShader)) {
         geom = Magnum::Shaders::Implementation::createCompatibilityShader(rs, version, GL::Shader::Type::Geometry);
         geom->addSource(rs.get("MxMeshShaderProgram.geom"));

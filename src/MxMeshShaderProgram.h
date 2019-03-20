@@ -158,11 +158,11 @@ class MxMeshShaderProgram: public Magnum::GL::AbstractShaderProgram {
          *
          * @ref shaders-generic "Generic attribute", @ref Vector3.
          */
-        typedef Magnum::Attribute<0, Magnum::Vector3> Position;
+        typedef Magnum::GL::Attribute<0, Magnum::Vector3> Position;
 
-        typedef Magnum::Attribute<1, Magnum::Vector3> Normal;
+        typedef Magnum::GL::Attribute<1, Magnum::Vector3> Normal;
 
-        typedef Magnum::Attribute<2, Magnum::Color4> Color;
+        typedef Magnum::GL::Attribute<2, Magnum::Color4> Color;
 
         /**
          * Vertex Format:
@@ -182,7 +182,7 @@ class MxMeshShaderProgram: public Magnum::GL::AbstractShaderProgram {
          * this value is provided by the shader itself, so the attribute is not
          * needed.
          */
-        typedef Magnum::Attribute<3, Magnum::Float> VertexIndex;
+        typedef Magnum::GL::Attribute<3, Magnum::Float> VertexIndex;
 
         typedef MxMeshRenderer::Flags Flags;
 

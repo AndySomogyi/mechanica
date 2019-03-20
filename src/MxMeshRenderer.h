@@ -14,7 +14,7 @@
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix4.h>
 #include <Magnum/GL/Buffer.h>
-#include <Magnum/Mesh.h>
+#include <Magnum/GL/Mesh.h>
 
 
 struct MagnumCellRenderer : MxCellRenderer {

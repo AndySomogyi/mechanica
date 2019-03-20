@@ -11,7 +11,7 @@
 
 
 #include <Magnum/GL/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix3.h>
