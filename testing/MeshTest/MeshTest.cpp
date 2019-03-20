@@ -11,6 +11,7 @@ using namespace Magnum;
 using namespace Magnum::Trade;
 using namespace Magnum::Primitives;
 using namespace Magnum::Platform;
+using namespace Math::Literals;
 
 
 MeshTest::Configuration::Configuration():

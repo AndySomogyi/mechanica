@@ -5,7 +5,9 @@
 #include "Magnum/GL/Context.h"
 #include "Magnum/GL/Extensions.h"
 #include "Magnum/GL/Shader.h"
-#include "Corrade/Containers/Optional.h"
+
+#include <Corrade/Containers/Optional.h>
+#include <Corrade/Containers/Reference.h>
 
 #include "Magnum/Shaders/Implementation/CreateCompatibilityShader.h"
 
