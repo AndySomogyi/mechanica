@@ -167,6 +167,7 @@ set(HEADERS
   ArcBallInteractor.h
   MxUI.h
   MxTestView.h
+  MxWindowless.h
   )
 
 
@@ -196,6 +197,7 @@ set(HEADERS
 add_library(mechanica_obj
   OBJECT
   ${SRC}
+  ${PROJECT_BINARY_DIR}/include/mx_config.h
   ${HEADERS}
   ${MxMeshShaderProgramRes}
   mechanica.cpp
@@ -207,8 +209,9 @@ message("Shader Program Res: ${MxMeshShaderProgramRes}")
 
 # temporarily add add these includes until we get a stable public API
 target_include_directories(mechanica_obj PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   #${PYTHON_INCLUDE_DIRS}
   #${NUMPY_INCLUDE_DIR}
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib

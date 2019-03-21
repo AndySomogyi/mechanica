@@ -86,6 +86,21 @@ set(WITH_AUDIO             OFF CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_ANYSCENEIMPORTER  OFF CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_PNGIMPORTER       OFF CACHE BOOL "build PNG importer"    FORCE)
 
+
+if(APPLE)
+  message("building on apple")
+
+  set(WITH_CGLCONTEXT ON CACHE BOOL "Build CglContext library" FORCE)
+
+  set(WITH_WINDOWLESSCGLAPPLICATION ON CACHE BOOL
+    "Build WindowlessCglApplication library" FORCE)
+
+
+elseif(UNIX AND NOT APPLE)
+  # for Linux, BSD, Solaris, Minix
+  message("building on linux")
+endif()
+
 add_subdirectory(magnum)
 
 # add_subdirectory(magnum-plugins)

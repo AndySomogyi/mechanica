@@ -8,7 +8,26 @@
 #endif()
 
 project(Mechanica)
-cmake_minimum_required (VERSION 3.2)
+
+# need 3.12 for FindPython support
+cmake_minimum_required (VERSION 3.12)
+
+
+# sets the target types
+if(UNIX)
+  # Both APPLE and UNIX are defined on OSX
+  if(APPLE)
+    set(MX_APPLE 1)
+  else()
+    set(MX_LINUX 1)
+  endif()
+    set(MX_UNIX 1)
+elseif(WIN32)
+    set(MX_WINDOWS 1)
+endif()
+
+
+
 
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 11)
@@ -17,7 +36,7 @@ set(CMAKE_CXX_STANDARD 11)
 # magnum friendly naming scheme, add our module finders to cmake, these find
 # stuff mechanica, needs, but magnum does not. Make sure to put Mechanica's
 # dir before Magnums, so our versions get picked up *BEFORE* Magnum's.
-set(CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH
   ${PROJECT_SOURCE_DIR}/cmake
   ${PROJECT_SOURCE_DIR}/extern/magnum/modules
   ${PROJECT_SOURCE_DIR}/extern/magnum-plugins/modules)
@@ -206,13 +225,6 @@ add_subdirectory(extern)
 
 message("getting mdcore interface incude:  ${MDCORE_INCLUDE_DIR}")
 
-
-
-
-
-# add  public include dir to include path
-include_directories(include)
-
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(models)
@@ -232,5 +244,6 @@ find_package(Magnum REQUIRED
   GlfwApplication)
 
 
+add_subdirectory(apps)
 add_subdirectory(testing)
 #add_subdirectory(magnum_examples)

@@ -18,3 +18,5 @@ if(APPLE)
   add_subdirectory(CylinderTest)
   add_subdirectory(CylinderCocoa)
 endif()
+
+#add_subdirectory(WindowlessTestApp)

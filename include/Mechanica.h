@@ -15,7 +15,8 @@
 typedef double MxReal;
 
 
-
+#include <mx_config.h>
+#include <mx_port.h>
 #include <mx_object.h>
 #include <mx_particle.h>
 #include <mx_module.h>

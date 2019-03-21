@@ -1,0 +1,19 @@
+/*
+ * mx_config.h
+ *
+ *  Created on: Mar 21, 2019
+ *      Author: andy
+ */
+
+#ifndef INCLUDE_MX_CONFIG_H_
+#define INCLUDE_MX_CONFIG_H_
+
+#cmakedefine MX_APPLE
+#cmakedefine MX_LINUX
+#cmakedefine MX_UNIX
+#cmakedefine MX_WINDOWS
+
+
+
+
+#endif /* INCLUDE_MX_CONFIG_H_ */

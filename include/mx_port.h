@@ -10,8 +10,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
-
+#include <mx_config.h>
 
 /**
  * Mechanica is built with single precision in mind. In the future,
