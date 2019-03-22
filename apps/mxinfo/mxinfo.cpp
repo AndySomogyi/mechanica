@@ -14,6 +14,7 @@
 #include <iostream>
 
 using namespace Magnum;
+using namespace Magnum::Platform;
 
 class MyApplication: public WindowlessApplication {
     public:

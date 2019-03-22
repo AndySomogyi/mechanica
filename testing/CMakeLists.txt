@@ -13,10 +13,11 @@
 add_subdirectory(CylinderComponent)
 add_subdirectory(qtest)
 add_subdirectory(twave)
-if(APPLE)
+
+if(MX_APPLE)
   add_subdirectory(MeshTest)
   add_subdirectory(CylinderTest)
   add_subdirectory(CylinderCocoa)
 endif()
 
-#add_subdirectory(WindowlessTestApp)
+add_subdirectory(WindowlessTestApp)

@@ -4,35 +4,29 @@ add_executable(
   )
 
 
-target_include_directories(WindowlessTestApp
+target_include_directories(mx-windowless
   PRIVATE
   ${glfw_INCLUDE_DIRS}
   "${GLFW_SOURCE_DIR}/deps"
   )
 
 
-target_link_libraries(WindowlessTestApp
+target_link_libraries(mx-windowless
   mechanica
   Magnum::Magnum
   Magnum::MeshTools
   Magnum::SceneGraph
   Magnum::Shaders
   Magnum::Primitives
+  Magnum::DebugTools
+  TgaImageConverter
   )
 
 
-set_source_files_properties(
-    MainMenu.xib
-    PROPERTIES
-    MACOSX_PACKAGE_LOCATION
-    Resources
-)
-
-set_target_properties(
-    WindowlessTestApp
-    PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST
-    ${CMAKE_CURRENT_LIST_DIR}/plist.in
-)
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AppKit")
+if(MX_APPLE)
+  target_link_libraries(mx-windowless MagnumWindowlessCglApplication)
+elseif(MX_LINUX)
+  target_link_libraries(mx-windowless MagnumWindowlessEglApplication)
+elseif(MX_WINDOWS)
+  target_link_libraries(mx-windowless MagnumWindowlessWglApplication)
+endif()

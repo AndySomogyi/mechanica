@@ -14,12 +14,8 @@
 
 #if defined(MX_APPLE)
     #include "Magnum/Platform/WindowlessCglApplication.h"
-    typedef Magnum::Platform::WindowlessCglContext WindowlessContext;
-    typedef Magnum::Platform::WindowlessCglApplication WindowlessApplication;
 #elif defined(MX_LINUX)
     #include "Magnum/Platform/WindowlessEglApplication.h"
-    typedef Magnum::Platform::WindowlessEglContext WindowlessContext;
-    typedef Magnum::Platform::WindowlessEglApplication WindowlessApplication;
 #elif defined(MX_WINDOWS)
 #include "Magnum/Platform/WindowlessWglApplication.h"
 #else
