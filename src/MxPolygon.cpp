@@ -191,7 +191,7 @@ bool MxPolygon::isValid() const  {
         if(cells[i]->isRoot()) {
             assert(partialPolygons[i].mass == 0.);
         } else {
-            isfinite(partialPolygons[i].mass ) && partialPolygons[i].mass  > 0;
+	  std::isfinite(partialPolygons[i].mass ) && partialPolygons[i].mass  > 0;
         }
     }
 
@@ -201,7 +201,7 @@ bool MxPolygon::isValid() const  {
         return false;
     }
 
-    if(!isfinite(area)) {
+    if(!std::isfinite(area)) {
         std::cout << "error, triangle:" << this << std::endl
                 << ", area is not finite" << std::endl;
         return false;
@@ -225,7 +225,7 @@ bool MxPolygon::isValid() const  {
     //    return false;
     //}
 
-    if(!isfinite(getMass())) {
+    if(!std::isfinite(getMass())) {
         std::cout << "error, triangle:" << this << std::endl
                 << ", mass is not finite" << std::endl;
         return false;
@@ -261,7 +261,7 @@ bool MxPartialPolygon::isValid() const
             return false;
         }
     } else {
-        if(!isfinite(mass)) {
+      if(!std::isfinite(mass)) {
             std::cout << "error, partial triangle id:"
                     << polygon->id << "." << id
                     << ", mass is not finite"

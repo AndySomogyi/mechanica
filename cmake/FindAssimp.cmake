@@ -47,6 +47,15 @@ if(APPLE)
     NAMES assimp/anim.h
     PATHS $ENV{HOME}/local/include /usr/local/include/
     )
+elseif(UNIX AND NOT APPLE)
+  # building on linux
+  message("looking on linux for assimp")
+  find_path(
+    ASSIMP_INCLUDE_DIR
+    NAMES assimp/anim.h
+    PATHS $ENV{HOME}/local/include /usr/local/include 
+    NO_DEFAULT_PATH
+    )
 elseif(DEFINED ENV{VCPKG_ROOT})
   message("looking in vcpgk for assimp")
   find_path(
@@ -54,10 +63,12 @@ elseif(DEFINED ENV{VCPKG_ROOT})
     NAMES assimp/anim.h
     PATHS $ENV{VCPKG_ROOT}/packages/assimp_x64-windows/include
     )
-  message("found assimp include dir: ${ASSIMP_INCLUDE_DIR}")
 else()
+  message("not on linux, mac or windows...")
   find_path(ASSIMP_INCLUDE_DIR NAMES assimp/anim.h HINTS include)
 endif()
+
+message("assimp include dir: ${ASSIMP_INCLUDE_DIR}")
 
 if(WIN32)
   message("assimp looking for msvc...")
@@ -101,10 +112,24 @@ elseif(APPLE)
     NAMES assimp
     PATHS $ENV{HOME}/local/lib /usr/local/lib/
     )
-
+  
   set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})
   set(ASSIMP_LIBRARY_RELEASE ${ASSIMP_LIBRARY})
+  
+  message("ASSIMP_LIBRARY_DEBUG: ${ASSIMP_LIBRARY_DEBUG}")
+  message("ASSIMP_LIBRARY_RELEASE: ${ASSIMP_LIBRARY_RELEASE}")
 
+elseif(UNIX AND NOT APPLE)
+  # look for brew's assimp, always get a release build here
+  find_library(
+    ASSIMP_LIBRARY
+    NAMES assimp
+    PATHS $ENV{HOME}/local/lib /usr/local/lib/
+    )
+  
+  set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})
+  set(ASSIMP_LIBRARY_RELEASE ${ASSIMP_LIBRARY})
+  
   message("ASSIMP_LIBRARY_DEBUG: ${ASSIMP_LIBRARY_DEBUG}")
   message("ASSIMP_LIBRARY_RELEASE: ${ASSIMP_LIBRARY_RELEASE}")
 

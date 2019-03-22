@@ -27,8 +27,6 @@ elseif(WIN32)
 endif()
 
 
-
-
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 11)
 
@@ -105,10 +103,10 @@ message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include
 
 
 # Options for
-find_package(glm REQUIRED)
+#find_package(glm REQUIRED)
 
-message("GLM_VERSION: ${GLM_VERSION}")
-message("GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}")
+#message("GLM_VERSION: ${GLM_VERSION}")
+#message("GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}")
 
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
@@ -159,7 +157,7 @@ include_directories(${OPENGL_INCLUDE_DIR})
 #
 #endif()
 
-find_package(Assimp)
+find_package(Assimp REQUIRED)
 
 if(Assimp_FOUND)
 
