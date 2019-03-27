@@ -31,7 +31,7 @@ Pygments==2.2.0
 pyparsing==2.2.2
 python-dateutil==2.7.3
 pytz==2018.5
-PyYAML==3.13
+PyYAML>=4.2b1
 requests==2.19.1
 simplegeneric==0.8.1
 six==1.11.0

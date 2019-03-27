@@ -16,6 +16,3 @@
 [submodule "extern/sundials"]
 	path = extern/sundials
 	url = https://github.com/AndySomogyi/sundials.git
-[submodule "extern/nanogui"]
-	path = extern/nanogui
-	url = https://github.com/AndySomogyi/nanogui.git
