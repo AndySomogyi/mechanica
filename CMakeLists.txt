@@ -27,8 +27,6 @@ elseif(WIN32)
 endif()
 
 
-
-
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 11)
 
@@ -159,7 +157,7 @@ include_directories(${OPENGL_INCLUDE_DIR})
 #
 #endif()
 
-find_package(Assimp)
+find_package(Assimp REQUIRED)
 
 if(Assimp_FOUND)
 

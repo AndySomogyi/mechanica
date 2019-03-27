@@ -21,6 +21,7 @@
 #include <Magnum/Trade/MeshData3D.h>
 
 
+#include <memory>
 #include <iostream>
 #include <MxMeshRenderer.h>
 

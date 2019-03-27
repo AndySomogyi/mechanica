@@ -8,6 +8,8 @@
 #ifndef TESTING_GROWTH1_GROWTHTEST_H_
 #define TESTING_GROWTH1_GROWTHTEST_H_
 
+
+#include <memory>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
@@ -19,6 +21,7 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/Trade/MeshData3D.h>
+
 
 
 #include <iostream>
