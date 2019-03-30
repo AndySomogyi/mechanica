@@ -12,7 +12,7 @@ add_executable(
   )
 
 
-target_include_directories(MeshTest
+target_include_directories(CylinderTest
   PRIVATE
   ${glfw_INCLUDE_DIRS}
   "${GLFW_SOURCE_DIR}/deps"

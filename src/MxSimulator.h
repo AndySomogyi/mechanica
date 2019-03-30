@@ -13,13 +13,15 @@
 #include "MxPropagator.h"
 #include "MxController.h"
 #include "MxView.h"
+#include "MxApplication.h"
 
 
-MxAPI_DATA(MxType*) MxSimulator_Type;
+
+MxAPI_DATA(PyTypeObject*) MxSimulator_Type;
 
 struct MxSimulator : MxObject {
 };
 
-HRESULT MxSimulator_init(MxObject *o);
+HRESULT MxSimulator_init(PyObject *o);
 
 #endif /* SRC_MXSIMULATOR_H_ */

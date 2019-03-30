@@ -111,6 +111,8 @@ message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
 
+set(BUILD_SHARED_LIBS ON CACHE BOOL "build shared/dynamic library")
+
 
 find_package(OpenGL REQUIRED)
 

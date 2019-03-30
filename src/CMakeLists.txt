@@ -101,6 +101,10 @@ set(SRC
   ArcBallInteractor.cpp
   MxUI.cpp
   MxTestView.cpp
+  MxApplication.cpp
+  MxGlfwApplication.cpp
+  MxWindowlessApplication.cpp
+  MxSurfaceSimulator.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -168,6 +172,10 @@ set(HEADERS
   MxUI.h
   MxTestView.h
   MxWindowless.h
+  MxApplication.h
+  MxGlfwApplication.h
+  MxWindowlessApplication.h
+  MxSurfaceSimulator.h
   )
 
 
@@ -200,7 +208,6 @@ add_library(mechanica_obj
   ${PROJECT_BINARY_DIR}/include/mx_config.h
   ${HEADERS}
   ${MxMeshShaderProgramRes}
-  mechanica.cpp
   )
 
 message("Shader Program Res: ${MxMeshShaderProgramRes}")
@@ -217,11 +224,6 @@ target_include_directories(mechanica_obj PUBLIC
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
-# add_dependencies(mechanica mechanica_OBJECTS)
-
-#target_link_libraries(mechanica glfw)
-#target_link_libraries(mechanica
-
 
 target_link_libraries(mechanica_obj
   Python::Python
@@ -236,32 +238,6 @@ target_link_libraries(mechanica_obj
   )
 
 
-
-
-#add_library(py_mechanica SHARED
-#  mechanica.cpp
-#  $<TARGET_OBJECTS:mechanica_OBJECTS>
-#  )
-
-#add_dependencies(py_mechanica mechanica_OBJECTS)
-
-#target_link_libraries(py_mechanica glfw)
-#target_link_libraries(py_mechanica ${OPENGL_LIBRARIES})
-#target_link_libraries(py_mechanica ${PYTHON_LIBRARIES})
-
-#target_include_directories(py_mechanica PRIVATE
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-#  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-#  ${PYTHON_INCLUDE_DIRS}
-#  ${NUMPY_INCLUDE_DIR}
-#)
-
-
-#target_link_libraries(py_mechanica ${LLVM_LIBRARIES})
-#set_target_properties(py_mechanica PROPERTIES OUTPUT_NAME "mechanica.so")
-#set_target_properties(py_mechanica PROPERTIES PREFIX "")
-#set_target_properties(py_mechanica PROPERTIES SUFFIX "")
-
 source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
 
 #message("MECHANICA_PUBLIC_HEADERS: ${MECHANICA_PUBLIC_HEADERS}")
@@ -274,20 +250,45 @@ source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
 #target_link_libraries(mechanica ${LLVM_LIBRARIES})
 
 
-
-
 # shared libraries need PIC
 set_property(TARGET mechanica_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 
 # shared and static libraries built from the same object files
-add_library(mechanica_shared SHARED $<TARGET_OBJECTS:mechanica_obj>)
+add_library(mechanica_shared SHARED
+  $<TARGET_OBJECTS:mechanica_obj>
+  mechanica.cpp
+  )
+
 set_target_properties(mechanica_shared PROPERTIES OUTPUT_NAME mechanica)
+
+target_include_directories(mechanica_shared PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  #${PYTHON_INCLUDE_DIRS}
+  #${NUMPY_INCLUDE_DIR}
+  #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+)
 
 
 
 # shared and static libraries built from the same object files
-add_library(mechanica_py SHARED $<TARGET_OBJECTS:mechanica_obj>)
+add_library(mechanica_py SHARED
+  $<TARGET_OBJECTS:mechanica_obj>
+  mechanica.cpp
+  )
+
+target_include_directories(mechanica_py PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  #${PYTHON_INCLUDE_DIRS}
+  #${NUMPY_INCLUDE_DIR}
+  #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+)
+
+
 
 target_link_libraries(mechanica_py
   Python::Python
@@ -300,6 +301,15 @@ target_link_libraries(mechanica_py
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
   )
+
+if(MX_APPLE)
+  target_link_libraries(mechanica_py MagnumWindowlessCglApplication)
+elseif(MX_LINUX)
+  target_link_libraries(mechanica_py MagnumWindowlessEglApplication)
+elseif(MX_WINDOWS)
+  target_link_libraries(mechanica_py MagnumWindowlessWglApplication)
+endif()
+
 
 set_target_properties(mechanica_py PROPERTIES PREFIX "")
 set_target_properties(mechanica_py PROPERTIES OUTPUT_NAME "_mechanica")
@@ -325,12 +335,12 @@ set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
 #add_custom_target(mechanica.py
 #  DEPENDS mechanica.py)
 
-#add_custom_command(
-#  TARGET mechanica_py
-#  DEPENDS mechanica.py
-#  POST_BUILD
-#  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/mechanica.py ${CMAKE_CURRENT_BINARY_DIR}/mechanica.py
-#  )
+add_custom_command(
+  TARGET mechanica_py
+  DEPENDS mechanica.py
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/mechanica.py ${CMAKE_CURRENT_BINARY_DIR}/mechanica.py
+  )
 
 target_link_libraries(mechanica_shared
   Python::Python
@@ -341,22 +351,43 @@ target_link_libraries(mechanica_shared
   Magnum::Shaders
   voro++
   sundials_cvode_static
-  ${OPENGL_LIBRARIES})
+  ${OPENGL_LIBRARIES}
+  )
+
+if(MX_APPLE)
+  target_link_libraries(mechanica_shared MagnumWindowlessCglApplication)
+elseif(MX_LINUX)
+  target_link_libraries(mechanica_shared MagnumWindowlessEglApplication)
+elseif(MX_WINDOWS)
+  target_link_libraries(mechanica_shared MagnumWindowlessWglApplication)
+endif()
 
 
-add_library(mechanica_static STATIC $<TARGET_OBJECTS:mechanica_obj>)
-set_target_properties(mechanica_static PROPERTIES OUTPUT_NAME mechanica)
+
+#add_library(mechanica_static STATIC
+#  $<TARGET_OBJECTS:mechanica_obj> mechanica.cpp)
+
+#set_target_properties(mechanica_static PROPERTIES OUTPUT_NAME mechanica)
+
+#target_link_libraries(mechanica_static
+#  Python::Python
+#  glfw
+#  Assimp::Assimp
+#  Magnum::Application
+#  Magnum::Magnum
+#  Magnum::Shaders
+#  voro++
+#  sundials_cvode_static
+#  ${OPENGL_LIBRARIES}
+#  )
+
+#if(MX_APPLE)
+#  target_link_libraries(mechanica_static MagnumWindowlessCglApplication)
+#elseif(MX_LINUX)
+#  target_link_libraries(mechanica_static MagnumWindowlessEglApplication)
+#elseif(MX_WINDOWS)
+#  target_link_libraries(mechanica_static MagnumWindowlessWglApplication)
+#endif()
 
 
-target_link_libraries(mechanica_static
-  Python::Python
-  glfw
-  Assimp::Assimp
-  Magnum::Application
-  Magnum::Magnum
-  Magnum::Shaders
-  voro++
-  sundials_cvode_static
-  ${OPENGL_LIBRARIES})
-
-add_library(mechanica ALIAS mechanica_obj)
+add_library(mechanica ALIAS mechanica_shared)

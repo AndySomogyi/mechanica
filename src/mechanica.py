@@ -7,6 +7,12 @@ import signal
 from timeit import default_timer as clock
 
 
+from _mechanica import Application
+from _mechanica import Simulator
+from _mechanica import SurfaceSimulator
+
+
+
 # Frame per second : 60
 # Should probably be an IPython option
 mechanica_fps = 60

@@ -18,6 +18,9 @@
 #include "MxPropagator.h"
 #include "MxUI.h"
 #include "MxTestView.h"
+#include "MxApplication.h"
+#include "MxSimulator.h"
+#include "MxSurfaceSimulator.h"
 
 
 
@@ -86,6 +89,10 @@ static PyObject * moduleinit(void)
     MxPropagator_init(m);
     //MxObject_init(m);
     //MxObject_init(m);
+
+    MxApplication_init(m);
+    MxSimulator_init(m);
+    MxSurfaceSimulator_init(m);
 
     return m;
 }

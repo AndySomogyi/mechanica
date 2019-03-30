@@ -1,11 +1,15 @@
 /*
- * MxSimulator.cpp
+ * MxSurfaceSimulator.cpp
  *
- *  Created on: Feb 1, 2017
+ *  Created on: Mar 28, 2019
  *      Author: andy
  */
 
-#include <MxSimulator.h>
+#include <MxSurfaceSimulator.h>
+
+#include <iostream>
+
+
 
 
 /**
@@ -20,7 +24,7 @@ static int init(PyObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyObject *Noddy_name(MxSimulator* self)
+static PyObject *Noddy_name(MxSurfaceSimulator* self)
 {
     return PyUnicode_FromFormat("%s %s", "foo", "bar");
 }
@@ -33,11 +37,11 @@ static PyMethodDef methods[] = {
     {NULL}  /* Sentinel */
 };
 
-static PyTypeObject SimulatorType = {
+static PyTypeObject SurfaceSimulatorType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "mechanica.Simulator",
+    .tp_name = "mechanica.SurfaceSimulator",
     .tp_doc = "Custom objects",
-    .tp_basicsize = sizeof(MxSimulator),
+    .tp_basicsize = sizeof(MxSurfaceSimulator),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = PyType_GenericNew,
@@ -45,7 +49,7 @@ static PyTypeObject SimulatorType = {
     .tp_methods = methods
 };
 
-PyTypeObject *MxSimuator_Type = &SimulatorType;
+PyTypeObject *MxSurfaceSimuator_Type = &SurfaceSimulatorType;
 
 static PyModuleDef custommodule = {
     PyModuleDef_HEAD_INIT,
@@ -54,21 +58,23 @@ static PyModuleDef custommodule = {
     .m_size = -1,
 };
 
-HRESULT MxSimulator_init(PyObject* m) {
+HRESULT MxSurfaceSimulator_init(PyObject* m) {
 
     std::cout << MX_FUNCTION << std::endl;
 
 
-    if (PyType_Ready((PyTypeObject *)MxSimuator_Type) < 0)
+    if (PyType_Ready((PyTypeObject *)MxSurfaceSimuator_Type) < 0)
         return E_FAIL;
 
 
 
-    Py_INCREF(MxSimuator_Type);
-    PyModule_AddObject(m, "Simulator", (PyObject *) MxSimuator_Type);
+    Py_INCREF(MxSurfaceSimuator_Type);
+    PyModule_AddObject(m, "SurfaceSimulator", (PyObject *) MxSurfaceSimuator_Type);
 
     return 0;
 }
+
+
 
 
 
