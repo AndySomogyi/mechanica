@@ -34,16 +34,7 @@ static PyMethodDef methods[] = {
 };
 
 
-struct Test {
-  int x; int y; int z;
-};
-
-static Test test1 = {
- x : 0, 
- y : 1, 
- z : 2
-};
-
+#if 0
 PyTypeObject THPLegacyVariableType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     "torch._C._LegacyVariableBase",        /* tp_name */
@@ -84,6 +75,8 @@ PyTypeObject THPLegacyVariableType = {
     0,                                     /* tp_alloc */
     0                      /* tp_new */
 };
+#endif
+
 
 
 static PyTypeObject SimulatorType = {
@@ -124,7 +117,7 @@ static PyTypeObject SimulatorType = {
     .tp_dictoffset = 0, 
     .tp_init = init, 
     .tp_alloc = 0, 
-    .tp_new = 0, 
+    .tp_new = PyType_GenericNew,
     .tp_free = 0,  
     .tp_is_gc = 0, 
     .tp_bases = 0, 
