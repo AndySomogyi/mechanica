@@ -20,7 +20,7 @@ mechanica_fps = 60
 
 ip = IPython.get_ipython()
 
-outfile = open("/Users/andy/pylog.txt",  "a")
+outfile = open("pylog.txt",  "a")
 
 
 

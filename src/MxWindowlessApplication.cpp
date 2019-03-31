@@ -44,7 +44,7 @@ MxWindowlessApplication::MxWindowlessApplication(
     Magnum::Platform::WindowlessApplication::Configuration magnumConf;
 
 #ifdef MX_LINUX
-    magnumConf.clearFlags(EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR);
+    magnumConf.clearFlags(Magnum::Platform::WindowlessApplication::Configuration::Flag::ForwardCompatible);
 #endif
 
     app = new ProxyWindowlessApplication({argc, argv}, magnumConf);

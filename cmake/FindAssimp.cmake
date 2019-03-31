@@ -125,6 +125,7 @@ elseif(UNIX AND NOT APPLE)
     ASSIMP_LIBRARY
     NAMES assimp
     PATHS $ENV{HOME}/local/lib /usr/local/lib/
+    NO_DEFAULT_PATH
     )
   
   set(ASSIMP_LIBRARY_DEBUG ${ASSIMP_LIBRARY})
