@@ -130,7 +130,7 @@ public:
 protected:
     MxApplication();
     
-    virtual ~MxApplication() {};
+    ~MxApplication() {};
 };
 
 /**

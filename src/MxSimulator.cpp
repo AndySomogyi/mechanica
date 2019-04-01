@@ -17,6 +17,8 @@
 static int init(PyObject *self, PyObject *args, PyObject *kwds)
 {
     std::cout << MX_FUNCTION << std::endl;
+
+    MxSimulator *s = new (self) MxSimulator();
     return 0;
 }
 
@@ -115,7 +117,7 @@ static PyTypeObject SimulatorType = {
     .tp_descr_get = 0, 
     .tp_descr_set = 0, 
     .tp_dictoffset = 0, 
-    .tp_init = init, 
+    .tp_init = (initproc)init,
     .tp_alloc = 0, 
     .tp_new = PyType_GenericNew,
     .tp_free = 0,  

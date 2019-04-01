@@ -120,6 +120,8 @@ HRESULT MxApplication_init(PyObject* m) {
 
 HRESULT MxApplication::create(int argc, char** argv, const Configuration& conf)
 {
+    std::cout << MX_FUNCTION << std::endl;
+
     if(!app) {
         app = new MxWindowlessApplication(argc, argv, conf);
 

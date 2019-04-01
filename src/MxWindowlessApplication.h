@@ -33,7 +33,7 @@ public:
 
     MxWindowlessApplication(int argc, char** argv, const MxApplication::Configuration& conf);
 
-    virtual ~MxWindowlessApplication();
+    ~MxWindowlessApplication();
 
 
 
