@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-static MxApplication* app = nullptr;
+static MxApplication* gApp = nullptr;
 static MxObject *obj = nullptr;
 
 
@@ -26,10 +26,20 @@ struct PyApplication : _object {
 
 
 
-static void dealloc(MxApplication *app) {
+static void _dealloc(MxApplication *app) {
     std::cout << MX_FUNCTION << std::endl;
+    assert(app == gApp);
     delete app->impl;
     PyObject_Del(app);
+    gApp = NULL;
+}
+
+PyObject *_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+    int argc = 1;
+    char* argv[] = {"foo"};
+    MxApplicationConfig conf = {};
+
+    return MxApplication_New(argc, argv, &conf);
 }
 
 
@@ -39,7 +49,7 @@ static PyTypeObject ApplicationType = {
     .tp_name = "mechanica.Application",
     .tp_basicsize = sizeof(MxApplication),
     .tp_itemsize = 0,
-    .tp_dealloc = (destructor)dealloc,
+    .tp_dealloc = (destructor)_dealloc,
     .tp_print = 0, 
     .tp_getattr = 0, 
     .tp_setattr = 0, 
@@ -72,7 +82,7 @@ static PyTypeObject ApplicationType = {
     .tp_dictoffset = 0, 
     .tp_init = 0,
     .tp_alloc = 0, 
-    .tp_new = PyType_GenericNew, 
+    .tp_new = _new,
     .tp_free = 0,
     .tp_is_gc = 0, 
     .tp_bases = 0, 
@@ -127,11 +137,11 @@ HRESULT MxApplication::create(int argc, char** argv, const Configuration& conf)
 {
     std::cout << MX_FUNCTION << std::endl;
 
-    if(!app) {
-        app = new MxApplication();
-        app->impl = new MxWindowlessApplication(argc, argv, conf);
+    if(!gApp) {
+        gApp = new MxApplication();
+        gApp->impl = new MxWindowlessApplication(argc, argv, conf);
 
-        std::cout << "created new app: " << std::hex << app << std::endl;
+        std::cout << "created new app: " << std::hex << gApp << std::endl;
     }
 
     obj = new MxObject();
@@ -142,11 +152,11 @@ HRESULT MxApplication::create(int argc, char** argv, const Configuration& conf)
 
 HRESULT MxApplication::destroy()
 {
-    std::cout << "destroying app: " << std::hex << app << std::endl;
+    std::cout << "destroying app: " << std::hex << gApp << std::endl;
 
     delete obj;
 
-    app = nullptr;
+    gApp = nullptr;
     return S_OK;
 }
 
@@ -154,28 +164,28 @@ HRESULT MxApplication::destroy()
 
 MxApplication* MxApplication::get()
 {
-    return app;
+    return gApp;
 }
 
 PyObject* MxApplication_New(int argc, char** argv,
         const MxApplicationConfig* conf)
 {
-    if(!app) {
+    if(!gApp) {
         
         MxApplication *o = (MxApplication *) PyObject_MALLOC(sizeof(MxApplication));
         PyObject_INIT( o, MxApplication_Type );
 
-        app = o;
+        gApp = o;
 
-        app->impl = new MxWindowlessApplication(argc, argv, *conf);
+        gApp->impl = new MxWindowlessApplication(argc, argv, *conf);
 
-        std::cout << "created new app: " << std::hex << app << std::endl;
+        std::cout << "created new app: " << std::hex << gApp << std::endl;
 
     }
 
 
-    Py_INCREF(app);
+    Py_INCREF(gApp);
 
-    std::cout << "returning app, ref count: " << app->ob_refcnt << std::endl;
-    return (PyObject*)app;
+    std::cout << "returning app, ref count: " << gApp->ob_refcnt << std::endl;
+    return (PyObject*)gApp;
 }
