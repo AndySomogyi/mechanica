@@ -8,6 +8,23 @@
 #include <MxApplication.h>
 #include <MxWindowlessApplication.h>
 
+
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/Framebuffer.h>
+#include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Renderbuffer.h>
+#include <Magnum/GL/RenderbufferFormat.h>
+#include <Magnum/Shaders/VertexColor.h>
+#include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
+
+#include <Magnum/PixelFormat.h>
+#include <Magnum/Image.h>
+
+
+
+using namespace Magnum;
+using namespace Magnum::Trade;
+
 #include <iostream>
 
 static MxApplication* gApp = nullptr;
@@ -42,6 +59,56 @@ PyObject *_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     return MxApplication_New(argc, argv, &conf);
 }
 
+static PyObject* _testImage(PyObject* self, PyObject* args) {
+
+    using namespace Math::Literals;
+
+    struct TriangleVertex {
+        Vector2 position;
+        Color3 color;
+    };
+    const TriangleVertex data[]{
+        {{-0.5f, -0.5f}, 0xff0000_rgbf},    /* Left vertex, red color */
+        {{ 0.5f, -0.5f}, 0x00ff00_rgbf},    /* Right vertex, green color */
+        {{ 0.0f,  0.5f}, 0x0000ff_rgbf}     /* Top vertex, blue color */
+    };
+
+    GL::Buffer buffer;
+    buffer.setData(data);
+
+    GL::Mesh mesh;
+    mesh.setCount(3)
+         .addVertexBuffer(std::move(buffer), 0,
+            Shaders::VertexColor2D::Position{},
+            Shaders::VertexColor2D::Color3{});
+
+    GL::Renderbuffer renderbuffer;
+    renderbuffer.setStorage(GL::RenderbufferFormat::RGBA8, {640, 480});
+    GL::Framebuffer framebuffer{{{}, {640, 480}}};
+    framebuffer.attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderbuffer)
+        .clear(GL::FramebufferClear::Color)
+        .bind();
+
+    Shaders::VertexColor2D shader;
+    mesh.draw(shader);
+
+
+
+    const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
+    Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
+
+    TgaImageConverter conv;
+
+    conv.exportToFile(image, "triangle.tga");
+
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef methods[] = {
+    {"testImage", (PyCFunction)_testImage, METH_VARARGS,  "make a test image" },
+    {NULL}  /* Sentinel */
+};
+
 
 
 static PyTypeObject ApplicationType = {
@@ -72,7 +139,7 @@ static PyTypeObject ApplicationType = {
     .tp_weaklistoffset = 0, 
     .tp_iter = 0, 
     .tp_iternext = 0, 
-    .tp_methods = 0, 
+    .tp_methods = methods,
     .tp_members = 0, 
     .tp_getset = 0, 
     .tp_base = 0, 

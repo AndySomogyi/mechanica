@@ -232,6 +232,7 @@ target_link_libraries(mechanica_obj
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  TgaImageConverter
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
@@ -297,6 +298,7 @@ target_link_libraries(mechanica_py
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  TgaImageConverter
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
@@ -349,6 +351,7 @@ target_link_libraries(mechanica_shared
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  TgaImageConverter
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}

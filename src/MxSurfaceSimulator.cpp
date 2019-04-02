@@ -106,12 +106,7 @@ static PyTypeObject SurfaceSimulatorType = {
 
 PyTypeObject *MxSurfaceSimuator_Type = &SurfaceSimulatorType;
 
-static PyModuleDef custommodule = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "custom",
-    .m_doc = "Example module that creates an extension type.",
-    .m_size = -1,
-};
+
 
 HRESULT MxSurfaceSimulator_init(PyObject* m) {
 
