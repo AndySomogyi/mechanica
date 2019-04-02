@@ -20,6 +20,9 @@
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
 
+#include <Corrade/Utility/Directory.h>
+#include <MxImageConverters.h>
+
 
 
 using namespace Magnum;
@@ -101,7 +104,17 @@ static PyObject* _testImage(PyObject* self, PyObject* args) {
 
     conv.exportToFile(image, "triangle.tga");
 
-    Py_RETURN_NONE;
+    auto jpegData = convertImageDataToJpeg(image);
+
+
+    /* Open file */
+    if(!Utility::Directory::write("triangle.jpg", jpegData)) {
+        Error() << "Trade::AbstractImageConverter::exportToFile(): cannot write to file" << "triangle.jpg";
+        return NULL;
+    }
+
+
+    return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
 }
 
 static PyMethodDef methods[] = {

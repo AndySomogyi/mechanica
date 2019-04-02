@@ -105,6 +105,7 @@ set(SRC
   MxGlfwApplication.cpp
   MxWindowlessApplication.cpp
   MxSurfaceSimulator.cpp
+  MxImageConverters.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -176,6 +177,7 @@ set(HEADERS
   MxGlfwApplication.h
   MxWindowlessApplication.h
   MxSurfaceSimulator.h
+  MxImageConverters.h
   )
 
 
@@ -232,6 +234,7 @@ target_link_libraries(mechanica_obj
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  JPEG::JPEG
   TgaImageConverter
   voro++
   sundials_cvode_static
@@ -298,6 +301,7 @@ target_link_libraries(mechanica_py
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  JPEG::JPEG
   TgaImageConverter
   voro++
   sundials_cvode_static
@@ -351,6 +355,7 @@ target_link_libraries(mechanica_shared
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
+  JPEG::JPEG
   TgaImageConverter
   voro++
   sundials_cvode_static

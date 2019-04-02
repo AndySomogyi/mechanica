@@ -109,15 +109,8 @@ message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include
 #mark_as_advanced(CLEAR FORCE PYTHON_INCLUDE_DIR)
 
 
-
-
-
-
-# Options for
-#find_package(glm REQUIRED)
-
-#message("GLM_VERSION: ${GLM_VERSION}")
-#message("GLM_INCLUDE_DIRS: ${GLM_INCLUDE_DIRS}")
+# needed for jpeg image writer
+find_package(JPEG REQUIRED)
 
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
@@ -132,18 +125,6 @@ find_package(OpenGL REQUIRED)
 #find_package(OpenMM)
 
 add_definitions(-DCX3D_SUPPORT_OPENGL)
-
-
-#find_package(Bullet)
-
-
-
-#if(BULLET_FOUND)
-#  message("BULLET_INCLUDE_DIRS: ${BULLET_INCLUDE_DIRS}")
-#  message("BULLET_LIBRARIES ${BULLET_LIBRARIES}")
-#else()
-#  message("BULLET NOT FOUND")
-#endif()
 
 
 include_directories(${OPENGL_INCLUDE_DIR})
