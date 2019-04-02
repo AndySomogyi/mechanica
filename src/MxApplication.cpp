@@ -14,6 +14,9 @@ static MxApplication* app = nullptr;
 static MxObject *obj = nullptr;
 
 
+struct PyApplication : _object {
+};
+
 
 /**
  * tp_alloc(type) to allocate storage
@@ -21,10 +24,12 @@ static MxObject *obj = nullptr;
  * tp_init(obj, args) to initialize object
  */
 
-static int MxApplication_init(PyObject *self, PyObject *args, PyObject *kwds)
-{
+
+
+static void dealloc(MxApplication *app) {
     std::cout << MX_FUNCTION << std::endl;
-    return 0;
+    delete app->impl;
+    PyObject_Del(app);
 }
 
 
@@ -34,7 +39,7 @@ static PyTypeObject ApplicationType = {
     .tp_name = "mechanica.Application",
     .tp_basicsize = sizeof(MxApplication),
     .tp_itemsize = 0,
-    .tp_dealloc = 0,
+    .tp_dealloc = (destructor)dealloc,
     .tp_print = 0, 
     .tp_getattr = 0, 
     .tp_setattr = 0, 
@@ -65,10 +70,10 @@ static PyTypeObject ApplicationType = {
     .tp_descr_get = 0, 
     .tp_descr_set = 0, 
     .tp_dictoffset = 0, 
-    .tp_init = MxApplication_init, 
+    .tp_init = 0,
     .tp_alloc = 0, 
     .tp_new = PyType_GenericNew, 
-    .tp_free = 0,  
+    .tp_free = 0,
     .tp_is_gc = 0, 
     .tp_bases = 0, 
     .tp_mro = 0, 
@@ -123,7 +128,8 @@ HRESULT MxApplication::create(int argc, char** argv, const Configuration& conf)
     std::cout << MX_FUNCTION << std::endl;
 
     if(!app) {
-        app = new MxWindowlessApplication(argc, argv, conf);
+        app = new MxApplication();
+        app->impl = new MxWindowlessApplication(argc, argv, conf);
 
         std::cout << "created new app: " << std::hex << app << std::endl;
     }
@@ -139,16 +145,37 @@ HRESULT MxApplication::destroy()
     std::cout << "destroying app: " << std::hex << app << std::endl;
 
     delete obj;
-    delete app;
+
     app = nullptr;
     return S_OK;
 }
 
-MxApplication::MxApplication()
-{
-}
+
 
 MxApplication* MxApplication::get()
 {
     return app;
+}
+
+PyObject* MxApplication_New(int argc, char** argv,
+        const MxApplicationConfig* conf)
+{
+    if(!app) {
+        
+        MxApplication *o = (MxApplication *) PyObject_MALLOC(sizeof(MxApplication));
+        PyObject_INIT( o, MxApplication_Type );
+
+        app = o;
+
+        app->impl = new MxWindowlessApplication(argc, argv, *conf);
+
+        std::cout << "created new app: " << std::hex << app << std::endl;
+
+    }
+
+
+    Py_INCREF(app);
+
+    std::cout << "returning app, ref count: " << app->ob_refcnt << std::endl;
+    return (PyObject*)app;
 }

@@ -19,7 +19,7 @@
 
 MxAPI_DATA(PyTypeObject*) MxSimulator_Type;
 
-struct MxSimulator : MxObject {
+struct MxSimulator : _object {
 };
 
 HRESULT MxSimulator_init(PyObject *o);

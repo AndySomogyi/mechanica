@@ -8,6 +8,11 @@
 #include <MxType.h>
 
 
+
+static_assert(sizeof(MxType) == sizeof(PyTypeObject), "MxType must be same as PyTypeObject");
+static_assert(offsetof(MxType, tp_finalize) == offsetof(PyTypeObject, tp_finalize), "MxType offset different");
+
+
 static MxType typeType{"MxType", MxObject_Type};
 MxType *MxType_Type = &typeType;
 

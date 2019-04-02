@@ -12,6 +12,8 @@
 static MxType objectType{"MxObject", nullptr};
 MxType* MxObject_Type = &objectType;
 
+static_assert(sizeof(MxObject) == sizeof(PyObject), "MxObject must be same as PyObject");
+
 struct MxObjectInitializer {
 
     MxObjectInitializer() {

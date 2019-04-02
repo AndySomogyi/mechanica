@@ -41,8 +41,13 @@ struct MxObjectChangedHolder {
  */
 struct MxObject
 {
+    _PyObject_HEAD_EXTRA
     Py_ssize_t ob_refcnt;
     struct MxType *ob_type;
+
+
+    //Py_ssize_t ob_refcnt;
+    //struct MxType *ob_type;
 
     MxObject(struct MxType *type) {
         this->ob_type = type;

@@ -23,9 +23,11 @@
 #endif
 
 
-class ProxyWindowlessApplication;
 
-struct  MxWindowlessApplication : public MxApplication
+
+struct  MxWindowlessApplication :
+        public MxApplicationImpl,
+        private Magnum::Platform::WindowlessApplication
 {
 public:
 
@@ -35,11 +37,8 @@ public:
 
     ~MxWindowlessApplication();
 
-
-
 private:
-
-    ProxyWindowlessApplication *app;
+    virtual int exec() override { return 0; };
 
 };
 

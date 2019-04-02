@@ -26,6 +26,11 @@ elseif(WIN32)
     set(MX_WINDOWS 1)
 endif()
 
+if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
+  # hack to get eclipse C++ indexer to pick up python headers
+  message("setting eclipse include dirs")
+  include_directories(/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/include/python3.7m)
+endif()
 
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 11)
@@ -72,6 +77,7 @@ message("Python_LIBRARIES: ${Python_LIBRARIES}")
 message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
 message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
 
+
 if(Python_Development_FOUND)
   get_target_property(TMP Python::Python IMPORTED_LOCATION_DEBUG)
   message("Python IMPORTED_LOCATION_DEBUG: ${TMP}")
@@ -80,6 +86,11 @@ if(Python_Development_FOUND)
   message("Python IMPORTED_LOCATION_RELEASE: ${TMP}")
 endif()
 
+if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
+  # hack to get eclipse C++ indexer to pick up python headers
+  message("setting eclipse include dirs: ${Python_INCLUDE_DIRS}")
+  include_directories(${Python_INCLUDE_DIRS})
+endif()
 
 
 find_package(NumPy)

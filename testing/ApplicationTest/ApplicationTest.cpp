@@ -24,6 +24,8 @@
 using namespace Magnum;
 using namespace Magnum::Trade;
 
+#include <iostream>
+
 
 
 static int exec() {
@@ -71,11 +73,27 @@ static int exec() {
 
 }
 
+#define OFFSET(f) std::cout << "offset: " << offsetof(MxType, f) << ", " << offsetof(PyTypeObject, f) << std::endl;
+
 int main (int argc, char** argv) {
 
-    MxApplication::create(argc, argv, {});
+    std::cout << "MxType: " << sizeof(MxType) << ", PyObjectType: " << sizeof(PyTypeObject) << std::endl;
+
+
+    OFFSET(tp_name);
+
+    Mx_Initialize(0);
+
+    MxApplicationConfig conf = {};
+
+    PyObject *app = MxApplication_New(argc, argv, &conf);
+
+
+    //MxApplication::create(argc, argv, {});
 
     exec();
+
+    Py_DECREF(app);
 
     MxApplication::destroy();
 

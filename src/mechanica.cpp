@@ -104,6 +104,15 @@ PyMODINIT_FUNC PyInit__mechanica(void)
 }
 
 
+/**
+ * Initialize the entire runtime.
+ */
+MxAPI_FUNC(int) Mx_Initialize(int) {
+    if(!Py_IsInitialized()) {
+        Py_Initialize();
+    }
+    return 0;
+}
 
 
 
