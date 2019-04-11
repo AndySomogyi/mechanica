@@ -15,7 +15,7 @@ using namespace Math::Literals;
 
 CylinderTest::Configuration::Configuration():
     _title{"Mesh Test"},
-    _size{600, 900}, _sampleCount{0},
+    _size{900, 600}, _sampleCount{0},
     _version{GL::Version::GL410},
     _windowFlags{WindowFlag::Focused},
     _cursorMode{CursorMode::Normal},
@@ -245,8 +245,19 @@ void CylinderTest::draw() {
     //rotation = build_rotmatrix(curquat);
     
     rotation = arcBall.rotation();
+    
+    rotation = Matrix4::rotationZ(-1.4_radf);
+    
+    rotation = rotation * Matrix4::rotationX(0.5_radf);
 
+    // Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
     Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
+    
+    Debug{} << "viewport: " << GL::defaultFramebuffer.viewport().size();
+    Debug{} << "center: " << center;
+    Debug{} << "centerShift: " << centerShift;
+    Debug{} << "projection: " << projection;
+    Debug{} << "view matrix: " << mat;
 
     renderer->setViewMatrix(mat);
 

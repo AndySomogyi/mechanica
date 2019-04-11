@@ -20,6 +20,7 @@
 #include <Magnum/Image.h>
 
 #include <MxApplication.h>
+#include <MxSurfaceSimulator.h>
 
 using namespace Magnum;
 using namespace Magnum::Trade;
@@ -57,6 +58,8 @@ static int exec() {
         .clear(GL::FramebufferClear::Color)
         .bind();
 
+    Debug{} << "test framebuffer size: " << framebuffer.viewport();
+
     Shaders::VertexColor2D shader;
     mesh.draw(shader);
     
@@ -84,9 +87,28 @@ int main (int argc, char** argv) {
 
     Mx_Initialize(0);
 
+    const std::string dirName = MX_MODEL_DIR;
+
+    //const char* fileName = "football.t1.obj";
+    //const char* fileName = "football.t2.obj";
+    //const char* fileName = "cylinder.1.obj";
+    //const char* fileName = "cube1.obj";
+    const char* fileName = "hex_cylinder.1.obj";
+    //const char* fileName = "football.t1.obj";
+    //const char* fileName = "football.t1.obj";
+
+
+    std::string modelPath = dirName  + "/" + fileName;
+
     MxApplicationConfig conf = {};
 
     PyObject *app = MxApplication_New(argc, argv, &conf);
+
+
+    MxSurfaceSimulator_Config simConf = {{600,900}, modelPath.c_str()};
+    MxSurfaceSimulator *sim = MxSurfaceSimulator_New(&simConf);
+
+    MxSurfaceSimulator_ImageData(sim, "surfacesimulator.jpg");
 
 
     //MxApplication::create(argc, argv, {});

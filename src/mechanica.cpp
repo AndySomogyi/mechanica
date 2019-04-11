@@ -21,6 +21,7 @@
 #include "MxApplication.h"
 #include "MxSimulator.h"
 #include "MxSurfaceSimulator.h"
+#include "MxCylinderModel.h"
 
 
 
@@ -44,6 +45,7 @@ static struct PyModuleDef mechanica_module = {
         methods
 };
 
+static PyObject *mechanicaModule = NULL;
 
 static PyObject * moduleinit(void)
 {
@@ -93,6 +95,9 @@ static PyObject * moduleinit(void)
     MxApplication_init(m);
     MxSimulator_init(m);
     MxSurfaceSimulator_init(m);
+    MxCylinderModel_init(m);
+    
+    mechanicaModule = m;
 
     return m;
 }
@@ -111,6 +116,11 @@ MxAPI_FUNC(int) Mx_Initialize(int) {
     if(!Py_IsInitialized()) {
         Py_Initialize();
     }
+    
+    if(mechanicaModule == NULL) {
+        moduleinit();
+    }
+    
     return 0;
 }
 

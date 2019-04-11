@@ -55,8 +55,7 @@ struct MxObject
     }
 
     MxObject() {
-        this->ob_type = nullptr;
-        this->ob_refcnt = 1;
+        // default ctor, Python already set the ob_type and ob_refcnt. 
     }
 
     static MxType *type() { return MxObject_Type; };

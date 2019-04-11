@@ -116,7 +116,7 @@ Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2
         std::longjmp(errorManager.setjmpBuffer, 1);
     };
     if(setjmp(errorManager.setjmpBuffer)) {
-        Error{} << "Trade::JpegImageConverter::exportToData(): error:" << errorManager.message;
+        Error{} << "convertImageDataToJpeg: error:" << errorManager.message;
         jpeg_destroy_compress(&info);
         return nullptr;
     }

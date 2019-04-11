@@ -112,11 +112,16 @@ message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include
 # needed for jpeg image writer
 find_package(JPEG REQUIRED)
 
+message("JPEG_INCLUDE_DIRS: ${JPEG_INCLUDE_DIRS}")
+message("JPEG_LIBRARIES: ${JPEG_LIBRARIES}")
+message("JPEG_VERSION: ${JPEG_VERSION}")
+
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
 
 set(BUILD_SHARED_LIBS ON CACHE BOOL "build shared/dynamic library")
 
+set(MX_MODEL_DIR ${PROJECT_SOURCE_DIR}/testing/models CACHE PATH "directory for mechanica models" FORCE)
 
 find_package(OpenGL REQUIRED)
 

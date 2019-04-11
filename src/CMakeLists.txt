@@ -106,6 +106,7 @@ set(SRC
   MxWindowlessApplication.cpp
   MxSurfaceSimulator.cpp
   MxImageConverters.cpp
+  MxCylinderModel.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -178,6 +179,7 @@ set(HEADERS
   MxWindowlessApplication.h
   MxSurfaceSimulator.h
   MxImageConverters.h
+  MxCylinderModel.h
   )
 
 

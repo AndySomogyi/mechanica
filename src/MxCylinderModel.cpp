@@ -5,11 +5,10 @@
  *      Author: andy
  */
 
-#include "CylinderModel.h"
+#include "MxCylinderModel.h"
 #include <MxDebug.h>
 #include <iostream>
 #include "MeshIO.h"
-#include "CylinderTest.h"
 #include "T1Transition.h"
 #include "T2Transition.h"
 #include "T3Transition.h"
@@ -58,13 +57,13 @@ static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
 
 
 
-CylinderModel::CylinderModel()  {
+MxCylinderModel::MxCylinderModel()  {
     growingPolygonType.centerColor = Magnum::Color4::red();
 }
 
 
-HRESULT CylinderModel::loadModel() {
-    loadAssImpModel();
+HRESULT MxCylinderModel::loadModel(const char* fileName) {
+    loadAssImpModel(fileName);
 
     for(int i = 0; i < mesh->cells.size(); ++i) {
         CellPtr cell = mesh->cells[i];
@@ -79,19 +78,11 @@ HRESULT CylinderModel::loadModel() {
 }
 
 
-void CylinderModel::loadAssImpModel() {
+void MxCylinderModel::loadAssImpModel(const char* fileName) {
 
-    const std::string dirName = MX_MODEL_DIR;
+    std::cout << MX_FUNCTION << ", fileName: " << fileName << std::endl;
 
-    //const char* fileName = "football.t1.obj";
-    //const char* fileName = "football.t2.obj";
-    //const char* fileName = "cylinder.1.obj";
-    //const char* fileName = "cube1.obj";
-    const char* fileName = "hex_cylinder.1.obj";
-    //const char* fileName = "football.t1.obj";
-    //const char* fileName = "football.t1.obj";
-
-    mesh = MxMesh_FromFile((dirName + "/" + fileName).c_str(), 1.0, &meshObjectTypeHandler);
+    mesh = MxMesh_FromFile(fileName, 1.0, &meshObjectTypeHandler);
 
     cellVolumeConstraint.targetVolume = mesh->cells[1]->volume;
     cellVolumeConstraint.lambda = 0.5;
@@ -113,33 +104,33 @@ void CylinderModel::loadAssImpModel() {
     mesh->setLongCutoff(0.3);
 }
 
-void CylinderModel::testEdges() {
+void MxCylinderModel::testEdges() {
     return;
 }
 
-HRESULT CylinderModel::getStateVector(float *stateVector, uint32_t *count)
+HRESULT MxCylinderModel::getStateVector(float *stateVector, uint32_t *count)
 {
     *count = 0;
     return S_OK;
 }
 
-HRESULT CylinderModel::setStateVector(const float *stateVector)
+HRESULT MxCylinderModel::setStateVector(const float *stateVector)
 {
     return S_OK;
 }
 
 
-HRESULT CylinderModel::getStateVectorRate(float time, const float *y, float* dydt)
+HRESULT MxCylinderModel::getStateVectorRate(float time, const float *y, float* dydt)
 {
     return S_OK;
 }
 
-void CylinderModel::setTargetVolume(float tv)
+void MxCylinderModel::setTargetVolume(float tv)
 {
     cellVolumeConstraint.targetVolume = tv;
 }
 
-HRESULT CylinderModel::applyT1Edge2TransitionToSelectedEdge() {
+HRESULT MxCylinderModel::applyT1Edge2TransitionToSelectedEdge() {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
         return applyT1Edge2Transition(mesh, EdgePtr(obj));
@@ -147,7 +138,7 @@ HRESULT CylinderModel::applyT1Edge2TransitionToSelectedEdge() {
     return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
 }
 
-HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
+HRESULT MxCylinderModel::applyT2PolygonTransitionToSelectedPolygon()
 {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
@@ -162,7 +153,7 @@ HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
 }
 
-HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
+HRESULT MxCylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
     MxPolygon *poly = dyn_cast<MxPolygon>(mesh->selectedObject());
     if(poly) {
 
@@ -184,64 +175,64 @@ HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
 }
 
-float CylinderModel::minTargetVolume()
+float MxCylinderModel::minTargetVolume()
 {
     return 0.1 * cellVolumeConstraint.targetVolume;
 }
 
-float CylinderModel::maxTargetVolume()
+float MxCylinderModel::maxTargetVolume()
 {
     return 3 * cellVolumeConstraint.targetVolume;
 }
 
-float CylinderModel::targetVolume()
+float MxCylinderModel::targetVolume()
 {
     return cellVolumeConstraint.targetVolume;
 }
 
-float CylinderModel::targetVolumeLambda()
+float MxCylinderModel::targetVolumeLambda()
 {
     return cellVolumeConstraint.lambda;
 }
 
-void CylinderModel::setTargetVolumeLambda(float targetVolumeLambda)
+void MxCylinderModel::setTargetVolumeLambda(float targetVolumeLambda)
 {
     cellVolumeConstraint.lambda = targetVolumeLambda;
 }
 
-float CylinderModel::minTargetArea()
+float MxCylinderModel::minTargetArea()
 {
     return 0.1 * areaConstraint.targetArea;
 }
 
-float CylinderModel::maxTargetArea()
+float MxCylinderModel::maxTargetArea()
 {
     return 3 * areaConstraint.targetArea;
 }
 
-float CylinderModel::targetArea()
+float MxCylinderModel::targetArea()
 {
     return areaConstraint.targetArea;
 }
 
-float CylinderModel::targetAreaLambda()
+float MxCylinderModel::targetAreaLambda()
 {
     return areaConstraint.lambda;
 }
 
-void CylinderModel::setTargetArea(float targetArea)
+void MxCylinderModel::setTargetArea(float targetArea)
 {
     areaConstraint.targetArea = targetArea;
 }
 
-void CylinderModel::setTargetAreaLambda(float targetAreaLambda)
+void MxCylinderModel::setTargetAreaLambda(float targetAreaLambda)
 {
     areaConstraint.lambda = targetAreaLambda;
 }
 
 static float PolyDistance = 1;
 
-HRESULT CylinderModel::changePolygonTypes()
+HRESULT MxCylinderModel::changePolygonTypes()
 {
     MxObject *obj = mesh->selectedObject();
     MxPolygon *poly = dyn_cast<MxPolygon>(obj);
@@ -262,7 +253,7 @@ HRESULT CylinderModel::changePolygonTypes()
     }
 }
 
-HRESULT CylinderModel::activateAreaConstraint()
+HRESULT MxCylinderModel::activateAreaConstraint()
 {
     MxObject *obj = mesh->selectedObject();
  
@@ -270,42 +261,126 @@ HRESULT CylinderModel::activateAreaConstraint()
     return propagator->structureChanged();
 }
 
-float CylinderModel::stdSurfaceTension()
+float MxCylinderModel::stdSurfaceTension()
 {
     return stdPolygonForce.surfaceTension;
 }
 
-void CylinderModel::setStdSurfaceTension(float val)
+void MxCylinderModel::setStdSurfaceTension(float val)
 {
     stdPolygonForce.surfaceTension = val;
 }
 
-float CylinderModel::stdSurfaceTensionMin()
+float MxCylinderModel::stdSurfaceTensionMin()
 {
     return 0;
 }
 
-float CylinderModel::stdSurfaceTensionMax()
+float MxCylinderModel::stdSurfaceTensionMax()
 {
     return stdPolygonForce.surfaceTension * 5;
 }
 
-float CylinderModel::growSurfaceTension()
+float MxCylinderModel::growSurfaceTension()
 {
     return growingPolygonForce.surfaceTension;
 }
 
-void CylinderModel::setGrowStdSurfaceTension(float val)
+void MxCylinderModel::setGrowStdSurfaceTension(float val)
 {
     growingPolygonForce.surfaceTension = val;
 }
 
-float CylinderModel::growSurfaceTensionMin()
+float MxCylinderModel::growSurfaceTensionMin()
 {
     return 0;
 }
 
-float CylinderModel::growSurfaceTensionMax()
+float MxCylinderModel::growSurfaceTensionMax()
 {
     return 5 * growingPolygonForce.surfaceTension;
+}
+
+
+
+static void _dealloc(MxCylinderModel *app) {
+    std::cout << MX_FUNCTION << std::endl;
+}
+
+static PyObject *_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+    std::cout << MX_FUNCTION << std::endl;
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef _methods[] = {
+    //{"testImage", (PyCFunction)_testImage, METH_VARARGS,  "make a test image" },
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject _type = {
+    PyVarObject_HEAD_INIT(nullptr, 0)
+    .tp_name = "mechanica.CylinderModel",
+    .tp_basicsize = sizeof(MxCylinderModel),
+    .tp_itemsize = 0,
+    .tp_dealloc = (destructor)_dealloc,
+    .tp_print = 0,
+    .tp_getattr = 0,
+    .tp_setattr = 0,
+    .tp_as_async = 0,
+    .tp_repr = 0,
+    .tp_as_number = 0,
+    .tp_as_sequence = 0,
+    .tp_as_mapping = 0,
+    .tp_hash = 0,
+    .tp_call = 0,
+    .tp_str = 0,
+    .tp_getattro = 0,
+    .tp_setattro = 0,
+    .tp_as_buffer = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = 0,
+    .tp_traverse = 0,
+    .tp_clear = 0,
+    .tp_richcompare = 0,
+    .tp_weaklistoffset = 0,
+    .tp_iter = 0,
+    .tp_iternext = 0,
+    .tp_methods = _methods,
+    .tp_members = 0,
+    .tp_getset = 0,
+    .tp_base = 0,
+    .tp_dict = 0,
+    .tp_descr_get = 0,
+    .tp_descr_set = 0,
+    .tp_dictoffset = 0,
+    .tp_init = 0,
+    .tp_alloc = 0,
+    .tp_new = _new,
+    .tp_free = 0,
+    .tp_is_gc = 0,
+    .tp_bases = 0,
+    .tp_mro = 0,
+    .tp_cache = 0,
+    .tp_subclasses = 0,
+    .tp_weaklist = 0,
+    .tp_del = 0,
+    .tp_version_tag = 0,
+    .tp_finalize = 0,
+};
+
+PyTypeObject *MxCylinderModel_Type = &_type;
+
+HRESULT MxCylinderModel_init(PyObject* m) {
+
+    std::cout << MX_FUNCTION << std::endl;
+
+
+    if (PyType_Ready((PyTypeObject *)MxCylinderModel_Type) < 0)
+        return E_FAIL;
+
+
+    Py_INCREF(MxCylinderModel_Type);
+    PyModule_AddObject(m, "CylinderModel", (PyObject *) MxCylinderModel_Type);
+
+    return 0;
 }

@@ -54,7 +54,7 @@ static void _dealloc(MxApplication *app) {
     gApp = NULL;
 }
 
-PyObject *_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+static PyObject *_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     int argc = 1;
     char* argv[] = {"foo"};
     MxApplicationConfig conf = {};
@@ -100,9 +100,6 @@ static PyObject* _testImage(PyObject* self, PyObject* args) {
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
 
-    TgaImageConverter conv;
-
-    conv.exportToFile(image, "triangle.tga");
 
     auto jpegData = convertImageDataToJpeg(image);
 
@@ -117,14 +114,14 @@ static PyObject* _testImage(PyObject* self, PyObject* args) {
     return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
 }
 
-static PyMethodDef methods[] = {
+static PyMethodDef _methods[] = {
     {"testImage", (PyCFunction)_testImage, METH_VARARGS,  "make a test image" },
     {NULL}  /* Sentinel */
 };
 
 
 
-static PyTypeObject ApplicationType = {
+static PyTypeObject _type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     .tp_name = "mechanica.Application",
     .tp_basicsize = sizeof(MxApplication),
@@ -152,7 +149,7 @@ static PyTypeObject ApplicationType = {
     .tp_weaklistoffset = 0, 
     .tp_iter = 0, 
     .tp_iternext = 0, 
-    .tp_methods = methods,
+    .tp_methods = _methods,
     .tp_members = 0, 
     .tp_getset = 0, 
     .tp_base = 0, 
@@ -188,14 +185,8 @@ static PyTypeObject ApplicationType = {
 };
 */
 
-PyTypeObject *MxApplication_Type = &ApplicationType;
+PyTypeObject *MxApplication_Type = &_type;
 
-static PyModuleDef custommodule = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "custom",
-    .m_doc = "Example module that creates an extension type.",
-    .m_size = -1,
-};
 
 HRESULT MxApplication_init(PyObject* m) {
 

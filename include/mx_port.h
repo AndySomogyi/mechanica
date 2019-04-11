@@ -155,6 +155,8 @@ typedef int32_t HRESULT;
  */
 #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
 
+#define FAILED(hr) (((HRESULT)(hr)) < 0)
+
 /**
  * Creates an HRESULT value from its component pieces.
  * Parameters

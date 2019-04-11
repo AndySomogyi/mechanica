@@ -3,6 +3,7 @@ import _mechanica
 from _mechanica import Application
 from _mechanica import Simulator
 from _mechanica import SurfaceSimulator
+from _mechanica import CylinderModel
 
 try:
     import IPython

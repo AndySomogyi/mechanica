@@ -12,7 +12,7 @@
 #cmakedefine MX_LINUX
 #cmakedefine MX_UNIX
 #cmakedefine MX_WINDOWS
-
+#cmakedefine MX_MODEL_DIR "@MX_MODEL_DIR@"
 
 
 
