@@ -8,25 +8,18 @@
 #include <MxApplication.h>
 #include <MxWindowlessApplication.h>
 
-
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Framebuffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Shaders/VertexColor.h>
-#include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
-
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
-
 #include <Corrade/Utility/Directory.h>
 #include <MxImageConverters.h>
 
-
-
 using namespace Magnum;
-using namespace Magnum::Trade;
 
 #include <iostream>
 

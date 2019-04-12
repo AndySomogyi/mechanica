@@ -14,13 +14,15 @@
 #include <Magnum/GL/Renderbuffer.h>
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Shaders/VertexColor.h>
-#include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
+
 
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
 
 #include <MxApplication.h>
 #include <MxSurfaceSimulator.h>
+#include <Corrade/Utility/Directory.h>
+#include <MxImageConverters.h>
 
 using namespace Magnum;
 using namespace Magnum::Trade;
@@ -68,9 +70,12 @@ static int exec() {
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
-    TgaImageConverter conv;
+    auto jpegData = convertImageDataToJpeg(image);
 
-    conv.exportToFile(image, "triangle.tga");
+    /* Open file */
+    if(!Utility::Directory::write("triangle.jpg", jpegData)) {
+        Error() << "Trade::AbstractImageConverter::exportToFile(): cannot write to file" << "triangle.jpg";
+    }
 
     return 0;
 
