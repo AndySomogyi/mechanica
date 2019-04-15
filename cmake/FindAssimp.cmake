@@ -53,7 +53,7 @@ elseif(UNIX AND NOT APPLE)
   find_path(
     ASSIMP_INCLUDE_DIR
     NAMES assimp/anim.h
-    PATHS $ENV{HOME}/local/include /usr/local/include 
+    PATHS $ENV{HOME}/local/include /usr/include /usr/local/include 
     NO_DEFAULT_PATH
     )
 elseif(DEFINED ENV{VCPKG_ROOT})
@@ -124,7 +124,7 @@ elseif(UNIX AND NOT APPLE)
   find_library(
     ASSIMP_LIBRARY
     NAMES assimp
-    PATHS $ENV{HOME}/local/lib /usr/local/lib/
+    PATHS $ENV{HOME}/local/lib /usr/lib /usr/local/lib /usr/lib/x86_64-linux-gnu
     NO_DEFAULT_PATH
     )
   

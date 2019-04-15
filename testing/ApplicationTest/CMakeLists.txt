@@ -19,7 +19,6 @@ target_link_libraries(mx-apptest
   Magnum::Shaders
   Magnum::Primitives
   Magnum::DebugTools
-  TgaImageConverter
   )
 
 
