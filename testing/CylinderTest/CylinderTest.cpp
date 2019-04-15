@@ -246,12 +246,12 @@ void CylinderTest::draw() {
     
     rotation = arcBall.rotation();
     
-    rotation = Matrix4::rotationZ(-1.4_radf);
+    //rotation = Matrix4::rotationZ(-1.4_radf);
     
-    rotation = rotation * Matrix4::rotationX(0.5_radf);
+    //rotation = rotation * Matrix4::rotationX(0.5_radf);
 
-    // Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
     Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
+    //Matrix4 mat = Matrix4::translation(centerShift) * rotation * Matrix4::translation(-center) ;
     
     Debug{} << "viewport: " << GL::defaultFramebuffer.viewport().size();
     Debug{} << "center: " << center;

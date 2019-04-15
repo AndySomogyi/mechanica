@@ -62,12 +62,9 @@ static int exec() {
 
     Shaders::VertexColor2D shader;
     mesh.draw(shader);
-    
-
 
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
-    
     TgaImageConverter conv;
 
     conv.exportToFile(image, "triangle.tga");
@@ -76,12 +73,12 @@ static int exec() {
 
 }
 
+
 #define OFFSET(f) std::cout << "offset: " << offsetof(MxType, f) << ", " << offsetof(PyTypeObject, f) << std::endl;
 
 int main (int argc, char** argv) {
 
     std::cout << "MxType: " << sizeof(MxType) << ", PyObjectType: " << sizeof(PyTypeObject) << std::endl;
-
 
     OFFSET(tp_name);
 
