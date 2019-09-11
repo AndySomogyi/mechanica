@@ -9,6 +9,7 @@
 #define SRC_MXMESHCORE_H_
 
 #include "mechanica_private.h"
+#include "MxParticle.h"
 #include <vector>
 #include <array>
 #include <algorithm>

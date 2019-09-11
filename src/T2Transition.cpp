@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include "T2Transition.h"
+#include "MeshOperations.h"
 #include "MxPolygon.h"
 #include "MeshRelationships.h"
 #include "MxEdge.h"
@@ -17,7 +17,7 @@ static inline PolygonPtr otherPolygon(EdgePtr edge, PolygonPtr poly) {
     return edge->polygons[otherIndex];
 }
 
-HRESULT applyT2PolygonTransition(MeshPtr mesh, PolygonPtr poly)
+HRESULT Mx_CollapsePolygon(MeshPtr mesh, PolygonPtr poly)
 {
     // go around and check that every edge , check the simplest configuration of
     // each vertex has exactly three edges

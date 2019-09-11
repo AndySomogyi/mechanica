@@ -9,187 +9,106 @@
 #define SRC_MESHOPERATIONS_H_
 
 #include "MxMeshCore.h"
-#include <random>
-
-/**
- * An operation modifies a mesh, typically topologically.
- *
- * Operations get constructed with their arguments, then they
- * get re-ordered in the queue based on their energy cost. The values
- * of their arguments change as other operations modify the mesh.
- * Operations must be removed from the queue if their arguments
- * get removed from the queue.
- *
- * Basic responsibilities:
- *
- * * factory operation, given a triangle or edge, create a new operation.
- */
-struct MeshOperation {
-
-    MeshOperation(MeshPtr _mesh);
-
-    /**
-     * Apply this operation
-     */
-    virtual HRESULT apply() = 0;
-
-    /**
-     * lower, more negative energy operations are queued at a higher priority.
-     */
-    virtual float energy() const = 0;
-
-    /**
-     * does this operation depend on this triangle?
-     */
-    virtual bool depends(CPolygonPtr) const = 0;
-
-    /**
-     * does this operation depend on this vertex?
-     */
-    virtual bool depends(CVertexPtr) const = 0;
+#include "MxMesh.h"
+#include "MxPolygon.h"
 
 
-    virtual bool equals(CVertexPtr) const = 0;
-
-    /**
-     * mark the edge, for debug purposes
-     */
-    virtual void mark() const = 0;
-
-
-    bool  operator<(const MeshOperation& other) const {
-        return energy() < other.energy();
-    }
-
-    virtual ~MeshOperation() {};
-
-
-
-    enum Codes : HRESULT {
-        /**
-         * The operation failed, but it should be retried the next time,
-         * and not removed from the queue.
-         */
-        RETRY = MAKE_HRESULT(1, FACULTY_MESHOPERATION, 1)
-    };
-
-
-protected:
-    MeshPtr mesh;
-    struct MeshOperations *ops;
-};
-
-struct MeshOperationFactory {
-
-};
 
 
 
 /**
- * A priority queue of mesh operations.
+ * Basic H to I and I to H transitions according to Honda.
+ *
+ * (a) we know all edge lengths as edges are explicit objects.
+ *
+ * In general, an edge may be connected to either two or three polygons. The H to I
+ * and I to H transitions are only valid for volumetric regions, where a edge is
+ * incident to three polygons.
+ *
+ * If an edge is incident to three polygons, we continue checking if an H to I or I to H
+ * transition is valid.
+ *
+ * If an edge is incident to three polygons, and none of the polygons is a triangle
+ * (i.e. all of three incident polygons have four or more edges), then the edge is
+ * a type I configuration. A type I configuration can be 'flipped' to an H configuration
+ * where the edge is replaced with a triangle.
+ *
+ * If one of the three polygons is a triangle, then that triangle is a type H configuration. This
+ * configuration can be 'flipped' to an I configuration by replacing the triangle with a edge.
+ *
+ * If a triangle connects two cells, and those two cells are only connected by that
+ * triangle, i.e. if the all of the edges of the triangle are incident to these
+ * two cells and the root cell, then the triangle can not be replaced with an edge.
+ *
+ * The H to I transition is intended to flip a triangle to an edge, as such all of the
+ * incident edges to the triangle will be removed. Consider the case where the
+ * Candidate triangle is adjacent to another triangle. The only way to flip the
+ * candidate triangle to an edge is to also replace the adjacent triangle
+ * with an edge. The two H to I and I to H transition are intended to be purely
+ * local do not have non-local side effects. Therefore, we require that a the
+ * triangle in a valid H to I transition must be adjacent to three polygons
+ * with at least four sides each. Each of these three polygons will have
+ * a side (edge) removed.
+ *
+ *
+ *
+ *
  */
-struct MeshOperations {
+HRESULT Mx_FlipTriangleToEdge(MeshPtr mesh, PolygonPtr poly, EdgePtr *edge);
+
+HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr *poly);
+
+bool Mx_IsTriangleToEdgeConfiguration(CEdgePtr edge);
+
+bool Mx_IsEdgeToTriangleConfiguration(CEdgePtr edge);
+
+HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge);
 
 
-
-    MeshOperations(MeshPtr mesh, float shortEdgeCutoff, float longEdgeCutoff);
-
-    /**
-     * Inform the MeshOperations that a mesh object (likely positions) was changed,
-     * Check if the mesh object triggers any operations and enqueue any triggered
-     * operations. A mesh object can trigger an operation if an edge is too short
-     * or long.
-     */
-    HRESULT positionsChanged(TriangleContainer::const_iterator begin,
-            TriangleContainer::const_iterator end);
-
-    /**
-     * Inform the MeshOperations that a mesh object (likely positions) was changed,
-     * Check if the mesh object triggers any operations and enqueue any triggered
-     * operations. A mesh object can trigger an operation if an edge is too short
-     * or long.
-     */
-    HRESULT valenceChanged(const VertexPtr vert);
-
-    /**
-     * a mesh object was deleted, remove any enqueued operations
-     * that refer to this obj.
-     */
-    HRESULT removeDependentOperations(const PolygonPtr tri);
-
-    /**
-     * a mesh object was deleted, remove any enqueued operations
-     * that refer to this obj.
-     */
-    HRESULT removeDependentOperations(const VertexPtr vert);
-
-    bool empty() const { return c.empty(); }
-
-    std::size_t size() const { return c.size(); }
-
-    /**
-     * Apply all of the queued operations. The queue is empty on return.
-     */
-    HRESULT apply();
-
-    float getLongCutoff() const { return longCutoff;};
-
-    float getShortCutoff() const { return shortCutoff; };
-
-    void setShortCutoff(float);
-
-    void setLongCutoff(float);
-
-    void setDebugMode(bool);
-
-    HRESULT debugStep();
+HRESULT Mx_CollapsePolygon(MeshPtr mesh, PolygonPtr poly);
 
 
+/**
+ * splits a polygon along a cut plane relative to the polygon's semi-major axis. We
+ * determine the principal axis of the polygon by first calculating the intertia tensor,
+ * then taking the eigen vectors of it. The eigen vectors define the semi-major, semi-minor
+ * and perpendicular axes -- the eigen vectors of the intertia tensor defind a local
+ * coordinate of the polygon.
+ *
+ * Note, all vertex dynamics are computed in world space, the local coordinate
+ * system is a derived quantity of a polygon, a polygon does not maintain, track or
+ * persist a local coordinate axes in any way.
+ *
+ * Returns two new polygons in p1 and p2, note, it is possible that the original cell is
+ * returned in either p1 or p2, or future versions might destroy the poly polygon and
+ * generate two new polygons.
+ */
+HRESULT Mx_SplitPolygonSemiMajorAxisAngle(MeshPtr mesh, PolygonPtr poly,
+        float radians, PolygonPtr *p1, PolygonPtr *p2);
 
-
-#ifndef NDEBUG
-
-    bool shouldStop = false;
-#endif
-
-    bool debugMode{false};
-
-    int debugCnt = 0;
-
-    MeshOperation *pendingDebugOp{nullptr};
-
-
-    ~MeshOperations();
-
-private:
-
-    MeshPtr mesh;
-
-    // TODO: this would be a lot more efficient if we stack allocated
-    // the ops. Can't do yet, that because of different size for each op,
-    // need to fix in future versions.
-    typedef std::vector<MeshOperation*> Container;
-
-    Container c;
-
-    void push(MeshOperation* x);
-
-
-    MeshOperation* pop();
-
-    float shortCutoff;
-    float longCutoff;
-
-    Container::iterator findDependentOperation(Container::iterator start, const PolygonPtr);
-
-    Container::iterator findDependentOperation(Container::iterator start, const VertexPtr);
-
-    MeshOperation *findMatchingOperation(CVertexPtr vertex) ;
-
-    MeshOperation *currentOp = nullptr;
-
-};
-
-void setMeshOpDebugMode(uint c);
+/**
+ * Apply a T3 (split) operation to a polygon where the vertices are bisected
+ * by a plane (in world space). The plane is specified in point-normal form,
+ * where the point is the center of mass of this polygon, and the normal is
+ * given in normal.
+ *
+ * The plane normal should be roughly perpendicular to the face normal
+ * of the polygon. If the plane does not bisect any vertices, then an error
+ * is returned. The vertices of the polygon are partitioned into two sections:
+ * above and below the plane, and the polygon is split between between these
+ * two sections.
+ *
+ * returns the two (potentially) new polygons in p1 and p2, returns S_OK on
+ * Success, or E_INVALIDARG in an error conditions. Error conditions may be
+ * when the plane does not bisect at least two edges. Note, if a vertex is
+ * Exactly on the split plane (highly unlikely), it is perturbed in a
+ * random direction perpendicular to the plane.
+ *
+ * Currently only supports convex polygons *well*, if a polygon is concave, and
+ * there are more than two edges that cross the bisection plane, this procedure
+ * chooses the first two edges that it encounters.
+ */
+HRESULT Mx_SplitPolygonBisectPlane(MeshPtr mesh, PolygonPtr poly,
+        Vector3 *normal, PolygonPtr *p1, PolygonPtr *p2);
 
 #endif /* SRC_MESHOPERATIONS_H_ */

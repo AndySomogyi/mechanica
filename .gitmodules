@@ -16,3 +16,6 @@
 [submodule "extern/sundials"]
 	path = extern/sundials
 	url = https://github.com/AndySomogyi/sundials.git
+[submodule "extern/DirectXMath"]
+	path = extern/DirectXMath
+	url = https://github.com/microsoft/DirectXMath.git

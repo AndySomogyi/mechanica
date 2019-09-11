@@ -54,7 +54,6 @@ static void size_callback(GLFWwindow* window, int width, int height)
 }
 
 static void char_callback(GLFWwindow *window, unsigned int c) {
-    ::setMeshOpDebugMode(c);
     window_refresh_callback(window);
 }
 

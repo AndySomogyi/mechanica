@@ -304,12 +304,14 @@ struct MxMesh  {
     float edgeSplitStochasticAsymmetry = 0.2;
 
 
+    /*
     float getShortCutoff() { return meshOperations.getShortCutoff(); };
     void setShortCutoff(float val) { meshOperations.setShortCutoff(val); }
 
 
     float getLongCutoff() { return meshOperations.getLongCutoff(); }
     void setLongCutoff(float val) { meshOperations.setLongCutoff(val); }
+    */
 
 
     /**
@@ -336,7 +338,7 @@ private:
 
 
 
-    MeshOperations meshOperations;
+    //MeshOperations meshOperations;
 
     CellPtr _rootCell;
 

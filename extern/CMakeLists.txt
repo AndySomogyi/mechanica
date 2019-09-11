@@ -122,3 +122,22 @@ set(BUILD_KINSOL         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 add_subdirectory(sundials)
 
 
+
+add_library(DirectXMath INTERFACE)
+
+target_compile_options(DirectXMath INTERFACE -fms-extensions)
+
+target_include_directories(DirectXMath INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXMath/Inc/>
+  #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+)
+
+#set_property(TARGET mylib APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/mylib>
+#  $<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+#  )
+
+#set_target_properties(DirectXMath::DirectXMath PROPERTIES
+#  INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXMath/Inc/>
+#  )

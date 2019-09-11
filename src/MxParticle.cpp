@@ -7,3 +7,6 @@
 
 #include <MxParticle.h>
 
+void MxParticle_init(PyObject* m)
+{
+}

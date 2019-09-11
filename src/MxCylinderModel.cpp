@@ -9,9 +9,7 @@
 #include <MxDebug.h>
 #include <iostream>
 #include "MeshIO.h"
-#include "T1Transition.h"
-#include "T2Transition.h"
-#include "T3Transition.h"
+#include "MeshOperations.h"
 #include "MxCellVolumeConstraint.h"
 #include "MxPolygonAreaConstraint.h"
 #include <MxPolygonSurfaceTensionForce.h>
@@ -100,8 +98,8 @@ void MxCylinderModel::loadAssImpModel(const char* fileName) {
     setTargetVolume(cell->volume);
     setTargetVolumeLambda(0.01);
 
-    mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.3);
+    //mesh->setShortCutoff(0);
+    //mesh->setLongCutoff(0.3);
 }
 
 void MxCylinderModel::testEdges() {
@@ -133,7 +131,7 @@ void MxCylinderModel::setTargetVolume(float tv)
 HRESULT MxCylinderModel::applyT1Edge2TransitionToSelectedEdge() {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
-        return applyT1Edge2Transition(mesh, EdgePtr(obj));
+        return Mx_FlipEdge(mesh, EdgePtr(obj));
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
 }
@@ -142,7 +140,7 @@ HRESULT MxCylinderModel::applyT2PolygonTransitionToSelectedPolygon()
 {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
-        HRESULT result = applyT2PolygonTransition(mesh, (PolygonPtr)obj);
+        HRESULT result = Mx_CollapsePolygon(mesh, (PolygonPtr)obj);
 
         if(SUCCEEDED(result)) {
 
@@ -162,7 +160,7 @@ HRESULT MxCylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
 
         MxPolygon *p1, *p2;
 
-        HRESULT result = applyT3PolygonBisectPlaneTransition(mesh, poly, &normal, &p1, &p2);
+        HRESULT result = Mx_SplitPolygonBisectPlane(mesh, poly, &normal, &p1, &p2);
 
         if(SUCCEEDED(result)) {
 

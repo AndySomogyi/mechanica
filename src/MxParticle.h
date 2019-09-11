@@ -13,4 +13,11 @@
 struct MxParticle : MxObject {
 };
 
+
+/**
+ * Init and add to python module
+ */
+void MxParticle_init(PyObject *m);
+
+
 #endif /* SRC_MXPARTICLE_H_ */

@@ -269,6 +269,12 @@ struct MxPolygon : MxObject {
     int vertexIndex(CVertexPtr vert) const;
 
     /**
+     * find the index of the given edge in the polygons list of edges.
+     * return -1 if the edge is not found.
+     */
+    int edgeIndex(CEdgePtr e) const;
+
+    /**
      * get the number of sides this polygon has, equivalently, the number of
      * vertices or edges.
      */
@@ -316,7 +322,7 @@ private:
     friend HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
         VertexPtr newVert, EdgePtr* prevEdge, EdgePtr* nextEdge);
 
-    friend HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
+    friend HRESULT Mx_SplitPolygonBisectPlane(MeshPtr mesh, PolygonPtr poly,
             Vector3* normal, PolygonPtr* pn1, PolygonPtr* pn2);
 
     friend HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr e, EdgePtr en);

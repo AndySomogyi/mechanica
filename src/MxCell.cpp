@@ -61,6 +61,10 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
                     (poly == mesh->selectedObject() || poly->edges[i] == mesh->selectedObject())
                     ? type->selectedEdgeColor : polyType->edgeColor;
 
+            if(Mx_IsEdgeToTriangleConfiguration(poly->edges[i])) {
+                edgeColor = Color4::red();
+            }
+
             attrs[0].position = p1->position;
             attrs[0].color = edgeColor;
             attrs[1].position = p2->position;

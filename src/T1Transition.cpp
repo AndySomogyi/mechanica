@@ -5,12 +5,12 @@
  *      Author: andy
  */
 
-#include "T1Transition.h"
+#include "MeshOperations.h"
 #include "MxPolygon.h"
 #include "MeshRelationships.h"
 #include "MxMesh.h"
 
-HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
+HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge) {
     
     std::cout << "applyT1Edge2Transition(edge=" << edge << ")" << std::endl;
 
@@ -178,6 +178,4 @@ HRESULT applyT1Edge2Transition(MeshPtr mesh, EdgePtr edge) {
     return S_OK;
 }
 
-HRESULT applyT1Edge3Transition(MeshPtr mesh, EdgePtr edge) {
-    return E_NOTIMPL;
-}
+

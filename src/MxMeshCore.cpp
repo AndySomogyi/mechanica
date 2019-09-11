@@ -14,6 +14,7 @@
 static MxType vertexType{"MxVertex", MxObject_Type};
 MxType *MxVertex_Type = &vertexType;
 
+
 MxVertex::MxVertex(MxType* derivedType) : MxObject{derivedType}
 {
 }

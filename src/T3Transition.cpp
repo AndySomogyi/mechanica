@@ -5,11 +5,11 @@
  *      Author: andy
  */
 
-#include <T3Transition.h>
+#include <MeshOperations.h>
 #include <Magnum/Math/Matrix4.h>
 #include <Magnum/Math/Distance.h>
 
-HRESULT applyT3PolygonSemiMajorAxisAngleTransition(MeshPtr mesh,
+HRESULT Mx_SplitPolygonSemiMajorAxisAngle(MeshPtr mesh,
         PolygonPtr poly, float radians, PolygonPtr* pn1, PolygonPtr* pn2)
 {
     return E_NOTIMPL;
@@ -25,7 +25,7 @@ static PolygonPtr otherPolygon2D(EdgePtr e, PolygonPtr p) {
     return e->polygons[0] == p ? e->polygons[1] : e->polygons[0];
 }
 
-HRESULT applyT3PolygonBisectPlaneTransition(MeshPtr mesh, PolygonPtr poly,
+HRESULT Mx_SplitPolygonBisectPlane(MeshPtr mesh, PolygonPtr poly,
         Vector3* normal, PolygonPtr* pn1, PolygonPtr* pn2) {
 
     // make a plane, point normal form with poly centroid as point

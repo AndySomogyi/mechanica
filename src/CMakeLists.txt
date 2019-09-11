@@ -1,8 +1,11 @@
 
+
 # LLVM compile options
 #add_definitions(${LLVM_LDFLAGS})
 
 add_compile_options(-DMX_STRICT)
+
+add_subdirectory(mdcore)
 
 # Make sure the compiler can find include files for our Hello library
 # when other libraries or executables link to Hello
@@ -89,7 +92,7 @@ set(SRC
   T1Transition.cpp
   T2Transition.cpp
   T3Transition.cpp
-  HITransition.cpp
+  MxFlipEdgeTriangle.cpp
   MxConstraints.cpp
   MxForces.cpp
   MxPolygonSurfaceTensionForce.cpp
@@ -107,6 +110,7 @@ set(SRC
   MxSurfaceSimulator.cpp
   MxImageConverters.cpp
   MxCylinderModel.cpp
+  MxUniverse.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -156,10 +160,6 @@ set(HEADERS
   MeshIO.h
   MxTesselator.h
   MxColumnarCell.h
-  T1Transition.h
-  T2Transition.h
-  T3Transition.h
-  HITransition.h
   SymmetricEigen.h
   GteSymmetricEigensolver3x3.h
   MxConstraints.h
@@ -180,6 +180,7 @@ set(HEADERS
   MxSurfaceSimulator.h
   MxImageConverters.h
   MxCylinderModel.h
+  MxUniverse.h
   )
 
 
@@ -230,6 +231,7 @@ target_include_directories(mechanica_obj PUBLIC
 
 
 target_link_libraries(mechanica_obj
+  DirectXMath
   Python::Python
   glfw
   Assimp::Assimp

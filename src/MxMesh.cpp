@@ -105,7 +105,7 @@ MxType universePartialTriangleType = {"UniversePartialTriangle", MxObject_Type};
 MxType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;
 
-MxMesh::MxMesh() : meshOperations(this, 0, 1.5)
+MxMesh::MxMesh() /*: meshOperations(this, 0, 1.5)*/
 {
     _rootCell = new MxCell{(uint)cells.size(), MxUniverseCell_Type, this, nullptr, "RootCell"};
     cells.push_back(_rootCell);
@@ -115,7 +115,7 @@ MxMesh::MxMesh() : meshOperations(this, 0, 1.5)
 
 HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
-    meshOperations.removeDependentOperations(v);
+    //meshOperations.removeDependentOperations(v);
 
     remove(vertices, v);
 #ifndef NDEBUG
@@ -129,7 +129,7 @@ HRESULT MxMesh::deleteVertex(VertexPtr v) {
 
 HRESULT MxMesh::deletePolygon(PolygonPtr tri) {
 
-    meshOperations.removeDependentOperations(tri);
+    //meshOperations.removeDependentOperations(tri);
 
     for(EdgePtr e : tri->edges) {
         remove(edges, e);
@@ -216,8 +216,7 @@ MxMesh::~MxMesh() {
 HRESULT MxMesh::applyMeshOperations() {
     HRESULT result = E_FAIL;
 
-
-
+    /*
     if((result = meshOperations.positionsChanged(polygons.begin(), polygons.end())) != S_OK) {
         return result;
     }
@@ -229,6 +228,7 @@ HRESULT MxMesh::applyMeshOperations() {
     if((result = meshOperations.apply()) != S_OK) {
         return result;
     }
+    */
 
     return positionsChanged();
 }

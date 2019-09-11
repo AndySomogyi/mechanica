@@ -305,3 +305,13 @@ bool MxPolygon::checkEdges() const
     }
     return true;
 }
+
+int MxPolygon::edgeIndex(CEdgePtr e) const
+{
+    for(int i = 0; i < edges.size(); ++i) {
+        if(e == edges[i]) {
+            return i;
+        }
+    }
+    return -1;
+}

@@ -10,9 +10,7 @@
 #include <iostream>
 #include "MeshIO.h"
 #include "CylinderTest.h"
-#include "T1Transition.h"
-#include "T2Transition.h"
-#include "T3Transition.h"
+#include "MeshOperations.h"
 #include "MxCellVolumeConstraint.h"
 #include "MxPolygonAreaConstraint.h"
 #include <MxPolygonSurfaceTensionForce.h>
@@ -72,6 +70,11 @@ HRESULT CylinderModel::loadModel() {
     }
 
     testEdges();
+    
+    for(int i = 0; i < mesh->edges.size(); ++i) {
+        bool isFlipable = Mx_IsEdgeToTriangleConfiguration(mesh->edges[i]);
+        std::cout << "edge[" << i << "] can be edge to tri flipped: " << isFlipable << std::endl;
+    }
 
     VERIFY(propagator->structureChanged());
 
@@ -87,11 +90,19 @@ void CylinderModel::loadAssImpModel() {
     //const char* fileName = "football.t2.obj";
     //const char* fileName = "cylinder.1.obj";
     //const char* fileName = "cube1.obj";
-    const char* fileName = "hex_cylinder.1.obj";
+    //const char* fileName = "hex_cylinder.1.obj";
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
+    const char* fileName = "hex30.obj";
 
     mesh = MxMesh_FromFile((dirName + "/" + fileName).c_str(), 1.0, &meshObjectTypeHandler);
+    
+    if(!mesh) {
+        std::cout << "could not load mesh \n";
+        return;
+    }
+    
+    std::cout << "loaded " << mesh->cells.size() << " cells from " << fileName << std::endl;
 
     cellVolumeConstraint.targetVolume = mesh->cells[1]->volume;
     cellVolumeConstraint.lambda = 0.5;
@@ -108,9 +119,6 @@ void CylinderModel::loadAssImpModel() {
 
     setTargetVolume(cell->volume);
     setTargetVolumeLambda(0.01);
-
-    mesh->setShortCutoff(0);
-    mesh->setLongCutoff(0.3);
 }
 
 void CylinderModel::testEdges() {
@@ -142,7 +150,7 @@ void CylinderModel::setTargetVolume(float tv)
 HRESULT CylinderModel::applyT1Edge2TransitionToSelectedEdge() {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
-        return applyT1Edge2Transition(mesh, EdgePtr(obj));
+        return Mx_FlipEdge(mesh, EdgePtr(obj));
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
 }
@@ -151,7 +159,7 @@ HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
 {
     MxObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
-        HRESULT result = applyT2PolygonTransition(mesh, (PolygonPtr)obj);
+        HRESULT result = Mx_CollapsePolygon(mesh, (PolygonPtr)obj);
 
         if(SUCCEEDED(result)) {
 
@@ -171,7 +179,7 @@ HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
 
         MxPolygon *p1, *p2;
 
-        HRESULT result = applyT3PolygonBisectPlaneTransition(mesh, poly, &normal, &p1, &p2);
+        HRESULT result = Mx_SplitPolygonBisectPlane(mesh, poly, &normal, &p1, &p2);
 
         if(SUCCEEDED(result)) {
 
