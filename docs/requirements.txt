@@ -12,7 +12,7 @@ imagesize==1.1.0
 ipython==7.0.1
 ipython-genutils==0.2.0
 jedi==0.13.1
-Jinja2==2.10
+Jinja2==2.10.1
 kiwisolver==1.0.1
 latexcodec==1.0.5
 MarkupSafe==1.0
@@ -41,5 +41,5 @@ sphinx-rtd-theme==0.4.2
 sphinxcontrib-bibtex==0.4.0
 sphinxcontrib-websupport==1.1.0
 traitlets==4.3.2
-urllib3==1.23
+urllib3>=1.24.2
 wcwidth==0.1.7
