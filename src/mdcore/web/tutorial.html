@@ -1,0 +1,553 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>mdcore</title>
+<meta name="generator" content="Bluefish 1.0.7">
+<meta name="author" content="Pedro Gonnet">
+<meta name="date" content="2010-12-16T18:07:44+0000">
+<meta name="copyright" content="Pedro Gonnet">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+<meta http-equiv="content-style-type" content="text/css">
+<style type="text/css">
+	body {font-family: courier, monospace;}
+</style>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25391540-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</head>
+
+<body>
+<center>
+<table cellpadding="5" cellspacing="2" border="0" valign="top" width="700">
+	<tr><td colspan="2"><span style="font-size: 48px; font-weight: bold;">mdcore</span></td></tr>
+	<tr>
+		<td width="20%" valign="top">
+			<p/>
+			<a href="index.html">About</a><br/>
+			<a href="features.html">Features<br/>
+			<a href="download.html">Download</a><br/>
+			<a href="publications.html">Publications</a><br/>
+			<a href="documentation.html">Documentation</a><br/>
+			Tutorial<br/>
+			&nbsp;<a href="#compiling">Compiling mdcore</a><br/>
+			&nbsp;<a href="#using">Using mdcore</a><br/>
+			&nbsp;<a href="#examples">Examples</a><br/>
+            <p><a href="http://sourceforge.net/projects/mdcore"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=354770&amp;type=10" width="80" height="15" alt="Get mdcore at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</td>
+		<td valign="top">
+        
+			<a name="compiling"/><p><b>Compiling mdcore</b></p>
+            <p>Download and unpack the sources. This should create a directory
+            named "mdcore". Change to this directory and execute
+            the configuration script as follows</p>
+            <blockquote style="background-color:lightgrey;padding:4px">
+                cd mdcore<br/>
+                ./configure
+            </blockquote>
+            
+            <p>The "configure" script will try to guess the best compiler options
+            and the location of the required libraries. To see the available options,
+            type</p>
+            <blockquote style="background-color:lightgrey;padding:4px">
+                ./configure --help
+            </blockquote>
+            <p>The most interesting options are</p>
+            <ul>
+                <li/><b>--enable-mpi</b>: Compile with MPI to enable basic
+                    distributed-memory parallelism.
+                <li/><b>--with-gcc-arch=<i>arch</i></b>: Optimize for the
+                    given architecture. If compiling on the same architecture on which
+                    the simulations will be run, use "--with-gcc-arch=native".
+                <li/><b>--with-cuda=<i>path</i></b>: Specifies the prefix where the
+                    NVidia CUDA SDK is installed and enables parallelism
+                    on GPUs.
+                <li/><b>--with-cell=<i>path</i></b>: Specifies the prefix where the IBM
+                    Cell-SDK and toolchain are installed and enables parallelism
+                    on the Cell's SPUs.
+            </ul>
+            
+            <p>Once the configuration process has completed successfully,
+            compile the library by typing</p>
+            <blockquote style="background-color:lightgrey;padding:4px">
+                make
+            </blockquote>
+            This will generate the mdcore libraries in the sub-folder
+            "src/.libs".
+            
+            
+            
+            <p style="padding-top:10px"><b>Some notes on OpenMP on Linux</b></p>
+            <p>mdcore relies on both pthreads and OpenMP for parallelization,
+            using the former to parallelize the force computation and the latter
+            for more simple tasks such as updating the particle positions or
+            computing the system temperature. Depending on your OpenMP-implementation,
+            the following environment variables may be useful:</p>
+            <ul>
+                <li/><b>OMP_NUM_THREADS=<i>n</i></b>: Use only <i>n</i> parallel
+                    threads for the OpenMP-parallel regions. This has no effect
+                    on the number of threads specified when initializing
+                    mdcore with "engine_start( &amp;e , nr_runners )".
+                    If you are running on a CPU or CPUs with Hyper-Threading,
+                    it can be useful to specify the number of physical cores
+                    as opposed to the number of virtual threads.
+                <li><b>OMP_WAIT_POLICY=PASSIVE</b>: On some Linux systems,
+                    the default behavior for inactive OpenMP threads is to
+                    cycle idly without relinquishing the CPU. This can obstruct
+                    other threads created with pthreads, which is why this
+                    variable should be set to PASSIVE.
+            </ul>
+            <p>For convenience, these variables can be set on the command
+            line:</p>
+            <blockquote style="background-color:lightgrey;padding:4px">
+                OMP_WAIT_POLICY=PASSIVE OMP_NUM_THREADS=8 ./simulation ...
+            </blockquote>
+            
+            
+            
+            <a name="using"/><p style="padding-top:10px"><b>Using mdcore</b></p>
+            <p>Writing programs using mdcore is relatively simple,
+            and consists of four basic steps:
+            <ul>
+                <li/>Initializing an mdcore "engine" structure,
+                <li/>Adding particles to the engine,
+                <li/>Adding potentials to the engine,
+                <li/>Running the engine.
+            </ul>
+            
+            <p>Any program that uses mdcore needs to include the
+            mdcore header file:
+            <blockquote style="background-color:lightgrey;padding:4px">
+                #include &lt;mdcore.h&gt;
+            </blockquote>
+            The program must also be linked against any of the following
+            library objects generated when compiling mdcore:
+            <ul>
+                <li/><b>libmdcore_single</b>: Single-precision version of
+                    the mdcore library. This is the default version you
+                    should use.
+                <li/><b>libmdcore</b>: Double-precision version of the
+                    library, should be used only for testing purposes
+                    as it is not necessarily more precise than the
+                    single-precision version. In order to use
+                    double-precision, you must also compile your code
+                    with the 
+                <li/><b>libmdcore_single_mpi</b>: If conifgured
+                    with the "--enable-mpi" option, this library
+                    will contain the single-precision version of mdcore
+                    with all the MPI-capable features enabled.
+                <li/><b>libmdcore_mpi</b>: Likewise, this library
+                    contains the double-precision, MPI-enabled mdcore.
+                <li/><b>libmdcore_single_cuda</b>: If conifgured
+                    with the "--with-cuda", this library
+                    will contain the single-precision version of mdcore
+                    with the CUDA functionality enabled.
+                <li/><b>libmdcore_cell</b>: If conifgured
+                    with the "--with-cell", this library
+                    will contain the single-precision version of mdcore
+                    with the Cell/BE functionality enabled.
+            </ul>
+            
+            <p>The main object with which programs interact with mdcore
+            is the "<a href="doxygen/structengine.html">engine</a>":
+            <blockquote style="background-color:lightgrey;padding:4px">
+                struct engine e;
+            </blockquote>
+            which is initialized with the function "engine_init", e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine_8c.html#a44f518099f47e5692cd6a46022594172">engine_init</a>( &amp;e , origin , dim , L , cutoff ,
+     space_periodic_full , max_types , engine_flags ) != 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            where the parameters have the following types and meaning:
+            <ul>
+                <li/><b>e</b>: The engine struct to initialize.
+                <li/><b>origin</b>: A pointer to a vector of three doubles
+                    indicating the least coordinate in each dimension.
+                <li/><b>dim</b>: A pointer to a vector of three doubles
+                    indicating the extent of the simulation space
+                    in each dimension.
+                <li/><b>L</b>: A pointer to a vector of three doubles
+                    containing the minimum cell size in each spatial
+                    dimension. The actual cell size used will be computed
+                    from "dim[k]/floor(dim[k]/L[k])" and may be less than
+                    the interaction cutoff used.
+                <li/><b>cutoff</b>: A double-precision value indicating
+                    the interaction cutoff distance to use throughout
+                    the simulation.
+                <li/><b>space_periodic_full</b>: The periodicity of the
+                    simulation box. Use any logical combination of the
+                    pre-defined constants
+                    <ul>
+                        <li/>space_periodic_x
+                        <li/>space_periodic_y
+                        <li/>space_periodic_z
+                        <li/>space_periodic_none
+                        <li/>space_periodic_full
+                    </ul>
+                    e.g. "space_periodic_x | space_periodic_y" for periodicity
+                    in the x and y dimension, but not in z.
+                <li><b>max_types</b>: The maximum number of particle
+                    types that will be added to the engine.
+                <li><b>engine_flags</b>: Flags that can be used to control
+                    the behaviour of the engine. Several flags are specified
+                    in engine.h, the most important of which are:
+                    <ul>
+                        <li/><b>engine_flag_cuda</b>: Compute non-bonded interactions
+                            on a CUDA device. When using this option, you can
+                            set the CUDA device number to use with the function
+                            "<a href="doxygen/engine__cuda_8cu.html#a48e67731fe032bf86cd0be3bccb5e623">engine_cuda_setdevice</a>".
+                            Note that this option will cause an error if the
+                            program is not linked with a CUDA-enabled version
+                            of mdcore.
+                        <li/><b>engine_flag_verlet, engine_flag_verlet_pairwise,
+                            engine_flag_verlet_pseudo</b>: Use Verlet lists, pairwise
+                            Verlet lists, or pseudo-Verlet lists, respectively.
+                            Note that this option only makes sense if the effective
+                            cell size is larger than the cutoff distance. You can
+                            control the cell size with the parameter "L".
+                        <li/><b>engine_flag_affinity</b>: Force each
+                            "<a href="doxygen/structrunner.html">runner</a>" to
+                            run each on a different core. Note that this may
+                            cause poor performance on multi-core systems with
+                            hyperthreaded CPUs since the kth runner will be
+                            assigned to the kth core.
+                        <li/><b>engine_flag_unsorted</b>: Use unsorted cell
+                            pair interactions. This may be faster for sparse
+                            systems or small cell sizes relative to the
+                            cutoff distance.
+                        <li/><b>engine_flag_parbonded</b>: Compute the bonded
+                            interactions in parallel.
+                        <li/><b>engine_flag_async</b>: Use asynchronous communication
+                            in MPI, i.e. interleave the communication and computation.
+                    </ul>
+                    Several flags can be joined with the logical "or" operator.
+            </ul>
+            The function engine_init, like all interface functions in mdcore,
+            returns zero on success and a negative number on failure.
+            If an error occurs, an error trace can be printed with the
+            function "<a href="doxygen/errs_8c.html#a53ac4bd636b094bc236f77ce50b5bee4">errs_dump</a>"
+            
+            <p>Once the engine has been initialized, particles can be added
+            to it, either individually or all at once.
+            Each particle has a particle type associated with it. Particle types
+            can be specified with the function "engine_addtype", e.g.:
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( ( tid = <a href="doxygen/engine_8c.html#ae5c581d9626ae3f47da431ecd65b223a">engine_addtype</a>( &amp;e , mass , charge ,
+     name , name2 ) ) != 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            with the parameters
+            <ul>
+                <li/><b>&amp;e</b>: A pointer to an initialized engine.
+                <li/><b>mass</b>: A double-precision value with the constant
+                    mass of the particle type.
+                <li/><b>charge</b>: A double-precision value with the constant
+                    charge of the particle type.
+                <li/><b>name</b>: A string with the particle name, e.g. "OH".
+                <li/><b>name2</b>: A secondardy name string, may also be NULL.
+            </ul>
+            This function returns the type ID of the newly created particle type,
+            or &lt;0 on error.
+            
+            <p>Individual particles can be added with the function "space_addpart", e.g.:
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/space_8c.html#adcdb12d32832cf2768fc21e107ea4e4d">space_addpart</a>( &amp;(e.s) , &amp;p , x ) != 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            with the parameters
+            <ul>
+                <li/><b>&amp;(e.s)</b>: A pointer to the "<a href="doxygen/structspace.html">struct space</a>"
+                    within an initialized engine.
+                <li/><b>&amp;p</b>: A pointer to a "<a href="">struct part</a>" containing
+                    the particle data. Note that this data will be copied
+                    into the space, e.g. the original "struct part" does not
+                    need to be preserved.
+                <li/><b>x</b>: A pointer to a vector of three double-precision
+                    values with the spatial location of the particle.
+            </ul>
+            
+            <p>Alternatively, several particles can be added at once with the
+            function "engine_load", e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine_8c.html#a69d52469a4974f6471fd76c7830e8fd1">engine_load</a>( &amp;e , x , v , type , 
+     pid , vid , q , flags , N ) != 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            with the parameters
+            <ul>
+                <li/><b>&amp;e</b>: A pointer to an initialized engine.
+                <li/><b>x</b>: A pointer to an N times 3 array of doubles containing the
+                    particle positions.
+                <li/><b>v</b>: A pointer to an N times 3 array of doubles containing the
+                    particle velocities.
+                <li/><b>type</b>: A pointer to an array of N integers containing the
+                    particle type IDs.
+                <li/><b>pid</b>: A pointer to an array of N integers containing the
+                    particle IDs. This should be, for each particle, a unique number
+                    between 0 and N-1
+                <li/><b>vid</b>: A pointer to an array of N integers containing the
+                    virtual particle IDs.
+                <li/><b>q</b>: A pointer to an array of N doubles containing the
+                    individual particle electrostatic charges.
+                <li/><b>flags</b>: A pointer to an array of N integers containing the
+                    particle flags.
+                <li/><b>N</b>: The total number of particles to load.
+            </ul>
+            Note that if for any of the parameters v, flags, vid, or q are NULL,
+            the respective values of the particles will be initialized to zero.
+            As with "space_addpart", the particle data is copied to the engine
+            and can be retreived similarly via the function
+            "<a href="doxygen/engine_8c.html#a7adfaa512de389a648e45d6a1b315cd9">engine_unload</a>".
+            
+            <p>Note that the particle positions and velocities are specified in
+            nanometers and nanometers per picosecond respectively.
+            
+            <p>Once the particle types have been specified, interaction potentials
+            can be created and associated to pairs of types. The interaction
+            potentials themselves are stored as least-squares piecewise polynomials
+            which can either be constructed from one of the pre-defined
+            potential function types:
+            <ul>
+                <li/><b><a href="doxygen/potential_8c.html#a6559e1240c60b2e6027e4f12ab75b1bf">potential_create_harmonic</a></b>:
+                    Creates a harmonic potential of the form v(r) = K(r-r0)^2.
+                <li/><b><a href="doxygen/potential_8c.html#aa5a8ba6c5186664e891987f3b38f7828">potential_create_LJ126</a></b>: 
+                    Creates a Lennard-Jones potential of the form v(r) = A/r^12 - B/r^6.
+                <li/><b><a href="doxygen/potential_8c.html#a4484c29367179e8363bbcf548e9b3c46">potential_create_Coulomb</a></b>: 
+                    Creates a Coulombic potential v(r) = 1/(4*Pi*r) shifted such that
+                    it goes to zero at the end.
+                <li/><b><a href="doxygen/potential_8c.html#a48fe933fa1b9e653b20cfde8e7adfa9a">potential_create_Ewald</a></b>: 
+                    Creates a potential representing the real-space part of an
+                    Ewald summation, e.g. v(r) = q*erfc(kappa*r)/r.
+                <li/><b><a href="doxygen/potential_8c.html#a48fe933fa1b9e653b20cfde8e7adfa9a">potential_create_LJ126_Ewald</a></b>:
+                    Creates a combined Lennard-Jones and Ewald potential.
+                <li/><b><a href="doxygen/potential_8c.html#a36adf470af159daf3d5638998d6bd169">potential_create_LJ126_Coulomb</a></b>: 
+                    Creates a combined Lennard-Jones and shifted Coulomb potential.
+                <li/><b><a href="doxygen/potential_8c.html#a66ab48e8dca0ad743a670dc073302d9b">potential_create_harmonic_angle</a></b>: 
+                    Creates a harmonic angular potential of the form
+                    v(x) = K(arccos(x)-theta0)^2.
+                <li/><b><a href="doxygen/potential_8c.html#afbb2b76ae1dbf8d6a8a63ee20f56ac44">potential_create_harmonic_dihedral</a></b>: 
+                    Creates a harmonic dihedral potential of the form
+                    v(x) = K(1 + cos(n*arccos(x))-theta0).
+            </ul>
+            All potential_create functions require, as their first two parameters,
+            the interval [a,b] over which the potential should be created.
+            Beyond b, the potential is zero, and between 0 and a, the potential
+            is linearly extended from the derivative at a.
+            The last parameter is the tolerance relative to the maximum value
+            of the potential to which the polynomial should be fit.
+            For example, a Lennard-Jones potential for the interaction between
+            neon atoms can be constructed using:
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+struct potential pot_NeNe;
+if ( ( pot_NeNe = potential_create_LJ126( 0.2 , cutoff , 
+     2.6513e-06 , 5.7190e-03 , 1.0e-3 ) ) == NULL ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+    
+            <p>Non-bonded interaction potentials between particles are added to the engine
+            using the "engine_addpot" function, e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine_8c.html#a0fc5afb224fc0eead89b3ece8e141b29">engine_addpot</a>( &e , pot , tid1 , tid2 ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            where tid1 and tid2 are the type IDs of the interacting particles
+            as returned by "engine_addtype", as described earlier.
+            
+            <p>Similarly, bonded interactions are added with the function
+            "engine_bond_addpot", e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine__bonded_8c.html#ae71d4fc7b237c821f4d6303f6518d369">engine_bond_addpot</a>( &e , pot , tid1 , tid2 ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            Which particles themselves are bonded is then specified with
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine__bonded_8c.html#a9bfc2c0c4d6a22191424ee0a1a428202">engine_bond_add</a>( &e , pid1 , pid2 ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            where pid1 and pid2 are particle IDs as specified when adding
+            particles to the system.
+            Similarly, angular and dihedral potentials and bonds are added with
+            <a href="doxygen/engine__bonded_8c.html#ae9e8ee413a8c582a7e7605bf93a7466e">engine_angle_addpot</a>
+            and <a href="doxygen/engine__bonded_8c.html#ad01a436b55b2214e91fb7229faa64a4e">engine_dihedral_addpot</a>, and
+            <a href="doxygen/engine__bonded_8c.html#a9233c5ae9b841e227922260c1747df9a">engine_angle_add</a>
+            and <a href="doxygen/engine__bonded_8c.html#a0a1196791936f88ca5d6bbf5363fb78f">engine_dihedral_add</a>,
+            respectively.
+            
+            <p>If the non-bonded interaction between to bonded particles
+            is to be excluded, this has to be specified explicitly via
+            the "engine_exclusion_add" function, e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine__bonded_8c.html#a8c09326908e15e1509f495c33619e761">engine_exclusion_add</a>( &e , pid1 , pid2 ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            If any such exclusions have been added to the engine, redundancies
+            between them can be removed by calling
+            "<a href="doxygen/engine__bonded_8c.html#a7f4a778e88593837c2fb2d7b61894f5c">engine_exclusion_shrink</a>".
+            
+            <p>Finally, holonomic constraints are added using the
+            "engine_rigid_add" function, e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine__rigid_8c.html#a6f09206374580e9eeef8c16dea4419f3">engine_rigid_add</a>( &e , pid1 , pid2 , d ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            where d is the prescribed distance between the particles pid1 and pid2.
+            
+            <p>After all the particles, potentials, bonded interactions, and
+            holonomic constraints have been added to an engine, it has to be
+            started with "engine_start", e.g.
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+if ( <a href="doxygen/engine_8c.html#a94831a2a9b41da551a85764b2cffe8f7">engine_start</a>( &e , nr_runners , nr_queues ) < 0 ) {
+    errs_dump(stdout);
+    abort();
+    }</pre></blockquote>
+            where nr_runners and nr_queues are the number of threads and
+            task queues to use, respectively.
+            As of this point, the engine is ready to integrate the equations
+            of motion for the particles.
+            
+            <p>Once the engine has been started, the computations for each
+            time step, i.e. computing the bonded and non-bonded interactions,
+            resolving the holonomic constraints and updating the particle
+            positions and velocities, are computed with the function
+            "engine_step", e.g.:
+            <blockquote style="background-color:lightgrey;padding:4px"><pre>
+e.time = 0;
+e.dt = 0.005;
+for ( i = 0 ; i < nrsteps ; i++ )
+    if ( <a href="doxygen/engine_8c.html#ab169ee7ceb11536d4907c4a07ae62044">engine_step</a>( &e ) != 0 ) {
+        errs_dump(stdout);
+        abort();
+        }</pre></blockquote>
+            where the time step e.dt is specified in picoseconds.
+            Between the time steps, the particle data can be uloaded and
+            re-loaded as described earlier with the functions engine_unload
+            and engine_load, e.g. to adjust the velocities or plot output.
+            
+            
+            
+            
+            
+            <a name="examples"/><p style="padding-top:10px"><b>Example programs</b></p>
+            <p>The directory "mdcore/examples" contains a number of small
+            simulations which offer a useful starting point for experimenting
+            with mdcore and implementing your own simulation.</p>
+            
+            <ul>
+                <li/><b>jac</b>: The Goint Amber-Charmm (JAC) benchmark
+                    consisting of a DHFR protein solvated in TIP3P rigid
+                    water molecules.
+                    The simulation is executed with the following parameters
+                    <blockquote style="background-color:lightgrey;padding:4px">
+                        ./jac 5dhfr_cube.psf 5dhfr_cube.pdb <i>n</i> <i>steps</i>
+                    </blockquote>
+                    where <i>n</i> is the number of processors to use and <i>steps</i>
+                    are the number of time steps to simulate.
+                    The files 5dhfr_cube.psf and 5dhfr_cube.pdb contain the
+                    simulation structure.
+                    The interaction parameters are read from the file
+                    par_all22_prot.inp, which is in the same directory.
+            
+                    <p>The source file jac.c is set up to deal with all
+                    simulation options, e.g. verlet lists, pairwise verlet
+                    lists, MPI parallelisation, GPU parallelisation.
+                    The different options can be set by changing the
+                    engine flags in the call to "engine_init" at the
+                    start of the program.
+                    
+                <li/><b>argon</b>: A simple simulation consisting
+                    of 10x10x10 cells of bulk argon at 100 K (the number of
+                    particles is adjusted depending on the cell edge length).
+                    The simulation is executed with the following parameters
+                    <blockquote style="background-color:lightgrey;padding:4px">
+                        ./argon <i>n</i> <i>steps</i> <i>dt</i> <i>L</i>
+                    </blockquote>
+                    where <i>n</i> is the number of processors to use, <i>steps</i>
+                    are the number of time steps of length <i>dt</i> picoseconds
+                    to take and <i>L</i> is the cell edge length to use.
+                    
+                    <p>Two other executables, "argon_verlet" and "argon_pwverlet" are
+                    provided, which use Verlet and pairwise Verlet lists
+                    respectively. The "skin" width used in the lists is the 
+                    supplied edge length <i>L</i> minus a fixed cutoff of
+                    1.0 nm.
+                    
+                    <p>Velocity scaling with a coupling constant of 0.1 is used
+                    during the first 10000 steps to maintain a temperature
+                    of 100 K.
+                    
+                <li/><b>bulk</b>: A bulk water simulation consisting of
+                    8x8x8 cells of rigid SPC/E water molecules at 300 K
+                    (the number of molecules is adjusted depending on the cell
+                    edge length). The water molecules are kept rigid using
+                    the SHAKE algorithm to half the digits of machine precision.
+                    The simulation is executed with the same
+                    set of parameters as "argon" above.
+                    
+                    <p>The executable "test" is linked with the double-precision
+                    version of mdcore whereas "test_single" is linked with 
+                    the single-precision version.
+                    
+                    <p>If mdcore was configures with the "--with-cell" option,
+                    then "test_cell" executes the simulation using as many SPUs
+                    as are available.
+                    
+                <li/><b>hybrid</b>: Similar to the "bulk" simulation above,
+                    yet with 16x16x16 cells of edge length 1.0 nm.
+                    The "hybrid" simulation requires
+                    mdcore to have been compiled with the "--enable-mpi"
+                    option and is executed as follows:
+                    <blockquote style="background-color:lightgrey;padding:4px">
+                        mpirun -x OMP_WAIT_POLICY -x OMP_NUM_THREADS -np <i>m</i> ./hybrid <i>n</i> <i>steps</i>
+                    </blockquote>
+                    where <i>m</i> is the number of MPI nodes to use and
+                    <i>n</i> is the number of threads to use on each node.
+                    
+                    Since bisection is used to split the domain, it is
+                    recommended, for proper load balancing,
+                    that <i>m</i> be a power of 2.
+                    
+            </ul>
+            
+		</td>
+	</tr>
+</table>
+</center>
+
+<!-- Piwik -->
+<script type="text/javascript">
+var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/mdcore/" : "http://sourceforge.net/apps/piwik/mdcore/");
+document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script type="text/javascript">
+try {
+var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
+piwikTracker.trackPageView();
+piwikTracker.enableLinkTracking();
+} catch( err ) {}
+</script><noscript><p><img src="http://sourceforge.net/apps/piwik/mdcore/piwik.php?idsite=1" style="border:0" alt=""/></p></noscript>
+<!-- End Piwik Tag -->
+
+</body>
+</html>

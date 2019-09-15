@@ -1,0 +1,3634 @@
+------------------------------------------------------------------------
+r466 | gonnet | 2013-05-11 12:13:04 +0100 (Sat, 11 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+use multiple of warp size.
+------------------------------------------------------------------------
+r465 | achalk124 | 2013-05-10 16:09:26 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+Fixed CUDA to run with correct number of threads
+------------------------------------------------------------------------
+r464 | gonnet | 2013-05-10 14:09:58 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential_eval.h
+
+fix typo.
+------------------------------------------------------------------------
+r463 | achalk124 | 2013-05-10 14:06:57 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+Working copy of CUDA code, metis no longer required
+------------------------------------------------------------------------
+r462 | gonnet | 2013-05-10 14:01:12 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential_eval.h
+
+fix minor bug.
+------------------------------------------------------------------------
+r461 | gonnet | 2013-05-10 11:22:31 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+fix a number of things, especially energy reporting.
+------------------------------------------------------------------------
+r460 | gonnet | 2013-05-10 11:14:28 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+trying to undo the damage from previous botched commit.
+------------------------------------------------------------------------
+r459 | gonnet | 2013-05-10 11:04:30 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+   M /trunk/src/potential_eval.h
+
+fix double avx stuff, not tested yet.
+------------------------------------------------------------------------
+r458 | gonnet | 2013-05-10 09:16:19 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.h
+   M /trunk/src/engine_io.c
+   M /trunk/src/fptype.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+   M /trunk/src/runner_dopair.c
+
+add type-agnostic fabs.
+------------------------------------------------------------------------
+r457 | gonnet | 2013-05-10 09:14:35 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential.h
+
+add switched LJ interactions.
+------------------------------------------------------------------------
+r456 | gonnet | 2013-05-10 09:13:10 +0100 (Fri, 10 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/rigid.c
+
+judicious use of doubles when computing the residuals.
+------------------------------------------------------------------------
+r455 | gonnet | 2013-05-09 18:45:25 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/exclusion.h
+
+clean up bonded interactions, remove dead code.
+------------------------------------------------------------------------
+r454 | gonnet | 2013-05-09 18:38:42 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/angle.h
+   M /trunk/src/bond.c
+   M /trunk/src/bond.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/dihedral.h
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/exclusion.h
+
+clean up bonded interactions, remove dead code.
+------------------------------------------------------------------------
+r453 | gonnet | 2013-05-09 16:10:23 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/examples/apoa1/apoa1.c
+   M /trunk/examples/stmv/stmv.c
+
+increase potentials precision for better energy conservation.
+------------------------------------------------------------------------
+r452 | gonnet | 2013-05-09 16:06:33 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine_io.c
+
+hard-wire torsion tolerance for odd deltas.
+------------------------------------------------------------------------
+r451 | gonnet | 2013-05-09 15:47:06 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+more fixes for complicated potentials.
+------------------------------------------------------------------------
+r450 | gonnet | 2013-05-09 15:05:01 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+forgot to remove a sanity test no longer valid.
+------------------------------------------------------------------------
+r449 | gonnet | 2013-05-09 15:02:12 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+allow tricky dihedrals to avoid derivative.
+------------------------------------------------------------------------
+r448 | gonnet | 2013-05-09 14:50:17 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/fptype.h
+   M /trunk/src/runner_dopair.c
+
+fix alignment for avx vectorization.
+------------------------------------------------------------------------
+r447 | achalk124 | 2013-05-09 14:41:09 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+Fixed not defining metis.h in engine.c
+------------------------------------------------------------------------
+r446 | gonnet | 2013-05-09 14:35:12 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/bulk/bulk.c
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/neon/Makefile.am
+   M /trunk/examples/neon/neon.c
+   M /trunk/examples/stmv/stmv.c
+
+fixes for new release.
+------------------------------------------------------------------------
+r445 | gonnet | 2013-05-09 14:34:39 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+fix for better energy conservation.
+------------------------------------------------------------------------
+r444 | gonnet | 2013-05-09 14:32:49 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.h
+   M /trunk/src/runner_cuda.cu
+
+minor fixes for release.
+------------------------------------------------------------------------
+r443 | gonnet | 2013-05-09 14:29:12 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+neon was already there.
+------------------------------------------------------------------------
+r442 | gonnet | 2013-05-09 14:28:37 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+removed btree, added neon.
+------------------------------------------------------------------------
+r441 | gonnet | 2013-05-09 09:54:00 +0100 (Thu, 09 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+fix derivatives at interval end points.
+------------------------------------------------------------------------
+r440 | gonnet | 2013-05-08 22:08:48 +0100 (Wed, 08 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/exclusion.c
+
+fix sign problem in excluded potential.
+------------------------------------------------------------------------
+r439 | gonnet | 2013-05-07 17:32:51 +0100 (Tue, 07 May 2013) | 2 lines
+Changed paths:
+   D /trunk/examples/btree
+
+remove out-dated example.
+
+------------------------------------------------------------------------
+r438 | gonnet | 2013-05-07 17:19:54 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/dihedral.c
+
+remove old debug code.
+------------------------------------------------------------------------
+r437 | gonnet | 2013-05-07 17:19:05 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+
+temporarily cripple fptype_r2 for double precision, needs fixing.
+------------------------------------------------------------------------
+r436 | gonnet | 2013-05-07 17:17:08 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+be more specific with regards to energy reporting.
+------------------------------------------------------------------------
+r435 | gonnet | 2013-05-07 17:16:01 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/engine_rigid.c
+
+use pshake by default.
+------------------------------------------------------------------------
+r434 | gonnet | 2013-05-07 17:15:03 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/rigid.c
+   M /trunk/src/rigid.h
+
+add pshake constraint solver.
+------------------------------------------------------------------------
+r433 | gonnet | 2013-05-07 17:14:20 +0100 (Tue, 07 May 2013) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+
+simplify angle derivative calculation.
+------------------------------------------------------------------------
+r432 | achalk124 | 2013-05-06 14:47:54 +0100 (Mon, 06 May 2013) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/ltmain.sh
+   M /trunk/src/Makefile.am
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+Updated main branch to use latest GPU code
+------------------------------------------------------------------------
+r426 | gonnet | 2013-04-11 15:52:36 +0100 (Thu, 11 Apr 2013) | 1 line
+Changed paths:
+   M /trunk/examples/apoa1/apoa1.c
+
+use multiple devices.
+------------------------------------------------------------------------
+r424 | gonnet | 2013-04-08 17:06:48 +0100 (Mon, 08 Apr 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+use more than one warp, one-sided interaction.
+------------------------------------------------------------------------
+r423 | gonnet | 2013-04-04 11:42:40 +0100 (Thu, 04 Apr 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+better load-balancing between GPUs.
+------------------------------------------------------------------------
+r422 | gonnet | 2013-04-04 11:24:07 +0100 (Thu, 04 Apr 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+small fix to make async multi-GPU work.
+------------------------------------------------------------------------
+r415 | gonnet | 2013-03-08 11:09:20 +0000 (Fri, 08 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+fix so that at least single-GPU mode works.
+------------------------------------------------------------------------
+r414 | gonnet | 2013-03-07 23:54:35 +0000 (Thu, 07 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+some fixes to multi-gpu operation, still sub-optimal as streams on multiple GPUs seem broken.
+------------------------------------------------------------------------
+r413 | gonnet | 2013-03-07 21:06:53 +0000 (Thu, 07 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+tentative commit for multiple stream/gpu problem.
+------------------------------------------------------------------------
+r412 | gonnet | 2013-03-07 20:48:21 +0000 (Thu, 07 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner_cuda.cu
+
+possible fix for timing bug.
+------------------------------------------------------------------------
+r409 | gonnet | 2013-03-04 14:42:34 +0000 (Mon, 04 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+bug fix, part and force data allocation.
+------------------------------------------------------------------------
+r408 | gonnet | 2013-03-03 22:25:45 +0000 (Sun, 03 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+   M /trunk/examples/jac/jac.c
+   M /trunk/examples/stmv/stmv.c
+
+minor fixes for multiple GPU use.
+------------------------------------------------------------------------
+r407 | gonnet | 2013-03-03 22:25:06 +0000 (Sun, 03 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner_cuda.cu
+
+several bug fixes for multiple GPUs, still something wrong with streams though.
+------------------------------------------------------------------------
+r406 | gonnet | 2013-03-03 19:00:31 +0000 (Sun, 03 Mar 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/space.h
+
+commit of tentative new multi-gpu code, still untested.
+------------------------------------------------------------------------
+r405 | gonnet | 2013-02-28 22:11:28 +0000 (Thu, 28 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+
+fix bug affecting initial shuffling of particles on engine_start.
+------------------------------------------------------------------------
+r404 | gonnet | 2013-02-28 18:24:04 +0000 (Thu, 28 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/mdcore.h
+   M /trunk/src/queue.c
+   M /trunk/src/queue.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+added timers and queue_maxhit to avoid looking too long for good tasks on long queues.
+------------------------------------------------------------------------
+r402 | gonnet | 2013-02-25 16:49:25 +0000 (Mon, 25 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/task.h
+
+several fixes to get half-cells working again.
+------------------------------------------------------------------------
+r401 | gonnet | 2013-02-25 12:18:19 +0000 (Mon, 25 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+minor fixes to make sure all the flags work.
+------------------------------------------------------------------------
+r400 | gonnet | 2013-02-25 00:14:27 +0000 (Mon, 25 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+several bug fixes, more code clean-up, task dependencies on GPU now work.
+------------------------------------------------------------------------
+r399 | gonnet | 2013-02-24 16:33:36 +0000 (Sun, 24 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_dosort.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/task.h
+
+major overhaul of the GPU code to handle new tasks with dependencies, separate sorting. not tested yet.
+------------------------------------------------------------------------
+r397 | gonnet | 2013-02-15 11:17:44 +0000 (Fri, 15 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+removed fifo.h which is no longer needed.
+------------------------------------------------------------------------
+r396 | gonnet | 2013-02-15 10:25:14 +0000 (Fri, 15 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/fptype.h
+   M /trunk/src/potential_eval.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/spme.c
+
+minor fixes to work with avx.
+------------------------------------------------------------------------
+r395 | gonnet | 2013-02-10 19:43:20 +0000 (Sun, 10 Feb 2013) | 1 line
+Changed paths:
+   A /trunk/src/runner_dosort.c
+
+forgot one.
+------------------------------------------------------------------------
+r394 | gonnet | 2013-02-10 19:35:10 +0000 (Sun, 10 Feb 2013) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/apoa1/Makefile.am
+   M /trunk/examples/apoa1/apoa1.c
+   M /trunk/examples/argon/Makefile.am
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/Makefile.am
+   M /trunk/examples/bulk/bulk.c
+   M /trunk/examples/flexible/Makefile.am
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/hybrid/Makefile.am
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/jac/Makefile.am
+   M /trunk/examples/jac/jac.c
+   M /trunk/examples/stmv/Makefile.am
+   M /trunk/examples/stmv/stmv.c
+   M /trunk/ltmain.sh
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_exchange.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/engine_rigid.c
+   M /trunk/src/exclusion.c
+   D /trunk/src/fifo.c
+   D /trunk/src/fifo.h
+   M /trunk/src/mdcore.h
+   M /trunk/src/queue.c
+   M /trunk/src/queue.h
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_dopair.c
+   D /trunk/src/runner_pwverlet.c
+   D /trunk/src/runner_verlet.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   A /trunk/src/spme.c
+   A /trunk/src/spme.h
+   A /trunk/src/task.c
+   A /trunk/src/task.h
+
+major clean-up, removed a lot of dead code, added basic spme (untested), split sorting from force, added task dependencies.
+------------------------------------------------------------------------
+r391 | gonnet | 2013-01-18 15:52:38 +0000 (Fri, 18 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/examples/stmv/stmv.c
+   M /trunk/src/engine_io.c
+
+input/output changes.
+------------------------------------------------------------------------
+r387 | gonnet | 2012-12-17 08:57:51 +0000 (Mon, 17 Dec 2012) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/exclusion.c
+
+fix bug in dummy bonded interactions.
+------------------------------------------------------------------------
+r386 | gonnet | 2012-12-16 23:07:08 +0000 (Sun, 16 Dec 2012) | 1 line
+Changed paths:
+   A /trunk/examples/stmv
+   A /trunk/examples/stmv/Makefile.am
+   A /trunk/examples/stmv/par_all27_prot_na.inp
+   A /trunk/examples/stmv/stmv.c
+   A /trunk/examples/stmv/stmv.pdb
+   A /trunk/examples/stmv/stmv.psf
+
+added satellite tobacco mosaic virus.
+------------------------------------------------------------------------
+r385 | gonnet | 2012-12-16 23:04:08 +0000 (Sun, 16 Dec 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/doc/Doxyfile
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/apoa1/apoa1.c
+   M /trunk/examples/jac/jac.c
+   M /trunk/examples/neon/neon.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_io.c
+   M /trunk/src/lock.h
+   M /trunk/src/potential.c
+   M /trunk/src/reader.c
+   M /trunk/src/reader.h
+   M /trunk/web/documentation.html
+   M /trunk/web/download.html
+   M /trunk/web/features.html
+   M /trunk/web/index.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+fix some things in potentials and make engine_io use numbered files instead of FILE *.
+------------------------------------------------------------------------
+r384 | gonnet | 2012-12-07 19:26:16 +0000 (Fri, 07 Dec 2012) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/engine.h
+   M /trunk/src/fptype.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/space.c
+
+minor bug fixes.
+------------------------------------------------------------------------
+r377 | gonnet | 2012-11-22 17:43:35 +0000 (Thu, 22 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/apoa1/apoa1.c
+   M /trunk/examples/argon/Makefile.am
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/bulk.c
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/hybrid/Makefile.am
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/jac/jac.c
+   M /trunk/examples/neon/Makefile.am
+   M /trunk/examples/neon/neon.c
+
+use dimension-specific minimum cell edge lengths.
+------------------------------------------------------------------------
+r376 | gonnet | 2012-11-22 17:42:09 +0000 (Thu, 22 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+pass dimension-specific minimum cell edge lengths.
+------------------------------------------------------------------------
+r373 | gonnet | 2012-11-20 21:07:01 +0000 (Tue, 20 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/apoa1/apoa1.c
+
+dump all atom types.
+------------------------------------------------------------------------
+r372 | gonnet | 2012-11-20 21:00:47 +0000 (Tue, 20 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+be a bit more careful when freeing allocated memory.
+------------------------------------------------------------------------
+r371 | gonnet | 2012-11-20 20:59:45 +0000 (Tue, 20 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_io.c
+
+correctly terminate PDB files.
+------------------------------------------------------------------------
+r370 | gonnet | 2012-11-19 14:49:55 +0000 (Mon, 19 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+do not de-allocate runners if they were never allocated.
+------------------------------------------------------------------------
+r369 | gonnet | 2012-11-19 14:34:26 +0000 (Mon, 19 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/bulk/Makefile.am
+   M /trunk/examples/bulk/bulk.c
+
+adapt Makefile.am and make output match that of jac.
+------------------------------------------------------------------------
+r368 | gonnet | 2012-11-19 14:18:28 +0000 (Mon, 19 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+fixed timer name bug.
+------------------------------------------------------------------------
+r367 | gonnet | 2012-11-19 11:45:22 +0000 (Mon, 19 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/apoa1/apoa1.c
+
+make timers compatible with jac.
+------------------------------------------------------------------------
+r366 | gonnet | 2012-11-19 11:41:24 +0000 (Mon, 19 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/apoa1/apoa1.c
+
+forgot one.
+------------------------------------------------------------------------
+r365 | gonnet | 2012-11-19 11:37:36 +0000 (Mon, 19 Nov 2012) | 2 lines
+Changed paths:
+   M /trunk/examples/apoa1/Makefile.am
+   M /trunk/examples/apoa1/apoa1.c
+
+modernize the Makefile.am and put options for MPI in defines.
+
+------------------------------------------------------------------------
+r364 | gonnet | 2012-11-15 18:01:05 +0000 (Thu, 15 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+fix rather embarassing bug when using FORCES_LOCAL.
+------------------------------------------------------------------------
+r363 | gonnet | 2012-11-12 16:13:01 +0000 (Mon, 12 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+added facilities for cleaning up, i.e. finalizing the engine.
+------------------------------------------------------------------------
+r362 | gonnet | 2012-11-12 16:12:43 +0000 (Mon, 12 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/space.h
+
+added facilities for cleaning up, i.e. finalizing the engine.
+------------------------------------------------------------------------
+r361 | gonnet | 2012-10-18 22:00:10 +0100 (Thu, 18 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+more robust blocking on potential dining philosopher's problem.
+------------------------------------------------------------------------
+r360 | gonnet | 2012-10-18 12:27:59 +0100 (Thu, 18 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/bulk/Makefile.am
+   M /trunk/examples/bulk/bulk.c
+
+make this example compatible with the latest improvements to the library.
+------------------------------------------------------------------------
+r359 | gonnet | 2012-10-15 16:24:04 +0100 (Mon, 15 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+make idle threads wait on a signal.
+------------------------------------------------------------------------
+r358 | gonnet | 2012-10-15 13:03:38 +0100 (Mon, 15 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+add microsecond sleep and incremental backoff when leaving task queue empty-handed.
+------------------------------------------------------------------------
+r357 | gonnet | 2012-10-15 12:35:01 +0100 (Mon, 15 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/queue.c
+   M /trunk/src/runner.c
+
+make order of task locking depend on runner id.
+------------------------------------------------------------------------
+r356 | gonnet | 2012-10-12 11:30:01 +0100 (Fri, 12 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+use multipole queues and work-stealing.
+------------------------------------------------------------------------
+r355 | gonnet | 2012-10-11 12:53:57 +0100 (Thu, 11 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+bail if more queues than tasks.
+------------------------------------------------------------------------
+r354 | gonnet | 2012-10-09 11:05:31 +0100 (Tue, 09 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+use multiple queues and work stealing on GPU.
+------------------------------------------------------------------------
+r353 | gonnet | 2012-10-08 12:57:13 +0100 (Mon, 08 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/queue.c
+   M /trunk/src/runner.c
+
+make tuples use queues too.
+------------------------------------------------------------------------
+r352 | gonnet | 2012-10-08 12:11:22 +0100 (Mon, 08 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/queue.c
+   M /trunk/src/queue.h
+   M /trunk/src/runner.c
+
+look for task with best data re-use in queue.
+------------------------------------------------------------------------
+r351 | gonnet | 2012-10-04 20:33:57 +0100 (Thu, 04 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+aggregate counters when using mpi.
+------------------------------------------------------------------------
+r350 | gonnet | 2012-10-04 18:01:47 +0100 (Thu, 04 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+hide debugging code.
+------------------------------------------------------------------------
+r349 | gonnet | 2012-10-04 17:59:43 +0100 (Thu, 04 Oct 2012) | 1 line
+Changed paths:
+   A /trunk/src/queue.c
+   A /trunk/src/queue.h
+
+added sources for queue.
+------------------------------------------------------------------------
+r348 | gonnet | 2012-10-04 17:58:36 +0100 (Thu, 04 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+switch to multiple queues and work-stealing.
+------------------------------------------------------------------------
+r347 | gonnet | 2012-10-04 17:58:10 +0100 (Thu, 04 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/mdcore.h
+   M /trunk/src/runner.c
+
+switch to multiple queues and work-stealing.
+------------------------------------------------------------------------
+r346 | gonnet | 2012-10-03 17:14:35 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   A /trunk/examples/jac/jac_hybrid.sh
+
+add test script for hybrid simulations.
+------------------------------------------------------------------------
+r345 | gonnet | 2012-10-03 12:39:18 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/lock.h
+
+make unlock use a memory barrier.
+------------------------------------------------------------------------
+r344 | gonnet | 2012-10-03 12:21:28 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/lock.h
+
+make unlock use a memory barrier.
+------------------------------------------------------------------------
+r343 | gonnet | 2012-10-03 11:13:30 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+don't go out with a bang on MPI.
+------------------------------------------------------------------------
+r342 | gonnet | 2012-10-03 10:33:34 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+
+make compiling cuda targets conditional.
+------------------------------------------------------------------------
+r341 | gonnet | 2012-10-03 10:15:21 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_exchange.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/engine_rigid.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/fifo.c
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+   M /trunk/src/space.c
+
+add flag for MPI.
+------------------------------------------------------------------------
+r340 | gonnet | 2012-10-03 10:13:53 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+add flag for MPI.
+------------------------------------------------------------------------
+r339 | gonnet | 2012-10-03 10:13:12 +0100 (Wed, 03 Oct 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+   M /trunk/examples/jac/jac.c
+
+add flag for MPI.
+------------------------------------------------------------------------
+r338 | gonnet | 2012-09-22 21:58:55 +0100 (Sat, 22 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+queue now works, excessive use of atomicCAS due to strange memory inconsistencies.
+------------------------------------------------------------------------
+r337 | gonnet | 2012-09-21 22:26:50 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+safer exit condition.
+------------------------------------------------------------------------
+r336 | gonnet | 2012-09-21 22:11:39 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+change exit criteria from cuda_queue_gettask().
+------------------------------------------------------------------------
+r335 | gonnet | 2012-09-21 22:04:22 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+typo.
+------------------------------------------------------------------------
+r334 | gonnet | 2012-09-21 22:03:26 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+typo.
+------------------------------------------------------------------------
+r333 | gonnet | 2012-09-21 22:02:43 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+fix queue reset.
+------------------------------------------------------------------------
+r332 | gonnet | 2012-09-21 22:00:24 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+locking bug with more than one thread.
+------------------------------------------------------------------------
+r331 | gonnet | 2012-09-21 21:54:57 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+don't put bogus tasks back into the queue.
+------------------------------------------------------------------------
+r330 | gonnet | 2012-09-21 21:49:20 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+locking bug.
+------------------------------------------------------------------------
+r329 | gonnet | 2012-09-21 21:44:17 +0100 (Fri, 21 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+use queues when force is not local.
+------------------------------------------------------------------------
+r328 | gonnet | 2012-09-20 16:31:26 +0100 (Thu, 20 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+add non-local forces to verlet variants too.
+------------------------------------------------------------------------
+r327 | gonnet | 2012-09-20 14:50:31 +0100 (Thu, 20 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+fixed left- and right-looking interactions.
+------------------------------------------------------------------------
+r326 | gonnet | 2012-09-12 16:33:46 +0100 (Wed, 12 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+remove unused variable.
+------------------------------------------------------------------------
+r325 | gonnet | 2012-09-12 16:32:58 +0100 (Wed, 12 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+fixes.
+------------------------------------------------------------------------
+r324 | gonnet | 2012-09-12 14:26:04 +0100 (Wed, 12 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+separate pairwise routines for left and right interactions, finer locking scheme.
+------------------------------------------------------------------------
+r323 | gonnet | 2012-09-11 13:48:48 +0100 (Tue, 11 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+
+clean up flags.
+------------------------------------------------------------------------
+r322 | gonnet | 2012-09-11 13:42:04 +0100 (Tue, 11 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+add FORCES_LOCAL, requires different locking.
+------------------------------------------------------------------------
+r321 | gonnet | 2012-09-11 10:28:32 +0100 (Tue, 11 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+add copyright/license header.
+------------------------------------------------------------------------
+r320 | gonnet | 2012-09-11 10:27:26 +0100 (Tue, 11 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+add potential energy calculation.
+------------------------------------------------------------------------
+r319 | gonnet | 2012-09-11 10:26:07 +0100 (Tue, 11 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/doc/Doxyfile
+   M /trunk/examples/apoa1/apoa1.c
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/Makefile.am
+   M /trunk/examples/jac/jac.c
+   M /trunk/ltmain.sh
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/web/tutorial.html
+
+change engine_flag_verlet_pairwise2 to engine_flag_verlet_pseudo.
+------------------------------------------------------------------------
+r318 | gonnet | 2012-08-22 11:09:46 +0100 (Wed, 22 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+several fixes to work with 5.0, re-use buffers in self-interactions.
+------------------------------------------------------------------------
+r317 | gonnet | 2012-08-21 10:39:59 +0100 (Tue, 21 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+exit criteria didn't make much sense.
+------------------------------------------------------------------------
+r316 | gonnet | 2012-08-20 16:10:17 +0100 (Mon, 20 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+fix loop to avoid sm_13 compiler bugs.
+------------------------------------------------------------------------
+r315 | gonnet | 2012-08-17 16:40:35 +0100 (Fri, 17 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+
+minor fix
+------------------------------------------------------------------------
+r314 | gonnet | 2012-08-17 16:39:58 +0100 (Fri, 17 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+specify cuda device.
+------------------------------------------------------------------------
+r313 | gonnet | 2012-08-17 11:10:57 +0100 (Fri, 17 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+resolve nested functions as some compilers will not like this at all.
+------------------------------------------------------------------------
+r312 | gonnet | 2012-08-15 17:48:21 +0100 (Wed, 15 Aug 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+compute diagonal entries on the fly.
+------------------------------------------------------------------------
+r311 | gonnet | 2012-07-10 12:24:01 +0100 (Tue, 10 Jul 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+
+add function to switch devices.
+------------------------------------------------------------------------
+r310 | gonnet | 2012-06-26 18:41:30 +0100 (Tue, 26 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+several speed improvements.
+------------------------------------------------------------------------
+r309 | gonnet | 2012-06-22 10:31:54 +0100 (Fri, 22 Jun 2012) | 1 line
+Changed paths:
+   A /trunk/src/cutil_math.h
+
+add this for completenes.
+------------------------------------------------------------------------
+r308 | gonnet | 2012-06-22 10:30:36 +0100 (Fri, 22 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.h
+
+use textures (replicate bug for folks at nvidia).
+------------------------------------------------------------------------
+r307 | gonnet | 2012-06-22 10:25:40 +0100 (Fri, 22 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda_main.h
+
+minor clean-ups.
+------------------------------------------------------------------------
+r306 | gonnet | 2012-06-22 10:24:44 +0100 (Fri, 22 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+added extra timers.
+------------------------------------------------------------------------
+r305 | gonnet | 2012-06-20 21:51:39 +0100 (Wed, 20 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+add 64 bit libs too.
+------------------------------------------------------------------------
+r304 | gonnet | 2012-06-20 21:50:16 +0100 (Wed, 20 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+
+group all CUDA options in one variable.
+------------------------------------------------------------------------
+r303 | gonnet | 2012-06-20 21:49:04 +0100 (Wed, 20 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+
+get rid of stuff we're not using any more.
+------------------------------------------------------------------------
+r302 | gonnet | 2012-06-20 21:48:12 +0100 (Wed, 20 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+use strided sum.
+------------------------------------------------------------------------
+r301 | gonnet | 2012-06-18 14:51:31 +0100 (Mon, 18 Jun 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_check_compile_flag.m4
+
+forgot one.
+------------------------------------------------------------------------
+r300 | gonnet | 2012-06-13 12:12:52 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+fixed uninitialized values.
+------------------------------------------------------------------------
+r299 | gonnet | 2012-06-13 11:24:02 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+add an additional define for cuda.
+------------------------------------------------------------------------
+r298 | gonnet | 2012-06-13 11:21:42 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   A /trunk/examples/jac/jac_cpu.sh
+   A /trunk/examples/jac/jac_gpu.sh
+
+added scripts for batch execution on cpu and gpu.
+------------------------------------------------------------------------
+r297 | gonnet | 2012-06-13 11:19:49 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+
+more flexible makefile.
+------------------------------------------------------------------------
+r296 | gonnet | 2012-06-13 11:19:31 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+
+more flexible makefile.
+------------------------------------------------------------------------
+r295 | gonnet | 2012-06-13 10:08:19 +0100 (Wed, 13 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/Makefile.am
+
+make different flavours of jac.
+------------------------------------------------------------------------
+r294 | gonnet | 2012-06-06 09:38:30 +0100 (Wed, 06 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/mdcore.h
+
+add locks to standard headers.
+------------------------------------------------------------------------
+r293 | gonnet | 2012-06-05 23:42:23 +0100 (Tue, 05 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+this and that.
+------------------------------------------------------------------------
+r292 | gonnet | 2012-06-05 23:28:41 +0100 (Tue, 05 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+   M /trunk/src/potential_eval.h
+
+make inline definitions safe.
+------------------------------------------------------------------------
+r291 | gonnet | 2012-06-05 23:22:33 +0100 (Tue, 05 Jun 2012) | 1 line
+Changed paths:
+   M /trunk/src/lock.h
+
+minor fixes.
+------------------------------------------------------------------------
+r290 | gonnet | 2012-05-27 20:23:09 +0100 (Sun, 27 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/angle.h
+   M /trunk/src/bond.c
+   M /trunk/src/bond.h
+   M /trunk/src/btree.c
+   M /trunk/src/btree.h
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/dihedral.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/engine_exchange.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/engine_rigid.c
+   M /trunk/src/errs.c
+   M /trunk/src/errs.h
+   M /trunk/src/exclusion.c
+   M /trunk/src/exclusion.h
+   M /trunk/src/fifo.c
+   M /trunk/src/fifo.h
+   M /trunk/src/mainpage.h
+   M /trunk/src/mdcore.h
+   M /trunk/src/part.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/potential_eval.h
+   M /trunk/src/reader.c
+   M /trunk/src/reader.h
+   M /trunk/src/rigid.c
+   M /trunk/src/rigid.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added locks.h and updated copyright information.
+------------------------------------------------------------------------
+r289 | gonnet | 2012-05-27 20:21:35 +0100 (Sun, 27 May 2012) | 1 line
+Changed paths:
+   A /trunk/src/lock.h
+
+add my own spinlocks implemented with atomic instructions.
+------------------------------------------------------------------------
+r288 | gonnet | 2012-05-27 20:21:21 +0100 (Sun, 27 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+
+added built-in dot-product.
+------------------------------------------------------------------------
+r287 | gonnet | 2012-05-24 11:14:01 +0100 (Thu, 24 May 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/m4/ax_ext.m4
+
+streamline options a bit.
+------------------------------------------------------------------------
+r286 | gonnet | 2012-05-16 17:30:35 +0100 (Wed, 16 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+set texture properties explicitly.
+------------------------------------------------------------------------
+r285 | gonnet | 2012-05-16 13:57:13 +0100 (Wed, 16 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+
+minor fixes.
+------------------------------------------------------------------------
+r284 | gonnet | 2012-05-16 12:55:46 +0100 (Wed, 16 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+do away with separate texture for alphas.
+------------------------------------------------------------------------
+r283 | gonnet | 2012-05-16 00:08:07 +0100 (Wed, 16 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+minor fixes.
+------------------------------------------------------------------------
+r282 | gonnet | 2012-05-16 00:00:13 +0100 (Wed, 16 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+minor fixes.
+------------------------------------------------------------------------
+r281 | gonnet | 2012-05-15 23:59:42 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+minor fixes.
+------------------------------------------------------------------------
+r280 | gonnet | 2012-05-15 23:55:53 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+minor fixes.
+------------------------------------------------------------------------
+r279 | gonnet | 2012-05-15 23:49:23 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+minor fixes.
+------------------------------------------------------------------------
+r278 | gonnet | 2012-05-15 23:48:34 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+minor fixes.
+------------------------------------------------------------------------
+r277 | gonnet | 2012-05-15 23:26:27 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda_main.h
+
+typo.
+------------------------------------------------------------------------
+r276 | gonnet | 2012-05-15 23:25:12 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+
+add option of constant parts being local or not.
+------------------------------------------------------------------------
+r275 | gonnet | 2012-05-15 23:21:48 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/runner_cuda_main.h
+   M /trunk/src/space.h
+
+parts can be either a texture or constant memory.
+------------------------------------------------------------------------
+r274 | gonnet | 2012-05-15 23:19:25 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+make sure potentials are aligned correctly s.t. alphas can be read aligned.
+------------------------------------------------------------------------
+r273 | gonnet | 2012-05-15 23:15:19 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/space.h
+
+forgot this in the last commit.
+------------------------------------------------------------------------
+r272 | gonnet | 2012-05-15 17:24:21 +0100 (Tue, 15 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   A /trunk/src/runner_cuda_main.h
+
+major re-tooling of the CUDA engine, particle positions are now stored in a texture, no task queue but blocking access to the force vector.
+------------------------------------------------------------------------
+r271 | gonnet | 2012-05-10 22:34:51 +0100 (Thu, 10 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+
+check for cuda and double-precision.
+------------------------------------------------------------------------
+r270 | gonnet | 2012-05-10 00:14:52 +0100 (Thu, 10 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+minor fix...
+------------------------------------------------------------------------
+r269 | gonnet | 2012-05-10 00:12:49 +0100 (Thu, 10 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+oops...
+------------------------------------------------------------------------
+r268 | gonnet | 2012-05-09 23:41:10 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+the coeffs are now also float4-textures.
+------------------------------------------------------------------------
+r267 | gonnet | 2012-05-09 23:29:10 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+get rid of cuda_offsets.
+------------------------------------------------------------------------
+r266 | gonnet | 2012-05-09 23:19:02 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+make alphas and offsets a single float4-texture.
+------------------------------------------------------------------------
+r265 | gonnet | 2012-05-09 22:15:39 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+add vectorized unsorted dopair.
+------------------------------------------------------------------------
+r264 | gonnet | 2012-05-09 22:04:04 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+
+tuples may be too large for stack.
+------------------------------------------------------------------------
+r263 | gonnet | 2012-05-09 21:37:18 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+verlet no longer strictly implies tuples.
+------------------------------------------------------------------------
+r262 | gonnet | 2012-05-09 21:14:11 +0100 (Wed, 09 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+added several different options, schedulers.
+------------------------------------------------------------------------
+r261 | gonnet | 2012-05-07 10:06:09 +0100 (Mon, 07 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+fix stray variable.
+------------------------------------------------------------------------
+r260 | gonnet | 2012-05-07 09:34:12 +0100 (Mon, 07 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/potential_eval.h
+
+use sse-transpose throughout.
+------------------------------------------------------------------------
+r259 | gonnet | 2012-05-01 14:05:48 +0100 (Tue, 01 May 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+use spin-locks when affinity is set.
+------------------------------------------------------------------------
+r258 | gonnet | 2012-04-19 23:47:04 +0100 (Thu, 19 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/fptype.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   A /trunk/src/potential_eval.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+
+make potential_eval functions inlinable throughout objects.
+------------------------------------------------------------------------
+r257 | gonnet | 2012-04-19 20:04:54 +0100 (Thu, 19 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+
+add flatten attribute as gcc 4.6.1 seems a bit confused about inlining.
+------------------------------------------------------------------------
+r256 | gonnet | 2012-04-19 14:41:00 +0100 (Thu, 19 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/angle.h
+   M /trunk/src/bond.c
+   M /trunk/src/bond.h
+   M /trunk/src/cell.c
+   M /trunk/src/dihedral.h
+   M /trunk/src/engine.h
+   M /trunk/src/exclusion.c
+   M /trunk/src/exclusion.h
+   M /trunk/src/fifo.h
+   M /trunk/src/fptype.h
+   M /trunk/src/part.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/reader.h
+   M /trunk/src/rigid.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+massive cleanup, faster pairwise distance computations.
+------------------------------------------------------------------------
+r255 | gonnet | 2012-04-18 22:38:03 +0100 (Wed, 18 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/exclusion.c
+
+copy-paste sign error.
+------------------------------------------------------------------------
+r254 | gonnet | 2012-04-18 22:36:17 +0100 (Wed, 18 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/exclusion.c
+
+forgot to update exclusions.
+------------------------------------------------------------------------
+r253 | gonnet | 2012-04-18 15:41:41 +0100 (Wed, 18 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/fptype.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/runner_verlet.c
+
+added support for AVX (untested), simplified vectorized potential evaluation routines, removed explicit electrostatics.
+------------------------------------------------------------------------
+r252 | gonnet | 2012-04-11 12:18:02 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+add check for c99.
+------------------------------------------------------------------------
+r251 | gonnet | 2012-04-11 12:12:48 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_ext.m4
+
+added extra m4 file.
+------------------------------------------------------------------------
+r250 | gonnet | 2012-04-11 12:08:48 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+change order of compiler settings.
+------------------------------------------------------------------------
+r249 | gonnet | 2012-04-11 12:07:08 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+change order of compiler settings.
+------------------------------------------------------------------------
+r248 | gonnet | 2012-04-11 12:06:25 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+change order of compiler settings.
+------------------------------------------------------------------------
+r247 | gonnet | 2012-04-11 12:04:46 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+added ac_gnu_source.
+------------------------------------------------------------------------
+r246 | gonnet | 2012-04-11 11:56:59 +0100 (Wed, 11 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/engine_exchange.c
+   M /trunk/src/engine_io.c
+   M /trunk/src/engine_rigid.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/mdcore.h
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_dopair.c
+   M /trunk/src/runner_pwverlet.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several small fixes, new pseudo-Verlet interactions.
+------------------------------------------------------------------------
+r245 | gonnet | 2012-04-10 18:19:49 +0100 (Tue, 10 Apr 2012) | 1 line
+Changed paths:
+   A /trunk/src/fifo.c
+   A /trunk/src/fifo.h
+
+add fifo queues.
+------------------------------------------------------------------------
+r244 | gonnet | 2012-04-10 14:49:30 +0100 (Tue, 10 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_verlet.c
+   M /trunk/src/space.h
+
+add check for verlet list size.
+------------------------------------------------------------------------
+r243 | gonnet | 2012-04-03 16:17:34 +0100 (Tue, 03 Apr 2012) | 2 lines
+Changed paths:
+   D /trunk/examples/argon/neon.c
+
+removed neon.c from wrong place.
+
+------------------------------------------------------------------------
+r242 | gonnet | 2012-04-03 16:16:20 +0100 (Tue, 03 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+added neon example.
+------------------------------------------------------------------------
+r241 | gonnet | 2012-04-03 16:13:51 +0100 (Tue, 03 Apr 2012) | 1 line
+Changed paths:
+   A /trunk/examples/neon
+   A /trunk/examples/neon/Makefile.am
+   A /trunk/examples/neon/neon.c
+
+oops... now it should be ok.
+------------------------------------------------------------------------
+r240 | gonnet | 2012-04-03 16:13:27 +0100 (Tue, 03 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/examples/argon/Makefile.am
+
+commit current version.
+------------------------------------------------------------------------
+r239 | gonnet | 2012-04-03 16:10:11 +0100 (Tue, 03 Apr 2012) | 1 line
+Changed paths:
+   A /trunk/examples/argon/neon.c
+
+forgot actual source file.
+------------------------------------------------------------------------
+r238 | gonnet | 2012-04-03 16:09:08 +0100 (Tue, 03 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/examples/argon/Makefile.am
+
+add new example, neon.
+------------------------------------------------------------------------
+r237 | gonnet | 2012-04-01 22:06:34 +0100 (Sun, 01 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/runner_verlet.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added dispatcher, works, performance is terrible though.
+------------------------------------------------------------------------
+r236 | gonnet | 2012-04-01 15:42:58 +0100 (Sun, 01 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   A /trunk/src/runner_dopair.c
+   A /trunk/src/runner_pwverlet.c
+   A /trunk/src/runner_verlet.c
+
+split-up runner.c into different interaction types.
+------------------------------------------------------------------------
+r235 | gonnet | 2012-04-01 15:41:58 +0100 (Sun, 01 Apr 2012) | 1 line
+Changed paths:
+   M /trunk/src/mainpage.h
+
+update first page of doxygen documentation.
+------------------------------------------------------------------------
+r234 | gonnet | 2012-03-31 18:38:10 +0100 (Sat, 31 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/examples/argon/argon.c
+
+don't take particle type IDs for granted.
+------------------------------------------------------------------------
+r233 | gonnet | 2012-03-31 18:37:35 +0100 (Sat, 31 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/examples/bulk/bulk.c
+
+don't take particle type IDs for granted.
+------------------------------------------------------------------------
+r232 | gonnet | 2012-03-30 22:32:06 +0100 (Fri, 30 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+minor fixes.
+------------------------------------------------------------------------
+r231 | gonnet | 2012-03-30 22:16:48 +0100 (Fri, 30 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+fix wrapping.
+------------------------------------------------------------------------
+r230 | gonnet | 2012-03-30 21:43:14 +0100 (Fri, 30 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fixes to the dispatcher, still not working right.
+------------------------------------------------------------------------
+r229 | gonnet | 2012-03-30 14:38:47 +0100 (Fri, 30 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+set the correct in/out fifos.
+------------------------------------------------------------------------
+r228 | gonnet | 2012-03-30 14:35:45 +0100 (Fri, 30 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+added dispatcher, still experimental, do not use.
+------------------------------------------------------------------------
+r227 | gonnet | 2012-03-29 22:10:38 +0100 (Thu, 29 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+be less granular when it comes to rigid interactions.
+------------------------------------------------------------------------
+r226 | gonnet | 2012-03-29 09:48:34 +0100 (Thu, 29 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+
+update todo list.
+------------------------------------------------------------------------
+r225 | gonnet | 2012-03-29 09:35:14 +0100 (Thu, 29 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+minor changes and fixes.
+------------------------------------------------------------------------
+r224 | gonnet | 2012-03-29 09:31:17 +0100 (Thu, 29 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/web/documentation.html
+   M /trunk/web/download.html
+   M /trunk/web/features.html
+   M /trunk/web/index.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+update web pages.
+------------------------------------------------------------------------
+r223 | gonnet | 2012-03-28 13:42:20 +0100 (Wed, 28 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+sevreal fixes and improvements.
+------------------------------------------------------------------------
+r222 | gonnet | 2012-03-28 10:45:50 +0100 (Wed, 28 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+use packed unsigned ints for the sorting of the cell pairs, switch to using two separate sorts throughout.
+------------------------------------------------------------------------
+r221 | gonnet | 2012-03-28 10:43:59 +0100 (Wed, 28 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+we really need to guarantee that every particle is in its propper cell before the non-bonded interactions are computed in non-verlet mode.
+------------------------------------------------------------------------
+r220 | gonnet | 2012-03-24 21:57:47 +0000 (Sat, 24 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+
+make sortlist more compact, less strain on memory.
+------------------------------------------------------------------------
+r219 | gonnet | 2012-03-23 17:15:21 +0000 (Fri, 23 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+minor fix to avoid spurious loading of particle data.
+------------------------------------------------------------------------
+r218 | gonnet | 2012-03-23 16:56:29 +0000 (Fri, 23 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+remove unused variables.
+------------------------------------------------------------------------
+r217 | gonnet | 2012-03-23 16:52:12 +0000 (Fri, 23 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+better pairwise pseudo-verlet implementation.
+------------------------------------------------------------------------
+r216 | gonnet | 2012-03-22 22:37:09 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fix very sneaky synchronization bug in pair selection.
+------------------------------------------------------------------------
+r215 | gonnet | 2012-03-22 12:51:51 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_prog_doxygen.m4
+
+more macros.
+------------------------------------------------------------------------
+r214 | gonnet | 2012-03-22 12:50:47 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/acx_mpi.m4
+
+more macros.
+------------------------------------------------------------------------
+r213 | gonnet | 2012-03-22 12:49:47 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_openmp.m4
+
+more macros.
+------------------------------------------------------------------------
+r212 | gonnet | 2012-03-22 12:49:20 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/autogen.sh
+
+add local m4 repository.
+------------------------------------------------------------------------
+r211 | gonnet | 2012-03-22 12:48:41 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/acx_pthread.m4
+
+more macros.
+------------------------------------------------------------------------
+r210 | gonnet | 2012-03-22 12:47:32 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_gcc_x86_cpuid.m4
+
+more macros.
+------------------------------------------------------------------------
+r209 | gonnet | 2012-03-22 12:46:04 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4/ax_check_compiler_flags.m4
+   A /trunk/m4/ax_compiler_vendor.m4
+
+more macros.
+------------------------------------------------------------------------
+r208 | gonnet | 2012-03-22 12:42:23 +0000 (Thu, 22 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/m4
+   A /trunk/m4/ax_cc_maxopt.m4
+   A /trunk/m4/ax_func_posix_memalign.m4
+   A /trunk/m4/ax_gcc_archflag.m4
+
+add some non-standard m4 macros.
+------------------------------------------------------------------------
+r207 | gonnet | 2012-03-21 14:55:44 +0000 (Wed, 21 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner.c
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/runner_cuda.h
+   M /trunk/src/space.h
+
+added pairwise pseudo-verlet lists and tuples (only triplets for now).
+------------------------------------------------------------------------
+r206 | gonnet | 2012-03-16 16:13:36 +0000 (Fri, 16 Mar 2012) | 1 line
+Changed paths:
+   A /trunk/src/runner_cuda.h
+
+forgot to add this to last commit.
+------------------------------------------------------------------------
+r205 | gonnet | 2012-03-16 16:12:36 +0000 (Fri, 16 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several speed-ups and cleaning up of code, still need to test old non-sorted and non-diagonal routines.
+------------------------------------------------------------------------
+r204 | gonnet | 2012-03-14 23:00:36 +0000 (Wed, 14 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/engine_io.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner_cuda.cu
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several changes improving the performance of the CUDA code. added several options, e.g. finger size and explicit potentials, more use of textures.
+------------------------------------------------------------------------
+r203 | gonnet | 2012-03-13 21:53:46 +0000 (Tue, 13 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+don't move self interactios to end of cell pair list.
+------------------------------------------------------------------------
+r202 | gonnet | 2012-03-13 16:29:48 +0000 (Tue, 13 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+refine cellpair sorting.
+------------------------------------------------------------------------
+r201 | gonnet | 2012-03-12 21:52:36 +0000 (Mon, 12 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+sort cell pairs according to direction, self interactions at end.
+------------------------------------------------------------------------
+r200 | gonnet | 2012-03-12 19:43:47 +0000 (Mon, 12 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+minor changes, make HAVE_MPI-aware.
+------------------------------------------------------------------------
+r199 | gonnet | 2012-03-12 17:49:45 +0000 (Mon, 12 Mar 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/engine_rigid.c
+   M /trunk/src/runner_cuda.cu
+
+minor changes to make it work without MPI.
+------------------------------------------------------------------------
+r198 | gonnet | 2012-01-30 13:41:25 +0000 (Mon, 30 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+switch to bitonic sort for sorted interactions.
+------------------------------------------------------------------------
+r197 | gonnet | 2012-01-27 16:31:29 +0000 (Fri, 27 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+dangling comment end.
+------------------------------------------------------------------------
+r196 | gonnet | 2012-01-27 16:30:19 +0000 (Fri, 27 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+several bug-fixes and improvements.
+------------------------------------------------------------------------
+r195 | gonnet | 2012-01-26 00:20:26 +0000 (Thu, 26 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+error in scaling of ewald potential derivatives.
+------------------------------------------------------------------------
+r194 | gonnet | 2012-01-21 14:01:20 +0000 (Sat, 21 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+added sorted interactions.
+------------------------------------------------------------------------
+r193 | gonnet | 2012-01-21 10:51:16 +0000 (Sat, 21 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fixed diagonal traversing of self interactions.
+------------------------------------------------------------------------
+r192 | gonnet | 2012-01-20 16:33:46 +0000 (Fri, 20 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+added diagnoally sorted self interactions.
+------------------------------------------------------------------------
+r191 | gonnet | 2012-01-20 11:59:16 +0000 (Fri, 20 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/part.h
+
+keep the cuda-related data structures in the cuda-related files.
+------------------------------------------------------------------------
+r190 | gonnet | 2012-01-20 11:57:16 +0000 (Fri, 20 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_io.c
+
+ignore charges for identical potentials when kappa < 0.0.
+------------------------------------------------------------------------
+r189 | gonnet | 2012-01-18 17:46:33 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+several fixes to textures.
+------------------------------------------------------------------------
+r188 | gonnet | 2012-01-18 16:56:26 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fixes to the last commit.
+------------------------------------------------------------------------
+r187 | gonnet | 2012-01-18 16:46:09 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+textures are static and thus not externable.
+------------------------------------------------------------------------
+r186 | gonnet | 2012-01-18 12:19:05 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fixed texture mapping for potential coefficients.
+------------------------------------------------------------------------
+r185 | gonnet | 2012-01-18 12:06:47 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_io.c
+
+avoid creating duplicate potentials.
+------------------------------------------------------------------------
+r184 | gonnet | 2012-01-18 10:39:20 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/runner_cuda.cu
+
+make sm_13-compatible.
+------------------------------------------------------------------------
+r183 | gonnet | 2012-01-18 10:36:39 +0000 (Wed, 18 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+add textures for potential evaluation.
+------------------------------------------------------------------------
+r182 | gonnet | 2012-01-16 13:13:46 +0000 (Mon, 16 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+map potential coordinates to texture memory.
+------------------------------------------------------------------------
+r181 | gonnet | 2012-01-16 11:23:20 +0000 (Mon, 16 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/Makefile.am
+   M /trunk/autogen.sh
+   M /trunk/configure.in
+   M /trunk/examples/jac/Makefile.am
+   M /trunk/examples/jac/jac.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine_cuda.cu
+   M /trunk/src/runner_cuda.cu
+
+fixes here and there.
+------------------------------------------------------------------------
+r180 | gonnet | 2012-01-11 10:56:44 +0000 (Wed, 11 Jan 2012) | 1 line
+Changed paths:
+   A /trunk/cudalt.py
+
+forgot to add libtool-like script for cuda.
+------------------------------------------------------------------------
+r179 | gonnet | 2012-01-11 10:38:34 +0000 (Wed, 11 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/jac/Makefile.am
+   M /trunk/examples/jac/jac.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   A /trunk/src/engine_cuda.cu
+   M /trunk/src/errs.h
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   A /trunk/src/runner_cuda.cu
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added basic support for CUDA devices.
+------------------------------------------------------------------------
+r178 | gonnet | 2012-01-04 12:17:02 +0000 (Wed, 04 Jan 2012) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+allow cell sizes smaller than cutoff.
+------------------------------------------------------------------------
+r177 | gonnet | 2011-12-23 13:54:58 +0000 (Fri, 23 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+different approach, fix nr of sets per thread.
+------------------------------------------------------------------------
+r176 | gonnet | 2011-12-23 10:27:48 +0000 (Fri, 23 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+try to be smarter regarding the chunk size for rigids.
+------------------------------------------------------------------------
+r175 | gonnet | 2011-12-23 10:27:34 +0000 (Fri, 23 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+try to be smarter regarding the chunk size for rigids.
+------------------------------------------------------------------------
+r174 | gonnet | 2011-12-21 19:43:51 +0000 (Wed, 21 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_exchange.c
+
+be smarter about the nr of threads for async exchanges.
+------------------------------------------------------------------------
+r173 | gonnet | 2011-12-21 14:03:15 +0000 (Wed, 21 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+don't use fortran names or mvapich2 will die.
+------------------------------------------------------------------------
+r172 | gonnet | 2011-12-21 13:15:15 +0000 (Wed, 21 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_exchange.c
+
+use minimal number of threads in async communication.
+------------------------------------------------------------------------
+r171 | gonnet | 2011-12-21 09:41:09 +0000 (Wed, 21 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_exchange.c
+
+clean up exchange routines.
+------------------------------------------------------------------------
+r170 | gonnet | 2011-12-20 10:22:48 +0000 (Tue, 20 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_exchange.c
+
+MPI_Waitall does not seem to be completely thread-safe.
+------------------------------------------------------------------------
+r169 | gonnet | 2011-12-20 09:34:37 +0000 (Tue, 20 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_exchange.c
+
+make engine_exchange_async use OpenMP as MPI does not seem to have its own thread to run the async communications.
+------------------------------------------------------------------------
+r168 | gonnet | 2011-12-13 07:33:58 +0000 (Tue, 13 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine_exchange.c
+
+use pthread_cond_signal to wake up runners if only one runner is present.
+------------------------------------------------------------------------
+r167 | gonnet | 2011-12-13 07:32:47 +0000 (Tue, 13 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+use pthread_cond_signal to wake up runners if only one runner is present.
+------------------------------------------------------------------------
+r166 | gonnet | 2011-12-12 15:47:06 +0000 (Mon, 12 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+fix bug which caused verlet list rebuilds in every step.
+------------------------------------------------------------------------
+r165 | gonnet | 2011-12-09 15:37:28 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine_bonded.c
+
+remove redundant code.
+------------------------------------------------------------------------
+r164 | gonnet | 2011-12-09 15:08:24 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_exchange.c
+
+several fixes to parallel verlet/non-verlet, async/non-async.
+------------------------------------------------------------------------
+r163 | gonnet | 2011-12-09 12:07:29 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+minor bug in the tabulation of the local potential energy.
+------------------------------------------------------------------------
+r162 | gonnet | 2011-12-09 12:00:44 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+switch off mpi and async flags if there is only a single node.
+------------------------------------------------------------------------
+r161 | gonnet | 2011-12-09 10:27:17 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine_rigid.c
+
+only sort rigids if really needed.
+------------------------------------------------------------------------
+r160 | gonnet | 2011-12-09 01:31:38 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+minor fix.
+------------------------------------------------------------------------
+r159 | gonnet | 2011-12-09 01:26:12 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+minor fix.
+------------------------------------------------------------------------
+r158 | gonnet | 2011-12-09 01:08:52 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+minor fix.
+------------------------------------------------------------------------
+r157 | gonnet | 2011-12-09 00:59:34 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+minor fix.
+------------------------------------------------------------------------
+r156 | gonnet | 2011-12-09 00:51:03 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+minor fix.
+------------------------------------------------------------------------
+r155 | gonnet | 2011-12-09 00:14:54 +0000 (Fri, 09 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_bonded.c
+
+added bonded sets. still somewhat slow to construct, work in progress.
+------------------------------------------------------------------------
+r154 | gonnet | 2011-12-08 00:24:45 +0000 (Thu, 08 Dec 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_exchange.c
+   M /trunk/src/engine_rigid.c
+
+added engine_exchange_rigid which will not transmit entire cells, only particles involved in shared rigid constraints.
+------------------------------------------------------------------------
+r153 | gonnet | 2011-11-25 22:54:06 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+engine_bonded_sets is still work in progress...
+------------------------------------------------------------------------
+r152 | gonnet | 2011-11-25 22:51:58 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+   M /trunk/src/engine_rigid.c
+
+oops...
+------------------------------------------------------------------------
+r151 | gonnet | 2011-11-25 21:13:55 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+go back to old way of doing bonded, yet without pre-sorting.
+------------------------------------------------------------------------
+r150 | gonnet | 2011-11-25 21:10:59 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+revert to the old way of doing rigids. 
+------------------------------------------------------------------------
+r149 | gonnet | 2011-11-25 18:14:31 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+minor fixes, too many exclusions.
+------------------------------------------------------------------------
+r148 | gonnet | 2011-11-25 18:07:15 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+correted output on bonded interactions read and generated.
+------------------------------------------------------------------------
+r147 | gonnet | 2011-11-25 18:06:12 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+bug fix in parallel bonded interactions.
+------------------------------------------------------------------------
+r146 | gonnet | 2011-11-25 17:39:35 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_bonded.c
+
+change the way bonded interactions are handled in parallel (local list).
+------------------------------------------------------------------------
+r145 | gonnet | 2011-11-25 17:21:23 +0000 (Fri, 25 Nov 2011) | 2 lines
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+added call to rigid unsort to distribute types of constraints evenly.
+
+------------------------------------------------------------------------
+r144 | gonnet | 2011-11-25 17:20:53 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   A /trunk/src/engine_exchange.c
+   M /trunk/src/engine_rigid.c
+
+added engine_rigid_unsort.
+------------------------------------------------------------------------
+r143 | gonnet | 2011-11-25 15:38:51 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+oops...
+------------------------------------------------------------------------
+r142 | gonnet | 2011-11-25 15:38:33 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+oops...
+------------------------------------------------------------------------
+r141 | gonnet | 2011-11-25 15:21:58 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+minor fix
+------------------------------------------------------------------------
+r140 | gonnet | 2011-11-25 15:19:42 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine_rigid.c
+
+make rigid parallelization non-balancing.
+------------------------------------------------------------------------
+r139 | gonnet | 2011-11-25 15:11:26 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   A /trunk/src/engine_rigid.c
+
+split rigid routines.
+------------------------------------------------------------------------
+r138 | gonnet | 2011-11-25 15:11:06 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+
+two-step rigids only in parallel.
+------------------------------------------------------------------------
+r137 | gonnet | 2011-11-25 14:28:07 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+avoid reduction in openmp statements.
+------------------------------------------------------------------------
+r136 | gonnet | 2011-11-25 14:25:24 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   A /trunk/src/engine_bonded.c
+   A /trunk/src/engine_io.c
+
+split-up some of the engine functions into separate files, avoid using reduction in omp.
+------------------------------------------------------------------------
+r135 | gonnet | 2011-11-25 10:44:02 +0000 (Fri, 25 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+don't wait for all sizes to be transmitted before transmitting data.
+------------------------------------------------------------------------
+r134 | gonnet | 2011-11-24 17:26:55 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+separate time spent in engine_exchange_wait from other routines.
+------------------------------------------------------------------------
+r133 | gonnet | 2011-11-24 17:02:34 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/space.c
+
+minor bugs.
+------------------------------------------------------------------------
+r132 | gonnet | 2011-11-24 16:41:46 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/jac/jac.c
+
+loop only over real cells for temp.
+------------------------------------------------------------------------
+r131 | gonnet | 2011-11-24 16:41:06 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/exclusion.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+introduce local lists of marked, real and ghost cells to improve OpenMP parallelism.
+------------------------------------------------------------------------
+r130 | gonnet | 2011-11-24 10:22:29 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+
+change in the way timers are counted.
+------------------------------------------------------------------------
+r129 | gonnet | 2011-11-24 10:21:35 +0000 (Thu, 24 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+minor bug.
+------------------------------------------------------------------------
+r128 | gonnet | 2011-11-22 10:33:35 +0000 (Tue, 22 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/Makefile.am
+
+ppm_test is not part of the standard build.
+------------------------------------------------------------------------
+r127 | gonnet | 2011-11-21 23:02:52 +0000 (Mon, 21 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/apoa1/apoa1.c
+   A /trunk/examples/apoa1/par_all22_popc.xplor
+   A /trunk/examples/apoa1/par_all22_prot.inp
+   A /trunk/examples/apoa1/par_all22_prot_lipid.xplor
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/Makefile.am
+   A /trunk/examples/bulk/bulk.c (from /trunk/examples/bulk/test.c:118)
+   D /trunk/examples/bulk/test.c
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/hybrid/ppm_test.c
+   M /trunk/examples/jac/jac.c
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   A /trunk/src/cycle.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   A /trunk/src/exclusion.c
+   A /trunk/src/exclusion.h
+   M /trunk/src/potential.c
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+massive overhaul of the mpi parallelisation, engine_step now does most of the magic alone. exclusions are added to avoid interactions between bonded particles. mpi communication can be done asynchronously with the flag engine_flag_async.
+------------------------------------------------------------------------
+r126 | gonnet | 2011-11-12 15:02:50 +0000 (Sat, 12 Nov 2011) | 1 line
+Changed paths:
+   M /trunk/web/publications.html
+
+added full reference for pairwise verlet paper.
+------------------------------------------------------------------------
+r125 | gonnet | 2011-09-30 08:40:00 +0100 (Fri, 30 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+
+add paths for new examples.
+------------------------------------------------------------------------
+r124 | gonnet | 2011-09-30 08:38:48 +0100 (Fri, 30 Sep 2011) | 1 line
+Changed paths:
+   A /trunk/examples/apoa1
+   A /trunk/examples/apoa1/Makefile.am
+   A /trunk/examples/apoa1/apoa1.c
+   A /trunk/examples/apoa1/apoa1.pdb
+   A /trunk/examples/apoa1/apoa1.psf
+   A /trunk/examples/apoa1/apoa1.xplor
+
+added apoa1 benchmark from namd.
+------------------------------------------------------------------------
+r123 | gonnet | 2011-09-30 08:33:25 +0100 (Fri, 30 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/angle.h
+   M /trunk/src/bond.c
+   M /trunk/src/bond.h
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/dihedral.c
+   M /trunk/src/dihedral.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/mdcore.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/reader.c
+   M /trunk/src/reader.h
+   M /trunk/src/rigid.c
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several bug-fixes in bonded interactions and making pairwise verlet lists mpi-capable.
+------------------------------------------------------------------------
+r122 | gonnet | 2011-09-22 10:04:51 +0100 (Thu, 22 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+
+split-up engine_step for better monitoring of individual parts, some tweaking of the parallel bonded interactions.
+------------------------------------------------------------------------
+r121 | gonnet | 2011-09-20 22:01:00 +0100 (Tue, 20 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/rigid.c
+   M /trunk/src/rigid.h
+
+fixes to the potential iterval. AMD implements stricter single-precision than Intel, which is why this only cropped-up now.
+------------------------------------------------------------------------
+r120 | gonnet | 2011-09-20 14:51:54 +0100 (Tue, 20 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/src/angle.c
+   M /trunk/src/bond.c
+   M /trunk/src/cell.c
+   M /trunk/src/dihedral.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/potential.c
+   M /trunk/src/rigid.c
+
+several bug fixes regarding distributed-memory parallelism.
+------------------------------------------------------------------------
+r119 | gonnet | 2011-09-20 14:51:23 +0100 (Tue, 20 Sep 2011) | 1 line
+Changed paths:
+   A /trunk/src/reader.c
+   A /trunk/src/reader.h
+
+forgot to add these last update.
+------------------------------------------------------------------------
+r118 | gonnet | 2011-09-19 10:59:39 +0100 (Mon, 19 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/test.c
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/hybrid/Makefile.am
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/hybrid/ppm.h
+   M /trunk/examples/hybrid/ppm_test.c
+   A /trunk/examples/jac
+   A /trunk/examples/jac/5dhfr_cube.pdb
+   A /trunk/examples/jac/5dhfr_cube.psf
+   A /trunk/examples/jac/Makefile.am
+   A /trunk/examples/jac/cycle.h
+   A /trunk/examples/jac/jac.c
+   A /trunk/examples/jac/par_all22_prot.inp
+   M /trunk/src/Makefile.am
+   M /trunk/src/angle.c
+   M /trunk/src/angle.h
+   A /trunk/src/angles.maple
+   M /trunk/src/bond.c
+   M /trunk/src/bond.h
+   A /trunk/src/dihedral.c
+   A /trunk/src/dihedral.h
+   A /trunk/src/dihedral.maple
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/fptype.h
+   M /trunk/src/mdcore.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   A /trunk/src/rigid.c
+   A /trunk/src/rigid.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+
+massive update adding generalized constraints and dihedrals, as well as the ability to read .psf and .cpf files. added the joint amber-charmm benchmark to the examples.
+------------------------------------------------------------------------
+r117 | gonnet | 2011-09-07 14:47:30 +0100 (Wed, 07 Sep 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/hybrid.c
+
+loop over known particles and not all pids for shake and temp.
+------------------------------------------------------------------------
+r116 | gonnet | 2011-08-28 12:34:27 +0100 (Sun, 28 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/web/documentation.html
+   M /trunk/web/download.html
+   M /trunk/web/features.html
+   M /trunk/web/index.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+added code for google analytics.
+------------------------------------------------------------------------
+r115 | gonnet | 2011-08-26 16:04:04 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/web/documentation.html
+   M /trunk/web/features.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+update web pages, extend tutorial.
+------------------------------------------------------------------------
+r114 | gonnet | 2011-08-26 16:03:31 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+add variable for MPI.
+------------------------------------------------------------------------
+r113 | gonnet | 2011-08-26 16:03:15 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/Makefile.am
+
+make depends on presence of MPI.
+------------------------------------------------------------------------
+r112 | gonnet | 2011-08-26 15:57:16 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+make mpi an option.
+------------------------------------------------------------------------
+r111 | gonnet | 2011-08-26 15:55:53 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/test.c
+   M /trunk/examples/flexible/flexible.c
+   M /trunk/examples/hybrid/Makefile.am
+
+minor fixes.
+------------------------------------------------------------------------
+r110 | gonnet | 2011-08-26 15:55:08 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/part.h
+
+minor documentation fixes.
+------------------------------------------------------------------------
+r109 | gonnet | 2011-08-26 10:55:21 +0100 (Fri, 26 Aug 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/hybrid.c
+   M /trunk/examples/hybrid/ppm_test.c
+
+fixed calls to engine_addtype.
+------------------------------------------------------------------------
+r108 | gonnet | 2011-06-22 14:18:23 +0100 (Wed, 22 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/src/spu/runner_spu.c
+
+fixed for SPU too.
+------------------------------------------------------------------------
+r107 | gonnet | 2011-06-22 10:23:03 +0100 (Wed, 22 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+
+modified to add examples/flexible to the config.
+------------------------------------------------------------------------
+r106 | gonnet | 2011-06-22 10:21:11 +0100 (Wed, 22 Jun 2011) | 1 line
+Changed paths:
+   A /trunk/examples/flexible
+   A /trunk/examples/flexible/Makefile.am
+   A /trunk/examples/flexible/cycle.h
+   A /trunk/examples/flexible/flexible.c
+
+add example for bonded and angular potentials.
+------------------------------------------------------------------------
+r105 | gonnet | 2011-06-22 10:17:26 +0100 (Wed, 22 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   A /trunk/src/angle.c
+   A /trunk/src/angle.h
+   A /trunk/src/bond.c
+   A /trunk/src/bond.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+
+fixed a nasty bug in the way the interaction force was applied, added bonded and angular interactions and potentials (e.g. potentials as a function of r, not r^2).
+------------------------------------------------------------------------
+r104 | gonnet | 2011-06-16 09:25:55 +0100 (Thu, 16 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/engine.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+traverse verlet list cell-wise.
+------------------------------------------------------------------------
+r103 | gonnet | 2011-06-11 17:50:32 +0100 (Sat, 11 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+add support for MPI parallelism.
+------------------------------------------------------------------------
+r102 | gonnet | 2011-06-11 17:50:13 +0100 (Sat, 11 Jun 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/Makefile.am
+   A /trunk/examples/hybrid/hybrid.c
+
+added hybrid using MPI in mdcore.
+------------------------------------------------------------------------
+r101 | gonnet | 2011-05-22 10:40:02 +0100 (Sun, 22 May 2011) | 1 line
+Changed paths:
+   D /trunk/examples/hybrid/.deps
+
+clean-up some stray files.
+------------------------------------------------------------------------
+r100 | gonnet | 2011-05-21 20:00:43 +0100 (Sat, 21 May 2011) | 1 line
+Changed paths:
+   A /trunk/src/mdcore.h
+
+forgot to add common header file.
+------------------------------------------------------------------------
+r99 | gonnet | 2011-05-21 19:54:32 +0100 (Sat, 21 May 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/test.c
+   M /trunk/examples/hybrid/.deps/ppm_test-ppm_test.Po
+   M /trunk/examples/hybrid/ppm_test.c
+   M /trunk/src/space.c
+
+minor changes for version 0.1.1.
+------------------------------------------------------------------------
+r98 | gonnet | 2011-05-20 17:42:53 +0100 (Fri, 20 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+fixed embarassing bug in parallel space_verlet_init.
+------------------------------------------------------------------------
+r97 | gonnet | 2011-05-20 11:10:31 +0100 (Fri, 20 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/space.c
+
+make stored particle positions for verlet lists local to the cells, reduces overlapping access when updating.
+------------------------------------------------------------------------
+r96 | gonnet | 2011-05-19 11:37:05 +0100 (Thu, 19 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+make verlet list update omp-parallel.
+------------------------------------------------------------------------
+r95 | gonnet | 2011-05-18 09:05:25 +0100 (Wed, 18 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+
+added engine_flag_unsorted, only for cell-lists for now.
+------------------------------------------------------------------------
+r94 | gonnet | 2011-05-17 09:44:05 +0100 (Tue, 17 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+simplify space_releasepair.
+------------------------------------------------------------------------
+r93 | gonnet | 2011-05-16 15:57:09 +0100 (Mon, 16 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+conceptually different prefetch. don't rely on the intrinsic, just access the data.
+------------------------------------------------------------------------
+r92 | gonnet | 2011-05-13 14:56:17 +0100 (Fri, 13 May 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+added check for link-time optimization flag.
+------------------------------------------------------------------------
+r91 | gonnet | 2011-05-13 13:27:31 +0100 (Fri, 13 May 2011) | 1 line
+Changed paths:
+   M /trunk/examples/hybrid/ppm.h
+
+make 64-bit compatible.
+------------------------------------------------------------------------
+r90 | gonnet | 2011-05-13 10:53:54 +0100 (Fri, 13 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+fix extremely nasty bug in which ghost cells would not welcome new particles.
+------------------------------------------------------------------------
+r89 | gonnet | 2011-05-11 16:41:10 +0100 (Wed, 11 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+minor modifications regarding how potentials are computed.
+------------------------------------------------------------------------
+r88 | gonnet | 2011-05-11 13:43:12 +0100 (Wed, 11 May 2011) | 1 line
+Changed paths:
+   M /trunk/examples/bulk/Makefile.am
+   M /trunk/examples/bulk/test.c
+
+made it easier to adjust temperature.
+------------------------------------------------------------------------
+r87 | gonnet | 2011-05-11 13:41:43 +0100 (Wed, 11 May 2011) | 1 line
+Changed paths:
+   M /trunk/examples/argon/Makefile.am
+   M /trunk/examples/argon/argon.c
+
+minor changes.
+------------------------------------------------------------------------
+r86 | gonnet | 2011-05-10 22:03:37 +0100 (Tue, 10 May 2011) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several improvements to the tuples construction and the celltuple type.
+------------------------------------------------------------------------
+r85 | gonnet | 2011-05-08 15:24:45 +0100 (Sun, 08 May 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/argon/argon.c
+   M /trunk/examples/bulk/test.c
+   M /trunk/examples/hybrid/Makefile.am
+   M /trunk/examples/hybrid/ppm.h
+   M /trunk/examples/hybrid/ppm_test.c
+   M /trunk/src/engine.c
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several small fixes and changes.
+------------------------------------------------------------------------
+r84 | gonnet | 2011-04-21 12:21:02 +0100 (Thu, 21 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+remove debug output.
+------------------------------------------------------------------------
+r83 | gonnet | 2011-04-21 12:17:37 +0100 (Thu, 21 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+fixed some minor problems with the verlet lists, errors introduced with last commit.
+------------------------------------------------------------------------
+r82 | gonnet | 2011-04-20 09:55:37 +0100 (Wed, 20 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+minor fixes and improvements, additions to make integration with PPM easier.
+------------------------------------------------------------------------
+r81 | gonnet | 2011-04-20 09:53:50 +0100 (Wed, 20 Apr 2011) | 1 line
+Changed paths:
+   A /trunk/examples/argon
+   A /trunk/examples/argon/Makefile.am (from /trunk/examples/bulk/Makefile.am:80)
+   A /trunk/examples/argon/argon.c (from /trunk/examples/bulk/test.c:79)
+   A /trunk/examples/argon/cycle.h (from /trunk/examples/bulk/cycle.h:79)
+
+added bulk argon example.
+------------------------------------------------------------------------
+r80 | gonnet | 2011-03-29 08:14:06 +0100 (Tue, 29 Mar 2011) | 1 line
+Changed paths:
+   A /trunk/examples/bulk/Makefile.am
+
+forgot automake file.
+------------------------------------------------------------------------
+r79 | gonnet | 2011-03-29 08:12:18 +0100 (Tue, 29 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   D /trunk/examples/Makefile_cell.in
+   A /trunk/examples/btree
+   A /trunk/examples/btree/Makefile.am
+   A /trunk/examples/btree/btree_test.c (from /trunk/examples/btree_test.c:77)
+   D /trunk/examples/btree_test.c
+   A /trunk/examples/bulk
+   A /trunk/examples/bulk/Makefile_cell.in (from /trunk/examples/Makefile_cell.in:77)
+   A /trunk/examples/bulk/cycle.h (from /trunk/examples/cycle.h:77)
+   A /trunk/examples/bulk/test.c (from /trunk/examples/test.c:77)
+   D /trunk/examples/cycle.h
+   M /trunk/examples/hybrid/ppm.h
+   D /trunk/examples/hybrid/ppm_test
+   M /trunk/examples/hybrid/ppm_test.c
+   D /trunk/examples/test.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/web/download.html
+
+re-organization of tests structure.
+------------------------------------------------------------------------
+r78 | gonnet | 2011-03-28 16:06:10 +0100 (Mon, 28 Mar 2011) | 1 line
+Changed paths:
+   D /trunk/examples/hybrid/Makefile
+   D /trunk/examples/hybrid/Makefile.in
+   D /trunk/examples/hybrid/ftest.f
+   D /trunk/examples/hybrid/parts_000.dump
+   D /trunk/examples/hybrid/parts_001.dump
+   D /trunk/examples/hybrid/parts_002.dump
+   D /trunk/examples/hybrid/parts_003.dump
+   D /trunk/examples/hybrid/ppm_test.dump
+   D /trunk/examples/hybrid/~ppm_test.c
+
+clean up some files that shouldn't be here.
+------------------------------------------------------------------------
+r77 | gonnet | 2011-03-28 15:59:48 +0100 (Mon, 28 Mar 2011) | 1 line
+Changed paths:
+   A /trunk/examples/hybrid
+   A /trunk/examples/hybrid/.deps
+   A /trunk/examples/hybrid/.deps/ppm_test-ppm_test.Po
+   A /trunk/examples/hybrid/Makefile
+   A /trunk/examples/hybrid/Makefile.am
+   A /trunk/examples/hybrid/Makefile.in
+   A /trunk/examples/hybrid/cycle.h
+   A /trunk/examples/hybrid/ftest.f
+   A /trunk/examples/hybrid/parts_000.dump
+   A /trunk/examples/hybrid/parts_001.dump
+   A /trunk/examples/hybrid/parts_002.dump
+   A /trunk/examples/hybrid/parts_003.dump
+   A /trunk/examples/hybrid/ppm.h
+   A /trunk/examples/hybrid/ppm_test
+   A /trunk/examples/hybrid/ppm_test.c
+   A /trunk/examples/hybrid/ppm_test.dump
+   A /trunk/examples/hybrid/~ppm_test.c
+
+added hybrid example with ppm.
+------------------------------------------------------------------------
+r74 | gonnet | 2011-03-23 11:25:01 +0000 (Wed, 23 Mar 2011) | 1 line
+Changed paths:
+   A /trunk/web/download.html
+
+added compiling instructions.
+------------------------------------------------------------------------
+r73 | gonnet | 2011-03-23 11:15:16 +0000 (Wed, 23 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/examples/test.c
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/spu/Makefile
+
+final commits before taging release 0.1.0
+------------------------------------------------------------------------
+r72 | gonnet | 2011-03-11 11:08:30 +0000 (Fri, 11 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+   M /trunk/src/spu/runner_spu.c
+
+minor fixes to make altivec a bit faster, still quite slow though.
+------------------------------------------------------------------------
+r71 | gonnet | 2011-03-09 22:24:16 +0000 (Wed, 09 Mar 2011) | 1 line
+Changed paths:
+   A /trunk/COPYING
+
+new version of COPYING.
+------------------------------------------------------------------------
+r70 | gonnet | 2011-03-09 22:23:44 +0000 (Wed, 09 Mar 2011) | 1 line
+Changed paths:
+   D /trunk/COPYING
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/btree.c
+   M /trunk/src/btree.h
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/errs.c
+   M /trunk/src/errs.h
+   M /trunk/src/fptype.h
+   M /trunk/src/mainpage.h
+   M /trunk/src/part.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/spu/runner_spu.c
+
+change headers from GPL to LGPL.
+------------------------------------------------------------------------
+r69 | gonnet | 2011-03-09 12:18:49 +0000 (Wed, 09 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/src/potential.c
+
+fixed newton iteration tolerance that led to infinite loops on some machines with different rounding schemes.
+------------------------------------------------------------------------
+r68 | gonnet | 2011-03-08 18:11:08 +0000 (Tue, 08 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile_cell.in
+   M /trunk/examples/test.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/spu/runner_spu.c
+
+fixed some problems with the cell/be version.
+------------------------------------------------------------------------
+r67 | gonnet | 2011-03-08 10:04:45 +0000 (Tue, 08 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+   M /trunk/src/runner.c
+
+added VECTORIZE, VEC_SINGLE and VEC_DOUBLE defines to fptype.h to simplify control of vectorization.
+------------------------------------------------------------------------
+r66 | gonnet | 2011-03-07 23:10:51 +0000 (Mon, 07 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/test.c
+   M /trunk/src/potential.c
+   M /trunk/src/spu/runner_spu.c
+
+added AltiVec versions of potential_eval_vec_4single and potential_eval_vec_8single, as yet untested.
+------------------------------------------------------------------------
+r65 | gonnet | 2011-03-06 17:09:44 +0000 (Sun, 06 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+fixed runner numbering.
+------------------------------------------------------------------------
+r64 | gonnet | 2011-03-06 17:06:51 +0000 (Sun, 06 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile_cell.in
+   M /trunk/examples/test.c
+   M /trunk/src/engine.c
+
+forgot to properly init runners in engine_init.
+------------------------------------------------------------------------
+r63 | gonnet | 2011-03-06 15:24:28 +0000 (Sun, 06 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/Makefile_cell.in
+   M /trunk/examples/test.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+added support for separate SPU/PPU runners, removed engine_flag_usePPU/engine_flag_useSPU.
+------------------------------------------------------------------------
+r62 | gonnet | 2011-03-04 12:52:32 +0000 (Fri, 04 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile_cell.in
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.h
+
+added compact pairwise verlet algorithm.
+------------------------------------------------------------------------
+r61 | gonnet | 2011-03-04 10:59:39 +0000 (Fri, 04 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/Makefile_cell.in
+   M /trunk/examples/test.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/Makefile_cell.in
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/spu/Makefile
+   M /trunk/src/spu/Makefile.in
+   M /trunk/src/spu/runner_spu.c
+   M /trunk/web/documentation.html
+   M /trunk/web/features.html
+   M /trunk/web/index.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+minor updates and fixes.
+------------------------------------------------------------------------
+r60 | gonnet | 2011-02-27 20:00:48 +0000 (Sun, 27 Feb 2011) | 1 line
+Changed paths:
+   A /trunk/examples/Makefile_cell.in
+
+forgot to add new makefile for cell.
+------------------------------------------------------------------------
+r59 | gonnet | 2011-02-27 19:54:54 +0000 (Sun, 27 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/spu/Makefile
+   M /trunk/src/spu/Makefile.in
+   M /trunk/src/spu/runner_spu.c
+
+fixed several issues to make mdcore work on the cell/be again.
+------------------------------------------------------------------------
+r58 | gonnet | 2011-02-21 17:08:57 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+added engine_flag_prefetch.
+------------------------------------------------------------------------
+r57 | gonnet | 2011-02-21 16:20:53 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+
+fixed parmetis detection and linking.
+------------------------------------------------------------------------
+r56 | gonnet | 2011-02-21 16:00:56 +0000 (Mon, 21 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/src/Makefile.am
+
+added parmetis to the configuration process.
+------------------------------------------------------------------------
+r55 | gonnet | 2011-02-10 09:05:18 +0000 (Thu, 10 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/Makefile.am
+   M /trunk/src/cell.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+several smaller changes and bug-fixes.
+------------------------------------------------------------------------
+r54 | gonnet | 2011-02-03 12:26:21 +0000 (Thu, 03 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/test.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+some minor changes and fixes.
+------------------------------------------------------------------------
+r53 | gonnet | 2011-02-01 23:44:02 +0000 (Tue, 01 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+made space_verlet_force lock data cell-wise and shuffle cell order to avoid too many collisions.
+------------------------------------------------------------------------
+r52 | gonnet | 2011-02-01 21:55:57 +0000 (Tue, 01 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+fixed problem with massive slowdown when running on >4 cores.
+------------------------------------------------------------------------
+r51 | gonnet | 2011-02-01 08:59:23 +0000 (Tue, 01 Feb 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+
+fixed some bugs in the pairwise verlet lists, made separate test cases.
+------------------------------------------------------------------------
+r50 | gonnet | 2011-01-30 01:08:50 +0000 (Sun, 30 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/test.c
+   M /trunk/src/cell.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added pairwise Verlet lists.
+------------------------------------------------------------------------
+r49 | gonnet | 2011-01-26 18:04:11 +0000 (Wed, 26 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+
+fixed problems with rounding errors when computing the intervals in the potential_eval routines by stretching the interval slightly in potential_init. fixed broken openmp configure.
+------------------------------------------------------------------------
+r48 | gonnet | 2011-01-26 08:57:55 +0000 (Wed, 26 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/test.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/Makefile_cell.in
+   M /trunk/src/btree.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/spu/Makefile
+   M /trunk/src/spu/Makefile.in
+   M /trunk/src/spu/runner_spu.c
+   M /trunk/web/documentation.html
+   M /trunk/web/features.html
+   M /trunk/web/index.html
+   M /trunk/web/publications.html
+   M /trunk/web/tutorial.html
+
+added engine_flag_verlet which generates and uses a verlet list.
+------------------------------------------------------------------------
+r47 | gonnet | 2011-01-21 17:45:34 +0000 (Fri, 21 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/src/spu/runner_spu.c
+   M /trunk/web/index.html
+
+added 8-single version of the potential evaluation for SPUs, still need to test for correctness and speed.
+------------------------------------------------------------------------
+r46 | gonnet | 2011-01-18 11:04:45 +0000 (Tue, 18 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/web/index.html
+
+fixed-up explicit electrostatics and added 4double and 8single potential evaluation routines.
+------------------------------------------------------------------------
+r45 | gonnet | 2011-01-04 13:27:40 +0000 (Tue, 04 Jan 2011) | 1 line
+Changed paths:
+   A /trunk/src/mainpage.h
+
+add mainpage.h for documentation.
+------------------------------------------------------------------------
+r44 | gonnet | 2011-01-04 13:27:08 +0000 (Tue, 04 Jan 2011) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/src/engine.h
+   A /trunk/web
+   A /trunk/web/documentation.html
+   A /trunk/web/doxygen
+   A /trunk/web/features.html
+   A /trunk/web/index.html
+   A /trunk/web/publications.html
+   A /trunk/web/tutorial.html
+
+updated todo list and added web site contents to trunk.
+------------------------------------------------------------------------
+r43 | gonnet | 2010-12-22 14:39:52 +0000 (Wed, 22 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/Makefile.am
+   M /trunk/src/runner.c
+   M /trunk/src/spu/Makefile.in
+
+minor improvements to the particle sorting in runner_sortedpair.
+------------------------------------------------------------------------
+r42 | gonnet | 2010-12-16 15:23:02 +0000 (Thu, 16 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/btree.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+added explicit electrostatic interactions option for the case of individual particle charges.
+------------------------------------------------------------------------
+r41 | gonnet | 2010-12-15 16:10:49 +0000 (Wed, 15 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/fptype.h
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+
+tightened-up the interaction routines.
+------------------------------------------------------------------------
+r40 | gonnet | 2010-12-14 17:52:59 +0000 (Tue, 14 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+   M /trunk/src/Makefile.am
+   M /trunk/src/Makefile_cell.in
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+   M /trunk/src/spu/Makefile
+   M /trunk/src/spu/runner_spu.c
+
+some modifications to the potentials and their evaluation.
+------------------------------------------------------------------------
+r39 | gonnet | 2010-12-12 16:44:29 +0000 (Sun, 12 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+
+make energy accumulation staggered to avoid drowning the result in rounding error.
+------------------------------------------------------------------------
+r38 | gonnet | 2010-12-12 16:36:11 +0000 (Sun, 12 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/examples/test.c
+   M /trunk/src/potential.c
+   M /trunk/src/runner.c
+   M /trunk/src/spu/Makefile
+   M /trunk/src/spu/runner_spu.c
+
+made potentials linear where r < a.
+------------------------------------------------------------------------
+r37 | gonnet | 2010-12-12 12:22:25 +0000 (Sun, 12 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/src/Makefile.am
+   M /trunk/src/Makefile_cell.in
+
+fixed some bugs in the make process regarding the cell/be version.
+------------------------------------------------------------------------
+r36 | gonnet | 2010-12-12 00:27:00 +0000 (Sun, 12 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/src/Makefile.am
+   D /trunk/src/Makefile.cell
+   A /trunk/src/Makefile_cell.in
+
+minor fixes.
+------------------------------------------------------------------------
+r35 | gonnet | 2010-12-12 00:20:09 +0000 (Sun, 12 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   A /trunk/src/Makefile.cell
+   M /trunk/src/btree.c
+   M /trunk/src/runner.c
+   M /trunk/src/spu/Makefile
+
+hacked src/Makefile.am to call Makefile.cell to build the cell/be version of the library.
+------------------------------------------------------------------------
+r34 | gonnet | 2010-12-11 22:58:27 +0000 (Sat, 11 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/src/Makefile.am
+   M /trunk/src/spu/Makefile
+
+fixed-up some issues with the makefiles.
+------------------------------------------------------------------------
+r33 | gonnet | 2010-12-11 22:37:44 +0000 (Sat, 11 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+   M /trunk/configure.in
+   M /trunk/examples/Makefile.am
+   M /trunk/src/Makefile.am
+   M /trunk/src/spu/Makefile
+   A /trunk/src/spu/Makefile.in
+   M /trunk/src/spu/runner_spu.c
+
+serious re-working of configure process, generation of two libraries -- one for single and one for double precision, fixed-up some of the Cell/BE stuff.
+------------------------------------------------------------------------
+r32 | gonnet | 2010-12-11 17:36:15 +0000 (Sat, 11 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+made the distinction between cell/tuples/pairs clearer.
+------------------------------------------------------------------------
+r31 | gonnet | 2010-12-11 17:14:00 +0000 (Sat, 11 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+
+removed some old variables that are no longer used.
+------------------------------------------------------------------------
+r30 | gonnet | 2010-12-10 17:56:18 +0000 (Fri, 10 Dec 2010) | 2 lines
+Changed paths:
+   A /trunk/src/spu
+   A /trunk/src/spu/Makefile
+   A /trunk/src/spu/runner_spu.c
+
+added SPU code, still need to find a way to activate this through the configure script.
+
+------------------------------------------------------------------------
+r29 | gonnet | 2010-12-10 17:51:18 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/examples/test.c
+
+added new error reporting mechanism, removed old variables.
+------------------------------------------------------------------------
+r28 | gonnet | 2010-12-10 17:47:18 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+
+updated TODO-list.
+------------------------------------------------------------------------
+r27 | gonnet | 2010-12-10 17:43:27 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile.am
+   M /trunk/examples/test.c
+
+made SHAKEing of water molecules parallel with OpenMP.
+------------------------------------------------------------------------
+r26 | gonnet | 2010-12-10 17:31:48 +0000 (Fri, 10 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/cell.c
+   M /trunk/src/cell.h
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added more elaborate error reporting and SSE-enabled vectorized potential evaluation.
+------------------------------------------------------------------------
+r25 | gonnet | 2010-12-09 16:30:01 +0000 (Thu, 09 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/examples/test.c
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/space.c
+
+added functions to register particle types and potentials.
+------------------------------------------------------------------------
+r24 | gonnet | 2010-12-09 16:29:38 +0000 (Thu, 09 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/TODO.txt
+
+updated TODO list.
+------------------------------------------------------------------------
+r23 | gonnet | 2010-12-09 15:13:04 +0000 (Thu, 09 Dec 2010) | 1 line
+Changed paths:
+   M /trunk/examples/Makefile.am
+   A /trunk/examples/btree_test.c
+   M /trunk/examples/test.c
+
+added specific btree testing program.
+------------------------------------------------------------------------
+r22 | gonnet | 2010-12-09 15:12:36 +0000 (Thu, 09 Dec 2010) | 2 lines
+Changed paths:
+   M /trunk/src/Makefile.am
+   A /trunk/src/btree.c
+   A /trunk/src/btree.h
+   A /trunk/src/errs.c
+   A /trunk/src/errs.h
+   M /trunk/src/part.c
+   M /trunk/src/part.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added btree for mapping virtual to local ids and errs for better error reporting.
+
+------------------------------------------------------------------------
+r21 | gonnet | 2010-12-03 10:24:27 +0000 (Fri, 03 Dec 2010) | 1 line
+Changed paths:
+   A /trunk/TODO.txt
+
+added TODO.txt listing some problems that need solving.
+------------------------------------------------------------------------
+r20 | gonnet | 2010-11-26 16:32:36 +0000 (Fri, 26 Nov 2010) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+fixed signaling bug that made space_gettuple hang.
+------------------------------------------------------------------------
+r19 | gonnet | 2010-10-07 10:37:24 +0100 (Thu, 07 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/src/Makefile.am
+
+added checks for CUDA and CELL to configure.in
+------------------------------------------------------------------------
+r18 | gonnet | 2010-10-06 10:24:43 +0100 (Wed, 06 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/autogen.sh
+
+make hard copies instead of symbolic links.
+------------------------------------------------------------------------
+r17 | gonnet | 2010-10-04 13:11:18 +0100 (Mon, 04 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/autogen.sh
+
+remove unused local directory.
+------------------------------------------------------------------------
+r16 | gonnet | 2010-10-01 13:47:36 +0100 (Fri, 01 Oct 2010) | 1 line
+Changed paths:
+   A /trunk/ChangeLog
+
+forgot to add ChangeLog.
+------------------------------------------------------------------------
+r15 | gonnet | 2010-10-01 13:03:54 +0100 (Fri, 01 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+   M /trunk/doc/Doxyfile
+   A /trunk/examples/Makefile.am
+   A /trunk/examples/cycle.h
+   M /trunk/examples/test.c
+   A /trunk/ltmain.sh
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/space.c
+
+added flags to the engine to specify behaviour (instead of defines).
+------------------------------------------------------------------------
+r14 | gonnet | 2010-10-01 11:56:48 +0100 (Fri, 01 Oct 2010) | 1 line
+Changed paths:
+   M /trunk/src/Makefile.am
+
+added SIMD_FLAGS.
+------------------------------------------------------------------------
+r13 | gonnet | 2010-09-29 09:53:45 +0100 (Wed, 29 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+
+forgot one call.
+------------------------------------------------------------------------
+r12 | gonnet | 2010-09-29 09:51:48 +0100 (Wed, 29 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+
+removed runner queues and engine_getpairs -- tuples are much better.
+------------------------------------------------------------------------
+r11 | gonnet | 2010-09-28 12:49:31 +0100 (Tue, 28 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+added runner_run_tuples and space_gettuple. engine should use flags to determine which runner to start.
+------------------------------------------------------------------------
+r10 | gonnet | 2010-09-28 09:31:36 +0100 (Tue, 28 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+cleaned-up output from space_maketuples.
+------------------------------------------------------------------------
+r9 | gonnet | 2010-09-28 07:33:46 +0100 (Tue, 28 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/src/space.c
+
+fixed space_maketuples.
+------------------------------------------------------------------------
+r8 | gonnet | 2010-09-27 15:08:39 +0100 (Mon, 27 Sep 2010) | 2 lines
+Changed paths:
+   M /trunk/src/Makefile.am
+   M /trunk/src/engine.c
+   M /trunk/src/engine.h
+   A /trunk/src/fptype.h
+   M /trunk/src/part.c
+   M /trunk/src/part.h
+   M /trunk/src/potential.c
+   M /trunk/src/potential.h
+   M /trunk/src/runner.c
+   M /trunk/src/runner.h
+   M /trunk/src/space.c
+   M /trunk/src/space.h
+
+updated comments, added tuples (not working yet), minor fixes.
+
+------------------------------------------------------------------------
+r7 | gonnet | 2010-09-23 15:31:05 +0100 (Thu, 23 Sep 2010) | 1 line
+Changed paths:
+   M /trunk/configure.in
+
+added test for pthreads.
+------------------------------------------------------------------------
+r6 | gonnet | 2010-09-23 14:25:44 +0100 (Thu, 23 Sep 2010) | 2 lines
+Changed paths:
+   A /trunk/examples/test.c
+
+added test.c.
+
+------------------------------------------------------------------------
+r5 | gonnet | 2010-09-23 14:24:21 +0100 (Thu, 23 Sep 2010) | 1 line
+Changed paths:
+   A /trunk/AUTHORS
+   A /trunk/COPYING
+   A /trunk/INSTALL
+   A /trunk/NEWS
+   A /trunk/README
+
+adding information files.
+------------------------------------------------------------------------
+r4 | gonnet | 2010-09-23 14:17:27 +0100 (Thu, 23 Sep 2010) | 2 lines
+Changed paths:
+   A /trunk/src/Makefile.am
+   A /trunk/src/cell.c
+   A /trunk/src/cell.h
+   A /trunk/src/engine.c
+   A /trunk/src/engine.h
+   A /trunk/src/part.c
+   A /trunk/src/part.h
+   A /trunk/src/potential.c
+   A /trunk/src/potential.h
+   A /trunk/src/runner.c
+   A /trunk/src/runner.h
+   A /trunk/src/space.c
+   A /trunk/src/space.h
+
+add files (still need to fix comments and add doxygen stuff).
+
+------------------------------------------------------------------------
+r3 | gonnet | 2010-09-23 13:51:47 +0100 (Thu, 23 Sep 2010) | 2 lines
+Changed paths:
+   A /trunk/Makefile.am
+   A /trunk/autogen.sh
+   A /trunk/configure.in
+   A /trunk/doc/Makefile.in
+
+added more files.
+
+------------------------------------------------------------------------
+r2 | gonnet | 2010-09-23 13:47:44 +0100 (Thu, 23 Sep 2010) | 2 lines
+Changed paths:
+   A /trunk/doc
+   A /trunk/doc/Doxyfile
+   A /trunk/examples
+   A /trunk/src
+
+added basic directory structure.
+
+------------------------------------------------------------------------
+r1 | gonnet | 2010-09-23 13:43:58 +0100 (Thu, 23 Sep 2010) | 2 lines
+Changed paths:
+   A /trunk
+
+added main trunk.
+
+------------------------------------------------------------------------

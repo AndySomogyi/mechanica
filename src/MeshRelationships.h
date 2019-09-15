@@ -46,6 +46,9 @@ inline bool incidentVertexPolygon(CVertexPtr v, CPolygonPtr tri) {
     return incidentPolygonVertex(tri, v);
 }
 
+/**
+ * Is an edge connected to a given vertex?
+ */
 bool connectedEdgeVertex(CEdgePtr edge, CVertexPtr v);
 
 
@@ -143,24 +146,42 @@ HRESULT disconnectEdgeVertexFromPolygons(EdgePtr e, CVertexPtr v);
  *
  * in the polygon, e[i-1] remains in the same position, but the edge at e[i+1] gets
  * moved down to the e[i] position. The new vertex newVert gets stored in the
- * v[i] position. The caller is responsible for connecting
+ * v[i] position. The caller is responsible for connecting the edge and vertex pointers.
  */
 HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
         VertexPtr newVert, EdgePtr *prevEdge, EdgePtr *nextEdge);
 
 
 /**
- * Inserts a vertex and edge into a polygon after the reference edge location.
+ * Removes a vertex from a polygon, and replaces it with an edge and two vertices.
+ *
+ * Need to respect polygon winding, and insert the vertices in the correct order, so we
+ * have to provide the next and prev edges where the vertices will get inserted into. This
+ * is why we also pass in the two vertices in this polygon, before and after the vertex,
+ * so that the new vertices will get inserted in the correct order. So, if originally, we have:
+ *
+ * e0:v:e1 -> e0:v0:edge:v1:e1
+ *
+ * Index wise, we have if e0 is before e1, i.e if index of e0 is i, we have:
+ * e0[i]:v[i]:e1[i+1] -> e0[i]:v0[i]:edge[i+1]:v1[i+1]:e1[i+2]
+ *
+ * And if e1 is before e0: i.e if index of e1 is i, we have:
+ * e1[i]:v[i]:e0[i+1] -> e1[i]:v1[i]:edge[i+1]:v0[i+1]:e0[i+2]
  *
  *
+ * @param vert: the original vertex that will be removed from the polygon vertex list
+ * @param edge: the new edge that will get added to the polygons edge list.
+ * @param v0: the first new vertex, replaces vert in the vertex list with v0
+ * @param v1: the second vertex, gets inserted into the vertex list at the i+1 position.
  */
-//HRESULT insertPolygonVertexAndEdge(PolygonPtr poly, EdgePtr edge,
-//        VertexPtr newVert, EdgePtr *prevEdge, EdgePtr *nextEdge);
+HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert,
+        CEdgePtr e0, CEdgePtr e1,  EdgePtr edge, VertexPtr v0, VertexPtr v1);
+
+
 
 
 HRESULT getPolygonAdjacentEdges(CPolygonPtr poly, CEdgePtr edge, EdgePtr *prevEdge,
         EdgePtr *nextEdge);
-
 
 
 /**

@@ -1,0 +1,26 @@
+
+# Target
+PROGRAM_ppu64 = test_cell
+
+# Objects
+OBJS = ppu64_test.o 
+
+# Rules to make the ppu64-files
+ppu64_%.c: %.c
+	cp $< $@
+
+# Local Defines
+IMPORTS = ../src/.libs/libmdcore_cell.a ../src/spu/librunner_spu.a -lspe2 -lm -lmisc
+LDFLAGS = -L/opt/cell/sdk/src/lib/misc/ppu64 -g -Wl,-q
+
+# Compiler flags and defines
+CC_OPT_LEVEL := -O3
+CFLAGS := -g  -Wall -Wl,-q -std=gnu99 -fno-strict-aliasing
+CFLAGS := $(CFLAGS) -I../src
+CFLAGS := $(CFLAGS) -DCELL -DFPTYPE_SINGLE -DCPU_TPS=7.98e7 -DENGINE_FLAGS="engine_flag_tuples"
+
+# Rules for the object files
+
+# Footer
+CELL_TOP = @CELLTOP@/sdk
+include $(CELL_TOP)/buildutils/make.footer

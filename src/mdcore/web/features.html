@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>mdcore</title>
+<meta name="generator" content="Bluefish 1.0.7">
+<meta name="author" content="Pedro Gonnet">
+<meta name="date" content="2010-12-16T18:07:44+0000">
+<meta name="copyright" content="Pedro Gonnet">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+<meta http-equiv="content-style-type" content="text/css">
+<style type="text/css">
+	body {font-family: courier, monospace;}
+</style>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25391540-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</head>
+
+<body>
+<center>
+<table cellpadding="5" cellspacing="2" border="0" valign="top" width="700">
+	<tr><td colspan="2"><span style="font-size: 48px; font-weight: bold;">mdcore</span></td></tr>
+	<tr>
+		<td width="20%" valign="top">
+			<p/>
+			<a href="index.html">About</a><br/>
+			Features<br/>
+			<a href="download.html">Download</a><br/>
+			<a href="publications.html">Publications</a><br/>
+			<a href="documentation.html">Documentation</a><br/>
+			<a href="tutorial.html">Tutorial</a><br/>
+            <p><a href="http://sourceforge.net/projects/mdcore"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=354770&amp;type=10" width="80" height="15" alt="Get mdcore at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>
+		</td>
+		<td valign="top">
+			<p>The following is a list of some of the most important features
+                of mdcore, in no particular order:</p>
+			<ul>
+				<li/><p><b>Arbitrary potential functions</b>: The inter-particle
+                    potentials are evaluated using smooth piecewise polynomial
+                    interpolants which can be constructed from any user-supplied
+                    interaction function.</p>
+				<li/><p><b>Pairwise Verlet lists</b>: Per-cell pair Verlet lists
+                    can be used to speed up low-density simulations without
+                    affecting parallel performance.</p>
+                <li/><p><b>POSIX pthreads</b>: All multi-threading is implemented
+                    using the standard pthreads routines which should be available
+                    on any POSIX-compliant system.</p>
+                <li/><p><b>Distributed-memory parallelism</b>: Basic
+                    distributed-memory parallelism is implemented with
+                    asynchronous MPI routines.</p>
+                <li/><p><b>Support for the Cell/BE</b>: When configured with the
+                    "--with-cell" option, the library can compute non-bonded
+                    interactions on the SPUs as well as on the PPU.</p>
+                <li/><p><b>Support for CUDA GPUs</b>: When configured with the
+                    "--with-cuda" option, the library can compute non-bonded
+                    interactions on a CUDA-capable GPU.</p>
+                <li/><p><b>Support for SSE/SSE2</b>: When available, the interaction
+                    routines are compiled using SSE (single-precision) or SSE2
+                    (double-precision) vectorized instructions.</p>
+			</ul>
+		</td>
+	</tr>
+</table>
+</center>
+
+<!-- Piwik -->
+<script type="text/javascript">
+var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/mdcore/" : "http://sourceforge.net/apps/piwik/mdcore/");
+document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script type="text/javascript">
+try {
+var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
+piwikTracker.trackPageView();
+piwikTracker.enableLinkTracking();
+} catch( err ) {}
+</script><noscript><p><img src="http://sourceforge.net/apps/piwik/mdcore/piwik.php?idsite=1" style="border:0" alt=""/></p></noscript>
+<!-- End Piwik Tag -->
+
+</body>
+</html>

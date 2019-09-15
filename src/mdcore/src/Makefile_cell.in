@@ -1,0 +1,26 @@
+
+# Where to look for more...
+DIRS := spu
+
+# Target
+LIBRARY_ppu64 = libmdcore_cell.a
+
+# Objects
+OBJS = ppu64_part.o ppu64_cell.o ppu64_space.o ppu64_potential.o ppu64_engine.o ppu64_runner.o ppu64_btree.o ppu64_errs.o
+
+# Rules to make the ppu64-files
+ppu64_%.c: %.c
+	cp $< $@
+
+# Local Defines
+IMPORTS = spu/librunner_spu.a -lspe2 -lm -lmisc
+LDFLAGS = -L/opt/cell/sdk/src/lib/misc/ppu64 -g -Wl,-q
+
+# Compiler flags and defines
+CC_OPT_LEVEL := -O3
+CFLAGS := -g -std=gnu99 -DCELL -DFPTYPE_SINGLE -fno-strict-aliasing
+
+# Footer
+CELL_TOP = @CELLTOP@/sdk
+include $(CELL_TOP)/buildutils/make.footer
+

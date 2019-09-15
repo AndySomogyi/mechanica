@@ -1,0 +1,73 @@
+
+Things that need to be done, in no particular order:
+
+
+Things to do with useability:
+
+* 2010/12/14: Find a way to set OMP_WAIT_POLICY=PASSIVE in test.c.
+* 2011/01/03: Add functions to set the engine time and dt in a more elegant way.
+* 2011/01/03: Add a function engine_map to call a function on each particle.
+
+
+Things to do with documentaiton:
+
+* 2011/01/04: Try to somehow make bulk text on doxygen.
+* 2011/01/04: Add a long description for each structure detailing what it does,
+              how it should be created and how it should be used.
+* 2011/02/03: Write-up a tutorial based on examples/bulk.c.
+* 2011/03/07: Go through each file and update the function headers, make more
+              verbose/explicit with details of what is being done exactly and
+              how to call, especially for external function!
+* 2011/03/07: Make doxygen headers for runner_spu.c, make sure it's in the
+              documentation path.
+* 2011/11/22: Add a README-file for each example.
+* 2011/11/22: Make comments in examples much more extensive.
+
+
+Things to do with functionality:
+
+* 2010/12/03: Use B-Tree to map particle vids to the actual particle data
+              inside the engine.
+* 2010/12/22: Add one-sided potentials for grid point pseudo-particles.
+* 2010/12/22: Add explicit electrostatics to the SPU code.
+* 2011/01/17: Add potential functions using automatic vectorization for gcc,
+              check if this is significantly slower than using SSE/SSE2
+              intrinsics directly.
+* 2011/02/21: Use Metis to approximate the optimal tuples.
+* 2011/03/07: Add a way of passing engine flags to the SPU, use it to
+              pass an option potential_eval_vec or potential_eval_vec2.
+              
+              
+Things to do with the configuration/compilation process:
+
+* 2011/03/07: AX_EXT only works for x86 CPUs.
+* 2011/03/07: Add a check for "make".
+* 2011/03/07: Different versions of spu-gcc and ppu-gcc don't allow
+              array-like access of vector types.
+
+             
+Things to do with testing:
+              
+* 2011/01/17: Test explicit electrostatics.
+* 2011/02/27: Test if the engine_flag_prefetch actually does any good.
+* 2011/03/07: Test AltiVec version of potential_eval_vec_4single.
+
+
+Things to do with speed:
+
+* 2010/12/14: Write-back force of outer-loop particle only at the end
+              of the outer loop?
+* 2011/01/03: Use FMA when available (SSE4?).
+* 2011/01/17: Use sorting networks to improve sorted interactions?
+* 2011/01/24: Use integer sorting for the sorted interactions in runner_spu.
+* 2011/02/04: More refined use of __builtin_prefetch on cell particle lists?
+* 2011/11/21: Check for sum of fastest and second fastest instead of twice
+              fastest on engine_verlet_update (how do we do this with MPI?).
+
+
+Things to do with hybrid parallel simulation:
+
+* 2011/03/28: Make sure particles in ghost cells are not moved.
+* 2011/03/28: Somehow assign ghost layers.
+
+
