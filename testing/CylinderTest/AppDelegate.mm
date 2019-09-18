@@ -391,6 +391,19 @@ void testIndexOf() {
     meshTest->draw();
 }
 
+-(IBAction)edgeToPolygonFlip:(id)sender {
+    HRESULT result = meshTest->model->edgeToPolygonFlipSelecgtedEdge();
+    meshTest->draw();
+    
+    if(SUCCEEDED(result)) {
+        std::cout << "successfully flipped edge" << std::endl;
+    }
+    else {
+        std::cout << "failed to flip edge" << std::endl;
+    }
+    
+}
+
 
 
 

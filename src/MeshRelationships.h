@@ -168,6 +168,9 @@ HRESULT replacePolygonEdgeAndVerticesWithVertex(PolygonPtr poly, EdgePtr edge,
  * And if e1 is before e0: i.e if index of e1 is i, we have:
  * e1[i]:v[i]:e0[i+1] -> e1[i]:v1[i]:edge[i+1]:v0[i+1]:e0[i+2]
  *
+ * Also updates the e0 and e1 edges to point to the new vertices v0 and v1, so that
+ * these edges no longer reference the old vert vertex that was removed.
+ *
  *
  * @param vert: the original vertex that will be removed from the polygon vertex list
  * @param edge: the new edge that will get added to the polygons edge list.

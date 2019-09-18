@@ -94,6 +94,7 @@ void CylinderModel::loadAssImpModel() {
     //const char* fileName = "football.t1.obj";
     //const char* fileName = "football.t1.obj";
     const char* fileName = "hex30.obj";
+    //const char* fileName = "hex4.obj";
 
     mesh = MxMesh_FromFile((dirName + "/" + fileName).c_str(), 1.0, &meshObjectTypeHandler);
     
@@ -113,7 +114,7 @@ void CylinderModel::loadAssImpModel() {
 
     propagator->bindForce(&growingPolygonForce, &growingPolygonType);
 
-    mesh->selectObject(MxPolygon_Type, 367);
+    mesh->selectObject(MxEdge_Type, 30);
 
     CellPtr cell = mesh->cells[1];
 
@@ -316,4 +317,16 @@ float CylinderModel::growSurfaceTensionMin()
 float CylinderModel::growSurfaceTensionMax()
 {
     return 5 * growingPolygonForce.surfaceTension;
+}
+
+HRESULT CylinderModel::edgeToPolygonFlipSelecgtedEdge() {
+    
+    MxObject *obj = mesh->selectedObject();
+    if(obj && dyn_cast<MxEdge>(obj)) {
+        
+        PolygonPtr newPoly = nullptr;
+        return Mx_FlipEdgeToTriangle(mesh, EdgePtr(obj), &newPoly);
+    }
+    
+    return mx_error(E_FAIL, "no selected object, or selected object is not a edge");
 }

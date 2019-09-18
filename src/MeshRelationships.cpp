@@ -411,5 +411,89 @@ HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr newEdge, EdgePtr refEdge)
 
 HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert,
         CEdgePtr e0, CEdgePtr e1,  EdgePtr edge, VertexPtr v0, VertexPtr v1) {
-    return E_NOTIMPL;
+    int e0Index = poly->edgeIndex(e0);
+    int e1Index = poly->edgeIndex(e1);
+
+    std::cout << MX_FUNCTION << std::endl;
+    std::cout << "poly: " << poly << std::endl;
+    std::cout << "vert: " << vert << std::endl;
+    std::cout << "e0: " << e0 << std::endl;
+    std::cout << "e1: " << e1 << std::endl;
+    std::cout << "edge: " << edge << std::endl;
+    std::cout << "v0: " << v0 << std::endl;
+    std::cout << "v1: " << v1 << std::endl;
+
+    if(e0Index < 0 || e1Index < 0) {
+        return mx_error(E_FAIL, "edges do not belong to polygon");
+    }
+
+    int vIndex = poly->vertexIndex(vert);
+    if(vIndex < 0) {
+        return mx_error(E_FAIL, "vertex does not belong to polygon");
+    }
+
+    if(!connectedEdgeVertex(e0, vert)) {
+        return mx_error(E_FAIL, "edge e0 is not connected to original vertex");
+    }
+
+    if(!connectedEdgeVertex(e1, vert)) {
+        return mx_error(E_FAIL, "edge e1 is not connected to original vertex");
+    }
+
+    if(e0Index < e1Index) {
+        // Index wise, we have if e0 is before e1, i.e if index of e0 is i, we have:
+        // e0[i]:v[i]:e1[i+1] -> e0[i]:v0[i]:edge[i+1]:v1[i+1]:e1[i+2]
+
+        poly->vertices[vIndex] = v0;
+        std::vector<VertexPtr>::iterator vi = poly->vertices.begin() + vIndex;
+        if(vi != poly->vertices.end()) {
+            vi++;
+        }
+        poly->vertices.insert(vi, v1);
+
+        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e0Index;
+        if(ei != poly->edges.end()) {
+            ei++;
+        }
+        poly->edges.insert(ei, edge);
+
+        poly->_vertexNormals.insert(poly->_vertexNormals.begin() + vIndex, Vector3{});
+        poly->_vertexAreas.insert(poly->_vertexAreas.begin() + vIndex, 0);
+
+        std::cout << "poly after insert: " << poly << std::endl;
+        assert(poly->edgeIndex(edge) == e0Index + 1);
+        assert(poly->vertexIndex(v0) == vIndex);
+        assert(poly->vertexIndex(v1) == vIndex + 1);
+
+        return S_OK;
+    }
+    else {
+        // Index wise, we have if e1  before e0, i.e if index of e1 is i, we have:
+        // e1[i]:v[i]:e0[i+1] -> e1[i]:v0[i]:edge[i+1]:v1[i+1]:e0[i+2]
+
+        poly->vertices[vIndex] = v1;
+        std::vector<VertexPtr>::iterator vi = poly->vertices.begin() + vIndex;
+        if(vi != poly->vertices.end()) {
+            vi++;
+        }
+        poly->vertices.insert(vi, v0);
+
+        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e1Index;
+        if(ei != poly->edges.end()) {
+            ei++;
+        }
+        poly->edges.insert(ei, edge);
+
+        poly->_vertexNormals.insert(poly->_vertexNormals.begin() + vIndex, Vector3{});
+        poly->_vertexAreas.insert(poly->_vertexAreas.begin() + vIndex, 0);
+
+        std::cout << "poly after insert: " << poly << std::endl;
+        assert(poly->edgeIndex(edge) == e1Index + 1);
+        assert(poly->vertexIndex(v1) == vIndex);
+        assert(poly->vertexIndex(v0) == vIndex + 1);
+        return S_OK;
+    }
+
+
+    return E_FAIL;
 }

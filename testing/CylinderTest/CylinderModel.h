@@ -58,6 +58,8 @@ struct CylinderModel : public MxModel {
     HRESULT changePolygonTypes();
 
     HRESULT activateAreaConstraint();
+    
+    HRESULT edgeToPolygonFlipSelecgtedEdge();
 
     /**
       * The state vector is a vector of elements that are defined by

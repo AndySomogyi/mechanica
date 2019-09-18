@@ -113,8 +113,8 @@ struct MxPolygonType : MxType {
     MxPolygonType(const char* name, MxType *base) : MxType{name, base} {};
 
 
-    Magnum::Color4 edgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 1.f}};
-    Magnum::Color4 centerColor = Magnum::Color4{{73.f/255, 169.f/255, 163.f/255, 1.f}};
+    Magnum::Color4 edgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 0.1f}};
+    Magnum::Color4 centerColor = Magnum::Color4{{73.f/255, 169.f/255, 163.f/255, 0.1f}};
 };
 
 
@@ -326,6 +326,9 @@ private:
             Vector3* normal, PolygonPtr* pn1, PolygonPtr* pn2);
 
     friend HRESULT splitPolygonEdge(PolygonPtr poly, EdgePtr e, EdgePtr en);
+
+    friend HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert,
+            CEdgePtr e0, CEdgePtr e1,  EdgePtr edge, VertexPtr v0, VertexPtr v1);
 
 };
 

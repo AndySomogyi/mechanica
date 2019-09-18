@@ -6,6 +6,7 @@
  */
 
 #include "MeshOperations.h"
+#include "MxDebug.h"
 
 #define __fastcall
 #include "DirectXMath.h"
@@ -16,6 +17,15 @@ bool Mx_IsTriangleToEdgeConfiguration(CEdgePtr edge) {
     return false;
 }
 
+
+/**
+ * determine if the edge is a valid edge to triangle flip candidate.
+ *
+ * edgeCells[3]: enumerate the cells around the edge.
+ * poly_2 : cell_0 : poly_0
+ * poly_0 : cell_1 : poly_1
+ * poly_1 : cell_2 : poly_2
+ */
 static bool isEdgeToTriangleConfiguration(CEdgePtr edge, CellPtr *edgeCells, CellPtr *endCells) {
 
     // make sure we have 2 vertices and 3 polys
@@ -49,8 +59,8 @@ static bool isEdgeToTriangleConfiguration(CEdgePtr edge, CellPtr *edgeCells, Cel
     for(uint i = 0; i < 3; ++i) {
         CPolygonPtr poly = edge->polygons[i];
         int edgeIndex = poly->edgeIndex(edge);
-        int prevIndex = mod(edgeIndex-1, poly->edges.size());
-        int nextIndex = mod(edgeIndex+1, poly->edges.size());
+        int prevIndex = loopIndex(edgeIndex-1, poly->edges.size());
+        int nextIndex = loopIndex(edgeIndex+1, poly->edges.size());
 
         CEdgePtr e = poly->edges[prevIndex];
         for(uint j = 0; j < e->polygonCount(); ++j) {
@@ -111,9 +121,16 @@ static bool isEdgeToTriangleConfiguration(CEdgePtr edge, CellPtr *edgeCells, Cel
     CellPtr cell1 = *cells1.begin();
     
     if(edgeCells) {
-        int i = 0;
-        for(CellPtr c : cells) {
-            edgeCells[i++] = c;
+        for(int i = 0; i < 3; ++i) {
+            PolygonPtr p = edge->polygons[i];
+            PolygonPtr pp = edge->polygons[loopIndex(i+1, 3)];
+            if(connectedPolygonCellPointers(p, pp->cells[0])) {
+                edgeCells[i] = pp->cells[0];
+            }
+            else {
+                assert(connectedPolygonCellPointers(p, pp->cells[1]));
+                edgeCells[i] = pp->cells[1];
+            }
         }
     }
     
@@ -135,234 +152,18 @@ HRESULT Mx_FlipTriangleToEdge(MeshPtr mesh, PolygonPtr poly, EdgePtr* edge)
 }
 
 
-/**
- * Really similar to a T1 flip in a surface, but generalized to a flip
- * in 3D where the edge, polys are one corner of a cell
- *
- * There are three cells around the edge, and cell is one of them.
- *
- *
- * Looking at the edge, from the side, from inside the given cell, we label the
- * polygons as:
- *
- *  \        /
- *   \  p1  /
- *    \    /
- *     \  /
- *      \/
- *      |
- *      |
- * p4   |   p2
- *      |
- *      |
- *     / \
- *    /   \
- *   /     \
- *  /   p3  \
- * /         \
- *
- *
- * @param cell: the cell corner that this acts on, cell is incident to edge.
- */
-static HRESULT flipEdgeForCellCorner(MeshPtr mesh, CellPtr cell, EdgePtr edge) {
-
-    std::cout << "applyT1Edge2Transition(edge=" << edge << ")" << std::endl;
-
-    if(edge->polygonCount() != 3) {
-        return mx_error(E_FAIL, "edge polygon count must be 3");
-    }
-
-    if(edge->polygons[0]->size() <= 3 || edge->polygons[1]->size() <= 3) {
-        return mx_error(E_FAIL, "can't collapse edge that's connected to polygons with less than 3 sides");
-
-    }
-
-    PolygonPtr p1 = nullptr, p2 = nullptr, p3 = nullptr, p4 = nullptr;
-
-    // top and bottom vertices
-    VertexPtr v1 = edge->vertices[0];
-    VertexPtr v2 = edge->vertices[1];
-
-    // find polygon indices for pair of polygons that belong to the given cell
-    int polyIndex[2] = {-1, -1};
-    if(connectedPolygonCellPointers(edge->polygons[0], cell) &&
-            connectedPolygonCellPointers(edge->polygons[1], cell)) {
-        polyIndex[0] = 0;
-        polyIndex[1] = 1;
-    }
-    else if(connectedPolygonCellPointers(edge->polygons[1], cell) &&
-            connectedPolygonCellPointers(edge->polygons[2], cell)) {
-        polyIndex[0] = 1;
-        polyIndex[1] = 2;
-    }
-    else if(connectedPolygonCellPointers(edge->polygons[2], cell) &&
-            connectedPolygonCellPointers(edge->polygons[0], cell)) {
-        polyIndex[0] = 2;
-        polyIndex[1] = 0;
-    }
-    else {
-        assert("edge is not connected to cell" && 0);
-    }
-
-
-    // identify the two side polygons as p4 on the left, and p2 on the right, check
-    // vertex winding. Choose p2 to have v2 after v1, and p4 to have v1 after v2
-    {
-        // TODO use next vert instead of looking at all vertices.
-        int v1Index_0 = edge->polygons[polyIndex[0]]->vertexIndex(v1);
-        int v2Index_0 = edge->polygons[polyIndex[0]]->vertexIndex(v2);
-
-#ifndef NDEBUG
-        int v1Index_1 = edge->polygons[polyIndex[1]]->vertexIndex(v1);
-        int v2Index_1 = edge->polygons[polyIndex[1]]->vertexIndex(v2);
-        assert(v1Index_0 >= 0 && v2Index_0 >= 0 && v1Index_0 != v2Index_0);
-#endif
-
-        if(((v1Index_0 + 1) % edge->polygons[0]->size()) == v2Index_0) {
-            // found p2 CCW
-            p2 = edge->polygons[polyIndex[0]];
-            p4 = edge->polygons[polyIndex[1]];
-            assert((v2Index_1 + 1) % edge->polygons[1]->size() == v1Index_1);
-        }
-        else {
-            // found p4
-            p4 = edge->polygons[polyIndex[0]];
-            p2 = edge->polygons[polyIndex[1]];
-            assert((v1Index_1 + 1) % edge->polygons[1]->size() == v2Index_1);
-        }
-    }
-
-    assert(p4 && p2);
-
-    EdgePtr e1 = nullptr, e2 = nullptr, e3 = nullptr, e4 = nullptr;
-
-
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    std::cout << "disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2)" << std::endl;
-    VERIFY(disconnectPolygonEdgeVertex(p2, edge, v1, &e1, &e2));
-
-
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    std::cout << "disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4)" << std::endl;
-    VERIFY(disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4));
-
-    //assert(edge->polygonCount() == 1);
-
-    std::cout << "e1:" << e1 << std::endl;
-    std::cout << "e2:" << e2 << std::endl;
-    std::cout << "e3:" << e3 << std::endl;
-    std::cout << "e4:" << e4 << std::endl;
-
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    assert(connectedEdgeVertex(e1, v1));
-    assert(connectedEdgeVertex(e2, v2));
-    assert(connectedEdgeVertex(e3, v2));
-    assert(connectedEdgeVertex(e4, v1));
-
-    for(PolygonPtr p : e1->polygons) {
-        if(contains(p->edges, e4)) {
-            p1 = p;
-            break;
-        }
-    }
-
-    for(PolygonPtr p : e2->polygons) {
-        if(contains(p->edges, e3)) {
-            p3 = p;
-            break;
-        }
-    }
-
-    assert(p1 && p3);
-    assert(p1 != p2 && p1 != p3 && p1 != p4);
-    assert(p2 != p1 && p2 != p3 && p2 != p4);
-    assert(p3 != p1 && p3 != p2 && p3 != p4);
-    assert(p4 != p1 && p4 != p2 && p1 != p3);
-
-    // original edge vector.
-    Vector3 edgeVec = v1->position - v2->position;
-    float halfLen = edgeVec.length() / 2;
-
-    // center position of the polygons that will get a new edge connecting them.
-    Vector3 centroid = (p2->centroid + p4->centroid) / 2;
-
-    v2->position = centroid + (p2->centroid - centroid).normalized() * halfLen;
-    v1->position = centroid + (p4->centroid - centroid).normalized() * halfLen;
-
-    std::cout << "poly p1: " << p1 << std::endl;
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p3: " << p3 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    std::cout << "insertPolygonEdge(p1, edge)" << std::endl;
-    VERIFY(insertPolygonEdge(p1, edge));
-
-    std::cout << "poly p1: " << p1 << std::endl;
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p3: " << p3 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    std::cout << "insertPolygonEdge(p3, edge)" << std::endl;
-    VERIFY(insertPolygonEdge(p3, edge));
-
-    std::cout << "poly p1: " << p1 << std::endl;
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p3: " << p3 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    assert(connectedEdgeVertex(e1, v1));
-    assert(connectedEdgeVertex(e2, v2));
-    assert(connectedEdgeVertex(e3, v2));
-    assert(connectedEdgeVertex(e4, v1));
-
-    std::cout << "reconnecting edge vertices..." << std::endl;
-
-    // reconnect the two diagonal edges, the other two edges, e2 and e4 stay
-    // connected to their same vertices.
-    VERIFY(reconnectEdgeVertex(e1, v2, v1));
-    VERIFY(reconnectEdgeVertex(e3, v1, v2));
-
-    std::cout << "poly p1: " << p1 << std::endl;
-    std::cout << "poly p2: " << p2 << std::endl;
-    std::cout << "poly p3: " << p3 << std::endl;
-    std::cout << "poly p4: " << p4 << std::endl;
-
-    assert(p1->size() >= 0);
-    assert(p2->size() >= 0);
-    assert(p3->size() >= 0);
-    assert(p4->size() >= 0);
-
-    assert(p1->checkEdges());
-    assert(p2->checkEdges());
-    assert(p3->checkEdges());
-    assert(p4->checkEdges());
-
-    for(CellPtr cell : mesh->cells) {
-        cell->topologyChanged();
-    }
-
-    mesh->setPositions(0, 0);
-
-    VERIFY(mesh->positionsChanged());
-
-    return S_OK;
-}
-
 static HRESULT findUpperAndLowerEdgesForPolygon(CEdgePtr e, CPolygonPtr poly, EdgePtr *e0, EdgePtr *e1) {
     int edgeIndex = poly->edgeIndex(e);
 
     if(edgeIndex < 0) {
         return mx_error(E_FAIL, "polygon is not incident to edge");
     }
+    
+    int prevIndex = loopIndex(edgeIndex-1, poly->edges.size());
+    int nextIndex = loopIndex(edgeIndex+1, poly->edges.size());
 
-    EdgePtr ePrev = poly->edges[mod(edgeIndex-1, poly->edges.size())];
-    EdgePtr eNext = poly->edges[mod(edgeIndex+1, poly->edges.size())];
+    EdgePtr ePrev = poly->edges[loopIndex(edgeIndex-1, poly->edges.size())];
+    EdgePtr eNext = poly->edges[loopIndex(edgeIndex+1, poly->edges.size())];
 
 
     // if the edge is connected to the top vertex (0), its the top edge
@@ -375,6 +176,9 @@ static HRESULT findUpperAndLowerEdgesForPolygon(CEdgePtr e, CPolygonPtr poly, Ed
         *e1 = ePrev;
         assert(!connectedEdgeVertex(ePrev, e->vertices[0]));
     }
+    else {
+        return mx_error(E_FAIL, "previous edge is not connected to edge");
+    }
 
     if(connectedEdgeVertex(eNext, e->vertices[0])) {
         *e0 = eNext;
@@ -385,6 +189,8 @@ static HRESULT findUpperAndLowerEdgesForPolygon(CEdgePtr e, CPolygonPtr poly, Ed
         *e1 = eNext;
         assert(!connectedEdgeVertex(eNext, e->vertices[0]));
     }
+    
+    assert(*e0 && *e1);
 
     return S_OK;
 }
@@ -430,6 +236,20 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     if(!isEdgeToTriangleConfiguration(edge, edgeCells, endCells)) {
         return E_FAIL;
     }
+    
+    std::cout << MX_FUNCTION << ", edge: " << edge << std::endl;
+    
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "edge cells[" << i << "] : " << edgeCells[i] << std::endl;
+    }
+    
+    for(int i = 0; i < 2; ++i) {
+        std::cout << "end cells[" << i << "] : " << endCells[i] << std::endl;
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "edge polygon[" << i << "] : " << edge->polygons[i] << std::endl;
+    }
 
     // grab the edges for each of the polygons, i.e. find all of the six upper and
     // lower edges
@@ -438,13 +258,18 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
                 &upperEdges[i], &lowerEdges[i])) != S_OK) {
             return result;
         }
+        std::cout << "upper edge[" << i << "]: " << upperEdges[i] << std::endl;
+        std::cout << "lower edge[" << i << "]: " << lowerEdges[i] << std::endl;
     }
 
     // grab the upper and lower polygons for the radial cells
     for(int i = 0; i < 3; ++i) {
-        if((result = findPolygonForEdges(upperEdges[i], upperEdges[mod(i+1, 3)], &upperPoly[i])) != S_OK) {
+        if((result = findPolygonForEdges(upperEdges[i], upperEdges[loopIndex(i+1, 3)], &upperPoly[i])) != S_OK) {
             return result;
         }
+        
+        std::cout << "upper polygon[" << i << "]: " << upperPoly[i] << std::endl;
+        
         assert(connectedCellPolygonPointers(edgeCells[i], upperPoly[i])
                 && "found polygon is not connected to cell");
         assert(connectedCellPolygonPointers(endCells[0], upperPoly[i]) &&
@@ -453,9 +278,12 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     }
 
     for(int i = 0; i < 3; ++i) {
-        if((result = findPolygonForEdges(lowerEdges[i], lowerEdges[mod(i+1, 3)], &lowerPoly[i])) != S_OK) {
+        if((result = findPolygonForEdges(lowerEdges[i], lowerEdges[loopIndex(i+1, 3)], &lowerPoly[i])) != S_OK) {
             return result;
         }
+        
+        std::cout << "lower polygon[" << i << "]: " << lowerPoly[i] << std::endl;
+        
         assert(connectedCellPolygonPointers(edgeCells[i], lowerPoly[i])
                 && "found polygon is not connected to cell");
         assert(connectedCellPolygonPointers(endCells[1], lowerPoly[i]) &&
@@ -478,12 +306,21 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     // make new edges for the new triangle we'll create
     for(int i = 0; i < 3; ++i) {
         newEdges[i] = mesh->createEdge(MxEdge_Type, newVerts[i], newVerts[(i+1) % 3]);
+        std::cout << "new edge[" << i << "] : " << newEdges[i] << std::endl;
     }
 
     // createPolygon finds the given vertices and edges, and hooks them up to the
     // new polygon
     newPoly = mesh->createPolygon(MxPolygon_Type, {newVerts[0], newVerts[1], newVerts[2]});
     assert(newPoly);
+    std::cout << "new polygon: " << newPoly << std::endl;
+
+    assert(connectedEdgeVertex(newPoly->edges[0], newVerts[0]));
+    assert(connectedEdgeVertex(newPoly->edges[0], newVerts[1]));
+    assert(connectedEdgeVertex(newPoly->edges[1], newVerts[1]));
+    assert(connectedEdgeVertex(newPoly->edges[1], newVerts[2]));
+    assert(connectedEdgeVertex(newPoly->edges[2], newVerts[2]));
+    assert(connectedEdgeVertex(newPoly->edges[2], newVerts[0]));
 
     // remove the center edge from all of the radial polygons, and
     // replace the edge from the radial polygons with the
@@ -496,6 +333,13 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
         assert(SUCCEEDED(result));
         assert(e0 == upperEdges[i] || e0 == lowerEdges[i]);
         assert(e1 == upperEdges[i] || e1 == lowerEdges[i]);
+        
+        std::cout << "radial edge[" << i << "] after removing center vertex: " << edge->polygons[i] << std::endl;
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "upper poly[" << i << "] before replace: " << upperPoly[i];
+        std::cout << "lower poly[" << i << "] before replace: " << lowerPoly[i];
     }
 
     // replace the single vertex in the upper and lower polygons with the
@@ -510,21 +354,48 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     //In polygon lp1: le0:v1:le1 -> le0:vn0: ne1: vn1:le1
     //In polygon lp2: le1:v1:le2 -> le1:vn1: ne2: vn2:le2
     VERIFY(replacePolygonVertexWithEdgeAndVertices(upperPoly[0], edge->vertices[0],
-            upperEdges[2], upperEdges[0],  newEdges[0], newVerts[2], newVerts[0]));
+            upperEdges[0], upperEdges[1],  newEdges[0], newVerts[0], newVerts[1]));
     VERIFY(replacePolygonVertexWithEdgeAndVertices(upperPoly[1], edge->vertices[0],
-            upperEdges[0], upperEdges[1],  newEdges[1], newVerts[1], newVerts[1]));
+            upperEdges[1], upperEdges[2],  newEdges[1], newVerts[1], newVerts[2]));
     VERIFY(replacePolygonVertexWithEdgeAndVertices(upperPoly[2], edge->vertices[0],
-            upperEdges[1], upperEdges[2],  newEdges[2], newVerts[1], newVerts[2]));
+            upperEdges[2], upperEdges[0],  newEdges[2], newVerts[2], newVerts[0]));
 
     VERIFY(replacePolygonVertexWithEdgeAndVertices(lowerPoly[0], edge->vertices[1],
-            lowerEdges[2], lowerEdges[0],  newEdges[0], newVerts[2], newVerts[0]));
+            lowerEdges[0], lowerEdges[1],  newEdges[0], newVerts[0], newVerts[1]));
     VERIFY(replacePolygonVertexWithEdgeAndVertices(lowerPoly[1], edge->vertices[1],
-            lowerEdges[0], lowerEdges[1],  newEdges[1], newVerts[0], newVerts[1]));
+            lowerEdges[1], lowerEdges[2],  newEdges[1], newVerts[1], newVerts[2]));
     VERIFY(replacePolygonVertexWithEdgeAndVertices(lowerPoly[2], edge->vertices[1],
-            lowerEdges[1], lowerEdges[2],  newEdges[2], newVerts[1], newVerts[2]));
+            lowerEdges[2], lowerEdges[0],  newEdges[2], newVerts[2], newVerts[0]));
+    
+    
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "upper poly[" << i << "] after replace: " << upperPoly[i];
+        std::cout << "lower poly[" << i << "] after replace: " << lowerPoly[i];
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        VERIFY(reconnectEdgeVertex(upperEdges[i], newVerts[i], edge->vertices[0]));
+        VERIFY(reconnectEdgeVertex(lowerEdges[i], newVerts[i], edge->vertices[1]));
+    }
+    
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "upper poly[" << i << "] after reconnect: " << upperPoly[i];
+        std::cout << "lower poly[" << i << "] after reconnect: " << lowerPoly[i];
+    }
 
+    for(int i = 0; i < 3; ++i) {
+        assert(edge->polygons[i]->checkEdges());
+    }
 
+    // we've defined the triangle vertices as {0,1,2}, so CCW winding means that the
+    // normal vector points towards original vertex 1, i.e. cell 1, so add it first
+    // to the top cell (0), then cell (1)
+    VERIFY(connectPolygonCell(newPoly, endCells[0]));
+    VERIFY(connectPolygonCell(newPoly, endCells[1]));
+    VERIFY(endCells[0]->topologyChanged());
+    VERIFY(endCells[1]->topologyChanged());
 
+    VERIFY(mesh->positionsChanged());
 
     return S_OK;
 }

@@ -201,7 +201,7 @@ CylinderTest::CylinderTest(const Configuration& configuration) :
 
     // don't draw facets that face away from us. We have A LOT of these INSIDE cells, no need to
     // draw them.
-    GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
+    //GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );

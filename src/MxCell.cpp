@@ -57,12 +57,17 @@ void MxCell::vertexAtributeData(const std::vector<MxVertexAttribute>& attributes
             CVertexPtr p1 = poly->vertices[i];
             CVertexPtr p2 = poly->vertices[(i+1)%poly->vertices.size()];
 
-            Color4 edgeColor =
-                    (poly == mesh->selectedObject() || poly->edges[i] == mesh->selectedObject())
-                    ? type->selectedEdgeColor : polyType->edgeColor;
+            Color4 edgeColor;
 
-            if(Mx_IsEdgeToTriangleConfiguration(poly->edges[i])) {
+
+            if (poly == mesh->selectedObject() || poly->edges[i] == mesh->selectedObject()) {
+                edgeColor = type->selectedEdgeColor;
+            }
+            else if(Mx_IsEdgeToTriangleConfiguration(poly->edges[i])) {
                 edgeColor = Color4::red();
+            }
+            else {
+                edgeColor = polyType->edgeColor;
             }
 
             attrs[0].position = p1->position;
@@ -281,4 +286,11 @@ uint MxCell::vertexCount()
     return vc;
 }
 
+std::ostream& operator <<(std::ostream &stream, const MxCell *cell)
+{
+    stream << "Cell { name: \"" << cell->name << "\", id: " << cell->id
+              << ", area: " << cell->area << ", volume: " << cell->volume
+              << ", centroid: " << cell->centroid  << "}" << std::endl;
 
+    return stream;
+}

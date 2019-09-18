@@ -220,6 +220,8 @@ private:
 
 };
 
+std::ostream& operator << (std::ostream& stream, const MxCell *cell);
+
 
 /**
  * TODO, horribly bad design, need to completely reevaluate how we handle cell

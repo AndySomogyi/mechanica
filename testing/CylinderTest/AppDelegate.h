@@ -71,6 +71,8 @@ typedef unsigned char Byte;
 
 -(IBAction)T3transitionSelectedPolygon:(id)sender;
 
+-(IBAction)edgeToPolygonFlip:(id)sender;
+
 -(IBAction)valueChanged:(id)sender;
 
 -(IBAction)volumeForceClick:(id)sender;
