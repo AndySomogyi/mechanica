@@ -499,9 +499,6 @@ HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert
         msg += poly->edges.size();
         return mx_error(E_FAIL, msg.c_str());
     }
-
-
-    return E_FAIL;
 }
 
 HRESULT connectEdgePolygonPointers(EdgePtr edge, PolygonPtr poly)
