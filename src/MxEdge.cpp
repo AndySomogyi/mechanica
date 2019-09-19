@@ -107,14 +107,7 @@ HRESULT MxEdge::erasePolygon(CPolygonPtr poly)
     return S_OK;
 }
 
-HRESULT MxEdge::insertPolygon(CPolygonPtr poly) {
-    uint size = polygonCount();
-    if(size + 1 < EDGE_MAX_POLYGONS) {
-        polygons[size] = const_cast<PolygonPtr>(poly);
-        return S_OK;
-    }
-    return mx_error(E_FAIL, "edge is already connected to max number of polygons");
-}
+
 
 
 std::ostream& operator <<(std::ostream& os, CEdgePtr edge)
@@ -123,7 +116,13 @@ std::ostream& operator <<(std::ostream& os, CEdgePtr edge)
     os << (edge->vertices[0] ? std::to_string(edge->vertices[0]->id) : "null");
     os << ", ";
     os << (edge->vertices[1] ? std::to_string(edge->vertices[1]->id) : "null");
-    os << "}";
+    os << "}, polygons: {";
+    os << (edge->polygons[0] ? std::to_string(edge->polygons[0]->id) : "null");
+    os << ", ";
+    os << (edge->polygons[1] ? std::to_string(edge->polygons[1]->id) : "null");
+    os << ", ";
+    os << (edge->polygons[2] ? std::to_string(edge->polygons[2]->id) : "null");
+    os << "}}";
     return os;
 }
 
@@ -136,4 +135,8 @@ HRESULT MxEdge::replacePolygon(CPolygonPtr newPoly, CPolygonPtr oldPoly)
         }
     }
     return mx_error(E_FAIL, "old polygon is not is this edge's polygon list");
+}
+
+HRESULT MxEdge::insertPolygon(CPolygonPtr poly) {
+    return connectEdgePolygonPointers(this, const_cast<PolygonPtr>(poly));
 }

@@ -114,7 +114,7 @@ void CylinderModel::loadAssImpModel() {
 
     propagator->bindForce(&growingPolygonForce, &growingPolygonType);
 
-    mesh->selectObject(MxEdge_Type, 30);
+    mesh->selectObject(MxEdge_Type, 31);
 
     CellPtr cell = mesh->cells[1];
 

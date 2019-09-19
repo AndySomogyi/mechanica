@@ -440,7 +440,7 @@ HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert
         return mx_error(E_FAIL, "edge e1 is not connected to original vertex");
     }
 
-    if(e0Index < e1Index) {
+    if((e0Index + 1) % poly->edges.size() == e1Index) {
         // Index wise, we have if e0 is before e1, i.e if index of e0 is i, we have:
         // e0[i]:v[i]:e1[i+1] -> e0[i]:v0[i]:edge[i+1]:v1[i+1]:e1[i+2]
 
@@ -451,23 +451,21 @@ HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert
         }
         poly->vertices.insert(vi, v1);
 
-        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e0Index;
-        if(ei != poly->edges.end()) {
-            ei++;
-        }
+        // e0 is before e1, so insert before e1
+        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e1Index;
         poly->edges.insert(ei, edge);
 
         poly->_vertexNormals.insert(poly->_vertexNormals.begin() + vIndex, Vector3{});
         poly->_vertexAreas.insert(poly->_vertexAreas.begin() + vIndex, 0);
 
         std::cout << "poly after insert: " << poly << std::endl;
-        assert(poly->edgeIndex(edge) == e0Index + 1);
+        assert(poly->edgeIndex(edge) == e1Index);
         assert(poly->vertexIndex(v0) == vIndex);
         assert(poly->vertexIndex(v1) == vIndex + 1);
 
         return S_OK;
     }
-    else {
+    else if ((e1Index + 1) % poly->edges.size() == e0Index) {
         // Index wise, we have if e1  before e0, i.e if index of e1 is i, we have:
         // e1[i]:v[i]:e0[i+1] -> e1[i]:v0[i]:edge[i+1]:v1[i+1]:e0[i+2]
 
@@ -478,22 +476,40 @@ HRESULT replacePolygonVertexWithEdgeAndVertices(PolygonPtr poly, CVertexPtr vert
         }
         poly->vertices.insert(vi, v0);
 
-        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e1Index;
-        if(ei != poly->edges.end()) {
-            ei++;
-        }
+        // e1 is before e0, so insert before e0.
+        std::vector<EdgePtr>::iterator ei = poly->edges.begin() + e0Index;
+  
         poly->edges.insert(ei, edge);
 
         poly->_vertexNormals.insert(poly->_vertexNormals.begin() + vIndex, Vector3{});
         poly->_vertexAreas.insert(poly->_vertexAreas.begin() + vIndex, 0);
 
         std::cout << "poly after insert: " << poly << std::endl;
-        assert(poly->edgeIndex(edge) == e1Index + 1);
+        assert(poly->edgeIndex(edge) == e0Index);
         assert(poly->vertexIndex(v1) == vIndex);
         assert(poly->vertexIndex(v0) == vIndex + 1);
         return S_OK;
     }
+    else {
+        std::string msg = "edge indices are not sequential, e0 index: ";
+        msg += std::to_string(e0Index);
+        msg += ", e1 index: ";
+        msg += std::to_string(e1Index);
+        msg += ", edges size: ";
+        msg += poly->edges.size();
+        return mx_error(E_FAIL, msg.c_str());
+    }
 
 
     return E_FAIL;
+}
+
+HRESULT connectEdgePolygonPointers(EdgePtr edge, PolygonPtr poly)
+{
+    uint size = edge->polygonCount();
+    if(size < EDGE_MAX_POLYGONS) {
+        edge->polygons[size] = const_cast<PolygonPtr>(poly);
+        return S_OK;
+    }
+    return mx_error(E_FAIL, "edge is already connected to max number of polygons");
 }

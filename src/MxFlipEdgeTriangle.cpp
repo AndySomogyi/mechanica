@@ -237,7 +237,7 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
         return E_FAIL;
     }
     
-    std::cout << MX_FUNCTION << ", edge: " << edge << std::endl;
+    std::cout << MX_FUNCTION << std::endl << "edge: " << edge << std::endl;
     
     for(int i = 0; i < 3; ++i) {
         std::cout << "edge cells[" << i << "] : " << edgeCells[i] << std::endl;
@@ -367,6 +367,13 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     VERIFY(replacePolygonVertexWithEdgeAndVertices(lowerPoly[2], edge->vertices[1],
             lowerEdges[2], lowerEdges[0],  newEdges[2], newVerts[2], newVerts[0]));
     
+    // connect the new edges to the upper and lower polygons
+    for(int i = 0; i < 3; ++i) {
+        std::cout << "connecting new edge[" << i << "] to upper and lower polygons: " << newEdges[i] << std::endl;
+        VERIFY(connectEdgePolygonPointers(newEdges[i], upperPoly[i]));
+        VERIFY(connectEdgePolygonPointers(newEdges[i], lowerPoly[i]));
+    }
+
     
     for(int i = 0; i < 3; ++i) {
         std::cout << "upper poly[" << i << "] after replace: " << upperPoly[i];
@@ -379,12 +386,33 @@ HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
     }
     
     for(int i = 0; i < 3; ++i) {
-        std::cout << "upper poly[" << i << "] after reconnect: " << upperPoly[i];
-        std::cout << "lower poly[" << i << "] after reconnect: " << lowerPoly[i];
+        std::cout << "upper poly[" << i << "] after reconnect: " << upperPoly[i] << std::endl;
+        std::cout << "lower poly[" << i << "] after reconnect: " << lowerPoly[i] << std::endl;
+        std::cout << "radial poly[" << i << "] after reconnect: " << edge->polygons[i] << std::endl;
     }
 
+    std::cout << "validating radial polygons..." << std::endl;
     for(int i = 0; i < 3; ++i) {
-        assert(edge->polygons[i]->checkEdges());
+        if(!edge->polygons[i]->checkEdges()) {
+            std::cout << "radial polygon [" << i << "] edge check failed: " << edge->polygons[i] << std::endl;
+            assert(0);
+        }
+    }
+    
+    std::cout << "validating upper polygons..." << std::endl;
+    for(int i = 0; i < 3; ++i) {
+        if(!upperPoly[i]->checkEdges()) {
+            std::cout << "upper polygon [" << i << "] edge check failed: " << upperPoly[i] << std::endl;
+            assert(0);
+        }
+    }
+    
+    std::cout << "validating lower polygons..." << std::endl;
+    for(int i = 0; i < 3; ++i) {
+        if(!lowerPoly[i]->checkEdges()) {
+            std::cout << "lower polygon [" << i << "] edge check failed: " << lowerPoly[i] << std::endl;
+            assert(0);
+        }
     }
 
     // we've defined the triangle vertices as {0,1,2}, so CCW winding means that the

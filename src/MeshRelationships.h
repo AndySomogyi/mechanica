@@ -35,6 +35,12 @@ bool incidentEdgePolygonVertices(CEdgePtr edge, CPolygonPtr tri);
  */
 bool connectedEdgePolygonPointers(CEdgePtr edge, CPolygonPtr tri);
 
+/**
+ * Connect a polygon poly to an edge edge. Only adds the polygon to the
+ * edges list of polygons, but does not insert the edge into the polygon.
+ */
+HRESULT connectEdgePolygonPointers(EdgePtr edge, PolygonPtr poly);
+
 inline bool connectedCellPolygonPointers(CCellPtr c, CPolygonPtr t ) {
     return connectedPolygonCellPointers(t, c);
 }
@@ -104,6 +110,8 @@ HRESULT disconnectPolygonEdgeVertex(PolygonPtr poly, EdgePtr edge, CVertexPtr v,
  * has two edges, edge 0 connects vertices 0 and 1, and edge 1 connects vertices 1 and 0.
  */
 HRESULT insertPolygonEdge(PolygonPtr poly, EdgePtr edge);
+
+
 
 
 //HRESULT connectPolygonEdges(MeshPtr mesh, PolygonPtr poly, const std::vector<EdgePtr> &edges);
