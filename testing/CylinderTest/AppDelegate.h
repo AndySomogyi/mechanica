@@ -57,6 +57,8 @@ typedef unsigned char Byte;
 @property (assign) IBOutlet NSTextField *actualVolumeTxt;
 @property (assign) IBOutlet NSTextField *areaTxt;
 
+@property (assign) IBOutlet NSPopUpButton *selectableEdgeToTriEdges;
+
 -(IBAction)run:(id)sender;
 
 -(IBAction)step:(id)sender;

@@ -651,10 +651,10 @@
         <window title="Cylinder Test" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="62" y="594" width="489" height="669"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="contentRect" x="62" y="594" width="602" height="669"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <view key="contentView" id="372">
-                <rect key="frame" x="0.0" y="0.0" width="489" height="669"/>
+                <rect key="frame" x="0.0" y="0.0" width="602" height="669"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <box fixedFrame="YES" title="Target Volume" translatesAutoresizingMaskIntoConstraints="NO" id="ON8-jJ-LtM">
@@ -808,6 +808,15 @@
                         <rect key="frame" x="221" y="397" width="146" height="39"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Target Volume Lambda" id="Xad-HA-Zc9">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jr9-tK-RMr">
+                        <rect key="frame" x="221" y="450" width="146" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Edge To Tri Flip Edge" id="UDq-E8-f5L">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1286,9 +1295,27 @@
                             <action selector="T2transitionSelectedPolygon:" target="494" id="vRI-D0-3cT"/>
                         </connections>
                     </button>
+                    <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6m5-mj-dJA">
+                        <rect key="frame" x="376" y="451" width="76" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Njo-0j-ifp" id="ROv-iJ-JbN">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="menu"/>
+                            <menu key="menu" id="hka-Vd-iTj">
+                                <items>
+                                    <menuItem title="Item 1" state="on" id="Njo-0j-ifp"/>
+                                    <menuItem title="Item 2" id="Unc-7W-XI4"/>
+                                    <menuItem title="Item 3" id="l4X-vB-LkH"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="valueChanged:" target="-1" id="hn2-pX-vyO"/>
+                        </connections>
+                    </popUpButton>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-851.5" y="-2219.5"/>
+            <point key="canvasLocation" x="-795" y="-2219.5"/>
         </window>
         <customObject id="494" customClass="AppDelegate">
             <connections>
@@ -1312,6 +1339,7 @@
                 <outlet property="inertiaLyTxt" destination="C0B-Za-3I7" id="S0o-RO-vMa"/>
                 <outlet property="inertiaLzTxt" destination="K6z-Et-xvW" id="p9b-WK-tpx"/>
                 <outlet property="radiusTxt" destination="tJG-3w-9Kh" id="UDR-SE-vu2"/>
+                <outlet property="selectableEdgeToTriEdges" destination="6m5-mj-dJA" id="vBG-ru-RzD"/>
                 <outlet property="selectedEdgeMax" destination="wGg-mV-pPR" id="S3W-qp-9xu"/>
                 <outlet property="selectedEdgeMin" destination="bbY-A9-kkE" id="2HH-Qx-9En"/>
                 <outlet property="selectedEdgeSlider" destination="OfN-I7-rGP" id="227-gj-V0h"/>

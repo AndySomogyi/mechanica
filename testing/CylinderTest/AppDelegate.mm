@@ -96,7 +96,6 @@ void testIndexOf() {
         meshTest->model->setGrowStdSurfaceTension(self.growingSurfaceTensionSlider.floatValue);
     }
     
-    
     else if (sender == self.volumeVal)
     {
         self.volumeSlider.floatValue = self.volumeVal.floatValue;
@@ -113,10 +112,12 @@ void testIndexOf() {
     }
     else if(sender == self.selectedEdgeSlider) {
         self.selectedEdgeVal.integerValue = self.selectedEdgeSlider.integerValue;
+        [self.selectableEdgeToTriEdges selectItemWithTitle:self.selectedEdgeSlider.stringValue];
         meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeSlider.integerValue);
     }
     else if(sender == self.selectedEdgeVal) {
         self.selectedEdgeSlider.integerValue = self.selectedEdgeVal.integerValue;
+        [self.selectableEdgeToTriEdges selectItemWithTitle:self.selectedEdgeVal.stringValue];
         meshTest->model->mesh->selectObject(MxEdge_Type, self.selectedEdgeVal.integerValue);
     }
     else if(sender == self.selectedPolygonSlider) {
@@ -126,6 +127,12 @@ void testIndexOf() {
     else if(sender == self.selectedPolygonVal) {
         self.selectedPolygonSlider.integerValue = self.selectedPolygonVal.integerValue;
         [self selectChanged];
+    }
+    else if(sender == self.selectableEdgeToTriEdges) {
+        NSString *s = self.selectableEdgeToTriEdges.selectedItem.title;
+        meshTest->model->mesh->selectObject(MxEdge_Type, s.integerValue);
+        self.selectedEdgeSlider.integerValue = s.integerValue;
+        self.selectedEdgeVal.integerValue = s.integerValue;
     }
     
     meshTest->draw();
@@ -181,6 +188,15 @@ void testIndexOf() {
     self.selectedPolygonSlider.maxValue = meshTest->model->mesh->polygons.size();
     self.selectedPolygonSlider.minValue = 0;
     
+    [self.selectableEdgeToTriEdges removeAllItems];
+    for(int i = 0; i < meshTest->model->mesh->edges.size(); ++i) {
+        EdgePtr e = meshTest->model->mesh->edges[i];
+        if(Mx_IsEdgeToTriangleConfiguration(e)) {
+            NSString *str = [NSString stringWithFormat:@"%i", e->id];
+            [self.selectableEdgeToTriEdges addItemWithTitle:str];
+        }
+    }
+    
     MxObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
     
     if(obj) {
@@ -188,6 +204,10 @@ void testIndexOf() {
         if (e) {
             self.selectedEdgeVal.integerValue = e->id;
             self.selectedEdgeSlider.integerValue = e->id;
+            [self.selectableEdgeToTriEdges selectItemWithTitle:[NSString stringWithFormat:@"%i", e->id]];
+            
+            //std::cout << "seelct item value: " << [self.selectableEdgeToTriEdges.selectedItem.title UTF8String] << std::endl;
+            
             selectType = MxEdge_Type;
         }
         
@@ -394,6 +414,8 @@ void testIndexOf() {
 -(IBAction)edgeToPolygonFlip:(id)sender {
     HRESULT result = meshTest->model->edgeToPolygonFlipSelecgtedEdge();
     meshTest->draw();
+    
+    [self updateGuiFromModel];
     
     if(SUCCEEDED(result)) {
         std::cout << "successfully flipped edge" << std::endl;
