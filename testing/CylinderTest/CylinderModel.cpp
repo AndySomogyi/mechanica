@@ -119,7 +119,7 @@ void CylinderModel::loadAssImpModel() {
     CellPtr cell = mesh->cells[1];
 
     setTargetVolume(cell->volume);
-    setTargetVolumeLambda(0.01);
+    setTargetVolumeLambda(0.05);
 }
 
 void CylinderModel::testEdges() {
