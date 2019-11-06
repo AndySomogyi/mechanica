@@ -1,5 +1,5 @@
 /*
- * T1Transition.cpp
+ * FlipEdge.cpp
  *
  *  Created on: Jul 24, 2018
  *      Author: andy
@@ -11,7 +11,7 @@
 #include "MxMesh.h"
 
 HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge) {
-    
+
     std::cout << "applyT1Edge2Transition(edge=" << edge << ")" << std::endl;
 
     if(edge->polygonCount() != 2) {
@@ -75,7 +75,7 @@ HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge) {
     VERIFY(disconnectPolygonEdgeVertex(p4, edge, v2, &e3, &e4));
 
     assert(edge->polygonCount() == 0);
-    
+
     std::cout << "e1:" << e1 << std::endl;
     std::cout << "e2:" << e2 << std::endl;
     std::cout << "e3:" << e3 << std::endl;
@@ -139,19 +139,19 @@ HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge) {
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p3: " << p3 << std::endl;
     std::cout << "poly p4: " << p4 << std::endl;
-    
+
     assert(connectedEdgeVertex(e1, v1));
     assert(connectedEdgeVertex(e2, v2));
     assert(connectedEdgeVertex(e3, v2));
     assert(connectedEdgeVertex(e4, v1));
-    
+
     std::cout << "reconnecting edge vertices..." << std::endl;
 
     // reconnect the two diagonal edges, the other two edges, e2 and e4 stay
     // connected to their same vertices.
     VERIFY(reconnectEdgeVertex(e1, v2, v1));
     VERIFY(reconnectEdgeVertex(e3, v1, v2));
-    
+
     std::cout << "poly p1: " << p1 << std::endl;
     std::cout << "poly p2: " << p2 << std::endl;
     std::cout << "poly p3: " << p3 << std::endl;
@@ -170,7 +170,7 @@ HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge) {
     for(CellPtr cell : mesh->cells) {
         cell->topologyChanged();
     }
-    
+
     mesh->setPositions(0, 0);
 
     VERIFY(mesh->positionsChanged());

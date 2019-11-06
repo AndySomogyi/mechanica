@@ -1,5 +1,5 @@
 /*
- * T3Transition.cpp
+ * SplitPolygon.cpp
  *
  *  Created on: Aug 27, 2018
  *      Author: andy

@@ -89,9 +89,11 @@ set(SRC
   MeshIO.cpp
   MxTesselator.cpp
   MxColumnarCell.cpp
-  T1Transition.cpp
-  T2Transition.cpp
-  T3Transition.cpp
+  FlipEdge.cpp
+  CollapsePolygon.cpp
+  SplitPolygon.cpp
+  SplitCell.cpp
+  SplitEdge.cpp
   MxFlipEdgeTriangle.cpp
   MxConstraints.cpp
   MxForces.cpp

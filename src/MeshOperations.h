@@ -111,4 +111,28 @@ HRESULT Mx_SplitPolygonSemiMajorAxisAngle(MeshPtr mesh, PolygonPtr poly,
 HRESULT Mx_SplitPolygonBisectPlane(MeshPtr mesh, PolygonPtr poly,
         Vector3 *normal, PolygonPtr *p1, PolygonPtr *p2);
 
+
+
+
+/**
+ * Splits a edge into two, and updates all of the incident polygons with the new edge.
+ * Creates a new edge, ep, and inserts that into all of the incident polygons.
+ *
+ * @param mesh
+ * @param e
+ * @param v: an optional vertex. If this argument is provided, this vertex will be
+ *           inserted into the middle of this edge. If this vertex is not provided,
+ *           Mx_SplitEdge will create a new vertex at the midpoint of edge e, and
+ *           insert that instead.
+ * @param ep: an out parameter, this is the newly created edge that is inserted into
+ *           the surrounding polygons.
+ * @param vp: the vertex that was placed in the middle of this edge. If v was provided,
+ *           then this gets simply set to v, otherwise this is the newly created vertex.
+ */
+HRESULT Mx_SplitEdge(MeshPtr mesh, EdgePtr e, VertexPtr v, EdgePtr *ep, VertexPtr *vp);
+
+
+HRESULT Mx_SplitCell(MeshPtr mesh, CellPtr c,
+        float* planeEqn, CellPtr* c1, CellPtr* c2);
+
 #endif /* SRC_MESHOPERATIONS_H_ */
