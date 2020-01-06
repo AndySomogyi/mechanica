@@ -8,8 +8,7 @@
 #ifndef INCLUDE_MX_EXPRESSION_H_
 #define INCLUDE_MX_EXPRESSION_H_
 
-#include "mx_port.h"
-#include "mx_object.h"
+#include "carbon.h"
 #include "mx_symbol.h"
 
 #ifdef __cplusplus
@@ -23,26 +22,26 @@ extern "C"
 MxAPI_STRUCT(MxExpression);
 
 /**
- * This instance of MxTypeObject represents the Mechanica module type.
+ * This instance of CTypeObject represents the Mechanica module type.
  */
-MxAPI_DATA(struct MxType*) MxExpression_Type;
+CAPI_DATA(struct CType*) MxExpression_Type;
 
 /**
  * Return true if p is a list object or an instance of a subtype of the list type.
  */
-int MxExpression_Check(const MxObject *p);
+int MxExpression_Check(const CObject *p);
 
 /**
  * Returns a borrowed reference to the head of the expression.
  */
-const MxObject *MxExpression_Head(const MxExpression *p);
+const CObject *MxExpression_Head(const MxExpression *p);
 
 /**
  * Return true if p is a list object, but not an instance of a subtype of the list type.
  */
-int MxExpression_CheckExact(const MxObject *p);
+int MxExpression_CheckExact(const CObject *p);
 
-//MxObject* MxExpression_New(Mx_ssize_t len)
+//CObject* MxExpression_New(Mx_ssize_t len)
 //Return value: New reference.
 //Return a new list of length len on success, or NULL on failure.
 
@@ -53,14 +52,14 @@ int MxExpression_CheckExact(const MxObject *p);
 /**
  * Return the length of the list object in list; this is equivalent to len(list) on a list object.
  */
-Mx_ssize_t MxExpression_Size(MxObject *list);
+Mx_ssize_t MxExpression_Size(CObject *list);
 
 MxExpression *MxExpression_New(MxSymbol *head, int len, ...);
 
 /**
  * Returns a borrowed reference to the first item in the list.
  */
-MxObject *MxExpression_First(const MxExpression *ex);
+CObject *MxExpression_First(const MxExpression *ex);
 
 /**
  * Returns a new expression that contains the same head, and the list
@@ -68,7 +67,7 @@ MxObject *MxExpression_First(const MxExpression *ex);
  */
 MxExpression *MxExpression_Rest(const MxExpression *ex);
 
-//Mx_ssize_t MxExpression_GET_SIZE(MxObject *list)
+//Mx_ssize_t MxExpression_GET_SIZE(CObject *list)
 //Macro form of MxExpression_Size() without error checking.
 
 /**
@@ -77,9 +76,9 @@ MxExpression *MxExpression_Rest(const MxExpression *ex);
  * indexing from the end of the list is not supported.
  * If index is out of bounds, return NULL and set an IndexError exception.
  */
-MxObject* MxExpression_GetItem(MxObject *list, Mx_ssize_t index);
+CObject* MxExpression_GetItem(CObject *list, Mx_ssize_t index);
 
-//MxObject* MxExpression_GET_ITEM(MxObject *list, Mx_ssize_t i)
+//CObject* MxExpression_GET_ITEM(CObject *list, Mx_ssize_t i)
 //Return value: Borrowed reference.
 //Macro form of MxExpression_GetItem() without error checking.
 
@@ -89,10 +88,10 @@ MxObject* MxExpression_GetItem(MxObject *list, Mx_ssize_t index);
  * Note This function “steals” a reference to item and discards a reference to an
  * item already in the list at the affected position.
  */
-int MxExpression_SetItem(MxObject *list, Mx_ssize_t index, MxObject *item);
+int MxExpression_SetItem(CObject *list, Mx_ssize_t index, CObject *item);
 
 //
-// void MxExpression_SET_ITEM(MxObject *list, Mx_ssize_t i, MxObject *o);
+// void MxExpression_SET_ITEM(CObject *list, Mx_ssize_t i, CObject *o);
 // Macro form of MxExpression_SetItem() without error checking. This is normally only used to fill in new lists where there is no previo//us content.
 
 // Note This macro “steals” a reference to item, and, unlike MxExpression_SetItem(),
@@ -103,13 +102,13 @@ int MxExpression_SetItem(MxObject *list, Mx_ssize_t index, MxObject *item);
 // * Insert the item item into list list in front of index index. Return 0 if successful;
 // * return -1 and set an exception if unsuccessful. Analogous to list.insert(index, item).
 // */
-//int MxExpression_Insert(MxObject *list, Mx_ssize_t index, MxObject *item);
+//int MxExpression_Insert(CObject *list, Mx_ssize_t index, CObject *item);
 
 //**
 // * Append the object item at the end of list list. Return 0 if successful;
 // * return -1 and set an exception if unsuccessful. Analogous to list.append(item).
 // */
-//int MxExpression_Append(MxObject *list, MxObject *item);
+//int MxExpression_Append(CObject *list, CObject *item);
 
 /**
  * Return value: New reference.
@@ -117,7 +116,7 @@ int MxExpression_SetItem(MxObject *list, Mx_ssize_t index, MxObject *item);
  * Return NULL and set an exception if unsuccessful. Analogous to list[low:high].
  * Negative indices, as when slicing from Python, are not supported.
  */
-MxObject* MxExpression_GetSlice(MxObject *list, Mx_ssize_t low, Mx_ssize_t high);
+CObject* MxExpression_GetSlice(CObject *list, Mx_ssize_t low, Mx_ssize_t high);
 
 /**
  * Set the slice of list between low and high to the contents of itemlist.
@@ -125,15 +124,15 @@ MxObject* MxExpression_GetSlice(MxObject *list, Mx_ssize_t low, Mx_ssize_t high)
  * assignment of an empty list (slice deletion). Return 0 on success, -1 on failure.
  * Negative indices, as when slicing from Python, are not supported.
  */
-int MxExpression_SetSlice(MxObject *list, Mx_ssize_t low, Mx_ssize_t high, MxObject *itemlist);
+int MxExpression_SetSlice(CObject *list, Mx_ssize_t low, Mx_ssize_t high, CObject *itemlist);
 
-//int MxExpression_Sort(MxObject *list)
+//int MxExpression_Sort(CObject *list)
 //Sort the items of list in place. Return 0 on success, -1 on failure. This is equivalent to list.sort().
 
-//int MxExpression_Reverse(MxObject *list)
+//int MxExpression_Reverse(CObject *list)
 //Reverse the items of list in place. Return 0 on success, -1 on failure. This is the equivalent of list.reverse().
 
-//MxObject* MxExpression_AsTuple(MxObject *list)
+//CObject* MxExpression_AsTuple(CObject *list)
 //Return value: New reference.
 //Return a new tuple object containing the contents of list; equivalent to tuple(list).
 

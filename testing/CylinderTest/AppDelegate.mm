@@ -191,13 +191,13 @@ void testIndexOf() {
     [self.selectableEdgeToTriEdges removeAllItems];
     for(int i = 0; i < meshTest->model->mesh->edges.size(); ++i) {
         EdgePtr e = meshTest->model->mesh->edges[i];
-        if(Mx_IsEdgeToTriangleConfiguration(e)) {
+        if(Mx_IsEdgeToPolygonConfiguration(e)) {
             NSString *str = [NSString stringWithFormat:@"%i", e->id];
             [self.selectableEdgeToTriEdges addItemWithTitle:str];
         }
     }
     
-    MxObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
+    CObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
     
     if(obj) {
         EdgePtr e = dyn_cast<MxEdge>(obj);
@@ -257,10 +257,10 @@ void testIndexOf() {
     
 }
 
--(IBAction)T1transitionSelectedEdge:(id)sender {
-    HRESULT result = meshTest->model->applyT1Edge2TransitionToSelectedEdge();
+-(IBAction)flipSelectedEdgeToEdge:(id)sender {
+    HRESULT result = meshTest->model->flipSelectedEdgeToEdge();
     if(SUCCEEDED(result)) {
-        std::cout << "successfully applied T1 transition" << std::endl;
+        std::cout << "successfully flipSelectedEdgeToEdge" << std::endl;
     }
     
     std::vector<int> v = {{0, 1, 2, 3, 4, 5}};
@@ -352,11 +352,11 @@ void testIndexOf() {
     [self selectChanged];
 }
 
--(IBAction)T2transitionSelectedPolygon:(id)sender {
-    HRESULT result = meshTest->model->applyT2PolygonTransitionToSelectedPolygon();
+-(IBAction)collapseSelectedPolygon:(id)sender {
+    HRESULT result = meshTest->model->collapseSelectedPolygon();
     
     if(SUCCEEDED(result)) {
-        std::cout << "successfully applied T2 transition" << std::endl;
+        std::cout << "successfully collapseSelectedPolygon" << std::endl;
     }
     
     [self updateGuiFromModel];
@@ -364,12 +364,12 @@ void testIndexOf() {
     meshTest->draw();
 }
 
--(IBAction)T3transitionSelectedPolygon:(id)sender {
+-(IBAction)splitSelectedPolygon:(id)sender {
     
-    HRESULT result = meshTest->model->applyT3PolygonTransitionToSelectedPolygon();
+    HRESULT result = meshTest->model->splitSelectedPolygon();
     
     if(SUCCEEDED(result)) {
-        std::cout << "successfully applied T2 transition" << std::endl;
+        std::cout << "successfully splitSelectedPolygon" << std::endl;
     }
     
     [self updateGuiFromModel];
@@ -411,18 +411,27 @@ void testIndexOf() {
     meshTest->draw();
 }
 
--(IBAction)edgeToPolygonFlip:(id)sender {
-    HRESULT result = meshTest->model->edgeToPolygonFlipSelecgtedEdge();
+-(IBAction)flipSelectedEdgeToPolygon:(id)sender {
+    HRESULT result = meshTest->model->flipSelectedEdgeToPolygon();
     meshTest->draw();
     
     [self updateGuiFromModel];
     
     if(SUCCEEDED(result)) {
-        std::cout << "successfully flipped edge" << std::endl;
+        std::cout << "successfully flipSelectedEdgeToPolygon" << std::endl;
     }
     else {
         std::cout << "failed to flip edge" << std::endl;
     }
+    
+}
+
+
+-(IBAction)flipSelectedPolygonToEdge:(id)sender {
+    
+}
+
+-(IBAction)splitSelectedCell:(id)sender {
     
 }
 

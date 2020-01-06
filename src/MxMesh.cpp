@@ -27,7 +27,7 @@ int MxMesh::findVertex(const Magnum::Vector3& pos, double tolerance) {
     return -1;
 }
 
-VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos, const MxType *type) {
+VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos, const CType *type) {
 
     VertexPtr retval = nullptr;
     retval = new MxVertex{0., 0., pos};
@@ -39,7 +39,7 @@ VertexPtr MxMesh::createVertex(const Magnum::Vector3& pos, const MxType *type) {
 }
 
 
-MxObject *MxMesh::alloc(const MxType* type)
+CObject *MxMesh::alloc(const CType* type)
 {
     VertexPtr retval = nullptr;
     if(type == MxVertex_Type) {
@@ -58,7 +58,7 @@ MxObject *MxMesh::alloc(const MxType* type)
     }
 }
 
-CellPtr MxMesh::createCell(MxType *type, const std::string& name) {
+CellPtr MxMesh::createCell(CType *type, const std::string& name) {
     CellPtr cell = new MxCell{(uint)cells.size(), type, this, nullptr, name};
     cells.push_back(cell);
     return cell;
@@ -100,9 +100,9 @@ struct UniverseCellType : MxCellType {
 UniverseCellType universeCellType;
 MxCellType *MxUniverseCell_Type = &universeCellType;
 
-MxType universePartialTriangleType = {"UniversePartialTriangle", MxObject_Type};
+CType universePartialTriangleType = {.tp_name="UniversePartialTriangle", .tp_base=CObject_Type};
 
-MxType *MxUniversePartialTriangle_Type =
+CType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;
 
 MxMesh::MxMesh() /*: meshOperations(this, 0, 1.5)*/
@@ -233,7 +233,7 @@ HRESULT MxMesh::applyMeshOperations() {
     return positionsChanged();
 }
 
-PolygonPtr MxMesh::createPolygon(MxType* type,  const std::vector<VertexPtr> &vertices) {
+PolygonPtr MxMesh::createPolygon(CType* type,  const std::vector<VertexPtr> &vertices) {
 
     PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
 
@@ -283,7 +283,7 @@ EdgePtr MxMesh::findEdge(CVertexPtr a, CVertexPtr b) const
 }
 
 
-EdgePtr MxMesh::createEdge(MxType* type, VertexPtr a, VertexPtr b)
+EdgePtr MxMesh::createEdge(CType* type, VertexPtr a, VertexPtr b)
 {
     EdgePtr e = (EdgePtr)alloc(type);
     VERIFY(connectEdgeVertices(e, a, b));
@@ -327,11 +327,11 @@ HRESULT MxMesh::setPositions(uint32_t len, const Vector3* positions)
     return S_OK;
 }
 
-MxObject* MxMesh::selectedObject() const {
+CObject* MxMesh::selectedObject() const {
     return _selectedObject;
 }
 
-HRESULT MxMesh::selectObject(MxType* type, uint index) {
+HRESULT MxMesh::selectObject(CType* type, uint index) {
     if(type == nullptr ) {
         _selectedObject = nullptr;
         return S_OK;
@@ -360,7 +360,7 @@ HRESULT MxMesh::selectObject(MxType* type, uint index) {
     return mx_error(E_FAIL, "type must be either MxEdge_Type or MxPolygon_Type");
 }
 
-PolygonPtr MxMesh::createPolygon(MxType* type)
+PolygonPtr MxMesh::createPolygon(CType* type)
 {
     PolygonPtr poly = new MxPolygon{(uint)polygons.size(), type};
 
@@ -369,7 +369,7 @@ PolygonPtr MxMesh::createPolygon(MxType* type)
     return poly;
 }
 
-HRESULT MxMesh::addObjectDeleteListener(MxObjectChangedHandler, void* userData)
+HRESULT MxMesh::addObjectDeleteListener(CObjectChangedHandler, void* userData)
 {
 	return E_NOTIMPL;
 }

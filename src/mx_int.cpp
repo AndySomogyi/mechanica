@@ -9,22 +9,22 @@
 
 extern "C" {
 
-MxObject* MxInt_FromLong(long ival)
+CObject* MxInt_FromLong(long ival)
 {
 	return NULL;
 }
 
-long MxInt_AsLong(MxObject* io)
+long MxInt_AsLong(CObject* io)
 {
     MX_NOTIMPLEMENTED;
 }
 
-unsigned long long MxInt_AsUnsignedLongLongMask(MxObject* io)
+unsigned long long MxInt_AsUnsignedLongLongMask(CObject* io)
 {
     MX_NOTIMPLEMENTED;
 }
 
-size_t MxInt_AsSize_t(MxObject* io)
+size_t MxInt_AsSize_t(CObject* io)
 {
     MX_NOTIMPLEMENTED;
 }

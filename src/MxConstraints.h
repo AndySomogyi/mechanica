@@ -15,13 +15,13 @@ struct IConstraint {
 
     virtual HRESULT setTime(float time) = 0;
 
-    virtual float energy(const MxObject **objs, int32_t len) = 0;
+    virtual float energy(const CObject **objs, int32_t len) = 0;
 
-    virtual HRESULT project(MxObject **obj, int32_t len) = 0;
+    virtual HRESULT project(CObject **obj, int32_t len) = 0;
 };
 
 
-struct MxConstrainableType : MxType {
+struct MxConstrainableType : CType {
 
 
     std::vector<IConstraint*> constraints;

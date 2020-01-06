@@ -20,7 +20,7 @@ HRESULT MxPolygonSurfaceTensionForce::setTime(float time)
     return S_OK;
 }
 
-HRESULT MxPolygonSurfaceTensionForce::applyForce(float time, MxObject** objs,
+HRESULT MxPolygonSurfaceTensionForce::applyForce(float time, CObject** objs,
         uint32_t len) const
 {
     for(int i = 0; i < len; ++i) {

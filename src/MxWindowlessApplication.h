@@ -8,6 +8,8 @@
 #ifndef SRC_MXWINDOWLESSAPPLICATION_H_
 #define SRC_MXWINDOWLESSAPPLICATION_H_
 
+#include <mx_config.h>
+#include <Mechanica.h>
 #include "MxApplication.h"
 #include <Magnum/GL/Context.h>
 

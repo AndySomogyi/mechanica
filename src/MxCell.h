@@ -20,24 +20,24 @@
 #include "MeshRelationships.h"
 
 
-struct MxCellRendererType : MxObject {
+struct MxCellRendererType : CObject {
 
 };
 
 
-struct MxCellRenderer : MxObject {
+struct MxCellRenderer : CObject {
 
     virtual HRESULT invalidate() = 0;
     virtual ~MxCellRenderer() {};
 };
 
-MxAPI_DATA(struct MxType*) MxCell_Type;
+CAPI_DATA(struct CType*) MxCell_Type;
 
-struct MxCellType : MxType {
+struct MxCellType : CType {
 
-    MxCellType(const char* name, MxType *type) : MxType{name, type} {};
+    MxCellType(const char* name, CType *type) : CType{{0, .ob_type=type}, .tp_name = name} {};
 
-    //MxCellType() : MxType{MxType_Type} {};
+    //MxCellType() : CType{CType_Type} {};
 
     /**
      * Store the stoichiometry matrix in the type, initially Mechanica will
@@ -94,12 +94,12 @@ struct MxCellType : MxType {
  * The way we do v-tables, derived types can contain objects, and stuff their
  * v-tables in the main v-table to do containment correctly.
  */
-struct MxCell : MxObject, MxMeshNode {
+struct MxCell : CObject, MxMeshNode {
 
-    static MxType *type() { return MxCell_Type; };
+    static CType *type() { return MxCell_Type; };
 
-    MxCell(uint id, MxType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
-        MxObject{type}, MxMeshNode{msh, id}, stateVector{stateVector}, name{nm} {};
+    MxCell(uint id, CType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
+        CObject{0, type}, MxMeshNode{msh, id}, stateVector{stateVector}, name{nm} {};
 
     /**
      * the closed set of faces that define the boundary of this cell

@@ -7,7 +7,7 @@
 
 #ifndef INCLUDE_MX_PROPAGATOR_H_
 #define INCLUDE_MX_PROPAGATOR_H_
-#include "mx_object.h"
+#include "carbon.h"
 
 MxAPI_STRUCT(MxPropagator);
 

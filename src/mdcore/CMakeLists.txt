@@ -1,6 +1,3 @@
-project(mdcore)
-
-cmake_minimum_required(VERSION 3.7)
 
 option(MDCORE_DOUBLE "build double precision (libmdcore_d) version (single precision is always built)" NO)
 

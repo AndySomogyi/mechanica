@@ -1,6 +1,8 @@
+# build core carbon lib
+add_subdirectory(carbon)
+
 # build glfw here, set up variables so magnum does not try to find it
 add_subdirectory(glfw)
-
 
 
 # glfw does not set it's target include directories, but it turns out we
@@ -49,7 +51,6 @@ add_subdirectory(soil)
 #set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
 #option(MDCORE_USE_FFTW3 "use FFTW" YES)
 
-#add_subdirectory(mdcore)
 
 
 # Disable building extras we won't need (pure C++ project)

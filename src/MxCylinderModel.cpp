@@ -36,15 +36,15 @@ static struct CylinderCellType : MxCellType
 } cylinderCellType;
 
 static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
-    virtual MxType *cellType(const char* cellName, int cellIndex) {
+    virtual CType *cellType(const char* cellName, int cellIndex) {
         return &cylinderCellType;
     }
 
-    virtual MxType *polygonType(int polygonIndex) {
+    virtual CType *polygonType(int polygonIndex) {
         return &basicPolygonType;
     }
 
-    virtual MxType *partialPolygonType(const MxType *cellType, const MxType *polyType) {
+    virtual CType *partialPolygonType(const CType *cellType, const CType *polyType) {
         return nullptr;
     }
 
@@ -129,7 +129,7 @@ void MxCylinderModel::setTargetVolume(float tv)
 }
 
 HRESULT MxCylinderModel::applyT1Edge2TransitionToSelectedEdge() {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
         return Mx_FlipEdge(mesh, EdgePtr(obj));
     }
@@ -138,7 +138,7 @@ HRESULT MxCylinderModel::applyT1Edge2TransitionToSelectedEdge() {
 
 HRESULT MxCylinderModel::applyT2PolygonTransitionToSelectedPolygon()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
         HRESULT result = Mx_CollapsePolygon(mesh, (PolygonPtr)obj);
 
@@ -232,15 +232,15 @@ static float PolyDistance = 1;
 
 HRESULT MxCylinderModel::changePolygonTypes()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     MxPolygon *poly = dyn_cast<MxPolygon>(obj);
 
-    if(MxType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
+    if(CType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
         for(PolygonPtr p : mesh->polygons) {
             
             float distance = (poly->centroid - p->centroid).length();
             if(distance <= PolyDistance) {
-                VERIFY(MxObject_ChangeType(p, &growingPolygonType));
+                VERIFY(CObject_ChangeType(p, &growingPolygonType));
             }
         }
         VERIFY(propagator->structureChanged());
@@ -253,7 +253,7 @@ HRESULT MxCylinderModel::changePolygonTypes()
 
 HRESULT MxCylinderModel::activateAreaConstraint()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
  
     propagator->bindConstraint(&areaConstraint, &growingPolygonType);
     return propagator->structureChanged();

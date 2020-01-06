@@ -30,7 +30,7 @@ HRESULT MxModel_GetParticleAttrs(const MxModel *model, int x);
  *
  * @return borrowed reference
  */
-MxAPI_FUNC(MxLattice*)  MxModel_Lattice(MxModel *model);
+CAPI_FUNC(MxLattice*)  MxModel_Lattice(MxModel *model);
 
 
 

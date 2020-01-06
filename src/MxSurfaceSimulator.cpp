@@ -5,6 +5,7 @@
  *      Author: andy
  */
 
+#include <mx_config.h>
 #include <MxSurfaceSimulator.h>
 #include "MeshOperations.h"
 #include "Magnum/GL/Version.h"

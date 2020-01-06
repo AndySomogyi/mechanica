@@ -33,7 +33,7 @@ if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
 endif()
 
 # using magnum, so whole project needs C++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 # Use Magnum's modules to find things, these set up cmake names / aliases using a
 # magnum friendly naming scheme, add our module finders to cmake, these find

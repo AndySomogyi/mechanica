@@ -8,7 +8,7 @@
 #include <MxCellVolumeConstraint.h>
 #include "MxMesh.h"
 
-float MxCellVolumeConstraint::energy(const MxObject **objs, int32_t len)
+float MxCellVolumeConstraint::energy(const CObject **objs, int32_t len)
 {
     float e = 0;
     for(int i = 0; i < len; ++i) {
@@ -17,7 +17,7 @@ float MxCellVolumeConstraint::energy(const MxObject **objs, int32_t len)
     return e;
 }
 
-HRESULT MxCellVolumeConstraint::project(MxObject **objs, int32_t len)
+HRESULT MxCellVolumeConstraint::project(CObject **objs, int32_t len)
 {
     for(int i = 0; i < len; ++i) {
         MxCell *cell = static_cast<MxCell*>(objs[i]);
@@ -57,7 +57,7 @@ HRESULT MxCellVolumeConstraint::setTime(float time)
     return S_OK;
 }
 
-float MxCellVolumeConstraint::energy(const MxObject* obj)
+float MxCellVolumeConstraint::energy(const CObject* obj)
 {
     const MxCell *cell = static_cast<const MxCell*>(obj);
     return lambda * (cell->volume - targetVolume);

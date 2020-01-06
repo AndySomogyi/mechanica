@@ -15,7 +15,7 @@
 #include "MxView.h"
 
 
-struct MxSystem : MxObject {
+struct MxSystem : CObject {
 	MxModel *model;
 	MxPropagator *propagator;
 	MxController *controller;

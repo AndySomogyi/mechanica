@@ -4,7 +4,7 @@
 #ifndef Mx_TUPLEOBJECT_H
 #define Mx_TUPLEOBJECT_H
 
-#include <mx_object.h>
+#include <carbon.h>
 
 
 #ifdef __cplusplus
@@ -27,19 +27,19 @@ returned item's reference count.
 
 
 
-MxAPI_DATA(struct MxType) MxTuple_Type;
-MxAPI_DATA(struct MxType) MxTupleIter_Type;
+CAPI_DATA(struct CType) MxTuple_Type;
+CAPI_DATA(struct CType) MxTupleIter_Type;
 
-MxAPI_DATA(int) MxTuple_Check(MxObject*);
-MxAPI_DATA(int) MxTuple_CheckExact(MxObject*);
+CAPI_DATA(int) MxTuple_Check(CObject*);
+CAPI_DATA(int) MxTuple_CheckExact(CObject*);
 
-MxAPI_FUNC(MxObject *) MxTuple_New(Mx_ssize_t size);
-MxAPI_FUNC(Mx_ssize_t) MxTuple_Size(MxObject *);
-MxAPI_FUNC(MxObject *) MxTuple_GetItem(MxObject *, Mx_ssize_t);
-MxAPI_FUNC(int) MxTuple_SetItem(MxObject *, Mx_ssize_t, MxObject *);
-MxAPI_FUNC(MxObject *) MxTuple_GetSlice(MxObject *, Mx_ssize_t, Mx_ssize_t);
-MxAPI_FUNC(MxObject *) MxTuple_Pack(Mx_ssize_t, ...);
-MxAPI_FUNC(int) MxTuple_ClearFreeList(void);
+CAPI_FUNC(CObject *) MxTuple_New(Mx_ssize_t size);
+CAPI_FUNC(Mx_ssize_t) MxTuple_Size(CObject *);
+CAPI_FUNC(CObject *) MxTuple_GetItem(CObject *, Mx_ssize_t);
+CAPI_FUNC(int) MxTuple_SetItem(CObject *, Mx_ssize_t, CObject *);
+CAPI_FUNC(CObject *) MxTuple_GetSlice(CObject *, Mx_ssize_t, Mx_ssize_t);
+CAPI_FUNC(CObject *) MxTuple_Pack(Mx_ssize_t, ...);
+CAPI_FUNC(int) MxTuple_ClearFreeList(void);
 
 
 #ifdef __cplusplus

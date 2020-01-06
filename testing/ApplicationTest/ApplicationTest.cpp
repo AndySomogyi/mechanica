@@ -79,11 +79,11 @@ static int exec() {
 }
 
 
-#define OFFSET(f) std::cout << "offset: " << offsetof(MxType, f) << ", " << offsetof(PyTypeObject, f) << std::endl;
+#define OFFSET(f) std::cout << "offset: " << offsetof(CType, f) << ", " << offsetof(PyTypeObject, f) << std::endl;
 
 int main (int argc, char** argv) {
 
-    std::cout << "MxType: " << sizeof(MxType) << ", PyObjectType: " << sizeof(PyTypeObject) << std::endl;
+    std::cout << "CType: " << sizeof(CType) << ", PyObjectType: " << sizeof(PyTypeObject) << std::endl;
 
     OFFSET(tp_name);
 

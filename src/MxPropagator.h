@@ -117,7 +117,7 @@
  * directions, and to calculate trans-membrane fluxes.
  *
  */
-struct MxPropagator : MxObject {
+struct MxPropagator : CObject {
 };
 
 HRESULT MxPropagator_init(PyObject *m);

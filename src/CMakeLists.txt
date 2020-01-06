@@ -48,7 +48,6 @@ set(SRC
   mx_expr.cpp
   mx_function.cpp
   MxList.cpp
-  MxObject.cpp
   mx_stmt.cpp
   mx_tupleobject.cpp
   MxMeshCore.cpp
@@ -58,7 +57,6 @@ set(SRC
   MxSimulator.cpp
   MxTestCube.cpp
   MxTestParticles.cpp
-  MxType.cpp
   MxPropagator.cpp
   MxTestMDCoreParticles.cpp
   MxModule.cpp
@@ -94,7 +92,8 @@ set(SRC
   SplitPolygon.cpp
   SplitCell.cpp
   SplitEdge.cpp
-  MxFlipEdgeTriangle.cpp
+  FlipEdgeToPolygon.cpp
+  FlipPolygonToEdge.cpp
   MxConstraints.cpp
   MxForces.cpp
   MxPolygonSurfaceTensionForce.cpp
@@ -124,7 +123,6 @@ set(HEADERS
   MxDebug.h
   mechanica_llvm.h
   mechanica_private.h
-  MxObject.h
   MxMeshCore.h
   MxMesh.h
   MxPolygon.h
@@ -132,7 +130,6 @@ set(HEADERS
   MxSimulator.h
   MxTestCube.h
   MxTestParticles.h
-  MxType.h
   MxTestMDCoreParticles.h
   MxModule.h
   MxModel.h
@@ -232,7 +229,25 @@ target_include_directories(mechanica_obj PUBLIC
 )
 
 
+message("Carbon Includes:")
+get_target_property(dirs Carbon::Carbon INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message("carbon include='${dir}'")
+endforeach()
+
+
+message("Carbon Interface Includes:")
+
+get_target_property(dirs Carbon::Carbon INTERFACE_INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message( "carbon interface include='${dir}'")
+endforeach()
+
+
+
+
 target_link_libraries(mechanica_obj
+  Carbon::Carbon
   DirectXMath
   Python::Python
   glfw
@@ -244,6 +259,7 @@ target_link_libraries(mechanica_obj
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
+  mdcore_single
   )
 
 
@@ -300,6 +316,7 @@ target_include_directories(mechanica_py PRIVATE
 
 
 target_link_libraries(mechanica_py
+  Carbon::Carbon
   Python::Python
   glfw
   Assimp::Assimp
@@ -353,6 +370,7 @@ add_custom_command(
   )
 
 target_link_libraries(mechanica_shared
+  Carbon::Carbon
   Python::Python
   glfw
   Assimp::Assimp

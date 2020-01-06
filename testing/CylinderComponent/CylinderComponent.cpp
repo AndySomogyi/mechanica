@@ -7,7 +7,7 @@
 
 
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Create(int32_t width, int32_t height, CylinderTest **result) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Create(int32_t width, int32_t height, CylinderTest **result) {
 
 	std::cout << "Hello from CylinderTest_Create(" << width << ", " << height << ")" << std::endl;
 	//return S_OK;
@@ -22,26 +22,26 @@ MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Create(int32_t width, int32_t height
 	return S_OK;
 }
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Draw(CylinderTest *comp) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Draw(CylinderTest *comp) {
 	comp->draw();
 	return S_OK;
 }
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Step(CylinderTest *comp, float step) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_Step(CylinderTest *comp, float step) {
 	return E_NOTIMPL;
 }
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_LoadMesh(CylinderTest *comp, const char* path) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_LoadMesh(CylinderTest *comp, const char* path) {
 	std::cout << "Hello from LoadMesh(" << path << ")" << std::endl;
 
 	comp->loadModel(path);
 	return S_OK;
 }
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_GetScalarValue(CylinderTest *comp, uint32_t id, float* result) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_GetScalarValue(CylinderTest *comp, uint32_t id, float* result) {
 	return E_NOTIMPL;
 }
 
-MxAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_SetScalarValue(CylinderTest *comp, uint32_t id, float value) {
+CAPI_FUNC(HRESULT) CYL_EXPORT CylinderTest_SetScalarValue(CylinderTest *comp, uint32_t id, float value) {
 	return E_NOTIMPL;
 }

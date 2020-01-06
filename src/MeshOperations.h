@@ -54,13 +54,13 @@
  *
  *
  */
-HRESULT Mx_FlipTriangleToEdge(MeshPtr mesh, PolygonPtr poly, EdgePtr *edge);
+HRESULT Mx_FlipPolygonToEdge(MeshPtr mesh, PolygonPtr poly, EdgePtr *edge);
 
-HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr *poly);
+HRESULT Mx_FlipEdgeToPolygon(MeshPtr mesh, EdgePtr edge, PolygonPtr *poly);
 
-bool Mx_IsTriangleToEdgeConfiguration(CEdgePtr edge);
+bool Mx_IsPolygonToEdgeConfiguration(CEdgePtr edge);
 
-bool Mx_IsEdgeToTriangleConfiguration(CEdgePtr edge);
+bool Mx_IsEdgeToPolygonConfiguration(CEdgePtr edge);
 
 HRESULT Mx_FlipEdge(MeshPtr mesh, EdgePtr edge);
 

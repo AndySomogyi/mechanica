@@ -289,7 +289,7 @@ void testObject(Type *obj) {
 
     std::cout << "obj name: " << obj->ob_type->tp_name << std::endl;
 
-    testCast<MxObject>(obj);
+    testCast<CObject>(obj);
     testCast<MxEdge>(obj);
     testCast<MxCell>(obj);
     testCast<MxPolygon>(obj);

@@ -8,6 +8,7 @@
 #ifndef SRC_MXAPPLICATION_H_
 #define SRC_MXAPPLICATION_H_
 
+#include <Mechanica.h>
 #include "mechanica_private.h"
 
 #include <Magnum/GL/Context.h>
@@ -117,7 +118,7 @@ public:
 };
 
 
-struct MxApplication : MxObject
+struct MxApplication : CObject
 {
 public:
 
@@ -142,7 +143,7 @@ public:
 /**
  * The type object for a MxSymbol.
  */
-MxAPI_DATA(PyTypeObject) *MxApplication_Type;
+CAPI_DATA(PyTypeObject) *MxApplication_Type;
 
 HRESULT MxApplication_init(PyObject *m);
 

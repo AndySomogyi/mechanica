@@ -10,7 +10,7 @@
 
 #include "mechanica_private.h"
 
-struct MxModule : MxObject {
+struct MxModule : CObject {
 };
 
 void MxModule_init(PyObject *m);

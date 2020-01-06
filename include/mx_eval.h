@@ -10,7 +10,7 @@
 #ifndef _INCLUDE_CA_REFLECTION_H_
 #define _INCLUDE_CA_REFLECTION_H_
 
-#include <mx_port.h>
+#include <carbon.h>
 
 
 #ifdef __cplusplus
@@ -39,21 +39,21 @@ extern "C" {
  * Return a dictionary of the builtins in the current execution frame, or the
  * interpreter of the thread state if no frame is currently executing.
  */
-MxAPI_FUNC(MxObject*) MxEval_GetBuiltins();
+CAPI_FUNC(CObject*) MxEval_GetBuiltins();
 
 /**
  * Return value: Borrowed reference.
  * Return a dictionary of the local variables in the current execution frame,
  * or NULL if no frame is currently executing.
  */
-MxAPI_FUNC(MxObject*) MxEval_GetLocals();
+CAPI_FUNC(CObject*) MxEval_GetLocals();
 
 /**
  * Return value: Borrowed reference.
  * Return a dictionary of the global variables in the current execution frame,
  * or NULL if no frame is currently executing.
  */
-MxAPI_FUNC(MxObject*) MxEval_GetGlobals();
+CAPI_FUNC(CObject*) MxEval_GetGlobals();
 
 /**
  * Return value: Borrowed reference.
@@ -71,7 +71,7 @@ MxAPI_FUNC(MxObject*) MxEval_GetGlobals();
  * Return the name of func if it is a function, class or instance object,
  * else the name of funcs type.
  */
-MxAPI_FUNC(const char*) MxEval_GetFuncName(MxObject *func);
+CAPI_FUNC(const char*) MxEval_GetFuncName(CObject *func);
 
 /**
  * Return a description string, depending on the type of func. Return values
@@ -79,7 +79,7 @@ MxAPI_FUNC(const char*) MxEval_GetFuncName(MxObject *func);
  * and ” object”. Concatenated with the result of MxEval_GetFuncName(), the
  * result will be a description of func.
  */
-MxAPI_FUNC(const char*) MxEval_GetFuncDesc(MxObject *func);
+CAPI_FUNC(const char*) MxEval_GetFuncDesc(CObject *func);
 
 
 #ifdef __cplusplus

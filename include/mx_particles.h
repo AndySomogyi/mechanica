@@ -30,7 +30,7 @@ extern "C" {
 #endif
     
     
-MxObject *TestParticles_New();
+CObject *TestParticles_New();
 
 void TestParticles_Step();
 

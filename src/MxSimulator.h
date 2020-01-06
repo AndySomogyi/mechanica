@@ -17,7 +17,7 @@
 
 
 
-MxAPI_DATA(PyTypeObject*) MxSimulator_Type;
+CAPI_DATA(PyTypeObject*) MxSimulator_Type;
 
 struct MxSimulator : _object {
 };

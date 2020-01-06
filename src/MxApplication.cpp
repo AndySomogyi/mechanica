@@ -24,7 +24,7 @@ using namespace Magnum;
 #include <iostream>
 
 static MxApplication* gApp = nullptr;
-static MxObject *obj = nullptr;
+static CObject *obj = nullptr;
 
 
 struct PyApplication : _object {
@@ -208,7 +208,7 @@ HRESULT MxApplication::create(int argc, char** argv, const Configuration& conf)
         std::cout << "created new app: " << std::hex << gApp << std::endl;
     }
 
-    obj = new MxObject();
+    obj = new CObject();
 
 
     return S_OK;

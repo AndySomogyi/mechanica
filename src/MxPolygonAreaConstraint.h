@@ -16,14 +16,14 @@ struct MxPolygonAreaConstraint : IConstraint
 
     virtual HRESULT setTime(float time);
 
-    virtual float energy(const MxObject **objs, int32_t len);
+    virtual float energy(const CObject **objs, int32_t len);
 
-    virtual HRESULT project(MxObject **obj, int32_t len);
+    virtual HRESULT project(CObject **obj, int32_t len);
 
     float targetArea;
     float lambda;
 
-    float energy(const MxObject* obj);
+    float energy(const CObject* obj);
 };
 
 #endif /* SRC_MXPOLYGONAREACONSTRAINT_H_ */

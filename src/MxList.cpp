@@ -20,33 +20,33 @@ Mx_ssize_t MxList_Size(MxList* list)
     MX_NOTIMPLEMENTED;
 }
 
-MxObject * MxList_GetItem(MxList* lst, Mx_ssize_t size)
+CObject * MxList_GetItem(MxList* lst, Mx_ssize_t size)
 {
     MX_NOTIMPLEMENTED;
 }
 
-int MxList_SetItem(MxList* list, Mx_ssize_t index, MxObject* value)
+int MxList_SetItem(MxList* list, Mx_ssize_t index, CObject* value)
 {
     MX_NOTIMPLEMENTED;
 }
 
-int MxList_Insert(MxList*, Mx_ssize_t unsignedLongInt, MxObject*)
+int MxList_Insert(MxList*, Mx_ssize_t unsignedLongInt, CObject*)
 {
     MX_NOTIMPLEMENTED;
 }
 
-int MxList_Append(MxList*, MxObject*)
+int MxList_Append(MxList*, CObject*)
 {
     MX_NOTIMPLEMENTED;
 }
 
-MxObject * MxList_GetSlice(MxList*, Mx_ssize_t unsignedLongInt, Mx_ssize_t unsignedLongInt1)
+CObject * MxList_GetSlice(MxList*, Mx_ssize_t unsignedLongInt, Mx_ssize_t unsignedLongInt1)
 {
     MX_NOTIMPLEMENTED;
 }
 
 int MxList_SetSlice(MxList*, Mx_ssize_t unsignedLongInt,
-		Mx_ssize_t unsignedLongInt1, MxObject*)
+		Mx_ssize_t unsignedLongInt1, CObject*)
 {
     MX_NOTIMPLEMENTED;
 }
@@ -61,12 +61,12 @@ int MxList_Reverse(MxList*)
     MX_NOTIMPLEMENTED
 }
 
-MxObject * MxList_AsTuple(MxList*)
+CObject * MxList_AsTuple(MxList*)
 {
     MX_NOTIMPLEMENTED
 }
 
-MxObject * _MxList_Extend(MxList*, MxObject*)
+CObject * _MxList_Extend(MxList*, CObject*)
 {
     MX_NOTIMPLEMENTED
 }

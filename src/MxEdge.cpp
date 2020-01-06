@@ -10,13 +10,13 @@
 
 
 
-static MxType edgeType{"MxEdge", MxObject_Type} ;
-MxType *MxEdge_Type = &edgeType;
+static CType edgeType{.tp_name="MxEdge", .tp_base=CObject_Type} ;
+CType *MxEdge_Type = &edgeType;
 
 
 
 
-MxEdge::MxEdge(uint id) : MxObject(MxEdge_Type), id{id}
+MxEdge::MxEdge(uint id) : CObject{0, MxEdge_Type}, id{id}
 {
 }
 
@@ -25,7 +25,7 @@ MxEdge::~MxEdge()
     // TODO Auto-generated destructor stub
 }
 
-void foo(MxObject *o) {
+void foo(CObject *o) {
     MxEdge *x = dyn_cast<MxEdge>(o);
 
     if(x) {

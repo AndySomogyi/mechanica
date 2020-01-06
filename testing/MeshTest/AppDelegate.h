@@ -10,7 +10,7 @@ typedef unsigned char Byte;
 
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     MeshTest *meshTest;
-    MxType *selectType;
+    CType *selectType;
     float radius;
 }
 

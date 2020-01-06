@@ -19,7 +19,7 @@ HRESULT MxPolygonAreaConstraint::setTime(float time)
     return S_OK;
 }
 
-float MxPolygonAreaConstraint::energy(const MxObject** objs, int32_t len)
+float MxPolygonAreaConstraint::energy(const CObject** objs, int32_t len)
 {
     float e = 0;
     for(int i = 0; i < len; ++i) {
@@ -28,7 +28,7 @@ float MxPolygonAreaConstraint::energy(const MxObject** objs, int32_t len)
     return e;
 }
 
-HRESULT MxPolygonAreaConstraint::project(MxObject** obj, int32_t len)
+HRESULT MxPolygonAreaConstraint::project(CObject** obj, int32_t len)
 {
 
     for(int i = 0; i < len; ++i) {
@@ -55,7 +55,7 @@ HRESULT MxPolygonAreaConstraint::project(MxObject** obj, int32_t len)
     return S_OK;
 }
 
-float MxPolygonAreaConstraint::energy(const MxObject* obj)
+float MxPolygonAreaConstraint::energy(const CObject* obj)
 {
     const MxPolygon *poly = static_cast<const MxPolygon*>(obj);
     return lambda * (poly->area - targetArea);

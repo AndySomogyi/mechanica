@@ -21,7 +21,7 @@
 #ifndef INCLUDE_FPTYPE_H_
 #define INCLUDE_FPTYPE_H_
 
-#include "config.h"
+#include <mdcore_config.h>
     
 /* Define some macros for single/double precision vector operations. */
 #if defined(FPTYPE_SINGLE)

@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 /* Include configuration header */
-#include "config.h"
+#include "mdcore_config.h"
 
 /* Include some standard header files */
 #include <stdlib.h>
@@ -30,7 +30,7 @@
 #include <limits.h>
 
 /* Include some conditional headers. */
-#include "config.h"
+#include "mdcore_config.h"
 #ifdef HAVE_SETAFFINITY
     #include <sched.h>
 #endif

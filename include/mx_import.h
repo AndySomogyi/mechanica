@@ -11,7 +11,7 @@
 #ifndef _INCLUDED_CA_IMPORT_H_
 #define _INCLUDED_CA_IMPORT_H_
 
-#include <mx_port.h>
+#include <carbon.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ extern "C" {
  *
  * Return value: New reference.
  */
-MxAPI_FUNC(MxObject*) MxImport_ImportModule(const char *name);
+CAPI_FUNC(CObject*) MxImport_ImportModule(const char *name);
 
 /**
  * This version of MxImport_ImportModule() does not block. It’s intended to be
@@ -44,7 +44,7 @@ MxAPI_FUNC(MxObject*) MxImport_ImportModule(const char *name);
  * fetch the module from sys.modules and falls back to MxImport_ImportModule()
  * unless the lock is held, in which case the function will raise an ImportError.
  */
-MxAPI_FUNC(MxObject*) MxImport_ImportModuleNoBlock(const char *name);
+CAPI_FUNC(CObject*) MxImport_ImportModuleNoBlock(const char *name);
 
 /**
  * Import a module. This is best described by referring to the built-in cayman
@@ -56,8 +56,8 @@ MxAPI_FUNC(MxObject*) MxImport_ImportModuleNoBlock(const char *name);
  * the return value when a submodule of a package was requested is normally
  * the top-level package, unless a non-empty fromlist was given.
  */
-MxAPI_FUNC(MxObject*) MxImport_ImportModuleEx(char *name, MxObject *globals,
-		MxObject *locals, MxObject *fromlist);
+CAPI_FUNC(CObject*) MxImport_ImportModuleEx(char *name, CObject *globals,
+		CObject *locals, CObject *fromlist);
 
 /**
  * Import a module. This is best described by referring to the built-in
@@ -69,8 +69,8 @@ MxAPI_FUNC(MxObject*) MxImport_ImportModuleEx(char *name, MxObject *globals,
  * value when a submodule of a package was requested is normally the top-level
  * package, unless a non-empty fromlist was given.
  */
-MxAPI_FUNC(MxObject*) MxImport_ImportModuleLevel(char *name, MxObject *globals,
-		MxObject *locals, MxObject *fromlist, int level);
+CAPI_FUNC(CObject*) MxImport_ImportModuleLevel(char *name, CObject *globals,
+		CObject *locals, CObject *fromlist, int level);
 
 /**
  * This is a higher-level interface that calls the current “import hook function”.
@@ -78,7 +78,7 @@ MxAPI_FUNC(MxObject*) MxImport_ImportModuleLevel(char *name, MxObject *globals,
  * globals. This means that the import is done using whatever import hooks are
  * installed in the current environment, e.g. by rexec or ihooks.
  */
-MxAPI_FUNC(MxObject*) MxImport_Import(MxObject *name);
+CAPI_FUNC(CObject*) MxImport_Import(CObject *name);
 
 /**
  * Reload a module. This is best described by referring to the built-in cayman
@@ -86,7 +86,7 @@ MxAPI_FUNC(MxObject*) MxImport_Import(MxObject *name);
  * directly. Return a new reference to the reloaded module, or NULL with an
  * exception set on failure (the module still exists in this case).
  */
-MxAPI_FUNC(MxObject*) MxImport_ReloadModule(MxObject *m);
+CAPI_FUNC(CObject*) MxImport_ReloadModule(CObject *m);
 
 /**
  * Return the module object corresponding to a module name. The name argument
@@ -100,7 +100,7 @@ MxAPI_FUNC(MxObject*) MxImport_ReloadModule(MxObject *m);
  * Package structures implied by a dotted name for name are not created if
  * not already present.
  */
-MxAPI_FUNC(MxObject*) MxImport_AddModule(const char *name);
+CAPI_FUNC(CObject*) MxImport_AddModule(const char *name);
 
 /**
  * Given a module name (possibly of the form package.module) and a code object
@@ -121,13 +121,13 @@ MxAPI_FUNC(MxObject*) MxImport_AddModule(const char *name);
  * If name points to a dotted name of the form package.module, any
  * package structures not already created will still not be created.
  */
-MxAPI_FUNC(MxObject*) MxImport_ExecCodeModule(char *name, MxObject *co);
+CAPI_FUNC(CObject*) MxImport_ExecCodeModule(char *name, CObject *co);
 
 /**
  * Like MxImport_ExecCodeModule(), but the __file__ attribute of the module
  * object is set to pathname if it is non-NULL.
  */
-MxAPI_FUNC(MxObject*) MxImport_ExecCodeModuleEx(char *name, MxObject *co,
+CAPI_FUNC(CObject*) MxImport_ExecCodeModuleEx(char *name, CObject *co,
 		char *pathname);
 
 /**
@@ -135,13 +135,13 @@ MxAPI_FUNC(MxObject*) MxImport_ExecCodeModuleEx(char *name, MxObject *co,
  * The magic number should be present in the first four bytes of the bytecode file,
  * in little-endian byte order.
  */
-MxAPI_FUNC(long) MxImport_GetMagicNumber();
+CAPI_FUNC(long) MxImport_GetMagicNumber();
 
 /**
  * Return the dictionary used for the module administration (a.k.a. sys.modules).
  * Note that this is a per-interpreter variable.
  */
-MxAPI_FUNC(MxObject*) MxImport_GetModuleDict();
+CAPI_FUNC(CObject*) MxImport_GetModuleDict();
 
 #ifdef __cplusplus
 }

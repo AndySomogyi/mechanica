@@ -11,19 +11,19 @@
 
 MxTestView *view = nullptr;
 
-void MxUI_init(MxObject* m)
+void MxUI_init(CObject* m)
 {
     std::cout << MX_FUNCTION << std::endl;
 }
 
 
-MxAPI_FUNC(HRESULT) MxUI_PollEvents()
+CAPI_FUNC(HRESULT) MxUI_PollEvents()
 {
     glfwPollEvents();
     return S_OK;
 }
 
-MxAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout)
+CAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout)
 {
     glfwWaitEventsTimeout(timeout);
     glfwWaitEvents();
@@ -34,7 +34,7 @@ MxAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout)
     return S_OK;
 }
 
-MxAPI_FUNC(HRESULT) MxUI_PostEmptyEvent()
+CAPI_FUNC(HRESULT) MxUI_PostEmptyEvent()
 {
     glfwPostEmptyEvent();
     return S_OK;
@@ -65,7 +65,7 @@ static void error_callback(int error, const char* description)
 }
 
 
-MxAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration* conf)
+CAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration* conf)
 {
     std::cout << MX_FUNCTION << std::endl;
 

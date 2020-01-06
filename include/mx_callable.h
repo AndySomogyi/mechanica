@@ -5,13 +5,13 @@
  *      Author: andy
  *
  * module functions, definitions and documentation copied from official
- * python website for python compatiblity.
+ * python website for python compatibility.
  */
 
 #ifndef _INCLUDED_CA_CALLABLE_H_
 #define _INCLUDED_CA_CALLABLE_H_
 
-#include "mx_object.h"
+#include "carbon.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -21,7 +21,7 @@ extern "C"
 #ifdef CA_STRICT
 struct MxCallable;
 #else
-typedef MxObject MxCallable;
+typedef CObject MxCallable;
 #endif
 
 
@@ -33,7 +33,7 @@ typedef MxObject MxCallable;
  *
  * This function always succeeds.
  */
-MxAPI_FUNC(int) MxCallable_Check(MxObject *);
+CAPI_FUNC(int) MxCallable_Check(CObject *);
 
 /**
  * Return the raw, callable address of the specified function.
@@ -56,37 +56,37 @@ MxAPI_FUNC(int) MxCallable_Check(MxObject *);
  *
  * @endcode
  *
- * @param callable: A callable MxObject. This may be either a named,
+ * @param callable: A callable CObject. This may be either a named,
  *                  a functor (an object with the __call__) method, or
  *                  a method on a an object.
  *
- * @param argTypes: A sequence of MxTypeObjects packed into a tuple.
+ * @param argTypes: A sequence of CTypeObjects packed into a tuple.
  * @returns: the raw function pointer address of the underlying
  *           native code object.
  */
-MxAPI_FUNC(void*) MxCallable_GetFuctionAddress(MxCallable *callable,
-		MxType *retType, MxObject *argTypes);
+CAPI_FUNC(void*) MxCallable_GetFuctionAddress(MxCallable *callable,
+		CType *retType, CObject *argTypes);
 
 /**
  * Same as MxCallable_GetFuctionAddress, except the arguments types are
  * given as variable number of C arguments.  The C arguments are provided
- * as MxTypeObject * values, terminated by a NULL.
+ * as CTypeObject * values, terminated by a NULL.
  */
-MxAPI_FUNC(void*) MxCallable_GetFuctionAddressObjArgs(MxCallable *callable,
-		MxType *retType, ...);
+CAPI_FUNC(void*) MxCallable_GetFuctionAddressObjArgs(MxCallable *callable,
+		CType *retType, ...);
 
 /**
  * Mxll a callable Mechanica object, callable, with
  * arguments and keywords arguments.  The 'args' argument can not be
  * NULL, but the 'kw' argument can be NULL.
  */
-MxAPI_FUNC(MxObject *) MxCallable_Call(MxCallable *callable,
-		MxObject *args, MxObject *kw);
+CAPI_FUNC(CObject *) MxCallable_Call(MxCallable *callable,
+		CObject *args, CObject *kw);
 
 /**
  * Compatibility macro
  */
-#define MxObject_Call MxCallable_Call
+#define CObject_Call MxCallable_Call
 
 /**
  * Mxll a callable Mechanica object, callable_object, with
@@ -95,10 +95,10 @@ MxAPI_FUNC(MxObject *) MxCallable_Call(MxCallable *callable,
  * call on success, or NULL on failure.  This is the equivalent
  * of the Mechanica expression: o(*args).
  */
-MxAPI_FUNC(MxObject *) MxCallable_CallObject(MxCallable *callable,
-		MxObject *args);
+CAPI_FUNC(CObject *) MxCallable_CallObject(MxCallable *callable,
+		CObject *args);
 
-#define MxObject_CallObject MxCallable_CallObject
+#define CObject_CallObject MxCallable_CallObject
 
 /**
  * Mxll a callable Mechanica object, callable_object, with a
@@ -108,27 +108,27 @@ MxAPI_FUNC(MxObject *) MxCallable_CallObject(MxCallable *callable,
  * result of the call on success, or NULL on failure.  This is
  * the equivalent of the Mechanica expression: o(*args).
  */
-MxAPI_FUNC(MxObject *) MxCallable_CallFunction(MxCallable *callable,
+CAPI_FUNC(CObject *) MxCallable_CallFunction(MxCallable *callable,
 		const char *format, ...);
 
-#define MxObject_CallFunction MxCallable_CallFunction
+#define CObject_CallFunction MxCallable_CallFunction
 
 
 /**
  * Mxll a callable Mechanica object, callable, with a
  * variable number of C arguments.  The C arguments are provided
- * as MxObject * values, terminated by a NULL.  Returns the
+ * as CObject * values, terminated by a NULL.  Returns the
  * result of the call on success, or NULL on failure.  This is
  * the equivalent of the Mechanica expression: o(*args).
  */
-MxAPI_FUNC(MxObject *) MxCallable_CallFunctionObjArgs(MxCallable *callable,
+CAPI_FUNC(CObject *) MxCallable_CallFunctionObjArgs(MxCallable *callable,
 		...);
 
 /**
  * Compatibility macro, Python defined this originally as
  * PyObject_CallFunctionObjArgs
  */
-#define MxObject_CallFunctionObjArgs MxCallable_CallFunctionObjArgs
+#define CObject_CallFunctionObjArgs MxCallable_CallFunctionObjArgs
 
 
 

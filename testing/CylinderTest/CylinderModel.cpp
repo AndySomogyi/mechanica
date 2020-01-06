@@ -37,15 +37,15 @@ static struct CylinderCellType : MxCellType
 } cylinderCellType;
 
 static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
-    virtual MxType *cellType(const char* cellName, int cellIndex) {
+    virtual CType *cellType(const char* cellName, int cellIndex) {
         return &cylinderCellType;
     }
 
-    virtual MxType *polygonType(int polygonIndex) {
+    virtual CType *polygonType(int polygonIndex) {
         return &basicPolygonType;
     }
 
-    virtual MxType *partialPolygonType(const MxType *cellType, const MxType *polyType) {
+    virtual CType *partialPolygonType(const CType *cellType, const CType *polyType) {
         return nullptr;
     }
 
@@ -72,7 +72,7 @@ HRESULT CylinderModel::loadModel() {
     testEdges();
     
     for(int i = 0; i < mesh->edges.size(); ++i) {
-        bool isFlipable = Mx_IsEdgeToTriangleConfiguration(mesh->edges[i]);
+        bool isFlipable = Mx_IsEdgeToPolygonConfiguration(mesh->edges[i]);
         std::cout << "edge[" << i << "] can be edge to tri flipped: " << isFlipable << std::endl;
     }
 
@@ -137,6 +137,13 @@ HRESULT CylinderModel::setStateVector(const float *stateVector)
     return S_OK;
 }
 
+HRESULT CylinderModel::flipSelectedPolygonToEdge()
+{
+}
+
+HRESULT CylinderModel::splitSelectedCell()
+{
+}
 
 HRESULT CylinderModel::getStateVectorRate(float time, const float *y, float* dydt)
 {
@@ -148,17 +155,17 @@ void CylinderModel::setTargetVolume(float tv)
     cellVolumeConstraint.targetVolume = tv;
 }
 
-HRESULT CylinderModel::applyT1Edge2TransitionToSelectedEdge() {
-    MxObject *obj = mesh->selectedObject();
+HRESULT CylinderModel::flipSelectedEdgeToEdge() {
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
         return Mx_FlipEdge(mesh, EdgePtr(obj));
     }
     return mx_error(E_FAIL, "no selected object, or selected object is not an edge");
 }
 
-HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
+HRESULT CylinderModel::collapseSelectedPolygon()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
         HRESULT result = Mx_CollapsePolygon(mesh, (PolygonPtr)obj);
 
@@ -171,7 +178,7 @@ HRESULT CylinderModel::applyT2PolygonTransitionToSelectedPolygon()
     return mx_error(E_FAIL, "no selected object, or selected object is not a polygon");
 }
 
-HRESULT CylinderModel::applyT3PolygonTransitionToSelectedPolygon() {
+HRESULT CylinderModel::splitSelectedPolygon() {
     MxPolygon *poly = dyn_cast<MxPolygon>(mesh->selectedObject());
     if(poly) {
 
@@ -252,15 +259,15 @@ static float PolyDistance = 1;
 
 HRESULT CylinderModel::changePolygonTypes()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     MxPolygon *poly = dyn_cast<MxPolygon>(obj);
 
-    if(MxType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
+    if(CType_IsSubtype(obj->ob_type, MxPolygon_Type)) {
         for(PolygonPtr p : mesh->polygons) {
             
             float distance = (poly->centroid - p->centroid).length();
             if(distance <= PolyDistance) {
-                VERIFY(MxObject_ChangeType(p, &growingPolygonType));
+                VERIFY(CObject_ChangeType(p, &growingPolygonType));
             }
         }
         VERIFY(propagator->structureChanged());
@@ -273,7 +280,7 @@ HRESULT CylinderModel::changePolygonTypes()
 
 HRESULT CylinderModel::activateAreaConstraint()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
  
     propagator->bindConstraint(&areaConstraint, &growingPolygonType);
     return propagator->structureChanged();
@@ -319,13 +326,13 @@ float CylinderModel::growSurfaceTensionMax()
     return 5 * growingPolygonForce.surfaceTension;
 }
 
-HRESULT CylinderModel::edgeToPolygonFlipSelecgtedEdge() {
+HRESULT CylinderModel::flipSelectedEdgeToPolygon() {
     
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
         
         PolygonPtr newPoly = nullptr;
-        return Mx_FlipEdgeToTriangle(mesh, EdgePtr(obj), &newPoly);
+        return Mx_FlipEdgeToPolygon(mesh, EdgePtr(obj), &newPoly);
     }
     
     return mx_error(E_FAIL, "no selected object, or selected object is not a edge");

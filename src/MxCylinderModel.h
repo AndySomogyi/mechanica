@@ -111,7 +111,7 @@ struct MxCylinderModel : public MxModel {
 /**
  * The type object for a MxSymbol.
  */
-MxAPI_DATA(PyTypeObject) *MxCylinderModel_Type;
+CAPI_DATA(PyTypeObject) *MxCylinderModel_Type;
 
 HRESULT MxCylinderModel_init(PyObject *m);
 

@@ -10,62 +10,62 @@
 /// PUBLIC API SECTION
 extern "C" {
 
-int MxFunction_Check(MxObject* o)
+int MxFunction_Check(CObject* o)
 {
 	return 0;
 }
 
-MxObject* MxFunction_New(MxObject* code, MxObject* globals)
+CObject* MxFunction_New(CObject* code, CObject* globals)
 {
 	return 0;
 }
 
-MxObject* MxFunction_NewWithQualName(MxObject* code, MxObject* globals, MxObject* qualname)
+CObject* MxFunction_NewWithQualName(CObject* code, CObject* globals, CObject* qualname)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetCode(MxObject* op)
+CObject* MxFunction_GetCode(CObject* op)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetGlobals(MxObject* op)
+CObject* MxFunction_GetGlobals(CObject* op)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetModule(MxObject* op)
+CObject* MxFunction_GetModule(CObject* op)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetDefaults(MxObject* op)
+CObject* MxFunction_GetDefaults(CObject* op)
 {
 	return 0;
 }
 
-int MxFunction_SetDefaults(MxObject* op, MxObject* defaults)
+int MxFunction_SetDefaults(CObject* op, CObject* defaults)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetClosure(MxObject* op)
+CObject* MxFunction_GetClosure(CObject* op)
 {
 	return 0;
 }
 
-int MxFunction_SetClosure(MxObject* op, MxObject* closure)
+int MxFunction_SetClosure(CObject* op, CObject* closure)
 {
 	return 0;
 }
 
-MxObject* MxFunction_GetAnnotations(MxObject* op)
+CObject* MxFunction_GetAnnotations(CObject* op)
 {
 	return 0;
 }
 
-int MxFunction_SetAnnotations(MxObject* op, MxObject* annotations)
+int MxFunction_SetAnnotations(CObject* op, CObject* annotations)
 {
 	return 0;
 }

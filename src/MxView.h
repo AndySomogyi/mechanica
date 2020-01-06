@@ -10,7 +10,7 @@
 
 #include "mechanica_private.h"
 
-struct MxView : MxObject {
+struct MxView : CObject {
 };
 
 #endif /* SRC_MXVIEW_H_ */

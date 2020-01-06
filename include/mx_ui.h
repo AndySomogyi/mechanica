@@ -8,7 +8,7 @@
 #ifndef INCLUDE_MX_UI_H_
 #define INCLUDE_MX_UI_H_
 
-#include <mx_port.h>
+#include <c_port.h>
 
 
 /**
@@ -25,7 +25,7 @@
  * returns immediately. This is the best choice when rendering continually,
  * like most games do.
  */
-MxAPI_FUNC(HRESULT) MxUI_PollEvents();
+CAPI_FUNC(HRESULT) MxUI_PollEvents();
 
 
 /**
@@ -44,13 +44,13 @@ MxAPI_FUNC(HRESULT) MxUI_PollEvents();
  *
  * @param timeout: the maximum duration this method should wait before returning.
  */
-MxAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout);
+CAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout);
 
 /**
  * If the main thread is sleeping in MxUI_WaitEvents, you can wake it from another
  * thread by posting an empty event to the event queue with MxUI_PostEmptyEvent.
  */
-MxAPI_FUNC(HRESULT) MxUI_PostEmptyEvent();
+CAPI_FUNC(HRESULT) MxUI_PostEmptyEvent();
 
 struct MxGraphicsConfiguration {
     char* appTitle;
@@ -62,7 +62,7 @@ struct MxGraphicsConfiguration {
     bool srgbCapable;
 };
 
-MxAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration *conf);
+CAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration *conf);
 
 
 #endif /* INCLUDE_MX_UI_H_ */

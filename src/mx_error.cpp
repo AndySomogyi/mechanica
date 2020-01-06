@@ -5,6 +5,23 @@
  *      Author: andy
  */
 
+#include <cstdio>
+#include <ctype.h>
+
+#ifdef CType
+#error CType is macro
+#endif
+
+
+#include "mechanica_private.h"
+
+
+#ifdef CType
+#error CType is macro
+#endif
+
+
+
 #include <mx_error.h>
 #include <iostream>
 

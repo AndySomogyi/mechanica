@@ -1,7 +1,7 @@
 #ifndef Mx_ABSTRACTOBJECT_H
 #define Mx_ABSTRACTOBJECT_H
 
-#include <mx_object.h>
+#include <carbon.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -12,8 +12,8 @@ extern "C"
 
 /* new buffer API */
 
-MxAPI_FUNC(MxObject *) MxObject_Format(MxObject* obj,
-		MxObject *format_spec);
+CAPI_FUNC(CObject *) CObject_Format(CObject* obj,
+		CObject *format_spec);
 /*
  Takes an arbitrary object and returns the result of
  calling obj.__format__(format_spec).
@@ -21,16 +21,16 @@ MxAPI_FUNC(MxObject *) MxObject_Format(MxObject* obj,
 
 /* Iterators */
 
-MxAPI_FUNC(MxObject *) MxObject_GetIter(MxObject *);
+CAPI_FUNC(CObject *) CObject_GetIter(CObject *);
 /* Takes an object and returns an iterator for it.
  This is typically a new iterator but if the argument
  is an iterator, this returns itself. */
 
 #define MxIter_Check(obj) \
     ((obj)->ob_type->tp_iternext != NULL && \
-     (obj)->ob_type->tp_iternext != &_MxObject_NextNotImplemented)
+     (obj)->ob_type->tp_iternext != &_CObject_NextNotImplemented)
 
-MxAPI_FUNC(MxObject *) MxIter_Next(MxObject *);
+CAPI_FUNC(CObject *) MxIter_Next(CObject *);
 /* Takes an iterator object and calls its tp_iternext slot,
  returning the next value.  If the iterator is exhausted,
  this returns NULL without setting an exception.
@@ -39,7 +39,7 @@ MxAPI_FUNC(MxObject *) MxIter_Next(MxObject *);
 
 /*  Sequence protocol:*/
 
-MxAPI_FUNC(int) MxSequence_Check(MxObject *o);
+CAPI_FUNC(int) MxSequence_Check(CObject *o);
 
 /*
  Return 1 if the object provides sequence protocol, and zero
@@ -48,7 +48,7 @@ MxAPI_FUNC(int) MxSequence_Check(MxObject *o);
  This function always succeeds.
  */
 
-MxAPI_FUNC(Mx_ssize_t) MxSequence_Size(MxObject *o);
+CAPI_FUNC(Mx_ssize_t) MxSequence_Size(CObject *o);
 
 /*
  Return the size of sequence object o, or -1 on failure.
@@ -56,10 +56,10 @@ MxAPI_FUNC(Mx_ssize_t) MxSequence_Size(MxObject *o);
 
 /* For DLL compatibility */
 #undef MxSequence_Length
-MxAPI_FUNC(Mx_ssize_t) MxSequence_Length(MxObject *o);
+CAPI_FUNC(Mx_ssize_t) MxSequence_Length(CObject *o);
 #define MxSequence_Length MxSequence_Size
 
-MxAPI_FUNC(MxObject *) MxSequence_Concat(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxSequence_Concat(CObject *o1, CObject *o2);
 
 /*
  Return the concatenation of o1 and o2 on success, and NULL on
@@ -67,7 +67,7 @@ MxAPI_FUNC(MxObject *) MxSequence_Concat(MxObject *o1, MxObject *o2);
  expression: o1+o2.
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_Repeat(MxObject *o, Mx_ssize_t count);
+CAPI_FUNC(CObject *) MxSequence_Repeat(CObject *o, Mx_ssize_t count);
 
 /*
  Return the result of repeating sequence object o count times,
@@ -75,14 +75,14 @@ MxAPI_FUNC(MxObject *) MxSequence_Repeat(MxObject *o, Mx_ssize_t count);
  expression: o1*count.
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_GetItem(MxObject *o, Mx_ssize_t i);
+CAPI_FUNC(CObject *) MxSequence_GetItem(CObject *o, Mx_ssize_t i);
 
 /*
  Return the ith element of o, or NULL on failure. This is the
  equivalent of the Mechanica expression: o[i].
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_GetSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_t i2);
+CAPI_FUNC(CObject *) MxSequence_GetSlice(CObject *o, Mx_ssize_t i1, Mx_ssize_t i2);
 
 /*
  Return the slice of sequence object o between i1 and i2, or
@@ -90,7 +90,7 @@ MxAPI_FUNC(MxObject *) MxSequence_GetSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_
  expression: o[i1:i2].
  */
 
-MxAPI_FUNC(int) MxSequence_SetItem(MxObject *o, Mx_ssize_t i, MxObject *v);
+CAPI_FUNC(int) MxSequence_SetItem(CObject *o, Mx_ssize_t i, CObject *v);
 
 /*
  Assign object v to the ith element of o.  Returns
@@ -98,7 +98,7 @@ MxAPI_FUNC(int) MxSequence_SetItem(MxObject *o, Mx_ssize_t i, MxObject *v);
  statement: o[i]=v.
  */
 
-MxAPI_FUNC(int) MxSequence_DelItem(MxObject *o, Mx_ssize_t i);
+CAPI_FUNC(int) MxSequence_DelItem(CObject *o, Mx_ssize_t i);
 
 /*
  Delete the ith element of object v.  Returns
@@ -106,8 +106,8 @@ MxAPI_FUNC(int) MxSequence_DelItem(MxObject *o, Mx_ssize_t i);
  statement: del o[i].
  */
 
-MxAPI_FUNC(int) MxSequence_SetSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_t i2,
-		MxObject *v);
+CAPI_FUNC(int) MxSequence_SetSlice(CObject *o, Mx_ssize_t i1, Mx_ssize_t i2,
+		CObject *v);
 
 /*
  Assign the sequence object, v, to the slice in sequence
@@ -115,7 +115,7 @@ MxAPI_FUNC(int) MxSequence_SetSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_t i2,
  equivalent of the Mechanica statement: o[i1:i2]=v.
  */
 
-MxAPI_FUNC(int) MxSequence_DelSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_t i2);
+CAPI_FUNC(int) MxSequence_DelSlice(CObject *o, Mx_ssize_t i1, Mx_ssize_t i2);
 
 /*
  Delete the slice in sequence object, o, from i1 to i2.
@@ -123,20 +123,20 @@ MxAPI_FUNC(int) MxSequence_DelSlice(MxObject *o, Mx_ssize_t i1, Mx_ssize_t i2);
  statement: del o[i1:i2].
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_Tuple(MxObject *o);
+CAPI_FUNC(CObject *) MxSequence_Tuple(CObject *o);
 
 /*
  Returns the sequence, o, as a tuple on success, and NULL on failure.
  This is equivalent to the Mechanica expression: tuple(o)
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_List(MxObject *o);
+CAPI_FUNC(CObject *) MxSequence_List(CObject *o);
 /*
  Returns the sequence, o, as a list on success, and NULL on failure.
  This is equivalent to the Mechanica expression: list(o)
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_Fast(MxObject *o, const char* m);
+CAPI_FUNC(CObject *) MxSequence_Fast(CObject *o, const char* m);
 /*
  Return the sequence, o, as a list, unless it's already a
  tuple or list.  Use MxSequence_Fast_GET_ITEM to access the
@@ -172,7 +172,7 @@ MxAPI_FUNC(MxObject *) MxSequence_Fast(MxObject *o, const char* m);
 /* Return a pointer to the underlying item array for
  an object retured by MxSequence_Fast */
 
-MxAPI_FUNC(Mx_ssize_t) MxSequence_Count(MxObject *o, MxObject *value);
+CAPI_FUNC(Mx_ssize_t) MxSequence_Count(CObject *o, CObject *value);
 
 /*
  Return the number of occurrences on value on o, that is,
@@ -181,7 +181,7 @@ MxAPI_FUNC(Mx_ssize_t) MxSequence_Count(MxObject *o, MxObject *value);
  expression: o.count(value).
  */
 
-MxAPI_FUNC(int) MxSequence_Contains(MxObject *seq, MxObject *ob);
+CAPI_FUNC(int) MxSequence_Contains(CObject *seq, CObject *ob);
 /*
  Return -1 if error; 1 if ob in seq; 0 if ob not in seq.
  Use __contains__ if possible, else _CaSequence_IterSearch().
@@ -189,7 +189,7 @@ MxAPI_FUNC(int) MxSequence_Contains(MxObject *seq, MxObject *ob);
 
 /* For DLL-level backwards compatibility */
 #undef MxSequence_In
-MxAPI_FUNC(int) MxSequence_In(MxObject *o, MxObject *value);
+CAPI_FUNC(int) MxSequence_In(CObject *o, CObject *value);
 
 /* For source-level backwards compatibility */
 #define MxSequence_In MxSequence_Contains
@@ -200,7 +200,7 @@ MxAPI_FUNC(int) MxSequence_In(MxObject *o, MxObject *value);
  is equivalent to the Mechanica expression: value in o.
  */
 
-MxAPI_FUNC(Mx_ssize_t) MxSequence_Index(MxObject *o, MxObject *value);
+CAPI_FUNC(Mx_ssize_t) MxSequence_Index(CObject *o, CObject *value);
 
 /*
  Return the first index for which o[i]=value.  On error,
@@ -210,7 +210,7 @@ MxAPI_FUNC(Mx_ssize_t) MxSequence_Index(MxObject *o, MxObject *value);
 
 /* In-place versions of some of the above Sequence functions. */
 
-MxAPI_FUNC(MxObject *) MxSequence_InPlaceConcat(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxSequence_InPlaceConcat(CObject *o1, CObject *o2);
 
 /*
  Append o2 to o1, in-place when possible. Return the resulting
@@ -219,7 +219,7 @@ MxAPI_FUNC(MxObject *) MxSequence_InPlaceConcat(MxObject *o1, MxObject *o2);
 
  */
 
-MxAPI_FUNC(MxObject *) MxSequence_InPlaceRepeat(MxObject *o, Mx_ssize_t count);
+CAPI_FUNC(CObject *) MxSequence_InPlaceRepeat(CObject *o, Mx_ssize_t count);
 
 /*
  Repeat o1 by count, in-place when possible. Return the resulting
@@ -230,7 +230,7 @@ MxAPI_FUNC(MxObject *) MxSequence_InPlaceRepeat(MxObject *o, Mx_ssize_t count);
 
 /*  Mapping protocol:*/
 
-MxAPI_FUNC(int) MxMapping_Check(MxObject *o);
+CAPI_FUNC(int) MxMapping_Check(CObject *o);
 
 /*
  Return 1 if the object provides mapping protocol, and zero
@@ -239,7 +239,7 @@ MxAPI_FUNC(int) MxMapping_Check(MxObject *o);
  This function always succeeds.
  */
 
-MxAPI_FUNC(Mx_ssize_t) MxMapping_Size(MxObject *o);
+CAPI_FUNC(Mx_ssize_t) MxMapping_Size(CObject *o);
 
 /*
  Returns the number of keys in object o on success, and -1 on
@@ -249,30 +249,30 @@ MxAPI_FUNC(Mx_ssize_t) MxMapping_Size(MxObject *o);
 
 /* For DLL compatibility */
 #undef MxMapping_Length
-MxAPI_FUNC(Mx_ssize_t) MxMapping_Length(MxObject *o);
+CAPI_FUNC(Mx_ssize_t) MxMapping_Length(CObject *o);
 #define MxMapping_Length MxMapping_Size
 
 /* implemented as a macro:
 
- int MxMapping_DelItemString(MxObject *o, const char *key);
+ int MxMapping_DelItemString(CObject *o, const char *key);
 
  Remove the mapping for object, key, from the object *o.
  Returns -1 on failure.  This is equivalent to
  the Mechanica statement: del o[key].
  */
-#define MxMapping_DelItemString(O,K) MxObject_DelItemString((O),(K))
+#define MxMapping_DelItemString(O,K) CObject_DelItemString((O),(K))
 
 /* implemented as a macro:
 
- int MxMapping_DelItem(MxObject *o, MxObject *key);
+ int MxMapping_DelItem(CObject *o, CObject *key);
 
  Remove the mapping for object, key, from the object *o.
  Returns -1 on failure.  This is equivalent to
  the Mechanica statement: del o[key].
  */
-#define MxMapping_DelItem(O,K) MxObject_DelItem((O),(K))
+#define MxMapping_DelItem(O,K) CObject_DelItem((O),(K))
 
-MxAPI_FUNC(int) MxMapping_HasKeyString(MxObject *o, const char *key);
+CAPI_FUNC(int) MxMapping_HasKeyString(CObject *o, const char *key);
 
 /*
  On success, return 1 if the mapping object has the key, key,
@@ -282,7 +282,7 @@ MxAPI_FUNC(int) MxMapping_HasKeyString(MxObject *o, const char *key);
  This function always succeeds.
  */
 
-MxAPI_FUNC(int) MxMapping_HasKey(MxObject *o, MxObject *key);
+CAPI_FUNC(int) MxMapping_HasKey(CObject *o, CObject *key);
 
 /*
  Return 1 if the mapping object has the key, key,
@@ -293,21 +293,21 @@ MxAPI_FUNC(int) MxMapping_HasKey(MxObject *o, MxObject *key);
 
  */
 
-MxAPI_FUNC(MxObject *) MxMapping_Keys(MxObject *o);
+CAPI_FUNC(CObject *) MxMapping_Keys(CObject *o);
 
 /*
  On success, return a list or tuple of the keys in object o.
  On failure, return NULL.
  */
 
-MxAPI_FUNC(MxObject *) MxMapping_Values(MxObject *o);
+CAPI_FUNC(CObject *) MxMapping_Values(CObject *o);
 
 /*
  On success, return a list or tuple of the values in object o.
  On failure, return NULL.
  */
 
-MxAPI_FUNC(MxObject *) MxMapping_Items(MxObject *o);
+CAPI_FUNC(CObject *) MxMapping_Items(CObject *o);
 
 /*
  On success, return a list or tuple of the items in object o,
@@ -316,7 +316,7 @@ MxAPI_FUNC(MxObject *) MxMapping_Items(MxObject *o);
 
  */
 
-MxAPI_FUNC(MxObject *) MxMapping_GetItemString(MxObject *o,
+CAPI_FUNC(CObject *) MxMapping_GetItemString(CObject *o,
 		const char *key);
 
 /*
@@ -325,8 +325,8 @@ MxAPI_FUNC(MxObject *) MxMapping_GetItemString(MxObject *o,
  o[key].
  */
 
-MxAPI_FUNC(int) MxMapping_SetItemString(MxObject *o, const char *key,
-		MxObject *value);
+CAPI_FUNC(int) MxMapping_SetItemString(CObject *o, const char *key,
+		CObject *value);
 
 /*
  Map the object, key, to the value, v.  Returns

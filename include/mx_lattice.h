@@ -42,26 +42,26 @@
  * type dynamics.
  */
 MxAPI_STRUCT(MxLattice);
-MxAPI_DATA(MxType*) MxLattice_Type;
+CAPI_DATA(CType*) MxLattice_Type;
 
 MxAPI_STRUCT(MxCubicLattice);
-MxAPI_DATA(MxType*) MxCubicLattice_Type;
+CAPI_DATA(CType*) MxCubicLattice_Type;
 
 MxAPI_STRUCT(MxVoxel);
-MxAPI_DATA(MxType*) MxVoxel_Type;
+CAPI_DATA(CType*) MxVoxel_Type;
 
 MxAPI_STRUCT(MxCubicVoxel);
-MxAPI_DATA(MxType*) MxCubicVoxel_Type;
+CAPI_DATA(CType*) MxCubicVoxel_Type;
 
 
 /**
  * The MxLatticeCluster represents a collection of fully connected voxels.
  */
 MxAPI_STRUCT(MxLatticeCluster);
-MxAPI_DATA(MxType*) MxLatticeCluster_Type;
+CAPI_DATA(CType*) MxLatticeCluster_Type;
 
 MxAPI_STRUCT(MxCubicLatticeCluster);
-MxAPI_DATA(MxType*) MxCubicLatticeCluster_Type;
+CAPI_DATA(CType*) MxCubicLatticeCluster_Type;
 
 
 
@@ -69,7 +69,7 @@ MxAPI_DATA(MxType*) MxCubicLatticeCluster_Type;
 /**
  * Get a borrowed reference to the cluster list.
  */
-MxAPI_FUNC(MxList*) MxLattice_Clusters(MxLattice *p);
+CAPI_FUNC(MxList*) MxLattice_Clusters(MxLattice *p);
 
 
 
@@ -83,8 +83,8 @@ MxAPI_FUNC(MxList*) MxLattice_Clusters(MxLattice *p);
  * and the specified voxel will then belong to that cluster. If a cluster holds
  * only a single voxel, and the voxel changes type, then the cluster is deleted.
  */
-//MxAPI_FUNC(HRESULT) MxLattice_SetVoxelClusterType(MxLattice *lattice,
-//		uint x, uint y, uint z,  MxType *type);
+//CAPI_FUNC(HRESULT) MxLattice_SetVoxelClusterType(MxLattice *lattice,
+//		uint x, uint y, uint z,  CType *type);
 
 
 

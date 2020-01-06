@@ -19,6 +19,6 @@ PyObject *MxPyUI_InitializeGraphics(PyObject *module, PyObject *args);
 PyObject *MxPyUI_CreateTestWindow(PyObject *module, PyObject *args);
 PyObject *MxPyUI_DestroyTestWindow(PyObject *module, PyObject *args);
 
-void MxUI_init(MxObject *m);
+void MxUI_init(CObject *m);
 
 #endif /* SRC_MXUI_H_ */

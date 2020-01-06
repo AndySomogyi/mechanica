@@ -10,7 +10,7 @@
 
 #include "mechanica_private.h"
 
-struct MxController : MxObject {
+struct MxController : CObject {
 };
 
 #endif /* SRC_MXCONTROLLER_H_ */

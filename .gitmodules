@@ -19,3 +19,6 @@
 [submodule "extern/DirectXMath"]
 	path = extern/DirectXMath
 	url = https://github.com/microsoft/DirectXMath.git
+[submodule "extern/carbon"]
+	path = extern/carbon
+	url = https://github.com/AndySomogyi/carbon.git

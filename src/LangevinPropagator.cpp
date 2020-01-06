@@ -27,22 +27,22 @@ HRESULT LangevinPropagator::updateItem(T &item) {
 
     item.args.clear();
 
-    if (MxType_IsSubtype(item.type, MxCell::type())) {
+    if (CType_IsSubtype(item.type, MxCell::type())) {
         for(CellPtr cell : mesh->cells) {
             if(cell->isRoot()) {
                 continue;
             }
 
-            if(MxType_IsSubtype(cell->ob_type, item.type)) {
+            if(CType_IsSubtype(cell->ob_type, item.type)) {
                 item.args.push_back(cell);
                 result = S_OK;
             }
         }
     }
 
-    if (MxType_IsSubtype(item.type, MxPolygon::type())) {
+    if (CType_IsSubtype(item.type, MxPolygon::type())) {
         for(PolygonPtr poly : mesh->polygons) {
-            if(MxType_IsSubtype(poly->ob_type, item.type)) {
+            if(CType_IsSubtype(poly->ob_type, item.type)) {
                 item.args.push_back(poly);
                 result = S_OK;
             }
@@ -81,7 +81,7 @@ T& LangevinPropagator::getItem(std::vector<T>& items, KeyType* key)
 
 template<typename T, typename KeyType>
 HRESULT LangevinPropagator::bindTypeItem(std::vector<T>& items,
-        KeyType* key, MxType* type)
+        KeyType* key, CType* type)
 {
     T& ci = getItem(items, key);
     ci.type = type;
@@ -246,7 +246,7 @@ HRESULT LangevinPropagator::applyConstraints()
     do {
 
         for(ConstraintItems &ci : constraints) {
-            MxObject **data = ci.args.data();
+            CObject **data = ci.args.data();
             ci.thing->project(data, ci.args.size());
         }
         
@@ -312,9 +312,9 @@ HRESULT LangevinPropagator::structureChanged()
 }
 
 
-HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
+HRESULT LangevinPropagator::bindForce(IForce* force, CObject* obj)
 {
-    MxType *type = dyn_cast<MxType>(obj);
+    CType *type = dyn_cast<CType>(obj);
     if(type) {
         return bindTypeItem(forces, force, type);
     }
@@ -322,9 +322,9 @@ HRESULT LangevinPropagator::bindForce(IForce* force, MxObject* obj)
 }
 
 HRESULT LangevinPropagator::bindConstraint(IConstraint* constraint,
-        MxObject* obj)
+        CObject* obj)
 {
-    MxType *type = dyn_cast<MxType>(obj);
+    CType *type = dyn_cast<CType>(obj);
     if(type) {
         return bindTypeItem(constraints, constraint, type);
     }
@@ -337,8 +337,8 @@ HRESULT MxBind_PropagatorModel(LangevinPropagator* propagator, MxModel* model)
     return propagator->setModel(model);
 }
 
-HRESULT LangevinPropagator::objectDeleteListener(MxObject* pThis,
-        const MxObject* obj, uint32_t what)
+HRESULT LangevinPropagator::objectDeleteListener(CObject* pThis,
+        const CObject* obj, uint32_t what)
 {
 	return E_NOTIMPL;
 }
@@ -361,7 +361,7 @@ HRESULT LangevinPropagator::setPositions(float time, uint32_t len, const Vector3
 HRESULT LangevinPropagator::applyForces()
 {
     for(ForceItems &f : forces) {
-        MxObject **data = f.args.data();
+        CObject **data = f.args.data();
         f.thing->applyForce(0, data, f.args.size());
     }
 

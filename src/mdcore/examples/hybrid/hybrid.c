@@ -27,7 +27,7 @@
 #include <pthread.h>
 #include <time.h>
 #include "cycle.h"
-#include "../config.h"
+#include "mdcore_config.h"
 
 /* MPI headers. */
 #include <mpi.h>

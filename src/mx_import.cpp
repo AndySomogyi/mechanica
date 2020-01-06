@@ -5,7 +5,18 @@
  *      Author: andy
  */
 
+
+#ifdef CType
+#error CType is macro
+#endif
+
 #include "mechanica_private.h"
+
+
+#ifdef CType
+#error CType is macro
+#endif
+
 #include <string>
 
 using std::string;
@@ -15,49 +26,49 @@ using namespace std;
 extern "C"
 {
 
-MxObject* MxImport_ImportModule(const char* name)
+CObject* MxImport_ImportModule(const char* name)
 {
 	return 0;
 }
 
-MxObject* MxImport_ImportModuleNoBlock(const char* name)
+CObject* MxImport_ImportModuleNoBlock(const char* name)
 {
 	return 0;
 }
 
-MxObject* MxImport_ImportModuleEx(char* name, MxObject* globals,
-		MxObject* locals, MxObject* fromlist)
+CObject* MxImport_ImportModuleEx(char* name, CObject* globals,
+		CObject* locals, CObject* fromlist)
 {
 	return 0;
 }
 
-MxObject* MxImport_ImportModuleLevel(char* name, MxObject* globals,
-		MxObject* locals, MxObject* fromlist, int level)
+CObject* MxImport_ImportModuleLevel(char* name, CObject* globals,
+		CObject* locals, CObject* fromlist, int level)
 {
 	return 0;
 }
 
-MxObject* MxImport_Import(MxObject* name)
+CObject* MxImport_Import(CObject* name)
 {
 	return 0;
 }
 
-MxObject* MxImport_ReloadModule(MxObject* m)
+CObject* MxImport_ReloadModule(CObject* m)
 {
 	return 0;
 }
 
-MxObject* MxImport_AddModule(const char* name)
+CObject* MxImport_AddModule(const char* name)
 {
 	return 0;
 }
 
-MxObject* MxImport_ExecCodeModule(char* name, MxObject* co)
+CObject* MxImport_ExecCodeModule(char* name, CObject* co)
 {
 	return 0;
 }
 
-MxObject* MxImport_ExecCodeModuleEx(char* name, MxObject* co, char* pathname)
+CObject* MxImport_ExecCodeModuleEx(char* name, CObject* co, char* pathname)
 {
 	return 0;
 }
@@ -67,7 +78,7 @@ long MxImport_GetMagicNumber()
 	return 0;
 }
 
-MxObject* MxImport_GetModuleDict()
+CObject* MxImport_GetModuleDict()
 {
 	return 0;
 }

@@ -16,15 +16,29 @@
 #define CA_STRICT
 #endif
 
+#ifdef CType
+#error CType is macro
+#endif
+
 #ifndef _INCLUDED_MECHANICA_H_
 #include "Mechanica.h"
 #endif
+
+#ifdef CType
+#error CType is macro
+#endif
+
 
 #ifndef _INCLUDED_CAYMAN_PRIVATE_H_
 #define _INCLUDED_CAYMAN_PRIVATE_H_
 
 
 #include <Python.h>
+
+#ifdef CType
+#error CType is macro
+#endif
+
 
 
 // Games with importing numpy and setting up function pointers.
@@ -40,13 +54,36 @@
 
 #include <assert.h>
 
-#include "MxObject.h"
-#include "MxType.h"
+#ifdef CType
+#error CType is macro
+#endif
+
+
+
+#ifdef CType
+#error CType is macro
+#endif
+
 #include "MxSymbol.h"
+
+#ifdef CType
+#error CType is macro
+#endif
+
 
 #include <cstdint>
 
+#ifdef CType
+#error CType is macro
+#endif
+
+
 #include <algorithm>
+
+#ifdef CType
+#error CType is macro
+#endif
+
 
 
 
@@ -86,7 +123,7 @@ int _CaAstInit();
 
 template <class X, class Y>
 inline X* dyn_cast(const Y &o) {
-    return (MxType_IsSubtype(o->ob_type, X::type())) ? reinterpret_cast<X*>(o) : nullptr;
+    return (CType_IsSubtype(o->ob_type, X::type())) ? reinterpret_cast<X*>(o) : nullptr;
 };
 
 /**
@@ -162,3 +199,8 @@ typename ContainerType::value_type wrappedAt(ContainerType &container, SizeType 
 
 
 #endif /* _INCLUDED_CAYMAN_PRIVATE_H_ */
+
+#ifdef CType
+#error CType is macro
+#endif
+

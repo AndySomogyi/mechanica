@@ -35,7 +35,7 @@ typedef struct MxParserFlags {
  * be parsed or compiled.
  */
 
-MxAPI_FUNC(MxObject*) Mx_ParseStringFlags(const char *str, const char *filename,
+CAPI_FUNC(CObject*) Mx_ParseStringFlags(const char *str, const char *filename,
 		int start, MxParserFlags *flags);
 
 

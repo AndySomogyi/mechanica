@@ -184,7 +184,7 @@ void testIndexOf() {
     self.selectedPolygonSlider.maxValue = meshTest->model->mesh->polygons.size();
     self.selectedPolygonSlider.minValue = 0;
     
-    MxObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
+    CObject *obj = (EdgePtr)meshTest->model->mesh->selectedObject();
     
     if(obj) {
         EdgePtr e = dyn_cast<MxEdge>(obj);

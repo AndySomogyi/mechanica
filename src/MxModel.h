@@ -20,7 +20,7 @@ class LangevinPropagator;
 /**
  * The type object for a MxSymbol.
  */
-MxAPI_DATA(MxType) *MxModel_Type;
+CAPI_DATA(CType) *MxModel_Type;
 
 struct MxModelMethods {
     void (*execute) (MxModel* cpu);

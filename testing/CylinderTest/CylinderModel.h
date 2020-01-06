@@ -47,11 +47,11 @@ struct CylinderModel : public MxModel {
 
     void testEdges();
 
-    HRESULT applyT1Edge2TransitionToSelectedEdge();
+    HRESULT flipSelectedEdgeToEdge();
 
-    HRESULT applyT2PolygonTransitionToSelectedPolygon();
+    HRESULT collapseSelectedPolygon();
 
-    HRESULT applyT3PolygonTransitionToSelectedPolygon();
+    HRESULT splitSelectedPolygon();
 
     void loadAssImpModel();
 
@@ -59,7 +59,12 @@ struct CylinderModel : public MxModel {
 
     HRESULT activateAreaConstraint();
     
-    HRESULT edgeToPolygonFlipSelecgtedEdge();
+    HRESULT flipSelectedEdgeToPolygon();
+
+    HRESULT flipSelectedPolygonToEdge();
+
+    HRESULT splitSelectedCell();
+
 
     /**
       * The state vector is a vector of elements that are defined by

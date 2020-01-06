@@ -9,22 +9,22 @@
 
 extern "C" {
 
-int MxString_Check(MxObject* o)
+int MxString_Check(CObject* o)
 {
 	return 0;
 }
 
-MxObject* MxString_FromString(const char* v)
+CObject* MxString_FromString(const char* v)
 {
 	return NULL;
 }
 
-MxObject* MxString_FromStringAndSize(const char* v, Mx_ssize_t len)
+CObject* MxString_FromStringAndSize(const char* v, Mx_ssize_t len)
 {
 	return NULL;
 }
 
-const char* MxString_AsString(MxObject* p)
+const char* MxString_AsString(CObject* p)
 {
 
 	return 0;

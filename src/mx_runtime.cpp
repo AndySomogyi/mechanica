@@ -12,7 +12,7 @@
 int Mx_InteractiveFlag = 0;
 
 
-MxObject* MxErr_Occurred(void)
+CObject* MxErr_Occurred(void)
 {
 	return NULL;
 }
@@ -75,7 +75,7 @@ int MxRun_InteractiveLoopFlags(FILE *fp, const char *filename, MxCompilerFlags *
     MX_NOTIMPLEMENTED
 }
 
-MxObject* MxSys_GetObject(const char* name)
+CObject* MxSys_GetObject(const char* name)
 {
 	MX_NOTIMPLEMENTED
 }
@@ -85,7 +85,7 @@ FILE* MxSys_GetFile(const char* name, FILE* def)
 	MX_NOTIMPLEMENTED
 }
 
-int MxSys_SetObject(const char* name, MxObject* v)
+int MxSys_SetObject(const char* name, CObject* v)
 {
 	MX_NOTIMPLEMENTED
 }
@@ -102,12 +102,12 @@ int MxRun_SimpleFileExFlags(FILE* fp, const char* filename, int closeit,
 }
 
 
-MxObject* MxRun_StringFlags(const char* str, int start, MxObject* globals, MxObject* locals, MxCompilerFlags* flags)
+CObject* MxRun_StringFlags(const char* str, int start, CObject* globals, CObject* locals, MxCompilerFlags* flags)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject* MxRun_FileExFlags(FILE* fp, const char* filename, int start, MxObject* globals, MxObject* locals, int closeit, MxCompilerFlags* flags)
+CObject* MxRun_FileExFlags(FILE* fp, const char* filename, int start, CObject* globals, CObject* locals, int closeit, MxCompilerFlags* flags)
 {
 	MX_NOTIMPLEMENTED
 }
@@ -127,17 +127,17 @@ int MxRun_AnyFileFlags(FILE *fp, const char *name, MxCompilerFlags *flags)
     return MxRun_AnyFileExFlags(fp, name, 0, flags);
 }
 
-MxObject* MxRun_File(FILE *fp, const char *p, int s, MxObject *g, MxObject *l)
+CObject* MxRun_File(FILE *fp, const char *p, int s, CObject *g, CObject *l)
 {
     return MxRun_FileExFlags(fp, p, s, g, l, 0, NULL);
 }
 
-MxObject* MxRun_FileEx(FILE *fp, const char *p, int s, MxObject *g, MxObject *l, int c)
+CObject* MxRun_FileEx(FILE *fp, const char *p, int s, CObject *g, CObject *l, int c)
 {
     return MxRun_FileExFlags(fp, p, s, g, l, c, NULL);
 }
 
-MxObject* MxRun_FileFlags(FILE *fp, const char *p, int s, MxObject *g, MxObject *l,
+CObject* MxRun_FileFlags(FILE *fp, const char *p, int s, CObject *g, CObject *l,
                 MxCompilerFlags *flags)
 {
     return MxRun_FileExFlags(fp, p, s, g, l, 0, flags);
@@ -153,7 +153,7 @@ int MxRun_SimpleFileEx(FILE *f, const char *p, int c)
     return MxRun_SimpleFileExFlags(f, p, c, NULL);
 }
 
-MxObject* MxRun_String(const char *str, int s, MxObject *g, MxObject *l)
+CObject* MxRun_String(const char *str, int s, CObject *g, CObject *l)
 {
     return MxRun_StringFlags(str, s, g, l, NULL);
 }

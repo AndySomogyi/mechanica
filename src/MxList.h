@@ -9,10 +9,10 @@
 #define SRC_MXLIST_H_
 
 
-struct MxList : MxObject {
+struct MxList : CObject {
 
     /* Vector of pointers to list elements.  list[0] is ob_item[0], etc. */
-	MxObject **ob_item;
+	CObject **ob_item;
 
     /* ob_item contains space for 'allocated' elements.  The number
      * currently in use is ob_size.

@@ -12,7 +12,7 @@
 //#include "mdcore_single.h"
 
 
-struct MxTestParticles : MxObject {
+struct MxTestParticles : CObject {
 
 
 };

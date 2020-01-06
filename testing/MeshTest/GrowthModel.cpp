@@ -58,15 +58,15 @@ static struct ClearCellType : MxCellType
 } clearCellType;
 
 static struct MeshObjectTypeHandler : IMeshObjectTypeHandler {
-    virtual MxType *cellType(const char* cellName, int cellIndex) {
+    virtual CType *cellType(const char* cellName, int cellIndex) {
         return &redCellType;
     }
 
-    virtual MxType *polygonType(int polygonIndex) {
+    virtual CType *polygonType(int polygonIndex) {
         return nullptr;
     }
 
-    virtual MxType *partialPolygonType(const MxType *cellType, const MxType *polyType) {
+    virtual CType *partialPolygonType(const CType *cellType, const CType *polyType) {
         return nullptr;
     }
 
@@ -161,7 +161,7 @@ HRESULT GrowthModel::getStateVectorRate(float time, const float *y, float* dydt)
 }
 
 HRESULT GrowthModel::applyT1Edge2TransitionToSelectedEdge() {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxEdge>(obj)) {
         return Mx_FlipEdge(mesh, EdgePtr(obj));
     }
@@ -170,7 +170,7 @@ HRESULT GrowthModel::applyT1Edge2TransitionToSelectedEdge() {
 
 HRESULT GrowthModel::applyT2PolygonTransitionToSelectedPolygon()
 {
-    MxObject *obj = mesh->selectedObject();
+    CObject *obj = mesh->selectedObject();
     if(obj && dyn_cast<MxPolygon>(obj)) {
         HRESULT result = Mx_CollapsePolygon(mesh, (PolygonPtr)obj);
 

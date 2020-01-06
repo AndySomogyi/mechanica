@@ -8,7 +8,7 @@
 #ifndef INCLUDE_CA_LIST_H_
 #define INCLUDE_CA_LIST_H_
 
-#include "mx_object.h"
+#include <carbon.h>
 
 
 
@@ -39,22 +39,22 @@ MxAPI_STRUCT(MxList);
     PyType_FastSubclass(Py_TYPE(op), Py_TPFLAGS_LIST_SUBCLASS)
 #define PyList_CheckExact(op) (Py_TYPE(op) == &PyList_Type)
 
-MxAPI_FUNC(MxList *) MxList_New(Mx_ssize_t size);
-MxAPI_FUNC(Mx_ssize_t) MxList_Size(MxList *);
-MxAPI_FUNC(MxObject *) MxList_GetItem(MxList *, Mx_ssize_t);
-MxAPI_FUNC(int) MxList_SetItem(MxList *, Mx_ssize_t, MxObject *);
-MxAPI_FUNC(int) MxList_Insert(MxList *, Mx_ssize_t, MxObject *);
-MxAPI_FUNC(int) MxList_Append(MxList *, MxObject *);
-MxAPI_FUNC(MxObject *) MxList_GetSlice(MxList *, Mx_ssize_t, Mx_ssize_t);
-MxAPI_FUNC(int) MxList_SetSlice(MxList *, Mx_ssize_t, Mx_ssize_t, MxObject *);
-MxAPI_FUNC(int) MxList_Sort(MxList *);
-MxAPI_FUNC(int) MxList_Reverse(MxList *);
-MxAPI_FUNC(MxObject *) MxList_AsTuple(MxList *);
+CAPI_FUNC(MxList *) MxList_New(Mx_ssize_t size);
+CAPI_FUNC(Mx_ssize_t) MxList_Size(MxList *);
+CAPI_FUNC(CObject *) MxList_GetItem(MxList *, Mx_ssize_t);
+CAPI_FUNC(int) MxList_SetItem(MxList *, Mx_ssize_t, CObject *);
+CAPI_FUNC(int) MxList_Insert(MxList *, Mx_ssize_t, CObject *);
+CAPI_FUNC(int) MxList_Append(MxList *, CObject *);
+CAPI_FUNC(CObject *) MxList_GetSlice(MxList *, Mx_ssize_t, Mx_ssize_t);
+CAPI_FUNC(int) MxList_SetSlice(MxList *, Mx_ssize_t, Mx_ssize_t, CObject *);
+CAPI_FUNC(int) MxList_Sort(MxList *);
+CAPI_FUNC(int) MxList_Reverse(MxList *);
+CAPI_FUNC(CObject *) MxList_AsTuple(MxList *);
 
-MxAPI_FUNC(MxObject *) _MxList_Extend(MxList *, MxObject *);
+CAPI_FUNC(CObject *) _MxList_Extend(MxList *, CObject *);
 
-MxAPI_FUNC(int) MxList_ClearFreeList(void);
-MxAPI_FUNC(void) _MxList_DebugMallocStats(FILE *out);
+CAPI_FUNC(int) MxList_ClearFreeList(void);
+CAPI_FUNC(void) _MxList_DebugMallocStats(FILE *out);
 
 
 /* Macro, trading safety for speed */

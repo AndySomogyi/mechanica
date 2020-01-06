@@ -10,7 +10,11 @@
 // only source module that calls import_array()
 #define MX_IMPORTING_NUMPY_ARRAY
 
+
+
 #include "mechanica_private.h"
+
+
 
 #include "MxModule.h"
 #include "MxModel.h"
@@ -82,15 +86,15 @@ static PyObject * moduleinit(void)
 
      */
 
-    MxObject_init(m);
-    MxType_init(m);
+
+
     MxSymbol_init(m);
     MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);
     MxPropagator_init(m);
-    //MxObject_init(m);
-    //MxObject_init(m);
+    //CObject_init(m);
+    //CObject_init(m);
 
     MxApplication_init(m);
     MxSimulator_init(m);
@@ -112,7 +116,7 @@ PyMODINIT_FUNC PyInit__mechanica(void)
 /**
  * Initialize the entire runtime.
  */
-MxAPI_FUNC(int) Mx_Initialize(int) {
+CAPI_FUNC(int) Mx_Initialize(int) {
     if(!Py_IsInitialized()) {
         Py_Initialize();
     }

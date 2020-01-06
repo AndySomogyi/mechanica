@@ -18,7 +18,7 @@ enum struct Orientation {
 
 
 
-MxAPI_DATA(MxType*) MxPartialPolygon_Type;
+CAPI_DATA(CType*) MxPartialPolygon_Type;
 
 /**
  * A partial face data structure, represents 1/2 of a triangular face. This represents the
@@ -69,11 +69,11 @@ MxAPI_DATA(MxType*) MxPartialPolygon_Type;
  *
  * The centroid
  */
-struct MxPartialPolygon : MxObject {
+struct MxPartialPolygon : CObject {
 
-    MxPartialPolygon(MxType *type, MxPolygon *ti,
+    MxPartialPolygon(CType *type, MxPolygon *ti,
             float mass = 0, MxReal *scalars = nullptr) :
-                MxObject{type}, polygon{ti},
+                CObject{0, type}, polygon{ti},
                 mass{mass}, scalarFields{scalars} {};
 
     /**
@@ -108,9 +108,9 @@ struct MxPartialPolygon : MxObject {
 };
 
 
-struct MxPolygonType : MxType {
+struct MxPolygonType : CType {
 
-    MxPolygonType(const char* name, MxType *base) : MxType{name, base} {};
+    MxPolygonType(const char* name, CType *base) : CType{{0, .ob_type=base}, .tp_name = name} {};
 
 
     Magnum::Color4 edgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 0.1f}};
@@ -120,7 +120,7 @@ struct MxPolygonType : MxType {
 
 
 
-MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
+CAPI_DATA(MxPolygonType*) MxPolygon_Type;
 
 
 /**
@@ -140,13 +140,13 @@ MxAPI_DATA(MxPolygonType*) MxPolygon_Type;
  *     * represent the geometry of a triangle.
  *     *
  */
-struct MxPolygon : MxObject {
+struct MxPolygon : CObject {
 
-    static bool classof(const MxObject *o) {
+    static bool classof(const CObject *o) {
         return o->ob_type == MxPolygon_Type;
     }
 
-    static MxType *type() {return MxPolygon_Type;};
+    static CType *type() {return MxPolygon_Type;};
 
     const uint id;
 
@@ -255,7 +255,7 @@ struct MxPolygon : MxObject {
     {}
 
 
-    MxPolygon(uint _id, MxType *type);
+    MxPolygon(uint _id, CType *type);
 
 
     inline int cellIndex(CCellPtr cell) const {

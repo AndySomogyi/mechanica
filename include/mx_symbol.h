@@ -29,18 +29,18 @@ extern "C" {
  * Dotted symbols are automatically parsed and generate a MxDottedSymbol object.
  */
 struct MxSymbol;
-struct MxType;
+struct CType;
 
 /**
  * The type object for a MxSymbol.
  */
-MxAPI_DATA(MxType) *MxSymbol_Type;
+CAPI_DATA(CType) *MxSymbol_Type;
 
 /**
  * Determines if this object is a symbol type.
  * @returns TRUE if a symbol, FALSE otherwise.
  */
-MxAPI_FUNC(int) MxSymbolCheck(MxObject *o);
+CAPI_FUNC(int) MxSymbolCheck(CObject *o);
 
 /**
  * Creates a new symbol from a given character string.
@@ -54,7 +54,7 @@ MxAPI_FUNC(int) MxSymbolCheck(MxObject *o);
  * @param str: a NULL terminated C string.
  * @returns New reference, NULL on failure.
  */
-MxAPI_FUNC(MxSymbol*) MxSymbol_FromCString(const char *str);
+CAPI_FUNC(MxSymbol*) MxSymbol_FromCString(const char *str);
 
 /**
  * Creates a new symbol from a given character string and length
@@ -69,7 +69,7 @@ MxAPI_FUNC(MxSymbol*) MxSymbol_FromCString(const char *str);
  * @param len: how much of str to use.
  * @returns New reference, NULL on failure.
  */
-MxAPI_FUNC(MxSymbol*) MxSymbol_FromCStringAndSize(const char *str, Mx_ssize_t len);
+CAPI_FUNC(MxSymbol*) MxSymbol_FromCStringAndSize(const char *str, Mx_ssize_t len);
 
 /**
  * Steals a reference from an existing string, and creates a new symbol.
@@ -80,13 +80,13 @@ MxAPI_FUNC(MxSymbol*) MxSymbol_FromCStringAndSize(const char *str, Mx_ssize_t le
  * @param str: Stolen reference to an existing string.
  * @returns New reference
  */
-MxAPI_FUNC(MxSymbol*) MxSymbol_FromString(MxString *str);
+CAPI_FUNC(MxSymbol*) MxSymbol_FromString(MxString *str);
 
 /**
  * Get the underlying string for this symbol.
  * @returns Borrowed reference
  */
-MxAPI_FUNC(MxString*) MxSymbol_GetString(MxSymbol *sym);
+CAPI_FUNC(MxString*) MxSymbol_GetString(MxSymbol *sym);
 
 
 /**
@@ -108,13 +108,13 @@ struct MxDottedSymbol;
 /**
  * The type object for a MxDottedSymbol.
  */
-MxAPI_DATA(MxType) *MxDottedSymbol_Type;
+CAPI_DATA(CType) *MxDottedSymbol_Type;
 
 /**
  * Determines if this object is a dotted symbol type.
  * @returns TRUE if a symbol, FALSE otherwise.
  */
-MxAPI_FUNC(int) MxDottedSymbolCheck(MxObject *o);
+CAPI_FUNC(int) MxDottedSymbolCheck(CObject *o);
 
 #ifdef __cplusplus
 }

@@ -10,11 +10,11 @@
 
 #include "mechanica_private.h"
 
-struct MxExpression : MxObject
+struct MxExpression : CObject
 {
-    MxObject *head;
+    CObject *head;
     int32_t length;
-    MxObject *items[0];
+    CObject *items[0];
 };
 
 

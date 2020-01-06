@@ -10,7 +10,7 @@
 
 extern "C" {
 
-int MxSymbolCheck(MxObject* o) {
+int MxSymbolCheck(CObject* o) {
 	return 0;
 }
 

@@ -22,7 +22,7 @@ struct MxPolygonSurfaceTensionForce : IForce
     /**
      * Apply forces to a set of objects.
      */
-    virtual HRESULT applyForce(float time, MxObject **objs, uint32_t len) const;
+    virtual HRESULT applyForce(float time, CObject **objs, uint32_t len) const;
 
     float surfaceTension;
 };

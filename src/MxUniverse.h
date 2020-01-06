@@ -9,8 +9,16 @@
 #define SRC_MXUNIVERSE_H_
 
 #include "mechanica_private.h"
+#include "engine.h"
 
-struct MxUniverse : MxObject {
+
+struct MxUniverse : CObject {
+
+
+    /**
+     * MDCore MD engine
+     */
+    engine engine;
 };
 
 /**

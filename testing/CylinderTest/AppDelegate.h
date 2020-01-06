@@ -10,7 +10,7 @@ typedef unsigned char Byte;
 
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     CylinderTest *meshTest;
-    MxType *selectType;
+    CType *selectType;
     float radius;
 }
 
@@ -67,13 +67,17 @@ typedef unsigned char Byte;
 
 -(IBAction)reset:(id)sender;
 
--(IBAction)T1transitionSelectedEdge:(id)sender;
+-(IBAction)flipSelectedEdgeToEdge:(id)sender;
 
--(IBAction)T2transitionSelectedPolygon:(id)sender;
+-(IBAction)collapseSelectedPolygon:(id)sender;
 
--(IBAction)T3transitionSelectedPolygon:(id)sender;
+-(IBAction)splitSelectedPolygon:(id)sender;
 
--(IBAction)edgeToPolygonFlip:(id)sender;
+-(IBAction)flipSelectedEdgeToPolygon:(id)sender;
+
+-(IBAction)flipSelectedPolygonToEdge:(id)sender;
+
+-(IBAction)splitSelectedCell:(id)sender;
 
 -(IBAction)valueChanged:(id)sender;
 

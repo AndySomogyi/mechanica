@@ -8,7 +8,7 @@
 #ifndef _INCLUDED_MX_NUMBER_H_
 #define _INCLUDED_MX_NUMBER_H_
 
-#include "mx_object.h"
+#include "carbon.h"
 
 
 #ifdef __cplusplus
@@ -16,7 +16,7 @@ extern "C"
 {
 #endif
 
-MxAPI_FUNC(int) MxNumber_Check(MxObject *o);
+CAPI_FUNC(int) MxNumber_Check(CObject *o);
 
 /*
  Returns 1 if the object, o, provides numeric protocols, and
@@ -25,14 +25,14 @@ MxAPI_FUNC(int) MxNumber_Check(MxObject *o);
  This function always succeeds.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Add(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Add(CObject *o1, CObject *o2);
 
 /*
  Returns the result of adding o1 and o2, or null on failure.
  This is the equivalent of the Mechanica expression: o1+o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Subtract(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Subtract(CObject *o1, CObject *o2);
 
 /*
  Returns the result of subtracting o2 from o1, or null on
@@ -40,7 +40,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Subtract(MxObject *o1, MxObject *o2);
  o1-o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Multiply(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Multiply(CObject *o1, CObject *o2);
 
 /*
  Returns the result of multiplying o1 and o2, or null on
@@ -48,13 +48,13 @@ MxAPI_FUNC(MxObject *) MxNumber_Multiply(MxObject *o1, MxObject *o2);
  o1*o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_MatrixMultiply(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_MatrixMultiply(CObject *o1, CObject *o2);
 
 /*
  This is the equivalent of the Mechanica expression: o1 @ o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_FloorDivide(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_FloorDivide(CObject *o1, CObject *o2);
 
 /*
  Returns the result of dividing o1 by o2 giving an integral result,
@@ -62,7 +62,7 @@ MxAPI_FUNC(MxObject *) MxNumber_FloorDivide(MxObject *o1, MxObject *o2);
  This is the equivalent of the Mechanica expression: o1//o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_TrueDivide(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_TrueDivide(CObject *o1, CObject *o2);
 
 /*
  Returns the result of dividing o1 by o2 giving a float result,
@@ -70,7 +70,7 @@ MxAPI_FUNC(MxObject *) MxNumber_TrueDivide(MxObject *o1, MxObject *o2);
  This is the equivalent of the Mechanica expression: o1/o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Remainder(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Remainder(CObject *o1, CObject *o2);
 
 /*
  Returns the remainder of dividing o1 by o2, or null on
@@ -78,7 +78,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Remainder(MxObject *o1, MxObject *o2);
  o1%o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Divmod(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Divmod(CObject *o1, CObject *o2);
 
 /*
  See the built-in function divmod.  Returns NULL on failure.
@@ -86,8 +86,8 @@ MxAPI_FUNC(MxObject *) MxNumber_Divmod(MxObject *o1, MxObject *o2);
  divmod(o1,o2).
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Power(MxObject *o1, MxObject *o2,
-		MxObject *o3);
+CAPI_FUNC(CObject *) MxNumber_Power(CObject *o1, CObject *o2,
+		CObject *o3);
 
 /*
  See the built-in function pow.  Returns NULL on failure.
@@ -95,28 +95,28 @@ MxAPI_FUNC(MxObject *) MxNumber_Power(MxObject *o1, MxObject *o2,
  pow(o1,o2,o3), where o3 is optional.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Negative(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Negative(CObject *o);
 
 /*
  Returns the negation of o on success, or null on failure.
  This is the equivalent of the Mechanica expression: -o.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Positive(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Positive(CObject *o);
 
 /*
  Returns the (what?) of o on success, or NULL on failure.
  This is the equivalent of the Mechanica expression: +o.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Absolute(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Absolute(CObject *o);
 
 /*
  Returns the absolute value of o, or null on failure.  This is
  the equivalent of the Mechanica expression: abs(o).
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Invert(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Invert(CObject *o);
 
 /*
  Returns the bitwise negation of o on success, or NULL on
@@ -124,7 +124,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Invert(MxObject *o);
  ~o.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Lshift(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Lshift(CObject *o1, CObject *o2);
 
 /*
  Returns the result of left shifting o1 by o2 on success, or
@@ -132,7 +132,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Lshift(MxObject *o1, MxObject *o2);
  expression: o1 << o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Rshift(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Rshift(CObject *o1, CObject *o2);
 
 /*
  Returns the result of right shifting o1 by o2 on success, or
@@ -140,7 +140,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Rshift(MxObject *o1, MxObject *o2);
  expression: o1 >> o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_And(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_And(CObject *o1, CObject *o2);
 
 /*
  Returns the result of bitwise and of o1 and o2 on success, or
@@ -149,7 +149,7 @@ MxAPI_FUNC(MxObject *) MxNumber_And(MxObject *o1, MxObject *o2);
 
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Xor(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Xor(CObject *o1, CObject *o2);
 
 /*
  Returns the bitwise exclusive or of o1 by o2 on success, or
@@ -157,7 +157,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Xor(MxObject *o1, MxObject *o2);
  expression: o1^o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Or(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_Or(CObject *o1, CObject *o2);
 
 /*
  Returns the result of bitwise or on o1 and o2 on success, or
@@ -169,14 +169,14 @@ MxAPI_FUNC(MxObject *) MxNumber_Or(MxObject *o1, MxObject *o2);
    ((obj)->ob_type->tp_as_number != NULL && \
     (obj)->ob_type->tp_as_number->nb_index != NULL)
 
-MxAPI_FUNC(MxObject *) MxNumber_Index(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Index(CObject *o);
 
 /*
  Returns the object converted to a Mechanica int
  or NULL with an error raised on failure.
  */
 
-MxAPI_FUNC(Mx_ssize_t) MxNumber_AsSsize_t(MxObject *o, MxObject *exc);
+CAPI_FUNC(Mx_ssize_t) MxNumber_AsSsize_t(CObject *o, CObject *exc);
 
 /*
  Returns the object converted to Mx_ssize_t by going through
@@ -186,7 +186,7 @@ MxAPI_FUNC(Mx_ssize_t) MxNumber_AsSsize_t(MxObject *o, MxObject *exc);
  is cleared and the value is clipped.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Long(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Long(CObject *o);
 
 /*
  Returns the o converted to an integer object on success, or
@@ -194,7 +194,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Long(MxObject *o);
  expression: int(o).
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_Float(MxObject *o);
+CAPI_FUNC(CObject *) MxNumber_Float(CObject *o);
 
 /*
  Returns the o converted to a float object on success, or NULL
@@ -204,7 +204,7 @@ MxAPI_FUNC(MxObject *) MxNumber_Float(MxObject *o);
 
 /*  In-place variants of (some of) the above number protocol functions */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceAdd(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceAdd(CObject *o1, CObject *o2);
 
 /*
  Returns the result of adding o2 to o1, possibly in-place, or null
@@ -212,7 +212,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceAdd(MxObject *o1, MxObject *o2);
  o1 += o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceSubtract(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceSubtract(CObject *o1, CObject *o2);
 
 /*
  Returns the result of subtracting o2 from o1, possibly in-place or
@@ -220,7 +220,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceSubtract(MxObject *o1, MxObject *o2);
  o1 -= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceMultiply(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceMultiply(CObject *o1, CObject *o2);
 
 /*
  Returns the result of multiplying o1 by o2, possibly in-place, or
@@ -228,14 +228,14 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceMultiply(MxObject *o1, MxObject *o2);
  o1 *= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceMatrixMultiply(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceMatrixMultiply(CObject *o1, CObject *o2);
 
 /*
  This is the equivalent of the Mechanica expression: o1 @= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceFloorDivide(MxObject *o1,
-		MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceFloorDivide(CObject *o1,
+		CObject *o2);
 
 /*
  Returns the result of dividing o1 by o2 giving an integral result,
@@ -244,8 +244,8 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceFloorDivide(MxObject *o1,
  o1 /= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceTrueDivide(MxObject *o1,
-		MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceTrueDivide(CObject *o1,
+		CObject *o2);
 
 /*
  Returns the result of dividing o1 by o2 giving a float result,
@@ -254,7 +254,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceTrueDivide(MxObject *o1,
  o1 /= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceRemainder(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceRemainder(CObject *o1, CObject *o2);
 
 /*
  Returns the remainder of dividing o1 by o2, possibly in-place, or
@@ -262,8 +262,8 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceRemainder(MxObject *o1, MxObject *o2);
  o1 %= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlacePower(MxObject *o1, MxObject *o2,
-		MxObject *o3);
+CAPI_FUNC(CObject *) MxNumber_InPlacePower(CObject *o1, CObject *o2,
+		CObject *o3);
 
 /*
  Returns the result of raising o1 to the power of o2, possibly
@@ -271,7 +271,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlacePower(MxObject *o1, MxObject *o2,
  expression: o1 **= o2, or pow(o1, o2, o3) if o3 is present.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceLshift(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceLshift(CObject *o1, CObject *o2);
 
 /*
  Returns the result of left shifting o1 by o2, possibly in-place, or
@@ -279,7 +279,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceLshift(MxObject *o1, MxObject *o2);
  o1 <<= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceRshift(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceRshift(CObject *o1, CObject *o2);
 
 /*
  Returns the result of right shifting o1 by o2, possibly in-place or
@@ -287,7 +287,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceRshift(MxObject *o1, MxObject *o2);
  o1 >>= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceAnd(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceAnd(CObject *o1, CObject *o2);
 
 /*
  Returns the result of bitwise and of o1 and o2, possibly in-place,
@@ -295,7 +295,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceAnd(MxObject *o1, MxObject *o2);
  expression: o1 &= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceXor(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceXor(CObject *o1, CObject *o2);
 
 /*
  Returns the bitwise exclusive or of o1 by o2, possibly in-place, or
@@ -303,7 +303,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceXor(MxObject *o1, MxObject *o2);
  o1 ^= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_InPlaceOr(MxObject *o1, MxObject *o2);
+CAPI_FUNC(CObject *) MxNumber_InPlaceOr(CObject *o1, CObject *o2);
 
 /*
  Returns the result of bitwise or of o1 and o2, possibly in-place,
@@ -311,7 +311,7 @@ MxAPI_FUNC(MxObject *) MxNumber_InPlaceOr(MxObject *o1, MxObject *o2);
  expression: o1 |= o2.
  */
 
-MxAPI_FUNC(MxObject *) MxNumber_ToBase(MxObject *n, int base);
+CAPI_FUNC(CObject *) MxNumber_ToBase(CObject *n, int base);
 
 /*
  Returns the integer n converted to a string with a base, with a base
@@ -323,7 +323,7 @@ MxAPI_FUNC(MxObject *) MxNumber_ToBase(MxObject *n, int base);
  * Parse a string and determine if it is a numeric type, if so
  * return the appropriate type.
  */
-MxAPI_FUNC(MxObject *) MxNumber_FromString(const char* str);
+CAPI_FUNC(CObject *) MxNumber_FromString(const char* str);
 
 #ifdef __cplusplus
 }

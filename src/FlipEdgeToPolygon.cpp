@@ -1,5 +1,5 @@
 /*
- * HITransition.cpp
+ * FlipEdgeToPolygon.cpp
  *
  *  Created on: Jan 16, 2019
  *      Author: andy
@@ -11,11 +11,6 @@
 #define __fastcall
 #include "DirectXMath.h"
 
-
-
-bool Mx_IsTriangleToEdgeConfiguration(CEdgePtr edge) {
-    return false;
-}
 
 
 /**
@@ -142,14 +137,10 @@ static bool isEdgeToTriangleConfiguration(CEdgePtr edge, CellPtr *edgeCells, Cel
     return (cell0 != cell1);
 }
 
-bool Mx_IsEdgeToTriangleConfiguration(CEdgePtr edge) {
+bool Mx_IsEdgeToPolygonConfiguration(CEdgePtr edge) {
     return isEdgeToTriangleConfiguration(edge, nullptr, nullptr);
 }
 
-HRESULT Mx_FlipTriangleToEdge(MeshPtr mesh, PolygonPtr poly, EdgePtr* edge)
-{
-    return E_NOTIMPL;
-}
 
 
 static HRESULT findUpperAndLowerEdgesForPolygon(CEdgePtr e, CPolygonPtr poly, EdgePtr *e0, EdgePtr *e1) {
@@ -220,7 +211,7 @@ static VertexPtr otherVertex(EdgePtr e, VertexPtr v) {
     }
 }
 
-HRESULT Mx_FlipEdgeToTriangle(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
+HRESULT Mx_FlipEdgeToPolygon(MeshPtr mesh, EdgePtr edge, PolygonPtr* poly)
 {
     CellPtr edgeCells[3] = {nullptr, nullptr, nullptr};
     CellPtr endCells[2] = {nullptr, nullptr};

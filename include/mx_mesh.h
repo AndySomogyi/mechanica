@@ -8,7 +8,7 @@
 #ifndef INCLUDE_MX_MESH_H_
 #define INCLUDE_MX_MESH_H_
 
-#include "mx_object.h"
+#include "carbon.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,14 +31,14 @@ MxAPI_STRUCT(MxMesh);
 
 
 /**
- * This instance of MxTypeObject represents the Mechanica module type.
+ * This instance of CTypeObject represents the Mechanica module type.
  */
-MxAPI_DATA(struct MxType*) MxMesh_Type;
+CAPI_DATA(struct CType*) MxMesh_Type;
 
 /**
  * Return true if p is a mesh object, or a subtype of a module object.
  */
-MxAPI_FUNC(int) MxMesh_Check(MxObject *p);
+CAPI_FUNC(int) MxMesh_Check(CObject *p);
     
     
     

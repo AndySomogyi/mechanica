@@ -95,9 +95,9 @@ struct MxMeshNode {
     friend struct MxVertex;
 };
 
-MxAPI_DATA(struct MxType*) MxVertex_Type;
+CAPI_DATA(struct CType*) MxVertex_Type;
 
-struct MxVertex : MxObject {
+struct MxVertex : CObject {
     /**
      * The Mechanica vertex does not represent a point mass as in a traditional
      * particle based approach. Rather, the vertex here represents a region of space,
@@ -129,11 +129,11 @@ struct MxVertex : MxObject {
     uint id{0};
 
 
-    static bool classof(const MxObject *o) {
+    static bool classof(const CObject *o) {
         return o->ob_type == MxVertex_Type;
     }
 
-    static MxType *type() {return MxVertex_Type;};
+    static CType *type() {return MxVertex_Type;};
 
     void positionsChanged() {
         mass = 0;
@@ -141,7 +141,7 @@ struct MxVertex : MxObject {
     }
 
 protected:
-    MxVertex(MxType *derivedType);
+    MxVertex(CType *derivedType);
 
 
 

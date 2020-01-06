@@ -27,7 +27,7 @@
 #include <string.h>
 
 /* Include conditional headers. */
-#include "config.h"
+#include "mdcore_config.h"
 #ifdef WITH_MPI
     #include <mpi.h>
 #endif

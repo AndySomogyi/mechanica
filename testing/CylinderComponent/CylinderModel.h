@@ -47,11 +47,11 @@ struct CylinderModel : public MxModel {
 
     void testEdges();
 
-    HRESULT applyT1Edge2TransitionToSelectedEdge();
+    HRESULT flipSelectedEdgeToEdge();
 
-    HRESULT applyT2PolygonTransitionToSelectedPolygon();
+    HRESULT collapseSelectedPolygon();
 
-    HRESULT applyT3PolygonTransitionToSelectedPolygon();
+    HRESULT splitSelectedPolygon();
 
     HRESULT loadAssImpModel(const char* path);
 

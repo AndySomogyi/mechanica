@@ -30,15 +30,15 @@
 /**
  * The type object for a universe cell.
  */
-MxAPI_DATA(MxCellType) *MxUniverseCell_Type;
+CAPI_DATA(MxCellType) *MxUniverseCell_Type;
 
 /**
  * The type object for a universe partial triangle.
  */
-MxAPI_DATA(MxType) *MxUniversePartialTriangle_Type;
+CAPI_DATA(CType) *MxUniversePartialTriangle_Type;
 
 /**
- * Internal implementation of MxObject
+ * Internal implementation of CObject
  *
  * This mesh structure stores all position, velocity and acceleration information
  * in a set of mdcore particles. The MxMesh
@@ -205,14 +205,14 @@ struct MxMesh  {
      *
      * returns a new, orphaned triangle.
      */
-    PolygonPtr createPolygon(MxType *type,
+    PolygonPtr createPolygon(CType *type,
             const std::vector<VertexPtr> &vertices);
 
 
     /**
      * Creates a new empty polygon.
      */
-    PolygonPtr createPolygon(MxType *type);
+    PolygonPtr createPolygon(CType *type);
 
 
     /**
@@ -223,12 +223,12 @@ struct MxMesh  {
      * of the vertices, that must be done with connectEdgeTriangle.
      * returns a new edge.
      */
-    EdgePtr createEdge(MxType *type, VertexPtr a, VertexPtr b);
+    EdgePtr createEdge(CType *type, VertexPtr a, VertexPtr b);
 
     /**
      * Creates a new empty cell and inserts it into the cell inventory.
      */
-    CellPtr createCell(MxType *type = nullptr, const std::string& name = "");
+    CellPtr createCell(CType *type = nullptr, const std::string& name = "");
 
     void dump(uint what);
 
@@ -262,7 +262,7 @@ struct MxMesh  {
      */
     HRESULT setPositions(uint32_t len, const Vector3 *positions);
 
-    VertexPtr createVertex(const Magnum::Vector3 &pos, const MxType *type = MxVertex_Type);
+    VertexPtr createVertex(const Magnum::Vector3 &pos, const CType *type = MxVertex_Type);
 
     HRESULT deleteVertex(VertexPtr v);
 
@@ -284,7 +284,7 @@ struct MxMesh  {
      * The type must be one of the types manages by this class, currently, these are
      * any cell, vertex, triangle or edge derived types.
      */
-    MxObject *alloc(const MxType *type);
+    CObject *alloc(const CType *type);
 
 
     CellPtr rootCell() const {return _rootCell;};
@@ -317,18 +317,18 @@ struct MxMesh  {
     /**
      * Get the currently selected object.
      */
-    MxObject *selectedObject() const;
+    CObject *selectedObject() const;
 
     /**
      * Select an object, sets the current selected object, and clears the existing one.
      * type can be NULL to clear selection.
      */
-    HRESULT selectObject(MxType *type, uint index);
+    HRESULT selectObject(CType *type, uint index);
 
     std::tuple<Magnum::Vector3, Magnum::Vector3> extents() const;
 
 
-    HRESULT addObjectDeleteListener(MxObjectChangedHandler, void* userData);
+    HRESULT addObjectDeleteListener(CObjectChangedHandler, void* userData);
 
     HRESULT removeObjectDeleteListener(void* userData);
 
@@ -349,7 +349,7 @@ private:
 
     uint triangleId = 0;
 
-    MxObject *_selectedObject = nullptr;
+    CObject *_selectedObject = nullptr;
 
     friend struct MxVertex;
     friend struct MxPolygon;
@@ -361,7 +361,7 @@ private:
     friend struct RadialEdgeSplit;
     friend struct MxEdge;
 
-    std::vector<MxObjectChangedHolder> objectDeleteHandlers;
+    std::vector<CObjectChangedHolder> objectDeleteHandlers;
 
 };
 

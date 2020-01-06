@@ -1,17 +1,17 @@
 
 # This file is part of mdcore.
 # Coypright (c) 2010 Pedro Gonnet (gonnet@maths.ox.ac.uk)
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published
 # by the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -44,7 +44,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/dihedral.h"
   "${MDCORE_SOURCE_DIR}/include/cycle.h"
   "${MDCORE_SOURCE_DIR}/include/fptype.h"
-  "${MDCORE_SOURCE_DIR}/include/config.h"
+  "${MDCORE_SOURCE_DIR}/include/mdcore_config.h"
   )
 
 set(PRIVATE_HEADERS
@@ -69,19 +69,19 @@ SET(SOURCES
   engine.c
   potential.c
   space.c
-  errs.c 
+  errs.c
   bond.c
   angle.c
   reader.c
   rigid.c
   dihedral.c
   exclusion.c
-  engine_io.c 
+  engine_io.c
   engine_bonded.c
   engine_rigid.c
   runner_dopair.c
   queue.c
-  runner_dosort.c 
+  runner_dosort.c
   task.c
   spme.c
   )
@@ -136,9 +136,9 @@ function(add_mdcore_single)
     "${MDCORE_BINARY_DIR}/include/mdcore_single.h"
     "${MDCORE_BINARY_DIR}/include/mdcore_single_config.h"
     )
-  
+
   message("SINGLE_HEADERS: ${SINGLE_HEADERS}")
-  
+
   source_group("Includes" FILES ${SINGLE_HEADERS})
   add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)

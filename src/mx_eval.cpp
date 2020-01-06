@@ -43,27 +43,27 @@ int finalizeEval()
 extern "C" {
 
 
-MxObject* MxEval_GetBuiltins()
+CObject* MxEval_GetBuiltins()
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject* MxEval_GetLocals()
+CObject* MxEval_GetLocals()
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject* MxEval_GetGlobals()
+CObject* MxEval_GetGlobals()
 {
 	MX_NOTIMPLEMENTED
 }
 
-const char* MxEval_GetFuncName(MxObject* func)
+const char* MxEval_GetFuncName(CObject* func)
 {
 	MX_NOTIMPLEMENTED
 }
 
-const char* MxEval_GetFuncDesc(MxObject* func)
+const char* MxEval_GetFuncDesc(CObject* func)
 {
 	MX_NOTIMPLEMENTED
 }

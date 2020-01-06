@@ -8,8 +8,7 @@
 #ifndef _INCLUDE_CA_RUNTIME_H_
 #define _INCLUDE_CA_RUNTIME_H_
 
-#include <mx_port.h>
-#include <mx_object.h>
+#include <carbon.h>
 #include <mx_module.h>
 #include <stdio.h>
 
@@ -18,66 +17,66 @@ extern "C"
 {
 #endif
 
-MxAPI_DATA(MxModule*) module;
+CAPI_DATA(MxModule*) module;
 
-MxAPI_FUNC(wchar_t *) Mx_GetProgramName(void);
+CAPI_FUNC(wchar_t *) Mx_GetProgramName(void);
 
-MxAPI_FUNC(void) Mx_SetMechanicaHome(wchar_t *);
-MxAPI_FUNC(wchar_t *) Mx_GetMechanicaHome(void);
+CAPI_FUNC(void) Mx_SetMechanicaHome(wchar_t *);
+CAPI_FUNC(wchar_t *) Mx_GetMechanicaHome(void);
 
 /**
  * Initialize the entire runtime.
  */
-MxAPI_FUNC(int) Mx_Initialize(int);
+CAPI_FUNC(int) Mx_Initialize(int);
 
 
-MxAPI_FUNC(void) Mx_Finalize(void);
+CAPI_FUNC(void) Mx_Finalize(void);
 
 /**
  * Is the runtime initialized?
  */
-MxAPI_FUNC(int) Mx_IsInitialized(void);
+CAPI_FUNC(int) Mx_IsInitialized(void);
 
 /* Mx_CaAtExit is for the atexit module, Mx_AtExit is for low-level
  * exit functions.
  */
 
-MxAPI_FUNC(int) Mx_AtExit(void (*func)(void));
+CAPI_FUNC(int) Mx_AtExit(void (*func)(void));
 
-MxAPI_FUNC(void) Mx_Exit(int);
+CAPI_FUNC(void) Mx_Exit(int);
 
 /* Restore signals that the interpreter has called SIG_IGN on to SIG_DFL. */
 
 
 
 /* In getpath.c */
-MxAPI_FUNC(wchar_t *) Mx_GetProgramFullPath(void);
-MxAPI_FUNC(wchar_t *) Mx_GetPrefix(void);
-MxAPI_FUNC(wchar_t *) Mx_GetExecPrefix(void);
-MxAPI_FUNC(wchar_t *) Mx_GetPath(void);
-MxAPI_FUNC(void) Mx_SetPath(const wchar_t *);
+CAPI_FUNC(wchar_t *) Mx_GetProgramFullPath(void);
+CAPI_FUNC(wchar_t *) Mx_GetPrefix(void);
+CAPI_FUNC(wchar_t *) Mx_GetExecPrefix(void);
+CAPI_FUNC(wchar_t *) Mx_GetPath(void);
+CAPI_FUNC(void) Mx_SetPath(const wchar_t *);
 
 /* In their own files */
-MxAPI_FUNC(const char *) Mx_GetVersion(void);
-MxAPI_FUNC(const char *) Mx_GetPlatform(void);
-MxAPI_FUNC(const char *) Mx_GetCopyright(void);
-MxAPI_FUNC(const char *) Mx_GetCompiler(void);
-MxAPI_FUNC(const char *) Mx_GetBuildInfo(void);
+CAPI_FUNC(const char *) Mx_GetVersion(void);
+CAPI_FUNC(const char *) Mx_GetPlatform(void);
+CAPI_FUNC(const char *) Mx_GetCopyright(void);
+CAPI_FUNC(const char *) Mx_GetCompiler(void);
+CAPI_FUNC(const char *) Mx_GetBuildInfo(void);
 
 /* Signals */
 typedef void (*MxOS_sighandler_t)(int);
-MxAPI_FUNC(MxOS_sighandler_t) MxOS_getsig(int);
-MxAPI_FUNC(MxOS_sighandler_t) MxOS_setsig(int, MxOS_sighandler_t);
+CAPI_FUNC(MxOS_sighandler_t) MxOS_getsig(int);
+CAPI_FUNC(MxOS_sighandler_t) MxOS_setsig(int, MxOS_sighandler_t);
 
 /* Random */
-MxAPI_FUNC(int) _CaOS_URandom (void *buffer, Mx_ssize_t size);
+CAPI_FUNC(int) _CaOS_URandom (void *buffer, Mx_ssize_t size);
 
-MxAPI_FUNC(void) MxErr_Print(void);
-MxAPI_FUNC(void) MxErr_PrintEx(int);
-MxAPI_FUNC(void) MxErr_Display(MxObject *, MxObject *, MxObject *);
+CAPI_FUNC(void) MxErr_Print(void);
+CAPI_FUNC(void) MxErr_PrintEx(int);
+CAPI_FUNC(void) MxErr_Display(CObject *, CObject *, CObject *);
 
-MxAPI_FUNC(void) MxErr_SetString(
-		MxObject *exception,
+CAPI_FUNC(void) MxErr_SetString(
+		CObject *exception,
 		const char *string /* decoded from utf-8 */
 );
 
@@ -87,14 +86,14 @@ MxAPI_FUNC(void) MxErr_SetString(
  * If not set, return NULL. You do not own a reference to the return value,
  * so you do not need to Mx_DECREF() it.
  */
-MxAPI_FUNC(MxObject *) MxErr_Occurred(void);
+CAPI_FUNC(CObject *) MxErr_Occurred(void);
 
 
-MxAPI_FUNC(void) MxErr_Clear(void);
-MxAPI_FUNC(void) MxErr_Fetch(MxObject **, MxObject **, MxObject **);
-MxAPI_FUNC(void) MxErr_Restore(MxObject *, MxObject *, MxObject *);
-MxAPI_FUNC(void) MxErr_GetExcInfo(MxObject **, MxObject **, MxObject **);
-MxAPI_FUNC(void) MxErr_SetExcInfo(MxObject *, MxObject *, MxObject *);
+CAPI_FUNC(void) MxErr_Clear(void);
+CAPI_FUNC(void) MxErr_Fetch(CObject **, CObject **, CObject **);
+CAPI_FUNC(void) MxErr_Restore(CObject *, CObject *, CObject *);
+CAPI_FUNC(void) MxErr_GetExcInfo(CObject **, CObject **, CObject **);
+CAPI_FUNC(void) MxErr_SetExcInfo(CObject *, CObject *, CObject *);
 
 /**
 
@@ -127,7 +126,7 @@ MxAPI_FUNC(void) MxErr_SetExcInfo(MxObject *, MxObject *, MxObject *);
  * Mx_InteractiveFlag is true, this function also returns true if the filename pointer is
  * NULL or if the name is equal to one of the strings '<stdin>' or '???'.
  */
-MxAPI_FUNC(int) Mx_FdIsInteractive(FILE *, const char *);
+CAPI_FUNC(int) Mx_FdIsInteractive(FILE *, const char *);
 
 /**
  * The main program for the standard interpreter.  This is made available for
@@ -143,13 +142,13 @@ MxAPI_FUNC(int) Mx_FdIsInteractive(FILE *, const char *);
  * function will not return ``1``, but exit the process, as long as
  * ``Mx_InspectFlag`` is not set.
  */
-MxAPI_FUNC(int) Mx_Main(int argc, const char **argv);
+CAPI_FUNC(int) Mx_Main(int argc, const char **argv);
 
 /**
  * This is a simplified interface to :c:func:`CaRun_AnyFileExFlags` below, leaving
  * closeit* set to ``0`` and *flags* set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_AnyFile(FILE *fp, const char *filename);
+CAPI_FUNC(int) MxRun_AnyFile(FILE *fp, const char *filename);
 
 typedef struct
 {
@@ -161,14 +160,14 @@ typedef struct
  * the *closeit* argument set to ``0``.
  */
 
-MxAPI_FUNC(int) MxRun_AnyFileFlags(FILE *fp, const char *filename,
+CAPI_FUNC(int) MxRun_AnyFileFlags(FILE *fp, const char *filename,
 		MxCompilerFlags *flags);
 
 /**
  * This is a simplified interface to :c:func:`CaRun_AnyFileExFlags` below, leaving
  * the *flags* argument set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_AnyFileEx(FILE *fp, const char *filename, int closeit);
+CAPI_FUNC(int) MxRun_AnyFileEx(FILE *fp, const char *filename, int closeit);
 
 /**
  * If *fp* refers to a file associated with an interactive device (console or
@@ -177,7 +176,7 @@ MxAPI_FUNC(int) MxRun_AnyFileEx(FILE *fp, const char *filename, int closeit);
  * :c:func:`CaRun_SimpleFile`.  If *filename* is *NULL*, this function uses
  * ``"???"`` as the filename.
  */
-MxAPI_FUNC(int) MxRun_AnyFileExFlags(FILE *fp, const char *filename,
+CAPI_FUNC(int) MxRun_AnyFileExFlags(FILE *fp, const char *filename,
 		int closeit, MxCompilerFlags *flags);
 
 /**
@@ -185,7 +184,7 @@ MxAPI_FUNC(int) MxRun_AnyFileExFlags(FILE *fp, const char *filename,
  * leaving the *MxCompilerFlags\** argument set to NULL.
  */
 
-MxAPI_FUNC(int) MxRun_SimpleString(const char *command);
+CAPI_FUNC(int) MxRun_SimpleString(const char *command);
 
 /**
  Executes the cayman source code from *command* in the :mod:`__main__` module
@@ -198,20 +197,20 @@ MxAPI_FUNC(int) MxRun_SimpleString(const char *command);
  function will not return ``-1``, but exit the process, as long as
  ``Mx_InspectFlag`` is not set.
  */
-MxAPI_FUNC(int) MxRun_SimpleStringFlags(const char *command,
+CAPI_FUNC(int) MxRun_SimpleStringFlags(const char *command,
 		MxCompilerFlags *flags);
 
 /**
  This is a simplified interface to :c:func:`CaRun_SimpleFileExFlags` below,
  leaving *closeit* set to ``0`` and *flags* set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_SimpleFile(FILE *fp, const char *filename);
+CAPI_FUNC(int) MxRun_SimpleFile(FILE *fp, const char *filename);
 
 /**
  This is a simplified interface to :c:func:`CaRun_SimpleFileExFlags` below,
  leaving *flags* set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_SimpleFileEx(FILE *fp, const char *filename, int closeit);
+CAPI_FUNC(int) MxRun_SimpleFileEx(FILE *fp, const char *filename, int closeit);
 
 /**
  Similar to :c:func:`CaRun_SimpleStringFlags`, but the Mxthon source code is read
@@ -220,14 +219,14 @@ MxAPI_FUNC(int) MxRun_SimpleFileEx(FILE *fp, const char *filename, int closeit);
  returns.
 
  */
-MxAPI_FUNC(int) MxRun_SimpleFileExFlags(FILE *fp, const char *filename,
+CAPI_FUNC(int) MxRun_SimpleFileExFlags(FILE *fp, const char *filename,
 		int closeit, MxCompilerFlags *flags);
 
 /**
  * This is a simplified interface to :c:func:`CaRun_InteractiveOneFlags` below,
  * leaving *flags* set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_InteractiveOne(FILE *fp, const char *filename);
+CAPI_FUNC(int) MxRun_InteractiveOne(FILE *fp, const char *filename);
 
 /**
  * Read and execute a single statement from a file associated with an
@@ -238,26 +237,26 @@ MxAPI_FUNC(int) MxRun_InteractiveOne(FILE *fp, const char *filename);
  * there was a parse error.  (Note that :file:`errcode.h` is not included by
  * :file:`cayman.h`, so must be included specifically if needed.)
  */
-MxAPI_FUNC(int) MxRun_InteractiveOneFlags(FILE *fp, const char *filename,
+CAPI_FUNC(int) MxRun_InteractiveOneFlags(FILE *fp, const char *filename,
 		MxCompilerFlags *flags);
 
 /**
  * This is a simplified interface to :c:func:`CaRun_InteractiveLoopFlags` below,
  * leaving *flags* set to *NULL*.
  */
-MxAPI_FUNC(int) MxRun_InteractiveLoop(FILE *fp, const char *filename);
+CAPI_FUNC(int) MxRun_InteractiveLoop(FILE *fp, const char *filename);
 
 /**
  * Read and execute statements from a file associated with an interactive device
  * until EOF is reached.  The user will be prompted using ``sys.ps1`` and
  * ``sys.ps2``.  Returns ``0`` at EOF.
  */
-MxAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
+CAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
 		MxCompilerFlags *flags);
 
 /*
 
- MxAPI_FUNC(struct) _node* MxParser_SimpleParseString(const char *str,
+ CAPI_FUNC(struct) _node* MxParser_SimpleParseString(const char *str,
  int start);
 
  This is a simplified interface to
@@ -265,7 +264,7 @@ MxAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
  to *NULL* and *flags* set to ``0``.
 
 
- MxAPI_FUNC(struct) _node* MxParser_SimpleParseStringFlags( const char *str,
+ CAPI_FUNC(struct) _node* MxParser_SimpleParseStringFlags( const char *str,
  int start, int flags);
 
  This is a simplified interface to
@@ -273,7 +272,7 @@ MxAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
  to *NULL*.
 
 
- MxAPI_FUNC(struct) _node* MxParser_SimpleParseStringFlagsFilename( const char *str,
+ CAPI_FUNC(struct) _node* MxParser_SimpleParseStringFlagsFilename( const char *str,
  const char *filename, int start, int flags);
 
  Parse Mxthon source code from *str* using the start token *start* according to
@@ -282,14 +281,14 @@ MxAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
  many times.
 
 
- MxAPI_FUNC(struct) _node* MxParser_SimpleParseFile(FILE *fp, const char
+ CAPI_FUNC(struct) _node* MxParser_SimpleParseFile(FILE *fp, const char
  *filename, int start);
 
  This is a simplified interface to :c:func:`CaParser_SimpleParseFileFlags` below,
  leaving *flags* set to ``0``
 
 
- MxAPI_FUNC(struct) _node* MxParser_SimpleParseFileFlags(FILE *fp, const char
+ CAPI_FUNC(struct) _node* MxParser_SimpleParseFileFlags(FILE *fp, const char
  *filename, int start, int flags);
 
  Similar to :c:func:`CaParser_SimpleParseStringFlagsFilename`, but the Mxthon
@@ -300,8 +299,8 @@ MxAPI_FUNC(int) MxRun_InteractiveLoopFlags(FILE *fp, const char *filename,
  * This is a simplified interface to :c:func:`CaRun_StringFlags` below, leaving
  * *flags* set to *NULL*.
  */
-MxAPI_FUNC(MxObject*) MxRun_String(const char *str, int start, MxObject *globals,
-		MxObject *locals);
+CAPI_FUNC(CObject*) MxRun_String(const char *str, int start, CObject *globals,
+		CObject *locals);
 
 /*
  Execute Mxthon source code from *str* in the context specified by the
@@ -312,8 +311,8 @@ MxAPI_FUNC(MxObject*) MxRun_String(const char *str, int start, MxObject *globals
  Returns the result of executing the code as a Mxthon object, or *NULL* if an
  exception was raised.
  */
-MxAPI_FUNC(MxObject*) MxRun_StringFlags(const char *str, int start,
-		MxObject *globals, MxObject *locals, MxCompilerFlags *flags);
+CAPI_FUNC(CObject*) MxRun_StringFlags(const char *str, int start,
+		CObject *globals, CObject *locals, MxCompilerFlags *flags);
 
 /*
  This is a simplified interface to :c:func:`CaRun_FileExFlags` below, leaving
@@ -321,23 +320,23 @@ MxAPI_FUNC(MxObject*) MxRun_StringFlags(const char *str, int start,
 
  */
 
-MxAPI_FUNC(MxObject*) MxRun_File(FILE *fp, const char *filename, int start,
-		MxObject *globals, MxObject *locals);
+CAPI_FUNC(CObject*) MxRun_File(FILE *fp, const char *filename, int start,
+		CObject *globals, CObject *locals);
 
 /*
  This is a simplified interface to :c:func:`CaRun_FileExFlags` below, leaving
  *flags* set to *NULL*.
  */
-MxAPI_FUNC(MxObject*) MxRun_FileEx(FILE *fp, const char *filename, int start,
-		MxObject *globals, MxObject *locals, int closeit);
+CAPI_FUNC(CObject*) MxRun_FileEx(FILE *fp, const char *filename, int start,
+		CObject *globals, CObject *locals, int closeit);
 
 /*
  This is a simplified interface to :c:func:`CaRun_FileExFlags` below, leaving
  *closeit* set to ``0``.
 
  */
-MxAPI_FUNC(MxObject*) MxRun_FileFlags(FILE *fp, const char *filename, int start,
-		MxObject *globals, MxObject *locals, MxCompilerFlags *flags);
+CAPI_FUNC(CObject*) MxRun_FileFlags(FILE *fp, const char *filename, int start,
+		CObject *globals, CObject *locals, MxCompilerFlags *flags);
 
 /*
 
@@ -348,15 +347,15 @@ MxAPI_FUNC(MxObject*) MxRun_FileFlags(FILE *fp, const char *filename, int start,
 
  */
 
-MxAPI_FUNC(MxObject*) MxRun_FileExFlags(FILE *fp, const char *filename, int start,
-		MxObject *globals, MxObject *locals, int closeit, MxCompilerFlags *flags);
+CAPI_FUNC(CObject*) MxRun_FileExFlags(FILE *fp, const char *filename, int start,
+		CObject *globals, CObject *locals, int closeit, MxCompilerFlags *flags);
 
 /*
  This is a simplified interface to :c:func:`Mx_CompileStringFlags` below, leaving
  *flags* set to *NULL*.
  */
 
-MxAPI_FUNC(MxObject*) Mx_CompileString(const char *str, const char *filename,
+CAPI_FUNC(CObject*) Mx_CompileString(const char *str, const char *filename,
 		int start);
 
 /*
@@ -370,7 +369,7 @@ MxAPI_FUNC(MxObject*) Mx_CompileString(const char *str, const char *filename,
 
  */
 
-MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filename,
+CAPI_FUNC(CObject*) Mx_CompileStringFlags(const char *str, const char *filename,
 		int start, MxCompilerFlags *flags);
 
 /*
@@ -379,8 +378,8 @@ MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filenam
  The other arguments are set to *NULL*.
 
 
- MxAPI_FUNC(MxObject*) MxEval_EvalCode(CaCodeObject *co, MxObject *globals,
- MxObject *locals);
+ CAPI_FUNC(CObject*) MxEval_EvalCode(CaCodeObject *co, CObject *globals,
+ CObject *locals);
 
 
 
@@ -389,9 +388,9 @@ MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filenam
  variables, arrays of arguments, keywords and defaults, and a closure tuple of
  cells.
 
- MxAPI_FUNC(MxObject*) MxEval_EvalCodeEx(CaCodeObject *co, MxObject *globals, C
- aObject *locals,  MxObject **args, int argcount, MxObject **kws, int kwcount,
- MxObject **defs, int defcount, MxObject *closure);
+ CAPI_FUNC(CObject*) MxEval_EvalCodeEx(CaCodeObject *co, CObject *globals, C
+ aObject *locals,  CObject **args, int argcount, CObject **kws, int kwcount,
+ CObject **defs, int defcount, CObject *closure);
 
 
 
@@ -399,10 +398,10 @@ MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filenam
  MxEval_EvalFrameEx, for backward compatibility.
 
 
- MxAPI_FUNC(MxObject*) MxEval_EvalFrame(CaFrameObject *f);
+ CAPI_FUNC(CObject*) MxEval_EvalFrame(CaFrameObject *f);
 
 
- MxAPI_FUNC(MxObject*) MxEval_EvalFrameEx(CaFrameObject *f, int throwflag);
+ CAPI_FUNC(CObject*) MxEval_EvalFrameEx(CaFrameObject *f, int throwflag);
 
  This is the main, unvarnished function of Mxthon interpretation.  It is
  literally 2000 lines long.  The code object associated with the execution
@@ -412,7 +411,7 @@ MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filenam
  :meth:`~generator.throw` methods of generator objects.
 
 
- MxAPI_FUNC(int) MxEval_MergeCompilerFlags(MxCompilerFlags *cf);
+ CAPI_FUNC(int) MxEval_MergeCompilerFlags(MxCompilerFlags *cf);
 
  This function changes the flags of the current evaluation frame, and returns
  true on success, false on failure.
@@ -432,19 +431,19 @@ MxAPI_FUNC(MxObject*) Mx_CompileStringFlags(const char *str, const char *filenam
  * Return value: Borrowed reference.
 Return the object name from the sys module or NULL if it does not exist, without setting an exception.
  */
-MxAPI_FUNC(MxObject*) MxSys_GetObject(const char *name);
+CAPI_FUNC(CObject*) MxSys_GetObject(const char *name);
 
 /**
  * Return the FILE* associated with the object name in the sys module, or def if name is
  * not in the module or is not associated with a FILE*.
  */
-MxAPI_FUNC(FILE*) MxSys_GetFile(const char *name, FILE *def);
+CAPI_FUNC(FILE*) MxSys_GetFile(const char *name, FILE *def);
 
 /**
  * Set name in the sys module to v unless v is NULL, in which case name is deleted from
  * the sys module. Returns 0 on success, -1 on error.
  */
-MxAPI_FUNC(int) MxSys_SetObject(const char *name, MxObject *v);
+CAPI_FUNC(int) MxSys_SetObject(const char *name, CObject *v);
 
 
 

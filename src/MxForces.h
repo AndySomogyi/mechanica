@@ -8,9 +8,8 @@
 #ifndef SRC_MXFORCES_H_
 #define SRC_MXFORCES_H_
 
+#include <carbon.h>
 #include "mechanica_private.h"
-#include "MxObject.h"
-#include "MxType.h"
 
 
 /**
@@ -29,7 +28,7 @@ struct IForce {
     /**
      * Apply forces to a set of objects.
      */
-    virtual HRESULT applyForce(float time, MxObject **objs, uint32_t len) const = 0;
+    virtual HRESULT applyForce(float time, CObject **objs, uint32_t len) const = 0;
 };
 
 

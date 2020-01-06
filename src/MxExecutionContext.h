@@ -11,7 +11,7 @@
 #include "mechanica_private.h"
 
 
-struct MxExecutionContext : MxObject {
+struct MxExecutionContext : CObject {
 };
 
 #endif /* SRC_MXEXECUTIONCONTEXT_H_ */

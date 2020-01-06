@@ -8,6 +8,8 @@
 #ifndef INCLUDE_MX_PARTICLE_H_
 #define INCLUDE_MX_PARTICLE_H_
 
+#include <carbon.h>
+
 MxAPI_STRUCT(MxParticle);
 
 

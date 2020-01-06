@@ -48,9 +48,9 @@ public:
     HRESULT structureChanged();
 
 
-    HRESULT bindConstraint(IConstraint *constraint, MxObject *obj);
+    HRESULT bindConstraint(IConstraint *constraint, CObject *obj);
 
-    HRESULT bindForce(IForce *force, MxObject *obj);
+    HRESULT bindForce(IForce *force, CObject *obj);
 
     HRESULT unbindConstraint(IConstraint* constraint);
 
@@ -62,14 +62,14 @@ private:
 
     struct ConstraintItems {
         IConstraint *thing;
-        MxType *type;
-        std::vector<MxObject*> args;
+        CType *type;
+        std::vector<CObject*> args;
     };
 
     struct ForceItems {
         IForce *thing;
-        MxType *type;
-        std::vector<MxObject*> args;
+        CType *type;
+        std::vector<CObject*> args;
     };
 
     HRESULT applyForces();
@@ -136,8 +136,8 @@ private:
     std::vector<ConstraintItems> constraints;
     std::vector<ForceItems> forces;
 
-    static HRESULT objectDeleteListener(MxObject* pThis,
-            const MxObject* obj, uint32_t what);
+    static HRESULT objectDeleteListener(CObject* pThis,
+            const CObject* obj, uint32_t what);
 
     template<typename T>
     HRESULT updateItems(std::vector<T> &items);
@@ -149,7 +149,7 @@ private:
     T& getItem(std::vector<T> &items, KeyType *key);
 
     template<typename T, typename KeyType>
-    HRESULT bindTypeItem(std::vector<T> &items, KeyType *key, MxType* type);
+    HRESULT bindTypeItem(std::vector<T> &items, KeyType *key, CType* type);
 
 };
 

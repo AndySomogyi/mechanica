@@ -29,7 +29,7 @@
 #include <time.h>
 #include <fenv.h>
 #include "cycle.h"
-#include "../config.h"
+#include "mdcore_config.h"
 
 /* MPI headers. */
 #ifdef WITH_MPI

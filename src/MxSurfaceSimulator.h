@@ -8,6 +8,7 @@
 #ifndef SRC_MXSURFACESIMULATOR_H_
 #define SRC_MXSURFACESIMULATOR_H_
 
+#include <Mechanica.h>
 #include "mechanica_private.h"
 #include "MxApplication.h"
 #include "MxCylinderModel.h"
@@ -40,7 +41,7 @@ struct MxSurfaceSimulator_Config {
     MxApplicationConfig applicationConfig;
 };
 
-struct MxSurfaceSimulator : MxObject
+struct MxSurfaceSimulator : CObject
 {
     typedef MxSurfaceSimulator_Config Configuration;
 

@@ -13,192 +13,192 @@
 
 extern "C" {
 
-int MxNumber_Check(MxObject* o)
+int MxNumber_Check(CObject* o)
 {
 	return 0;
 }
 
-MxObject *MxNumber_Add(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Add(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Subtract(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Subtract(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Multiply(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Multiply(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_MatrixMultiply(MxObject* o1, MxObject* o2)
+CObject *MxNumber_MatrixMultiply(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_FloorDivide(MxObject* o1, MxObject* o2)
+CObject *MxNumber_FloorDivide(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_TrueDivide(MxObject* o1, MxObject* o2)
+CObject *MxNumber_TrueDivide(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Remainder(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Remainder(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Divmod(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Divmod(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Power(MxObject* o1, MxObject* o2, MxObject* o3)
+CObject *MxNumber_Power(CObject* o1, CObject* o2, CObject* o3)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Negative(MxObject* o)
+CObject *MxNumber_Negative(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Positive(MxObject* o)
+CObject *MxNumber_Positive(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Absolute(MxObject* o)
+CObject *MxNumber_Absolute(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Invert(MxObject* o)
+CObject *MxNumber_Invert(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Lshift(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Lshift(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Rshift(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Rshift(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_And(MxObject* o1, MxObject* o2)
+CObject *MxNumber_And(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Xor(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Xor(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Or(MxObject* o1, MxObject* o2)
+CObject *MxNumber_Or(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Index(MxObject* o)
+CObject *MxNumber_Index(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-Mx_ssize_t MxNumber_AsSsize_t(MxObject* o, MxObject* exc)
+Mx_ssize_t MxNumber_AsSsize_t(CObject* o, CObject* exc)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Long(MxObject* o)
+CObject *MxNumber_Long(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_Float(MxObject* o)
+CObject *MxNumber_Float(CObject* o)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceAdd(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceAdd(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceSubtract(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceSubtract(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceMultiply(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceMultiply(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceMatrixMultiply(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceMatrixMultiply(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceFloorDivide(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceFloorDivide(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceTrueDivide(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceTrueDivide(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceRemainder(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceRemainder(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlacePower(MxObject* o1, MxObject* o2, MxObject* o3)
+CObject *MxNumber_InPlacePower(CObject* o1, CObject* o2, CObject* o3)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceLshift(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceLshift(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceRshift(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceRshift(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceAnd(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceAnd(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceXor(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceXor(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_InPlaceOr(MxObject* o1, MxObject* o2)
+CObject *MxNumber_InPlaceOr(CObject* o1, CObject* o2)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_ToBase(MxObject* n, int base)
+CObject *MxNumber_ToBase(CObject* n, int base)
 {
 	MX_NOTIMPLEMENTED
 }
 
-MxObject *MxNumber_FromString(const char* str)
+CObject *MxNumber_FromString(const char* str)
 {
     MX_NOTIMPLEMENTED
 }

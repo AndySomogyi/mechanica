@@ -11,7 +11,7 @@
 #ifndef _INCLUDED_CA_FUNCTION_H_
 #define _INCLUDED_CA_FUNCTION_H_
 
-#include "mx_object.h"
+#include "carbon.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -23,7 +23,7 @@ extern "C"
  * Return true if o is a function object (has type MxFunction_Type). The parameter
  * must not be NULL.
  */
-MxAPI_FUNC(int) MxFunction_Check(MxObject *o);
+CAPI_FUNC(int) MxFunction_Check(CObject *o);
 
 /**
  * Return value: New reference.
@@ -33,7 +33,7 @@ MxAPI_FUNC(int) MxFunction_Check(MxObject *o);
  * The function’s docstring, name and __module__ are retrieved from the code object,
  * the argument defaults and closure are set to NULL.
  */
-MxAPI_FUNC(MxObject*) MxFunction_New(MxObject *code, MxObject *globals);
+CAPI_FUNC(CObject*) MxFunction_New(CObject *code, CObject *globals);
 
 
 /**
@@ -42,20 +42,20 @@ MxAPI_FUNC(MxObject*) MxFunction_New(MxObject *code, MxObject *globals);
  * attribute. qualname should be a unicode object or NULL; if NULL, the
  * __qualname__ attribute is set to the same value as its __name__ attribute.
  */
-MxAPI_FUNC(MxObject*) MxFunction_NewWithQualName(MxObject *code, MxObject *globals,
-		MxObject *qualname);
+CAPI_FUNC(CObject*) MxFunction_NewWithQualName(CObject *code, CObject *globals,
+		CObject *qualname);
 
 /**
  * Return value: Borrowed reference.
  * Return the code object associated with the function object op.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetCode(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetCode(CObject *op);
 
 /**
  * Return value: Borrowed reference.
  * Return the globals dictionary associated with the function object op.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetGlobals(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetGlobals(CObject *op);
 
 /**
  * Return value: Borrowed reference.
@@ -63,28 +63,28 @@ MxAPI_FUNC(MxObject*) MxFunction_GetGlobals(MxObject *op);
  * string containing the module name, but can be set to any other object by
  * Mxthon code.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetModule(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetModule(CObject *op);
 
 /**
  * Return value: Borrowed reference.
  * Return the argument default values of the function object op. This can be a
  * tuple of arguments or NULL.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetDefaults(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetDefaults(CObject *op);
 
 /**
  * Set the argument default values for the function object op. defaults must be
  * Mx_None or a tuple.
  * Raises SystemError and returns -1 on failure.
  */
-MxAPI_FUNC(int) MxFunction_SetDefaults(MxObject *op, MxObject *defaults);
+CAPI_FUNC(int) MxFunction_SetDefaults(CObject *op, CObject *defaults);
 
 /**
  * Return value: Borrowed reference.
  * Return the closure associated with the function object op. This can be NULL or
  * a tuple of cell objects.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetClosure(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetClosure(CObject *op);
 
 /**
  * Set the closure associated with the function object op. closure must be Mx_None
@@ -92,13 +92,13 @@ MxAPI_FUNC(MxObject*) MxFunction_GetClosure(MxObject *op);
  *
  * Raises SystemError and returns -1 on failure.
  */
-MxAPI_FUNC(int) MxFunction_SetClosure(MxObject *op, MxObject *closure);
+CAPI_FUNC(int) MxFunction_SetClosure(CObject *op, CObject *closure);
 
 /**
  * Return the annotations of the function object op. This can be a mutable
  * dictionary or NULL.
  */
-MxAPI_FUNC(MxObject*) MxFunction_GetAnnotations(MxObject *op);
+CAPI_FUNC(CObject*) MxFunction_GetAnnotations(CObject *op);
 
 /**
  * Set the annotations for the function object op. annotations must be a dictionary
@@ -106,7 +106,7 @@ MxAPI_FUNC(MxObject*) MxFunction_GetAnnotations(MxObject *op);
  *
  * Raises SystemError and returns -1 on failure.
  */
-MxAPI_FUNC(int) MxFunction_SetAnnotations(MxObject *op, MxObject *annotations);
+CAPI_FUNC(int) MxFunction_SetAnnotations(CObject *op, CObject *annotations);
 
 
 #ifdef __cplusplus

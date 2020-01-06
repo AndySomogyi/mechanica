@@ -9,7 +9,7 @@
 
 
 
-extern "C" MxObject *TestParticles_New() {
+extern "C" CObject *TestParticles_New() {
     return NULL;
 }
 

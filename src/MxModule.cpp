@@ -14,12 +14,12 @@ MxModule* MxModule_New(const char* name)
     MX_NOTIMPLEMENTED
 }
 
-int MxModule_Check(MxObject* p)
+int MxModule_Check(CObject* p)
 {
     MX_NOTIMPLEMENTED
 }
 
-int MxModule_CheckExact(MxObject* p)
+int MxModule_CheckExact(CObject* p)
 {
     MX_NOTIMPLEMENTED
 }
@@ -34,7 +34,7 @@ const char* MxModule_GetFilename(MxModule* module)
     MX_NOTIMPLEMENTED
 }
 
-int MxModule_AddObject(MxModule* module, const char* name, MxObject* value)
+int MxModule_AddObject(MxModule* module, const char* name, CObject* value)
 {
     MX_NOTIMPLEMENTED
 }

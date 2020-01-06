@@ -8,7 +8,7 @@
 #ifndef _INCLUDE_CA_INT_H_
 #define _INCLUDE_CA_INT_H_
 
-#include <mx_port.h>
+#include <carbon.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -19,24 +19,24 @@ extern "C"
 
  Plain Integer Objects
  MxIntObject
- This subtype of MxObject represents a Mxthon integer object.
+ This subtype of CObject represents a Mxthon integer object.
  */
 
 /**
- MxTypeObject MxInt_Type
- This instance of MxTypeObject represents the Mxthon plain integer type.
+ CTypeObject MxInt_Type
+ This instance of CTypeObject represents the Mxthon plain integer type.
  This is the same object as int and types.IntType.
  */
 
 /**
  * Return true if o is of type MxInt_Type or a subtype of MxInt_Type.
  */
-MxAPI_FUNC(int) MxInt_Check(MxObject *o);
+CAPI_FUNC(int) MxInt_Check(CObject *o);
 
 /**
  * Return true if o is of type MxInt_Type, but not a subtype of MxInt_Type.
  */
-MxAPI_FUNC(int) MxInt_CheckExact(MxObject *o);
+CAPI_FUNC(int) MxInt_CheckExact(CObject *o);
 
 /**
  * Return value: New reference.
@@ -53,7 +53,7 @@ MxAPI_FUNC(int) MxInt_CheckExact(MxObject *o);
  * are being suppressed, a MxLongObject will be returned. If overflow warnings
  * are not being suppressed, NULL will be returned in this case.
  */
-MxAPI_FUNC( MxObject)* MxInt_FromString(const char *str, char **pend, int base);
+CAPI_FUNC( CObject)* MxInt_FromString(const char *str, char **pend, int base);
 
 /**
  * Return value: New reference.
@@ -63,13 +63,13 @@ MxAPI_FUNC( MxObject)* MxInt_FromString(const char *str, char **pend, int base);
  * back a reference to the existing object. So it should be possible to change
  * the value of 1. I suspect the behaviour of Mxthon in this case is undefined. :-)
  */
-MxAPI_FUNC( MxObject)* MxInt_FromLong(long ival);
+CAPI_FUNC( CObject)* MxInt_FromLong(long ival);
 
 /**
  * Create a new integer object with a value of ival. If the value exceeds
  * LONG_MAX, a long integer object is returned.
  */
-MxAPI_FUNC(MxObject)* MxInt_FromSize_t(size_t ival);
+CAPI_FUNC(CObject)* MxInt_FromSize_t(size_t ival);
 
 /**
  * Will first attempt to cast the object to a MxIntObject, if it is not
@@ -77,26 +77,26 @@ MxAPI_FUNC(MxObject)* MxInt_FromSize_t(size_t ival);
  * returned, and the caller should check MxErr_Occurred() to find out
  * whether there was an error, or whether the value just happened to be -1.
  */
-MxAPI_FUNC( long) MxInt_AsLong(MxObject *io);
+CAPI_FUNC( long) MxInt_AsLong(CObject *io);
 
 /**
  * Will first attempt to cast the object to a MxIntObject or MxLongObject,
  * if it is not already one, and then return its value as unsigned long long,
  * without checking for overflow.
  */
-MxAPI_FUNC( unsigned long long) MxInt_AsUnsignedLongLongMask(MxObject *io);
+CAPI_FUNC( unsigned long long) MxInt_AsUnsignedLongLongMask(CObject *io);
 
 /**
  * Will first attempt to cast the object to a MxIntObject or MxLongObject,
  * if it is not already one, and then return its value as Mx_ssize_t.
  */
-MxAPI_FUNC(size_t) MxInt_AsSize_t(MxObject *io);
+CAPI_FUNC(size_t) MxInt_AsSize_t(CObject *io);
 
 /**
  * Return the system’s idea of the largest integer it can handle
  * (LONG_MAX, as defined in the system header files).
  */
-MxAPI_FUNC(long) MxInt_GetMax();
+CAPI_FUNC(long) MxInt_GetMax();
 
 #ifdef __cplusplus
 }

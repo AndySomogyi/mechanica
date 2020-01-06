@@ -4,38 +4,49 @@
  *  Created on: Aug 5, 2015
  *      Author: andy
  */
+
+#include <cstdio>
+#include <ctype.h>
+
+#ifdef CType
+#error CType is macro
+#endif
+
+#include <carbon.h>
+
+
 #include "mechanica_private.h"
 
 
 // public API
 extern "C" {
 
-int CaFloat_Check(MxObject* p)
+int CaFloat_Check(CObject* p)
 {
 	MX_NOTIMPLEMENTED;
 }
 
-int CaFloat_CheckExact(MxObject* p)
+int CaFloat_CheckExact(CObject* p)
 {
     MX_NOTIMPLEMENTED;
 }
 
-MxObject* CaFloat_FromString(const char* str)
+CObject* CaFloat_FromString(const char* str)
 {
     MX_NOTIMPLEMENTED;
 }
 
-MxObject* CaFloat_FromDouble(double v)
+CObject* CaFloat_FromDouble(double v)
 {
     MX_NOTIMPLEMENTED;
 }
 
-double CaFloat_AsDouble(MxObject* p)
+double CaFloat_AsDouble(CObject* p)
 {
     MX_NOTIMPLEMENTED;
 }
 
-MxObject* CaFloat_GetInfo(void)
+CObject* CaFloat_GetInfo(void)
 {
     MX_NOTIMPLEMENTED;
 }

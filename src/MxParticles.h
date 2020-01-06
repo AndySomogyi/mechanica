@@ -19,7 +19,7 @@
  * and might have orientation vector.
  */
 
-struct MxParticles : MxObject {
+struct MxParticles : CObject {
 	glm::vec3 *positions;
 	glm::vec3 *velocties;
 	glm::ivec2 *texCoords;

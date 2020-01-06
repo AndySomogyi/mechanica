@@ -19,7 +19,8 @@
  ******************************************************************************/
 #ifndef INCLUDE_SPACE_H_
 #define INCLUDE_SPACE_H_
-#include "platform.h"
+#include "mdcore_config.h"
+
 
 MDCORE_BEGIN_DECLS
 

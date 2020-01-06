@@ -21,6 +21,8 @@
 #define INCLUDE_ENGINE_H_
 #include "platform.h"
 #include "pthread.h"
+#include "space.h"
+#include "cycle.h"
 
 MDCORE_BEGIN_DECLS
 
