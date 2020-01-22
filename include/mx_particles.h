@@ -23,7 +23,7 @@
  * value.
  */
 
-MxAPI_STRUCT(MxParticles);
+CAPI_STRUCT(MxParticles);
 
 #ifdef __cplusplus
 extern "C" {

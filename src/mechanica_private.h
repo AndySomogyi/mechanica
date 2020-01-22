@@ -64,7 +64,7 @@
 #error CType is macro
 #endif
 
-#include "MxSymbol.h"
+
 
 #ifdef CType
 #error CType is macro

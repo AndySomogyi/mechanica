@@ -33,16 +33,11 @@ set (_PUBLIC_HEADERS
   mx_function.h
   mx_list.h
   mx_number.h
-  mx_port.h
-  mx_string.h
-  mx_type.h
   mx_abstract.h
   mx_eval.h
   mx_import.h
   mx_mesh.h
-  mx_object.h
   mx_runtime.h
-  mx_symbol.h
   mx_ast.h
   mx_float.h
   mx_int.h
@@ -55,7 +50,6 @@ set (_PUBLIC_HEADERS
   mx_composite_particle.h
   mx_propagator.h
   mx_lattice.h
-  mx_expression.h
   mx_ui.h
   ${AST_HEADERS}
   ${X3D_HEADERS}

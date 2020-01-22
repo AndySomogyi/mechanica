@@ -100,7 +100,7 @@ struct UniverseCellType : MxCellType {
 UniverseCellType universeCellType;
 MxCellType *MxUniverseCell_Type = &universeCellType;
 
-CType universePartialTriangleType = {.tp_name="UniversePartialTriangle", .tp_base=CObject_Type};
+CType universePartialTriangleType = {.tp_name="UniversePartialTriangle", .tp_base=CObject_TypePtr};
 
 CType *MxUniversePartialTriangle_Type =
         &universePartialTriangleType;

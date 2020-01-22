@@ -10,7 +10,7 @@
 
 
 
-static CType edgeType{.tp_name="MxEdge", .tp_base=CObject_Type} ;
+static CType edgeType{.tp_name="MxEdge", .tp_base=CObject_TypePtr} ;
 CType *MxEdge_Type = &edgeType;
 
 

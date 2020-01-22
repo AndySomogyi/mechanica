@@ -43,7 +43,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "potential.h"
 #include "potential_eval.h"
 #include <space_cell.h>
@@ -83,7 +83,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, **partlist;
+    struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
     struct potential *pot, **pots;
     FPTYPE r2, w;
@@ -131,7 +131,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->type*ld_pots + pi->type ] ) == NULL )
+        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
             continue;
     
         /* get the distance between both particles */
@@ -148,7 +148,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
         
         if ( r2 < pot->a*pot->a || r2 > pot->b*pot->b ) {
             printf( "bond_eval: bond %i (%s-%s) out of range [%e,%e], r=%e.\n" ,
-                bid , e->types[pi->type].name , e->types[pj->type].name , pot->a , pot->b , sqrt(r2) );
+                bid , e->types[pi->typeId].name , e->types[pj->typeId].name , pot->a , pot->b , sqrt(r2) );
             r2 = fmax( pot->a*pot->a , fmin( pot->b*pot->b , r2 ) );
             }
 
@@ -284,7 +284,7 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, **partlist;
+    struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
     struct potential *pot, **pots;
     FPTYPE r2, w;
@@ -331,7 +331,7 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->type*ld_pots + pi->type ] ) == NULL )
+        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
             continue;
     
         /* get the distance between both particles */
@@ -348,7 +348,7 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
 
         if ( r2 < pot->a*pot->a || r2 > pot->b*pot->b ) {
             printf( "bond_evalf: bond %i (%s-%s) out of range [%e,%e], r=%e.\n" ,
-                bid , e->types[pi->type].name , e->types[pj->type].name , pot->a , pot->b , sqrt(r2) );
+                bid , e->types[pi->typeId].name , e->types[pj->typeId].name , pot->a , pot->b , sqrt(r2) );
             r2 = fmax( pot->a*pot->a , fmin( pot->b*pot->b , r2 ) );
             }
 

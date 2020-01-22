@@ -29,12 +29,10 @@ typedef double MxReal;
 #endif
 
 
-#include <mx_type.h>
 #include <mx_particle.h>
 #include <mx_module.h>
 #include <mx_number.h>
 #include <mx_runtime.h>
-#include <mx_string.h>
 #include <mx_import.h>
 #include <mx_tupleobject.h>
 #include <mx_abstract.h>

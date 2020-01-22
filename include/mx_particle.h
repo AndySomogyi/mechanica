@@ -10,7 +10,7 @@
 
 #include <carbon.h>
 
-MxAPI_STRUCT(MxParticle);
+CAPI_STRUCT(MxParticle);
 
 
 

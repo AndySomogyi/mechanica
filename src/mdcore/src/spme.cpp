@@ -46,9 +46,11 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "spme.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /* the last error */
@@ -122,7 +124,7 @@ int spme_doconv ( struct spme *s ) {
  *
  */
  
-void spme_iact ( struct spme *restrict s , struct space_cell *restrict cp , struct space_cell *restrict cg ) {
+void spme_iact ( struct spme * s , struct space_cell * cp , struct space_cell * cg ) {
 
 #ifdef HAVE_FFTW3
     int j, k, pid, ind[3], dim[3];

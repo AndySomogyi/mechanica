@@ -43,7 +43,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "potential.h"
 #include "potential_eval.h"
 #include <space_cell.h>
@@ -84,13 +84,13 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
     int *loci, *locj, *lock, *locl, shift[3];
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, *pk, *pl, **partlist;
+    struct MxParticle *pi, *pj, *pk, *pl, **partlist;
     struct space_cell **celllist;
     struct potential *pot;
     FPTYPE xi[3], xj[3], xk[3], xl[3], dxi[3], dxj[3], dxl[3], cphi;
     FPTYPE wi, wj, wl;
     struct potential **pots;
-    register FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
+    FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
         t22, t24, t26, t3, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40,
         t41, t42, t43, t44, t45, t46, t47, t5, t6, t7, t8, t9,
         t2, t4, t23, t25, t27, t28, t51, t52, t53, t54, t59;
@@ -251,8 +251,8 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
         /* printf( "dihedral_eval: dihedral %i is %e rad.\n" , did , cphi ); */
         if ( cphi < pot->a || cphi > pot->b ) {
             printf( "dihedral_eval: dihedral %i (%s-%s-%s-%s) out of range [%e,%e], cphi=%e.\n" ,
-                did , e->types[pi->type].name , e->types[pj->type].name ,
-                e->types[pk->type].name , e->types[pl->type].name , pot->a ,
+                did , e->types[pi->typeId].name , e->types[pj->typeId].name ,
+                e->types[pk->typeId].name , e->types[pl->typeId].name , pot->a ,
                 pot->b , cphi );
             cphi = fmax( pot->a , fmin( pot->b , cphi ) );
             }
@@ -398,13 +398,13 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
     int *loci, *locj, *lock, *locl, shift[3];
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, *pk, *pl, **partlist;
+    struct MxParticle *pi, *pj, *pk, *pl, **partlist;
     struct space_cell **celllist;
     struct potential *pot;
     FPTYPE xi[3], xj[3], xk[3], xl[3], dxi[3], dxj[3], dxl[3], cphi;
     FPTYPE wi, wj, wl;
     struct potential **pots;
-    register FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
+    FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
         t22, t24, t26, t3, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40,
         t41, t42, t43, t44, t45, t46, t47, t5, t6, t7, t8, t9,
         t2, t4, t23, t25, t27, t28, t51, t52, t53, t54, t59;
@@ -550,8 +550,8 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
         /* printf( "dihedral_eval: dihedral %i is %e rad.\n" , did , cphi ); */
         if ( cphi < pot->a || cphi > pot->b ) {
             printf( "dihedral_evalf: dihedral %i (%s-%s-%s-%s) out of range [%e,%e], cphi=%e.\n" ,
-                did , e->types[pi->type].name , e->types[pj->type].name ,
-                e->types[pk->type].name , e->types[pl->type].name , pot->a ,
+                did , e->types[pi->typeId].name , e->types[pj->typeId].name ,
+                e->types[pk->typeId].name , e->types[pl->typeId].name , pot->a ,
                 pot->b , cphi );
             cphi = fmax( pot->a , fmin( pot->b , cphi ) );
             }

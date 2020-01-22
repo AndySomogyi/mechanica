@@ -27,7 +27,7 @@ link_libraries(${FFTW_LIBRARIES})
 set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/errs.h"
   "${MDCORE_SOURCE_DIR}/include/lock.h"
-  "${MDCORE_SOURCE_DIR}/include/particle.h"
+  "${MDCORE_SOURCE_DIR}/include/MxParticle.h"
   "${MDCORE_SOURCE_DIR}/include/potential.h"
   "${MDCORE_SOURCE_DIR}/include/platform.h"
   "${MDCORE_SOURCE_DIR}/include/space_cell.h"
@@ -63,27 +63,27 @@ set(PRIVATE_HEADERS
 
 # Both precisions have the same sources.
 SET(SOURCES
-  space_cell.c
-  particle.c
-  runner.c
-  engine.c
-  potential.c
-  space.c
-  errs.c
-  bond.c
-  angle.c
-  reader.c
-  rigid.c
-  dihedral.c
-  exclusion.c
-  engine_io.c
-  engine_bonded.c
-  engine_rigid.c
-  runner_dopair.c
-  queue.c
-  runner_dosort.c
-  task.c
-  spme.c
+  space_cell.cpp
+  MxParticle.cpp
+  runner.cpp
+  engine.cpp
+  potential.cpp
+  space.cpp
+  errs.cpp
+  bond.cpp
+  angle.cpp
+  reader.cpp
+  rigid.cpp
+  dihedral.cpp
+  exclusion.cpp
+  engine_io.cpp
+  engine_bonded.cpp
+  engine_rigid.cpp
+  runner_dopair.cpp
+  queue.cpp
+  runner_dosort.cpp
+  task.cpp
+  spme.cpp
   )
 
 if(MDCORE_USE_MPI)
@@ -141,11 +141,35 @@ function(add_mdcore_single)
 
   source_group("Includes" FILES ${SINGLE_HEADERS})
   add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
+  
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
 
-  target_include_directories(mdcore_single INTERFACE ${MDCORE_INCLUDE_DIR})
+  
+  # temporarily add add these includes until we get a stable public API
+  target_include_directories(mdcore_single PUBLIC ${MDCORE_INCLUDE_DIR} 
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    #${PYTHON_INCLUDE_DIRS}
+    #${NUMPY_INCLUDE_DIR}
+    #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+  )
+ 
+ target_link_libraries(mdcore_single
+  Carbon::Carbon
+  DirectXMath
+  Python::Python
+  glfw
+  JPEG::JPEG
+  voro++
+  sundials_cvode_static
+  ${OPENGL_LIBRARIES}
+
+  )
+
 
   message("setting mdcore_single interface includes: ${MDCORE_INCLUDE_DIR}")
+  
 endfunction(add_mdcore_single)
 
 # alwasy build the single precision version

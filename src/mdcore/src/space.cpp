@@ -40,10 +40,12 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "task.h"
 #include "space.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /* the last error */
@@ -237,7 +239,7 @@ int space_shuffle ( struct space *s ) {
     int k, cid, pid, delta[3];
     FPTYPE h[3];
     struct space_cell *c, *c_dest;
-    struct particle *p;
+    struct MxParticle *p;
     
     /* Get a local copy of h. */
     for ( k = 0 ; k < 3 ; k++ )
@@ -309,7 +311,7 @@ int space_shuffle_local ( struct space *s ) {
     int k, cid, pid, delta[3];
     FPTYPE h[3];
     struct space_cell *c, *c_dest;
-    struct particle *p;
+    struct MxParticle *p;
     
     /* Get a local copy of h. */
     for ( k = 0 ; k < 3 ; k++ )
@@ -379,10 +381,10 @@ int space_shuffle_local ( struct space *s ) {
  * data in @c p is overwritten and @c x is used.
  */
 
-int space_addpart ( struct space *s , struct particle *p , double *x ) {
+int space_addpart ( struct space *s , struct MxParticle *p , double *x ) {
 
     int k, ind[3];
-    struct particle **temp;
+    struct MxParticle **temp;
     struct space_cell **tempc, *c;
 
     /* check input */
@@ -392,11 +394,11 @@ int space_addpart ( struct space *s , struct particle *p , double *x ) {
     /* do we need to extend the partlist? */
     if ( s->nr_parts == s->size_parts ) {
         s->size_parts += space_partlist_incr;
-        if ( ( temp = (struct particle **)malloc( sizeof(struct particle *) * s->size_parts ) ) == NULL )
+        if ( ( temp = (struct MxParticle **)malloc( sizeof(struct MxParticle *) * s->size_parts ) ) == NULL )
             return error(space_err_malloc);
         if ( ( tempc = (struct space_cell **)malloc( sizeof(struct space_cell *) * s->size_parts ) ) == NULL )
             return error(space_err_malloc);
-        memcpy( temp , s->partlist , sizeof(struct particle *) * s->nr_parts );
+        memcpy( temp , s->partlist , sizeof(struct MxParticle *) * s->nr_parts );
         memcpy( tempc , s->celllist , sizeof(struct space_cell *) * s->nr_parts );
         free( s->partlist );
         free( s->celllist );
@@ -759,7 +761,7 @@ int space_init ( struct space *s , const double *origin , const double *dim , do
     bzero( s->cells_owner , sizeof(char) * s->nr_cells );
     
     /* allocate the initial partlist */
-    if ( ( s->partlist = (struct particle **)malloc( sizeof(struct particle *) * space_partlist_incr ) ) == NULL )
+    if ( ( s->partlist = (struct MxParticle **)malloc( sizeof(struct MxParticle *) * space_partlist_incr ) ) == NULL )
         return error(space_err_malloc);
     if ( ( s->celllist = (struct space_cell **)malloc( sizeof(struct space_cell *) * space_partlist_incr ) ) == NULL )
         return error(space_err_malloc);

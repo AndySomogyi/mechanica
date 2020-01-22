@@ -43,13 +43,15 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "potential.h"
 #include "potential_eval.h"
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"
 #include "exclusion.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /* Global variables. */
@@ -83,7 +85,7 @@ int exclusion_eval ( struct exclusion *b , int N , struct engine *e , double *ep
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, **partlist;
+    struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
     struct potential *pot, **pots;
     FPTYPE r2, w, cutoff2;
@@ -131,7 +133,7 @@ int exclusion_eval ( struct exclusion *b , int N , struct engine *e , double *ep
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->type*ld_pots + pi->type ] ) == NULL )
+        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
             continue;
     
         /* get the distance between both particles */
@@ -287,7 +289,7 @@ int exclusion_evalf ( struct exclusion *b , int N , struct engine *e , FPTYPE *f
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, **partlist;
+    struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
     struct potential *pot, **pots;
     FPTYPE dx[3], r2, w, cutoff2;
@@ -334,7 +336,7 @@ int exclusion_evalf ( struct exclusion *b , int N , struct engine *e , FPTYPE *f
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->type*ld_pots + pi->type ] ) == NULL )
+        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
             continue;
     
         /* get the distance between both particles */

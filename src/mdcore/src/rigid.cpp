@@ -43,7 +43,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "potential.h"
 #include <space_cell.h>
 #include "space.h"
@@ -81,7 +81,7 @@ char *rigid_err_msg[3] = {
 int rigid_eval_shake ( struct rigid *rs , int N , struct engine *e ) {
 
     int iter, rid, k, j, pid, pjd, nr_parts, nr_constr, shift;
-    struct particle *p[rigid_maxparts], **partlist;
+    struct MxParticle *p[rigid_maxparts], **partlist;
     struct space_cell *c[rigid_maxparts], **celllist;
     struct rigid *r;
     double dt, idt;
@@ -118,7 +118,7 @@ int rigid_eval_shake ( struct rigid *rs , int N , struct engine *e ) {
             if ( ( p[k] = partlist[ r->parts[k] ] ) == NULL )
                 break;
             c[k] = celllist[ r->parts[k] ];
-            m[k] = e->types[ p[k]->type ].mass;
+            m[k] = e->types[ p[k]->typeId ].mass;
             }
         if ( k < nr_parts )
             continue;
@@ -279,7 +279,7 @@ int rigid_eval_shake ( struct rigid *rs , int N , struct engine *e ) {
 int rigid_eval_pshake ( struct rigid *rs , int N , struct engine *e , int a_update ) {
 
     int iter, rid, k, j, i, pid, pjd, nr_parts, nr_constr, shift;
-    struct particle *p[rigid_maxparts], **partlist;
+    struct MxParticle *p[rigid_maxparts], **partlist;
     struct space_cell *c[rigid_maxparts], **celllist;
     struct rigid *r;
     double dt, idt;
@@ -315,7 +315,7 @@ int rigid_eval_pshake ( struct rigid *rs , int N , struct engine *e , int a_upda
             if ( ( p[k] = partlist[ r->parts[k] ] ) == NULL )
                 break;
             c[k] = celllist[ r->parts[k] ];
-            m[k] = e->types[ p[k]->type ].mass;
+            m[k] = e->types[ p[k]->typeId ].mass;
             }
         if ( k < nr_parts )
             continue;

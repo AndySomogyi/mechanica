@@ -16,7 +16,7 @@
 #include "MxDebug.h"
 #include "MxMeshRenderer.h"
 
-static MxCellType cellType{"MxCell", CObject_Type};
+static MxCellType cellType{"MxCell", CObject_TypePtr};
 CType *MxCell_Type = &cellType;
 
 bool operator == (const std::array<MxVertex *, 3>& a, const std::array<MxVertex *, 3>& b) {

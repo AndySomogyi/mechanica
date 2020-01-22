@@ -26,7 +26,7 @@ inserted in the list.  Similarly, MxList_GetItem does not increment the
 returned item's reference count.
 */
 
-MxAPI_STRUCT(MxList);
+CAPI_STRUCT(MxList);
 
 
 

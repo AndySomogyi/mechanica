@@ -88,7 +88,7 @@ static PyObject * moduleinit(void)
 
 
 
-    MxSymbol_init(m);
+
     MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);

@@ -1,4 +1,3 @@
-
 option(MDCORE_DOUBLE "build double precision (libmdcore_d) version (single precision is always built)" NO)
 
 option(MDCORE_SHARED "build shared library (static library is alwasy built)" NO)
@@ -38,8 +37,6 @@ set(MDCORE_INCLUDE_DIR
   ${MDCORE_BINARY_DIR}/include
   CACHE INTERNAL "mdcore public includes" FORCE)
   
-# all products access the public header directory
-include_directories(${MDCORE_INCLUDE_DIR})
 
 add_subdirectory(src)
 add_subdirectory(examples)

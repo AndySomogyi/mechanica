@@ -41,7 +41,7 @@
 #bulk_noverlet_SOURCES = bulk.c
 #bulk_noverlet_CFLAGS =  -DFPTYPE_SINGLE $(AM_CFLAGS)
 #bulk_noverlet_LDADD = ../../src/.libs/libmdcore_single.a
-add_executable(bulk_noverlet bulk.c)
+add_executable(bulk_noverlet bulk.cpp)
 target_link_libraries(bulk_noverlet mdcore_single)
 
 
@@ -52,7 +52,7 @@ target_link_libraries(bulk_noverlet mdcore_single)
 #bulk_pseudoverlet_SOURCES = bulk.c
 #bulk_pseudoverlet_CFLAGS = -DFPTYPE_SINGLE -DENGINE_FLAGS="engine_flag_verlet_pseudo" $(AM_CFLAGS)
 #bulk_pseudoverlet_LDADD = ../../src/.libs/libmdcore_single.a
-add_executable(bulk_pseudoverlet bulk.c)
+add_executable(bulk_pseudoverlet bulk.cpp)
 target_compile_definitions(bulk_pseudoverlet PUBLIC ENGINE_FLAGS=engine_flag_verlet_pseudo)
 target_link_libraries(bulk_pseudoverlet mdcore_single)
 

@@ -19,6 +19,8 @@
  ******************************************************************************/
 #ifndef INCLUDE_ENGINE_H_
 #define INCLUDE_ENGINE_H_
+
+#include "Mechanica.h"
 #include "platform.h"
 #include "pthread.h"
 #include "space.h"
@@ -149,7 +151,7 @@ typedef struct engine {
 	int nr_types;
 
 	/** The particle types. */
-	struct particle_type *types;
+	struct MxParticleType *types;
 
 	/** The interaction matrix */
 	struct potential **p, **p_bond, **p_angle, **p_dihedral;

@@ -40,13 +40,15 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "task.h"
 #include "space.h"
 #include "potential.h"
 #include "engine.h"
 #include "queue.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /* Global variables. */
@@ -331,7 +333,7 @@ int queue_init ( struct queue *q , int size , struct space *s , struct task *tas
         return error(queue_err_null);
         
     /* Allocate the indices. */
-    if ( ( q->ind = malloc( sizeof(int) * size ) ) == NULL )
+    if ( ( q->ind = (int*)malloc( sizeof(int) * size ) ) == NULL )
         return error(queue_err_malloc);
         
     /* Init the queue data. */

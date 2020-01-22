@@ -13,7 +13,7 @@
 
 #include "mx_module.h"
 
-MxAPI_STRUCT(MxModule);
+CAPI_STRUCT(MxModule);
 
 #ifdef __cplusplus
 extern "C"

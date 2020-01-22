@@ -11,7 +11,7 @@
 #include "MxDebug.h"
 
 
-static CType vertexType{.tp_name="MxVertex", .tp_base=CObject_Type};
+static CType vertexType{.tp_name="MxVertex", .tp_base=CObject_TypePtr};
 CType *MxVertex_Type = &vertexType;
 
 

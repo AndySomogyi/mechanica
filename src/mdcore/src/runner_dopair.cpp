@@ -43,7 +43,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
 #include "potential.h"
@@ -78,10 +78,10 @@ extern unsigned int runner_rcount;
 
 __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_cell *cell_i , struct space_cell *cell_j , int sid ) {
 
-    struct particle *part_i, *part_j;
+    struct MxParticle *part_i, *part_j;
     struct space *s;
     int i, j, k;
-    struct particle *parts_i, *parts_j;
+    struct MxParticle *parts_i, *parts_j;
     struct potential *pot, **pots;
     struct engine *eng;
     int emt, pioff, dmaxdist, dnshift;
@@ -131,10 +131,10 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
     
     /* Make local copies of the parts if requested. */
     if ( r->e->flags & engine_flag_localparts ) {
-        parts_i = (struct particle *)alloca( sizeof(struct particle) * count_i );
-        memcpy( parts_i , cell_i->parts , sizeof(struct particle) * count_i );
-        parts_j = (struct particle *)alloca( sizeof(struct particle) * count_j );
-        memcpy( parts_j , cell_j->parts , sizeof(struct particle) * count_j );
+        parts_i = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count_i );
+        memcpy( parts_i , cell_i->parts , sizeof(struct MxParticle) * count_i );
+        parts_j = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count_j );
+        memcpy( parts_j , cell_j->parts , sizeof(struct MxParticle) * count_j );
         }
     else {
         parts_i = cell_i->parts;
@@ -162,7 +162,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
         pix[0] = part_i->x[0] - shift[0];
         pix[1] = part_i->x[1] - shift[1];
         pix[2] = part_i->x[2] - shift[2];
-        pioff = part_i->type * emt;
+        pioff = part_i->typeId * emt;
         pif = &( part_i->f[0] );
 
         /* loop over the left particles */
@@ -172,7 +172,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
             part_j = &( parts_j[ jparts[j] >> 16 ] );
 
             /* fetch the potential, if any */
-            pot = pots[ pioff + part_j->type ];
+            pot = pots[ pioff + part_j->typeId ];
             if ( pot == NULL )
                 continue;
 
@@ -328,11 +328,11 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
 
 __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_cell *c ) {
 
-    struct particle *part_i, *part_j;
+    struct MxParticle *part_i, *part_j;
     struct space *s;
     int count = 0;
     int i, j, k;
-    struct particle *parts;
+    struct MxParticle *parts;
     double epot = 0.0;
     struct potential *pot, **pots;
     struct engine *eng;
@@ -368,8 +368,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     
     /* Make local copies of the parts if requested. */
     if ( r->e->flags & engine_flag_localparts ) {
-        parts = (struct particle *)alloca( sizeof(struct particle) * count );
-        memcpy( parts , c->parts , sizeof(struct particle) * count );
+        parts = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count );
+        memcpy( parts , c->parts , sizeof(struct MxParticle) * count );
         }
     else
         parts = c->parts;
@@ -382,7 +382,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         pix[0] = part_i->x[0];
         pix[1] = part_i->x[1];
         pix[2] = part_i->x[2];
-        pioff = part_i->type * emt;
+        pioff = part_i->typeId * emt;
         pif = &( part_i->f[0] );
 
         /* loop over all other particles */
@@ -399,7 +399,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                 continue;
 
             /* fetch the potential, if any */
-            pot = pots[ pioff + part_j->type ];
+            pot = pots[ pioff + part_j->typeId ];
             if ( pot == NULL )
                 continue;
             // runner_rcount += 1;
@@ -554,7 +554,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     FPTYPE *pif;
     double epot = 0.0;
     struct engine *eng;
-    struct particle *part_i, *part_j, *parts_i, *parts_j;
+    struct MxParticle *part_i, *part_j, *parts_i, *parts_j;
     struct potential *pot;
     struct space *s;
 #if defined(VECTORIZE)
@@ -591,11 +591,11 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     if ( r->e->flags & engine_flag_localparts ) {
     
         /* set pointers to the particle lists */
-        parts_i = (struct particle *)alloca( sizeof(struct particle) * count_i );
-        memcpy( parts_i , cell_i->parts , sizeof(struct particle) * count_i );
+        parts_i = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count_i );
+        memcpy( parts_i , cell_i->parts , sizeof(struct MxParticle) * count_i );
         if ( cell_i != cell_j ) {
-            parts_j = (struct particle *)alloca( sizeof(struct particle) * count_j );
-            memcpy( parts_j , cell_j->parts , sizeof(struct particle) * count_j );
+            parts_j = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count_j );
+            memcpy( parts_j , cell_j->parts , sizeof(struct MxParticle) * count_j );
             }
         else
             parts_j = parts_i;
@@ -618,7 +618,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
             pix[1] = part_i->x[1];
             pix[2] = part_i->x[2];
             pif = part_i->f;
-            pioff = part_i->type * emt;
+            pioff = part_i->typeId * emt;
         
             /* loop over all other particles */
             for ( j = 0 ; j < i ; j++ ) {
@@ -635,7 +635,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
                 /* runner_rcount += 1; */
                 
                 /* fetch the potential, if any */
-                pot = eng->p[ pioff + part_j->type ];
+                pot = eng->p[ pioff + part_j->typeId ];
                 if ( pot == NULL )
                     continue;
                     
@@ -718,7 +718,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
             pix[1] = part_i->x[1] - shift[1];
             pix[2] = part_i->x[2] - shift[2];
             pif = part_i->f;
-            pioff = part_i->type * emt;
+            pioff = part_i->typeId * emt;
             
             /* loop over all other particles */
             for ( j = 0 ; j < count_j ; j++ ) {
@@ -735,7 +735,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
                     continue;
                 /* runner_rcount += 1; */
                     
-                pot = eng->p[ pioff + part_j->type ];
+                pot = eng->p[ pioff + part_j->typeId ];
                 if ( pot == NULL )
                     continue;
                     

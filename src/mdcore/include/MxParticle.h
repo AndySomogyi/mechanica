@@ -21,6 +21,7 @@
 #define INCLUDE_PARTICLE_H_
 #include "platform.h"
 #include "fptype.h"
+#include "carbon.h"
 
 /* error codes */
 #define PARTICLE_ERR_OK                 0
@@ -51,7 +52,7 @@ extern int particle_err;
  * Note that the arrays for @c x, @c v and @c f are 4 entries long for
  * propper alignment.
  */
-typedef struct particle {
+struct MxParticle : CObject  {
 
 	/** Particle position */
 	FPTYPE x[4] __attribute__ ((aligned (16)));
@@ -69,12 +70,15 @@ typedef struct particle {
 	int id, vid;
 
 	/** particle type. */
-	short int type;
+	short int typeId;
 
 	/** Particle flags */
 	unsigned short int flags;
 
-} particle;
+
+};
+
+
 
 
 
@@ -84,7 +88,7 @@ typedef struct particle {
  * This is only a definition for the particle *type*, not the actual
  * instance vars like pos, vel, which are stored in part.
  */
-typedef struct particle_type {
+struct MxParticleType : CType {
 
 	/** ID of this type */
 	int id;
@@ -98,11 +102,31 @@ typedef struct particle_type {
 	/** Name of this paritcle type. */
 	char name[64], name2[64];
 
-} particle_type;
+
+} ;
+
+/**
+ * The type of the particle.
+ */
+CAPI_DATA(CType) *MxParticle_Type;
+
+/**
+ * The the particle type type
+ */
+CAPI_DATA(MxParticleType) *MxParticleType_Type;
+
+/**
+ * Determines if this object is a particle type.
+ * @returns TRUE if a symbol, FALSE otherwise.
+ */
+CAPI_FUNC(int) MxParticleCheck(PyObject *o);
 
 
 /* associated functions */
-int particle_init ( struct particle *p , int vid , int type , unsigned int flags );
+int particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
+
+
+HRESULT MxParticle_Init(PyObject *m);
 
 MDCORE_END_DECLS
 #endif // INCLUDE_PARTICLE_H_

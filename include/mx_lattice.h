@@ -41,26 +41,26 @@
  * The MxLattice may be used as a core data structure for Potts or Cellular Automota
  * type dynamics.
  */
-MxAPI_STRUCT(MxLattice);
+CAPI_STRUCT(MxLattice);
 CAPI_DATA(CType*) MxLattice_Type;
 
-MxAPI_STRUCT(MxCubicLattice);
+CAPI_STRUCT(MxCubicLattice);
 CAPI_DATA(CType*) MxCubicLattice_Type;
 
-MxAPI_STRUCT(MxVoxel);
+CAPI_STRUCT(MxVoxel);
 CAPI_DATA(CType*) MxVoxel_Type;
 
-MxAPI_STRUCT(MxCubicVoxel);
+CAPI_STRUCT(MxCubicVoxel);
 CAPI_DATA(CType*) MxCubicVoxel_Type;
 
 
 /**
  * The MxLatticeCluster represents a collection of fully connected voxels.
  */
-MxAPI_STRUCT(MxLatticeCluster);
+CAPI_STRUCT(MxLatticeCluster);
 CAPI_DATA(CType*) MxLatticeCluster_Type;
 
-MxAPI_STRUCT(MxCubicLatticeCluster);
+CAPI_STRUCT(MxCubicLatticeCluster);
 CAPI_DATA(CType*) MxCubicLatticeCluster_Type;
 
 

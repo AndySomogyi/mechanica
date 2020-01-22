@@ -46,7 +46,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
 #include "potential.h"
@@ -83,10 +83,10 @@ extern unsigned int runner_rcount;
  
 __attribute__ ((flatten)) int runner_dosort ( struct runner *r , struct space_cell *c , int flags ) {
 
-    struct particle *p;
+    struct MxParticle *p;
     struct space *s;
     int i, k, sid;
-    struct particle *parts;
+    struct MxParticle *parts;
     struct engine *eng;
     unsigned int *iparts;
     FPTYPE dscale;
@@ -108,8 +108,8 @@ __attribute__ ((flatten)) int runner_dosort ( struct runner *r , struct space_ce
     
     /* Make local copies of the parts if requested. */
     if ( r->e->flags & engine_flag_localparts ) {
-        parts = (struct particle *)alloca( sizeof(struct particle) * count );
-        memcpy( parts , c->parts , sizeof(struct particle) * count );
+        parts = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count );
+        memcpy( parts , c->parts , sizeof(struct MxParticle) * count );
         }
     else
         parts = c->parts;

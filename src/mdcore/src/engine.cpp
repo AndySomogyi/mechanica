@@ -50,7 +50,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "task.h"
 #include "queue.h"
@@ -64,6 +64,8 @@
 #include "exclusion.h"
 #include "reader.h"
 #include "engine.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /** ID of the last error. */
@@ -196,7 +198,7 @@ int engine_verlet_update ( struct engine *e ) {
 	int cid, pid, k;
 	double dx, w, maxdx = 0.0, skin;
 	struct space_cell *c;
-	struct particle *p;
+	struct MxParticle *p;
 	struct space *s = &e->s;
 	ticks tic;
 #ifdef HAVE_OPENMP
@@ -555,7 +557,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 
 	int nr_pairs = 0;
 	for( i = 0; i < e->s.nr_tasks; i++ )
-		if(e->s.tasks[i].type == task_type_pair)
+		if(e->s.tasks[i].typeId == task_type_pair)
 			nr_pairs++;
 	nr_pairs *= 2;
 	/* Check inputs. */
@@ -596,8 +598,8 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 	/*results*/
 	idx_t *objval = (idx_t*) malloc(sizeof(idx_t));
 	if(objval==NULL)return 1;
-	idx_t *particle = (idx_t*) malloc(e->s.nr_cells * (sizeof(idx_t)));
-	if(particle==NULL)return 1;
+	idx_t *MxParticle = (idx_t*) malloc(e->s.nr_cells * (sizeof(idx_t)));
+	if(MxParticle==NULL)return 1;
 
 	//Loop over cell pairs and add to array if valid. Needs to be double loop.
 	currentIndex=0;
@@ -608,7 +610,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 		xadj[j]=currentIndex;
 		for(i=0; i<e->s.nr_tasks; i++)
 		{
-			if(e->s.tasks[i].type == task_type_sort)
+			if(e->s.tasks[i].typeId == task_type_sort)
 				continue;
 			shiftDim=0;
 			//If the pair involves cell j.
@@ -618,7 +620,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 
 				//If type = self this is a self interaction. All particles interact (n^2-n interactions)
 				//Increment vertex weight by e->s.cell[j].count ^ 2 - e->s.cell[j].count
-				if(e->s.tasks[i].type == task_type_self)
+				if(e->s.tasks[i].typeId == task_type_self)
 				{
 					vw+= e->s.cells[j].count*e->s.cells[j].count - e->s.cells[j].count;
 				}else{
@@ -705,14 +707,14 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 	//	options[METIS_OPTION_DBGLVL] = METIS_DBG_INFO;
 
 	//Run METIS to partition the graph
-	METIS_PartGraphKway( nvtxs , ncon , xadj , adjncy , vwgt , NULL , adjwgt , nparts , NULL , NULL , options , objval , particle );
+	METIS_PartGraphKway( nvtxs , ncon , xadj , adjncy , vwgt , NULL , adjwgt , nparts , NULL , NULL , options , objval , MxParticle );
 	if( flags == engine_split_MPI )
 	{
 		for(i = 0; i < e->s.nr_cells; i++ )
 		{
-			e->s.cells[i].nodeID = particle[i];
+			e->s.cells[i].nodeID = MxParticle[i];
 			//Not my cell? Mark as ghost.
-			if(particle[i] != e->nodeID)
+			if(MxParticle[i] != e->nodeID)
 				e->s.cells[i].flags |= cell_flag_ghost;
 			e->nr_nodes = N;
 
@@ -723,7 +725,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 		int part2 = 0;
 		for( i = 0 ; i < e->s.nr_cells ; i++ )
 		{
-			e->s.cells[i].GPUID = particle[i];
+			e->s.cells[i].GPUID = MxParticle[i];
 			if(e->s.cells[i].GPUID == 0)
 				part1++;
 			else
@@ -745,7 +747,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 	free(ncon);
 	free(nparts);
 	free(objval);
-	free(particle);
+	free(MxParticle);
 	free(options);
 	printf("Successfully split the space\n");
 
@@ -1066,7 +1068,7 @@ int engine_setexplepot ( struct engine *e , struct potential *ep ) {
 
 int engine_unload ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , double *epot , int N ) {
 
-	struct particle *p;
+	struct MxParticle *p;
 	struct space_cell *c;
 	int j, k, cid, count = 0, *ind;
 	double epot_acc = 0.0;
@@ -1109,7 +1111,7 @@ int engine_unload ( struct engine *e , double *x , double *v , int *type , int *
 				for ( j = 0 ; j < 3 ; j++ )
 					v[count*3+j] = p->v[j];
 			if ( type != NULL )
-				type[count] = p->type;
+				type[count] = p->typeId;
 			if ( pid != NULL )
 				pid[count] = p->id;
 			if ( vid != NULL )
@@ -1158,7 +1160,7 @@ int engine_unload ( struct engine *e , double *x , double *v , int *type , int *
 
 int engine_unload_marked ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , double *epot , int N ) {
 
-	struct particle *p;
+	struct MxParticle *p;
 	struct space_cell *c;
 	int j, k, cid, count = 0, *ind;
 	double epot_acc = 0.0;
@@ -1204,7 +1206,7 @@ int engine_unload_marked ( struct engine *e , double *x , double *v , int *type 
 				for ( j = 0 ; j < 3 ; j++ )
 					v[count*3+j] = p->v[j];
 			if ( type != NULL )
-				type[count] = p->type;
+				type[count] = p->typeId;
 			if ( pid != NULL )
 				pid[count] = p->id;
 			if ( vid != NULL )
@@ -1253,7 +1255,7 @@ int engine_unload_marked ( struct engine *e , double *x , double *v , int *type 
 
 int engine_unload_strays ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , double *epot , int N ) {
 
-	struct particle *p;
+	struct MxParticle *p;
 	struct space_cell *c;
 	int j, k, cid, count = 0;
 	double epot_acc = 0.0;
@@ -1287,7 +1289,7 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 				for ( j = 0 ; j < 3 ; j++ )
 					v[count*3+j] = p->v[j];
 			if ( type != NULL )
-				type[count] = p->type;
+				type[count] = p->typeId;
 			if ( pid != NULL )
 				pid[count] = p->id;
 			if ( vid != NULL )
@@ -1335,7 +1337,7 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 
 int engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , int N ) {
 
-	struct particle p;
+	struct MxParticle p;
 	struct space *s;
 	int j, k;
 
@@ -1356,7 +1358,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 	for ( j = 0 ; j < N ; j++ ) {
 
 		/* set the particle data. */
-		p.type = type[j];
+		p.typeId = type[j];
 		if ( pid != NULL )
 			p.id = pid[j];
 		else
@@ -1404,7 +1406,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 
 int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , int N ) {
 
-	struct particle p;
+	struct MxParticle p;
 	struct space *s;
 	int j, k;
 
@@ -1425,7 +1427,7 @@ int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , 
 	for ( j = 0 ; j < N ; j++ ) {
 
 		/* set the particle data. */
-		p.type = type[j];
+		p.typeId = type[j];
 		if ( pid != NULL )
 			p.id = pid[j];
 		else
@@ -1607,7 +1609,7 @@ int engine_start ( struct engine *e , int nr_runners , int nr_queues ) {
 
 	int cid, pid, k, i;
 	struct space_cell *c;
-	struct particle *p;
+	struct MxParticle *p;
 	struct space *s = &e->s;
 
 	/* Is MPI really needed? */
@@ -1783,7 +1785,7 @@ int engine_advance ( struct engine *e ) {
 
 	int cid, pid, k, delta[3], step;
 	struct space_cell *c, *c_dest;
-	struct particle *p;
+	struct MxParticle *p;
 	struct space *s;
 	FPTYPE dt, w, h[3];
 	double epot = 0.0, epot_local;
@@ -1810,7 +1812,7 @@ int engine_advance ( struct engine *e ) {
 				epot_local += c->epot;
 				for ( pid = 0 ; pid < c->count ; pid++ ) {
 					p = &( c->parts[pid] );
-					w = dt * e->types[p->type].imass;
+					w = dt * e->types[p->typeId].imass;
 					for ( k = 0 ; k < 3 ; k++ ) {
 						p->v[k] += p->f[k] * w;
 						p->x[k] += dt * p->v[k];
@@ -1838,7 +1840,7 @@ epot += epot_local;
 				while ( pid < c->count ) {
 
 					p = &( c->parts[pid] );
-					w = dt * e->types[p->type].imass;
+					w = dt * e->types[p->typeId].imass;
 					for ( k = 0 ; k < 3 ; k++ ) {
 						p->v[k] += p->f[k] * w;
 						p->x[k] += dt * p->v[k];
@@ -2325,7 +2327,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 		max_type += 1;
 	e->max_type = max_type;
 	e->nr_types = 0;
-	if ( ( e->types = (struct particle_type *)malloc( sizeof(struct particle_type) * max_type ) ) == NULL )
+	if ( ( e->types = (struct MxParticleType *)malloc( sizeof(struct MxParticleType) * max_type ) ) == NULL )
 		return error(engine_err_malloc);
 	if ( flags & engine_flag_nullpart ) {
 		e->types[0].id = 0;

@@ -52,7 +52,7 @@ CAPI_FUNC(HRESULT) MxUI_WaitEvents(double timeout);
  */
 CAPI_FUNC(HRESULT) MxUI_PostEmptyEvent();
 
-struct MxGraphicsConfiguration {
+typedef struct MxGraphicsConfiguration {
     char* appTitle;
     int sampleCount;
     uint32_t version;
@@ -60,7 +60,7 @@ struct MxGraphicsConfiguration {
     uint32_t windowFlags;
     uint32_t cursorMode;
     bool srgbCapable;
-};
+} MxGraphicsConfiguration;
 
 CAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration *conf);
 

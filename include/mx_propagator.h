@@ -9,7 +9,7 @@
 #define INCLUDE_MX_PROPAGATOR_H_
 #include "carbon.h"
 
-MxAPI_STRUCT(MxPropagator);
+CAPI_STRUCT(MxPropagator);
 
 
 #endif /* INCLUDE_MX_PROPAGATOR_H_ */

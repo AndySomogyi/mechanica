@@ -25,6 +25,9 @@
 #include <string.h>
 #include <math.h>
 
+#pragma clang diagnostic ignored "-Wwritable-strings"
+
+
 
 /* macro to algin memory sizes to a multiple of cell_partalign. */
 #define align_ceil(v) (((v) + (cell_partalign-1) ) & ~(cell_partalign-1))
@@ -32,7 +35,7 @@
 /* include local headers */
 #include "errs.h"
 #include "fptype.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 
 
@@ -111,7 +114,7 @@ int cell_err = cell_err_ok;
  * @return #cell_err_ok or < 0 on error (see #cell_err).
  */
 
-int space_cell_flush ( struct space_cell *c , struct particle **partlist , struct space_cell **celllist ) {
+int space_cell_flush ( struct space_cell *c , struct MxParticle **partlist , struct space_cell **celllist ) {
 
 	int k;
 
@@ -150,10 +153,10 @@ int space_cell_flush ( struct space_cell *c , struct particle **partlist , struc
  * @return #cell_err_ok or < 0 on error (see #cell_err).
  */
 
-int space_cell_load ( struct space_cell *c , struct particle *parts , int nr_parts , struct particle **partlist , struct space_cell **celllist ) {
+int space_cell_load ( struct space_cell *c , struct MxParticle *parts , int nr_parts , struct MxParticle **partlist , struct space_cell **celllist ) {
 
 	int k, size_new;
-	struct particle *temp;
+	struct MxParticle *temp;
 
 	/* check inputs */
 	if ( c == NULL || parts == NULL )
@@ -164,9 +167,9 @@ int space_cell_load ( struct space_cell *c , struct particle *parts , int nr_par
 		size_new = c->count + nr_parts;
 		if ( size_new < c->size + cell_incr )
 			size_new = c->size + cell_incr;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct particle) * size_new ) ) != 0 )
+		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * size_new ) ) != 0 )
 			return error(cell_err_malloc);
-		memcpy( temp , c->parts , sizeof(struct particle) * c->count );
+		memcpy( temp , c->parts , sizeof(struct MxParticle) * c->count );
 		free( c->parts );
 		c->parts = temp;
 		c->size = size_new;
@@ -181,7 +184,7 @@ int space_cell_load ( struct space_cell *c , struct particle *parts , int nr_par
 	}
 
 	/* Copy the new particles in. */
-	memcpy( &( c->parts[c->count] ) , parts , sizeof(struct particle) * nr_parts );
+	memcpy( &( c->parts[c->count] ) , parts , sizeof(struct MxParticle) * nr_parts );
 
 	/* Link them in the partlist. */
 	if ( partlist != NULL )
@@ -219,7 +222,7 @@ int space_cell_load ( struct space_cell *c , struct particle *parts , int nr_par
  * @return #cell_err_ok or < 0 on error (see #cell_err).
  */
 
-int space_cell_welcome (space_cell *c , struct particle **partlist ) {
+int space_cell_welcome (space_cell *c , struct MxParticle **partlist ) {
 
 	int k;
 
@@ -229,7 +232,7 @@ int space_cell_welcome (space_cell *c , struct particle **partlist ) {
 
 	/* Loop over the incomming parts. */
 	for ( k = 0 ; k < c->incomming_count ; k++ )
-		if ( space_cell_add( c , &c->incomming[k] , partlist ) < 0 )
+		if ( !space_cell_add( c , &c->incomming[k] , partlist ))
 			return error(cell_err);
 
 
@@ -255,9 +258,9 @@ int space_cell_welcome (space_cell *c , struct particle **partlist ) {
  * to the cell @c c.
  */
 
-struct particle *space_cell_add_incomming ( struct space_cell *c , struct particle *p ) {
+struct MxParticle *space_cell_add_incomming ( struct space_cell *c , struct MxParticle *p ) {
 
-	struct particle *temp;
+	struct MxParticle *temp;
 
 	/* check inputs */
 	if ( c == NULL || p == NULL ) {
@@ -267,11 +270,11 @@ struct particle *space_cell_add_incomming ( struct space_cell *c , struct partic
 
 	/* is there room for this particle? */
 	if ( c->incomming_count == c->incomming_size ) {
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct particle) * ( c->incomming_size + cell_incr ) ) ) != 0 ) {
+		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * ( c->incomming_size + cell_incr ) ) ) != 0 ) {
 			error(cell_err_malloc);
 			return NULL;
 		}
-		memcpy( temp , c->incomming , sizeof(struct particle) * c->incomming_count );
+		memcpy( temp , c->incomming , sizeof(struct MxParticle) * c->incomming_count );
 		free( c->incomming );
 		c->incomming = temp;
 		c->incomming_size += cell_incr;
@@ -298,9 +301,9 @@ struct particle *space_cell_add_incomming ( struct space_cell *c , struct partic
  * to the cell @c c.
  */
 
-int space_cell_add_incomming_multiple ( struct space_cell *c , struct particle *p , int count ) {
+int space_cell_add_incomming_multiple ( struct space_cell *c , struct MxParticle *p , int count ) {
 
-	struct particle *temp;
+	struct MxParticle *temp;
 	int incr = cell_incr;
 
 	/* check inputs */
@@ -311,16 +314,16 @@ int space_cell_add_incomming_multiple ( struct space_cell *c , struct particle *
 	if ( c->incomming_count + count > c->incomming_size ) {
 		if ( c->incomming_size + incr < c->incomming_count + count )
 			incr = c->incomming_count + count - c->incomming_size;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct particle) * ( c->incomming_size + incr ) ) ) != 0 )
+		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * ( c->incomming_size + incr ) ) ) != 0 )
 			return error(cell_err_malloc);
-		memcpy( temp , c->incomming , sizeof(struct particle) * c->incomming_count );
+		memcpy( temp , c->incomming , sizeof(struct MxParticle) * c->incomming_count );
 		free( c->incomming );
 		c->incomming = temp;
 		c->incomming_size += incr;
 	}
 
 	/* store this particle */
-	memcpy( &c->incomming[c->incomming_count] , p , sizeof(struct particle) * count );
+	memcpy( &c->incomming[c->incomming_count] , p , sizeof(struct MxParticle) * count );
 
 	/* all is well */
 	return ( c->incomming_count += count );
@@ -340,9 +343,9 @@ int space_cell_add_incomming_multiple ( struct space_cell *c , struct particle *
  * to the cell @c c.
  */
 
-struct particle *space_cell_add ( struct space_cell *c , struct particle *p , struct particle **partlist ) {
+struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p , struct MxParticle **partlist ) {
 
-	struct particle *temp;
+	struct MxParticle *temp;
 	int k;
 
 	/* check inputs */
@@ -354,11 +357,11 @@ struct particle *space_cell_add ( struct space_cell *c , struct particle *p , st
 	/* is there room for this particle? */
 	if ( c->count == c->size ) {
 		c->size *= 1.414;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct particle) * c->size ) ) != 0 ) {
+		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * c->size ) ) != 0 ) {
 			error(cell_err_malloc);
 			return NULL;
 		}
-		memcpy( temp , c->parts , sizeof(struct particle) * c->count );
+		memcpy( temp , c->parts , sizeof(struct MxParticle) * c->count );
 		free( c->parts );
 		c->parts = temp;
 		if ( partlist != NULL )
@@ -427,7 +430,7 @@ int space_cell_init ( struct space_cell *c , int *loc , double *origin , double 
 	}
 
 	/* allocate the particle pointers */
-	if ( posix_memalign( (void **)&(c->parts) , cell_partalign , align_ceil( sizeof(struct particle) * cell_default_size ) ) != 0 )
+	if ( posix_memalign( (void **)&(c->parts) , cell_partalign , align_ceil( sizeof(struct MxParticle) * cell_default_size ) ) != 0 )
 		return error(cell_err_malloc);
 	c->size = cell_default_size;
 	c->count = 0;
@@ -437,7 +440,7 @@ int space_cell_init ( struct space_cell *c , int *loc , double *origin , double 
 		return error(cell_err_malloc);
 
 	/* allocate the incomming part buffer. */
-	if ( posix_memalign( (void **)&(c->incomming) , cell_partalign , align_ceil( sizeof(struct particle) * cell_incr ) ) != 0 )
+	if ( posix_memalign( (void **)&(c->incomming) , cell_partalign , align_ceil( sizeof(struct MxParticle) * cell_incr ) ) != 0 )
 		return error(cell_err_malloc);
 	c->incomming_size = cell_incr;
 	c->incomming_count = 0;

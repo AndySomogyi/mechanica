@@ -37,7 +37,6 @@ set(SRC
   mx_float.cpp
   mx_import.cpp
   mx_port.cpp
-  mx_string.cpp
   mx_abstract.cpp
   mx_eval.cpp
   mx_floatobject.cpp
@@ -45,7 +44,6 @@ set(SRC
   mx_number.cpp
   mx_runtime.cpp
   mx_ast.cpp
-  mx_expr.cpp
   mx_function.cpp
   MxList.cpp
   mx_stmt.cpp
@@ -62,9 +60,8 @@ set(SRC
   MxModule.cpp
   MxModel.cpp
   MxSystem.cpp
-  MxSymbol.cpp
   MxPropagator.cpp
-  MxParticle.cpp
+
   MxCompositeParticle.cpp
   MxController.cpp
   MxView.cpp
@@ -83,7 +80,6 @@ set(SRC
   MeshOperations.cpp
   stochastic_rk.cpp
   MxEdge.cpp
-  MxExpression.cpp
   MeshIO.cpp
   MxTesselator.cpp
   MxColumnarCell.cpp
@@ -134,9 +130,8 @@ set(HEADERS
   MxModule.h
   MxModel.h
   MxSystem.h
-  MxSymbol.h
   MxPropagator.h
-  MxParticle.h
+
   MxCompositeParticle.h
   MxController.h
   MxView.h
@@ -155,7 +150,6 @@ set(HEADERS
   MeshOperations.h
   stochastic_rk.h
   MxEdge.h
-  MxExpression.h
   MeshIO.h
   MxTesselator.h
   MxColumnarCell.h
@@ -318,6 +312,7 @@ target_include_directories(mechanica_py PRIVATE
 target_link_libraries(mechanica_py
   Carbon::Carbon
   Python::Python
+  mdcore_single
   glfw
   Assimp::Assimp
   Magnum::Application
@@ -372,6 +367,7 @@ add_custom_command(
 target_link_libraries(mechanica_shared
   Carbon::Carbon
   Python::Python
+  mdcore_single
   glfw
   Assimp::Assimp
   Magnum::Application

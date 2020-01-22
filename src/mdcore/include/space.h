@@ -124,7 +124,7 @@ typedef struct space {
 	int nr_swaps, nr_stalls;
 
 	/** Array of pointers to the individual parts, sorted by their ID. */
-	struct particle **partlist;
+	struct MxParticle **partlist;
 
 	/** Array of pointers to the #cell of individual parts, sorted by their ID. */
 	struct space_cell **celllist;
@@ -149,7 +149,7 @@ int space_init ( struct space *s , const double *origin , const double *dim , do
 int space_getsid ( struct space *s , struct space_cell **ci , struct space_cell **cj , FPTYPE *shift );
 int space_shuffle ( struct space *s );
 int space_shuffle_local ( struct space *s );
-int space_addpart ( struct space *s , struct particle *p , double *x );
+int space_addpart ( struct space *s , struct MxParticle *p , double *x );
 int space_prepare ( struct space *s );
 int space_getpos ( struct space *s , int id , double *x );
 int space_setpos ( struct space *s , int id , double *x );

@@ -43,7 +43,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "potential.h"
 #include "potential_eval.h"
 #include <space_cell.h>
@@ -83,7 +83,7 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
     int aid, pid, pjd, pkd, k, l, *loci, *locj, *lock, shift;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, *pk, **partlist;
+    struct MxParticle *pi, *pj, *pk, **partlist;
     struct space_cell **celllist;
     struct potential *pot;
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
@@ -190,7 +190,7 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
             dxk[0] , dxk[1] , dxk[2] , sqrt( dxk[0]*dxk[0] + dxk[1]*dxk[1] + dxk[2]*dxk[2] ) ); */
         if ( ctheta < pot->a || ctheta > pot->b ) {
             printf( "angle_eval[%i]: angle %i (%s-%s-%s) out of range [%e,%e], ctheta=%e.\n" ,
-                e->nodeID , aid , e->types[pi->type].name , e->types[pj->type].name , e->types[pk->type].name , pot->a , pot->b , ctheta );
+                e->nodeID , aid , e->types[pi->typeId].name , e->types[pj->typeId].name , e->types[pk->typeId].name , pot->a , pot->b , ctheta );
             ctheta = FPTYPE_FMAX( pot->a , FPTYPE_FMIN( pot->b , ctheta ) );
             }
 
@@ -328,11 +328,11 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
     int aid, pid, pjd, pkd, k, *loci, *locj, *lock, shift;
     double h[3], epot = 0.0;
     struct space *s;
-    struct particle *pi, *pj, *pk, **partlist;
+    struct MxParticle *pi, *pj, *pk, **partlist;
     struct space_cell **celllist;
     struct potential *pot;
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
-    register FPTYPE t1, t10, t11, t12, t13, t21, t22, t23, t24, t25, t26, t27, t3,
+    FPTYPE t1, t10, t11, t12, t13, t21, t22, t23, t24, t25, t26, t27, t3,
         t5, t6, t7, t8, t9, t4, t14, t2;
     struct potential **pots;
 #if defined(VECTORIZE)
@@ -432,7 +432,7 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
         /* printf( "angle_eval: angle %i is %e rad.\n" , aid , ctheta ); */
         if ( ctheta < pot->a || ctheta > pot->b ) {
             printf( "angle_evalf: angle %i (%s-%s-%s) out of range [%e,%e], ctheta=%e.\n" ,
-                aid , e->types[pi->type].name , e->types[pj->type].name , e->types[pk->type].name , pot->a , pot->b , ctheta );
+                aid , e->types[pi->typeId].name , e->types[pj->typeId].name , e->types[pk->typeId].name , pot->a , pot->b , ctheta );
             ctheta = fmax( pot->a , fmin( pot->b , ctheta ) );
             }
 

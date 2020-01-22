@@ -91,13 +91,13 @@ typedef struct space_cell {
 	int size, count;
 
 	/* the particle buffer */
-	struct particle *parts;
+	struct MxParticle *parts;
 
 	/* buffer to store the potential energy */
 	double epot;
 
 	/* a buffer to store incomming parts. */
-	struct particle *incomming;
+	struct MxParticle *incomming;
 	int incomming_size, incomming_count;
 
 	/* Mutex for synchronized cell access. */
@@ -126,12 +126,12 @@ typedef struct space_cell {
 
 /* associated functions */
 int space_cell_init ( struct space_cell *c , int *loc , double *origin , double *dim );
-struct particle *space_cell_add ( struct space_cell *c , struct particle *p , struct particle **partlist );
-struct particle *space_cell_add_incomming ( struct space_cell *c , struct particle *p );
-int space_cell_add_incomming_multiple ( struct space_cell *c , struct particle *p , int count );
-int space_cell_welcome ( struct space_cell *c , struct particle **partlist );
-int space_cell_load ( struct space_cell *c , struct particle *parts , int nr_parts , struct particle **partlist , struct space_cell **celllist );
-int space_cell_flush ( struct space_cell *c , struct particle **partlist , struct space_cell **celllist );
+struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p , struct MxParticle **partlist );
+struct MxParticle *space_cell_add_incomming ( struct space_cell *c , struct MxParticle *p );
+int space_cell_add_incomming_multiple ( struct space_cell *c , struct MxParticle *p , int count );
+int space_cell_welcome ( struct space_cell *c , struct MxParticle **partlist );
+int space_cell_load ( struct space_cell *c , struct MxParticle *parts , int nr_parts , struct MxParticle **partlist , struct space_cell **celllist );
+int space_cell_flush ( struct space_cell *c , struct MxParticle **partlist , struct space_cell **celllist );
 
 MDCORE_END_DECLS
 

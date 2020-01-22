@@ -46,7 +46,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include "queue.h"
 #include <space_cell.h>
 #include "task.h"

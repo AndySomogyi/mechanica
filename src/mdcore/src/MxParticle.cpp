@@ -21,10 +21,24 @@
 /* include some standard header files */
 #include <stdlib.h>
 #include <math.h>
-#include <particle.h>
-
-/* include local headers */
+#include <MxParticle.h>
 #include "fptype.h"
+
+MxParticleType particleTypeType = {
+    {
+        {.ob_refcnt = 0,
+         .ob_type = NULL
+        },
+        .tp_name = "mechanica.ParticleType",
+        .tp_doc = "Custom objects",
+        .tp_basicsize = sizeof(MxParticleType),
+        .tp_itemsize = 0,
+        .tp_flags = Py_TPFLAGS_DEFAULT,
+        .tp_new = PyType_GenericNew
+    }
+};
+
+MxParticleType *MxParticleType_Type = &particleTypeType;
 
 
 /** ID of the last error */
@@ -43,7 +57,7 @@ int particle_err = PARTICLE_ERR_OK;
  *
  */
 
-int particle_init ( struct particle *p , int vid , int type , unsigned int flags ) {
+int particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags ) {
 
     /* check inputs */
     if ( p == NULL )
@@ -51,10 +65,18 @@ int particle_init ( struct particle *p , int vid , int type , unsigned int flags
 
     /* Set the paticle data. */
     p->vid = vid;
-    p->type = type;
+    p->typeId = type;
     p->flags = flags;
 
     /* all is well... */
     return PARTICLE_ERR_OK;
 
+}
+
+HRESULT MxParticle_Init(PyObject *m)
+{
+}
+
+int MxParticleCheck(PyObject *o)
+{
 }

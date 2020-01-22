@@ -40,7 +40,7 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <particle.h>
+#include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
 #include "potential.h"
@@ -52,6 +52,8 @@
 #include "exclusion.h"
 #include "reader.h"
 #include "engine.h"
+
+#pragma clang diagnostic ignored "-Wwritable-strings"
 
 
 /* the error macro. */
@@ -258,7 +260,7 @@ typedef struct _bonded_sets {
 
 /* Function to add a conflict. */
 static int confl_add (bonded_sets *bs, int i , int j ) {
-	if ( bs->confl_count == bs->confl_size && ( bs->confl = realloc( bs->confl , sizeof(int) * 2 * (bs->confl_size *= 2) ) ) == NULL )
+	if ( bs->confl_count == bs->confl_size && ( bs->confl = (_bonded_set*)realloc( bs->confl , sizeof(int) * 2 * (bs->confl_size *= 2) ) ) == NULL )
 		return error(engine_err_malloc);
 	bs->confl[bs->confl_count].i = i; bs->confl[bs->confl_count].j = j;
 	bs->nconfl[i] += 1; bs->nconfl[j] += 1;
@@ -368,7 +370,7 @@ int engine_bonded_sets ( struct engine *e , int max_sets ) {
 
 	/* Generate the set of conflicts. */
 	bs.confl_size = nr_sets;
-	if ( ( bs.confl = malloc( sizeof(int) * 2 * bs.confl_size ) ) == NULL )
+	if ( ( bs.confl = (_bonded_set*)malloc( sizeof(int) * 2 * bs.confl_size ) ) == NULL )
 		return error(engine_err_malloc);
 	nr_sets = 0;
 
@@ -657,7 +659,7 @@ int engine_bonded_sets ( struct engine *e , int max_sets ) {
 		setid_exclusions[k] = abs(setid_exclusions[k]);
 
 	/* Allocate the sorted conflict data. */
-	if ( ( bs.confl_sorted = malloc( sizeof(int) * 4 * bs.confl_size ) ) == NULL ||
+	if ( ( bs.confl_sorted = (_bonded_set*)malloc( sizeof(int) * 4 * bs.confl_size ) ) == NULL ||
 			( confl_index = (int *)malloc( sizeof(int) * (nr_sets + 1) ) ) == NULL )
 		return error(engine_err_malloc);
 

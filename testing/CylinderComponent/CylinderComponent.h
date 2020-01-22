@@ -13,7 +13,7 @@
 #include "mx_port.h"
 
 
-MxAPI_STRUCT(CylinderTest);
+CAPI_STRUCT(CylinderTest);
 
 #ifdef _MSC_VER
     #define CYL_EXPORT __declspec(dllexport)

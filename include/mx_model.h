@@ -14,7 +14,7 @@
  *
  * Models are compied with either Mx_CompileStringFlags or Mx_CompileString.
  */
-MxAPI_STRUCT(MxModel);
+CAPI_STRUCT(MxModel);
 
 
 mx_real MxModel_ReadScalar(const MxModel *model, const MxSymbol *field, const mx_real *xyz);

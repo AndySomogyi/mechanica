@@ -75,7 +75,7 @@ int main ( int argc , char *argv[] ) {
     double epot, ekin, temp, cellwidth;
     // FPTYPE ee, eff;
     struct engine e;
-    struct particle pO, pH;
+    struct MxParticle pO, pH;
     struct potential *pot_OO, *pot_OH, *pot_HH;
     // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
@@ -210,17 +210,17 @@ int main ( int argc , char *argv[] ) {
 
 
     /* register the particle types. */
-    if ( ( pO.type = engine_addtype( &e , 15.9994 , -0.8476 , "O" , NULL ) ) < 0 ||
-            ( pH.type = engine_addtype( &e , 1.00794 , 0.4238 , "H" , NULL ) ) < 0 ) {
+    if ( ( pO.typeId = engine_addtype( &e , 15.9994 , -0.8476 , "O" , NULL ) ) < 0 ||
+            ( pH.typeId = engine_addtype( &e , 1.00794 , 0.4238 , "H" , NULL ) ) < 0 ) {
         printf("main: call to engine_addtype failed.\n");
         errs_dump(stdout);
         return 1;
     }
 
     // register these potentials.
-    if ( engine_addpot( &e , pot_OO , pO.type , pO.type ) < 0 ||
-            engine_addpot( &e , pot_HH , pH.type , pH.type ) < 0 ||
-            engine_addpot( &e , pot_OH , pO.type , pH.type ) < 0 ) {
+    if ( engine_addpot( &e , pot_OO , pO.typeId , pO.typeId ) < 0 ||
+            engine_addpot( &e , pot_HH , pH.typeId , pH.typeId ) < 0 ||
+            engine_addpot( &e , pot_OH , pO.typeId , pH.typeId ) < 0 ) {
         printf("main: call to engine_addpot failed.\n");
         errs_dump(stdout);
         return 1;

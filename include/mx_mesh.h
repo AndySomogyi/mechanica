@@ -27,7 +27,7 @@ typedef struct MxMeshData {
 
 } MxMeshData;
 
-MxAPI_STRUCT(MxMesh);
+CAPI_STRUCT(MxMesh);
 
 
 /**

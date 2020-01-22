@@ -77,7 +77,7 @@ int main ( int argc , char *argv[] ) {
     double epot, ekin, temp, cutoff = 1.0, cellwidth;
     FPTYPE ee, eff;
     struct engine e;
-    struct particle *p, pO, pH;
+    struct MxParticle *p, pO, pH;
     struct potential *pot_OO, *pot_OH, *pot_HH, *pot_OHb, *pot_HOH;
     // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;

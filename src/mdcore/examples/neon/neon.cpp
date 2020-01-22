@@ -71,7 +71,7 @@ int main ( int argc , char *argv[] ) {
     double epot, ekin, v2, temp, cutoff = 1.0, cellwidth;
     // FPTYPE ee, eff;
     struct engine e;
-    struct particle pNe;
+    struct MxParticle pNe;
     struct potential *pot_NeNe;
     // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
@@ -151,7 +151,7 @@ int main ( int argc , char *argv[] ) {
 
     // set fields for all particles
     srand(6178);
-    pNe.type = 0;
+    pNe.typeId = 0;
     pNe.flags = PARTICLE_FLAG_NONE;
     for ( k = 0 ; k < 3 ; k++ ) {
         pNe.v[k] = 0.0;
