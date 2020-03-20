@@ -13,6 +13,7 @@ Contents:
    :maxdepth: 4
 
    introduction
+   building
    formalism
    concepts
    examples
