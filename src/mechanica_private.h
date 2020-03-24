@@ -123,7 +123,7 @@ int _CaAstInit();
 
 template <class X, class Y>
 inline X* dyn_cast(const Y &o) {
-    return (CType_IsSubtype(o->ob_type, X::type())) ? reinterpret_cast<X*>(o) : nullptr;
+    return (CType_IsSubtype((CType*)o->ob_type, (CType*)X::type())) ? reinterpret_cast<X*>(o) : nullptr;
 };
 
 /**

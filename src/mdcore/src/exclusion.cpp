@@ -44,7 +44,7 @@
 #include "fptype.h"
 #include "lock.h"
 #include <MxParticle.h>
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include <space_cell.h>
 #include "space.h"
@@ -87,10 +87,10 @@ int exclusion_eval ( struct exclusion *b , int N , struct engine *e , double *ep
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     FPTYPE r2, w, cutoff2;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE dx[4] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE];
@@ -291,10 +291,10 @@ int exclusion_evalf ( struct exclusion *b , int N , struct engine *e , FPTYPE *f
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     FPTYPE dx[3], r2, w, cutoff2;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE];
     FPTYPE r2q[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));

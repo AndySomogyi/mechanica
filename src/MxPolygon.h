@@ -71,10 +71,10 @@ CAPI_DATA(CType*) MxPartialPolygon_Type;
  */
 struct MxPartialPolygon : CObject {
 
-    MxPartialPolygon(CType *type, MxPolygon *ti,
-            float mass = 0, MxReal *scalars = nullptr) :
-                CObject{0, type}, polygon{ti},
-                mass{mass}, scalarFields{scalars} {};
+    //MxPartialPolygon(CType *type, MxPolygon *ti,
+    //        float mass = 0, MxReal *scalars = nullptr) :
+    //            CObject{0, type}, polygon{ti},
+    //            mass{mass}, scalarFields{scalars} {};
 
     /**
      * index of the triangle that this partial triangle references.
@@ -110,7 +110,7 @@ struct MxPartialPolygon : CObject {
 
 struct MxPolygonType : CType {
 
-    MxPolygonType(const char* name, CType *base) : CType{{0, .ob_type=base}, .tp_name = name} {};
+    MxPolygonType(const char* name, CType *base) : CType{base, name} {};
 
 
     Magnum::Color4 edgeColor = Magnum::Color4{{98.f/255, 120.f/255, 168.f/255, 0.1f}};

@@ -1,5 +1,3 @@
-
-
 # LLVM compile options
 #add_definitions(${LLVM_LDFLAGS})
 
@@ -31,6 +29,7 @@ file(GLOB AST_SRC
 corrade_add_resource(MxMeshShaderProgramRes MxMeshShaderProgram.res)
 
 set(SRC
+  MObject.cpp
   mx_error.cpp
   moduledef.cpp
   mx_callable.cpp
@@ -224,7 +223,7 @@ target_include_directories(mechanica_obj PUBLIC
 
 
 message("Carbon Includes:")
-get_target_property(dirs Carbon::Carbon INCLUDE_DIRECTORIES)
+get_target_property(dirs Carbon::Static INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message("carbon include='${dir}'")
 endforeach()
@@ -232,7 +231,7 @@ endforeach()
 
 message("Carbon Interface Includes:")
 
-get_target_property(dirs Carbon::Carbon INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(dirs Carbon::Static INTERFACE_INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message( "carbon interface include='${dir}'")
 endforeach()
@@ -241,9 +240,10 @@ endforeach()
 
 
 target_link_libraries(mechanica_obj
-  Carbon::Carbon
+  Carbon::Static
   DirectXMath
   Python::Python
+  Python::NumPy
   glfw
   Assimp::Assimp
   Magnum::Application
@@ -310,8 +310,9 @@ target_include_directories(mechanica_py PRIVATE
 
 
 target_link_libraries(mechanica_py
-  Carbon::Carbon
+  Carbon::Static
   Python::Python
+  Python::NumPy
   mdcore_single
   glfw
   Assimp::Assimp
@@ -365,8 +366,9 @@ add_custom_command(
   )
 
 target_link_libraries(mechanica_shared
-  Carbon::Carbon
+  Carbon::Static
   Python::Python
+  Python::NumPy
   mdcore_single
   glfw
   Assimp::Assimp
@@ -416,3 +418,7 @@ endif()
 
 
 add_library(mechanica ALIAS mechanica_shared)
+add_library(Mechanica::Mechanica ALIAS mechanica_shared)
+#add_library(Mechanica::Static ALIAS mechanica_static)
+add_library(Mechanica::Shared ALIAS mechanica_shared)
+add_library(Mechanica::PythonLib ALIAS mechanica_py)

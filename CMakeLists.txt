@@ -56,15 +56,8 @@ message("CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
 
 #find_package(GLFW REQUIRED)
 
-#find_package(PythonInterp 3.5 REQUIRED)
-#message("PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}") # - path to the Python interpreter
-#message("PYTHON_VERSION_STRING: ${PYTHON_VERSION_STRING}") # - Python version found e.g. 2.5.2
-#message("PYTHON_VERSION_MAJOR: ${PYTHON_VERSION_MAJOR}") # - Python major version found e.g. 2
-#message("PYTHON_VERSION_MINOR: ${PYTHON_VERSION_MINOR}") # - Python minor version found e.g. 5
-#message("PYTHON_VERSION_PATCH: ${PYTHON_VERSION_PATCH}") # - Python patch version found e.g. 2
 
-
-find_package (Python 3.5 REQUIRED COMPONENTS Development)
+find_package(Python 3.5 COMPONENTS Development NumPy)
 
 message("Python_FOUND: ${Python_FOUND}")
 message("Python_Interpeter_FOUND: ${Python_Interpeter_FOUND}")
@@ -76,6 +69,10 @@ message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 message("Python_LIBRARIES: ${Python_LIBRARIES}")
 message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
 message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
+
+message("Python_NumPy_FOUND: ${Python_NumPy_FOUND}")
+message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+message("Python_NumPy_VERSION: ${Python_NumPy_VERSION}")
 
 
 if(Python_Development_FOUND)
@@ -91,22 +88,6 @@ if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
   message("setting eclipse include dirs: ${Python_INCLUDE_DIRS}")
   include_directories(${Python_INCLUDE_DIRS})
 endif()
-
-
-find_package(NumPy)
-message("NUMPY_FOUND: ${NUMPY_FOUND}") # - was NumPy found
-message("NUMPY_VERSION: ${NUMPY_VERSION}") # - the version of NumPy found as a string
-message("NUMPY_VERSION_MAJOR: ${NUMPY_VERSION_MAJOR}") # - the major version number of NumPy
-message("NUMPY_VERSION_MINOR: ${NUMPY_VERSION_MINOR}") # - the minor version number of NumPy
-message("NUMPY_VERSION_PATCH: ${NUMPY_VERSION_PATCH}") # - the patch version number of NumPy
-message("NUMPY_VERSION_DECIMAL: ${NUMPY_VERSION_DECIMAL}") # - e.g. version 1.6.1 is 10601
-message("NUMPY_INCLUDE_DIR: ${NUMPY_INCLUDE_DIR}") # - path to the NumPy include files
-
-
-#set(PYTHON_LIBRARY "" CACHE PATH "path to custom python library")
-#set(PYTHON_INCLUDE_DIR "" CACHE PATH "path to where a custom Python.h")
-#mark_as_advanced(CLEAR FORCE PYTHON_LIBRARY)
-#mark_as_advanced(CLEAR FORCE PYTHON_INCLUDE_DIR)
 
 
 # needed for jpeg image writer
@@ -243,4 +224,4 @@ find_package(Magnum REQUIRED
 
 add_subdirectory(apps)
 add_subdirectory(testing)
-#add_subdirectory(magnum_examples)
+add_subdirectory(magnum_examples)

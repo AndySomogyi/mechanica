@@ -44,7 +44,7 @@
 #include "fptype.h"
 #include "lock.h"
 #include <MxParticle.h>
-#include "potential.h"
+#include <MxPotential.h>
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"

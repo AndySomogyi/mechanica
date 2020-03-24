@@ -44,7 +44,7 @@
 #include <space_cell.h>
 #include "task.h"
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "engine.h"
 #include "queue.h"
 

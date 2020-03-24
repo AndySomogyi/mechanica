@@ -52,7 +52,7 @@ extern int particle_err;
  * Note that the arrays for @c x, @c v and @c f are 4 entries long for
  * propper alignment.
  */
-struct MxParticle : CObject  {
+struct MxParticle : PyObject  {
 
 	/** Particle position */
 	FPTYPE x[4] __attribute__ ((aligned (16)));
@@ -75,6 +75,12 @@ struct MxParticle : CObject  {
 	/** Particle flags */
 	unsigned short int flags;
 
+	PyObject *pos;
+
+	PyObject *vel;
+
+	PyObject *force;
+
 
 };
 
@@ -87,8 +93,11 @@ struct MxParticle : CObject  {
  *
  * This is only a definition for the particle *type*, not the actual
  * instance vars like pos, vel, which are stored in part.
+ *
+ * Extend the PyHeapTypeObject, because this is the actual type that
+ * gets allocated, its a python thing.
  */
-struct MxParticleType : CType {
+struct MxParticleType : PyHeapTypeObject {
 
 	/** ID of this type */
 	int id;
@@ -102,18 +111,17 @@ struct MxParticleType : CType {
 	/** Name of this paritcle type. */
 	char name[64], name2[64];
 
-
 } ;
 
 /**
- * The type of the particle.
+ * The type of each individual particle.
  */
-CAPI_DATA(CType) *MxParticle_Type;
+CAPI_DATA(MxParticleType) MxParticle_Type;
 
 /**
  * The the particle type type
  */
-CAPI_DATA(MxParticleType) *MxParticleType_Type;
+CAPI_DATA(PyTypeObject) MxParticleType_Type;
 
 /**
  * Determines if this object is a particle type.
@@ -123,10 +131,13 @@ CAPI_FUNC(int) MxParticleCheck(PyObject *o);
 
 
 /* associated functions */
-int particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
+int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
 
 
-HRESULT MxParticle_Init(PyObject *m);
+/**
+ * internal function to initalize the particle and particle types
+ */
+HRESULT MxParticle_init(PyObject *m);
 
 MDCORE_END_DECLS
 #endif // INCLUDE_PARTICLE_H_

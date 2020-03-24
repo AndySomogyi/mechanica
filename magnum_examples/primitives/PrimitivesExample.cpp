@@ -27,15 +27,39 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <Magnum/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
-#include <Magnum/Renderer.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Renderer.h>
 #include <Magnum/MeshTools/Interleave.h>
 #include <Magnum/MeshTools/CompressIndices.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/Primitives/Cube.h>
 #include <Magnum/Shaders/Phong.h>
 #include <Magnum/Trade/MeshData3D.h>
+
+#include <Magnum/Magnum.h>
+#include <Corrade/Utility/Resource.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Mesh.h>
+#include <Magnum/Mesh.h>
+#include <Magnum/Math/Vector3.h>
+#include <Magnum/Platform/GlfwApplication.h>
+#include <Magnum/GL/Shader.h>
+#include <Magnum/Shaders/Shaders.h>
+#include <Magnum/Math/Color.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
+
+
+
+
+
+
+#include <Corrade/Containers/Reference.h>
+
+#include "Magnum/Shaders/Implementation/CreateCompatibilityShader.h"
 
 using namespace Magnum;
 using namespace Magnum::Math::Literals;
@@ -50,8 +74,8 @@ class PrimitivesExample: public Platform::GlfwApplication {
         void mouseReleaseEvent(MouseEvent& event) override;
         void mouseMoveEvent(MouseMoveEvent& event) override;
 
-        Buffer indexBuffer, positionBuffer, normalBuffer;
-        Mesh mesh;
+        GL::Buffer indexBuffer, positionBuffer, normalBuffer;
+        GL::Mesh mesh;
         Shaders::Phong shader;
 
         Matrix4 transformation, projection;
@@ -62,22 +86,22 @@ class PrimitivesExample: public Platform::GlfwApplication {
 PrimitivesExample::PrimitivesExample(const Arguments& arguments):
     Platform::GlfwApplication{arguments, Configuration{}
         .setTitle("Magnum Primitives Example")} {
-    Renderer::enable(Renderer::Feature::DepthTest);
-    Renderer::enable(Renderer::Feature::FaceCulling);
+            GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
+            GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
 
     const Trade::MeshData3D cube = Primitives::Cube::solid();
 
-    positionBuffer.setData(cube.positions(0), BufferUsage::StaticDraw);
+    positionBuffer.setData(cube.positions(0), GL::BufferUsage::StaticDraw);
 
-    normalBuffer.setData(cube.normals(0), BufferUsage::StaticDraw);
+    normalBuffer.setData(cube.normals(0), GL::BufferUsage::StaticDraw);
 
-    indexBuffer.setData(cube.indices(), BufferUsage::StaticDraw);
+    indexBuffer.setData(cube.indices(), GL::BufferUsage::StaticDraw);
 
     mesh.setPrimitive(cube.primitive())
         .setCount(cube.indices().size())
         .addVertexBuffer(positionBuffer, 0, Shaders::Phong::Position{})
         .addVertexBuffer(normalBuffer, 0, Shaders::Phong::Normal{})
-        .setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+        .setIndexBuffer(indexBuffer, 0, GL::Mesh::IndexType::UnsignedInt);
 
     transformation = Matrix4::rotationX(30.0_degf)
                      * Matrix4::rotationY(40.0_degf);
@@ -85,12 +109,12 @@ PrimitivesExample::PrimitivesExample(const Arguments& arguments):
     color = Color3::fromHsv(35.0_degf, 1.0f, 1.0f);
 
     projection = Matrix4::perspectiveProjection(35.0_degf,
-            Vector2{defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f)
+            Vector2{GL::defaultFramebuffer.viewport().size()}.aspectRatio(), 0.01f, 100.0f)
             * Matrix4::translation(Vector3::zAxis(-10.0f));
 }
 
 void PrimitivesExample::drawEvent() {
-    defaultFramebuffer.clear(FramebufferClear::Color|FramebufferClear::Depth);
+    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color|GL::FramebufferClear::Depth);
 
     shader.setLightPosition({7.0f, 5.0f, 2.5f})
         .setLightColor(Color3{1.0f})
@@ -124,7 +148,7 @@ void PrimitivesExample::mouseMoveEvent(MouseMoveEvent& event) {
 
     const Vector2 delta = 3.0f*
         Vector2{event.position() - previousMousePosition}/
-        Vector2{defaultFramebuffer.viewport().size()};
+        Vector2{GL::defaultFramebuffer.viewport().size()};
 
     transformation =
         Matrix4::rotationX(Rad{delta.y()})*

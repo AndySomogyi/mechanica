@@ -50,7 +50,15 @@ public:
 
     HRESULT bindConstraint(IConstraint *constraint, CObject *obj);
 
+    HRESULT bindConstraint(IConstraint *constraint, PyTypeObject *obj) {
+        return bindConstraint(constraint, (CObject*)obj);
+    }
+
     HRESULT bindForce(IForce *force, CObject *obj);
+
+    HRESULT bindForce(IForce *force, PyTypeObject *obj) {
+        return bindForce(force, (CObject*)obj);
+    }
 
     HRESULT unbindConstraint(IConstraint* constraint);
 

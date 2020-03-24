@@ -1,15 +1,28 @@
 #include <Magnum/Magnum.h>
-#include <Magnum/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
+#include <Corrade/Utility/Resource.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Mesh.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Platform/GlfwApplication.h>
-#include <Magnum/Shader.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/Shaders/Shaders.h>
 #include <Magnum/Math/Color.h>
-#include <Magnum/Context.h>
-#include <Magnum/Version.h>
-#include <Magnum/AbstractShaderProgram.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
+
+
+
+
+
+
+#include <Corrade/Containers/Reference.h>
+
+#include "Magnum/Shaders/Implementation/CreateCompatibilityShader.h"
+
+
 
 
 using namespace Magnum;
@@ -41,22 +54,22 @@ struct TriangleVertex {
     Color3 color;
 };
 
-typedef Attribute<0, Vector2> PositionAttr;
-typedef Attribute<1, Color3> ColorAttr;
+typedef GL::Attribute<0, Vector2> PositionAttr;
+typedef GL::Attribute<1, Color3> ColorAttr;
 
-class ShaderProgram : public AbstractShaderProgram {
+class ShaderProgram : public GL::AbstractShaderProgram {
 public:
 
     explicit ShaderProgram() {
-        MAGNUM_ASSERT_VERSION_SUPPORTED(Version::GL330);
+        MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
-        Shader vert{Version::GL330, Shader::Type::Vertex};
-        Shader frag{Version::GL330, Shader::Type::Fragment};
+        GL::Shader vert{GL::Version::GL330, GL::Shader::Type::Vertex};
+        GL::Shader frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
         vert.addSource(vertSrc);
         frag.addSource(fragSrc);
 
-        CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, frag}));
+        CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({vert, frag}));
 
         attachShaders({vert, frag});
 
@@ -72,16 +85,16 @@ class Polygons: public Platform::GlfwApplication {
     private:
         void drawEvent() override;
 
-        Buffer vertexBuffer;
-        Buffer indexBuffer;
-        Mesh mesh;
+        GL::Buffer vertexBuffer;
+        GL::Buffer indexBuffer;
+        GL::Mesh mesh;
         ShaderProgram shaderProgram;
 };
 
 Polygons::Polygons(const Arguments& arguments) :
-        Platform::GlfwApplication{arguments, Configuration{}.
-            setVersion(Version::GL410).
-            setTitle("Polygon Example")} {
+        Platform::GlfwApplication{arguments,
+    Configuration{}.setTitle("Polygon Example"),
+    GLConfiguration{}.setVersion(GL::Version::GL410)} {
 
    static const TriangleVertex vertices[] = {
    //  position         color
@@ -96,21 +109,21 @@ Polygons::Polygons(const Arguments& arguments) :
        2, 3, 0
    };
 
-   vertexBuffer.setData(vertices, BufferUsage::StaticDraw);
+   vertexBuffer.setData(vertices, GL::BufferUsage::StaticDraw);
 
-   indexBuffer.setData(elements, BufferUsage::StaticDraw);
+   indexBuffer.setData(elements, GL::BufferUsage::StaticDraw);
 
-   mesh.setPrimitive(MeshPrimitive::Triangles)
+   mesh.setPrimitive(GL::MeshPrimitive::Triangles)
        .setCount(6)
        .addVertexBuffer(vertexBuffer, 0,
            PositionAttr{},
            ColorAttr{});
 
-   mesh.setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+   mesh.setIndexBuffer(indexBuffer, 0, GL::Mesh::IndexType::UnsignedInt);
 }
 
 void Polygons::drawEvent() {
-    defaultFramebuffer.clear(FramebufferClear::Color);
+    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
     mesh.draw(shaderProgram);
 

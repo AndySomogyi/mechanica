@@ -43,7 +43,7 @@
 #include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "runner.h"
 #include "bond.h"
 #include "rigid.h"
@@ -85,7 +85,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
     int tid, tjd, wc[4];
     int res, j, k, jj, kk, n, *ind1, *ind2, nr_ind1, nr_ind2, potid;
     double K, Kr0, r0, r2, r6, A, B, q, al, ar, am, vm;
-    struct potential *p;
+    struct MxPotential *p;
     
     /* Check inputs. */
     if ( e == NULL )
@@ -634,7 +634,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
     int j, k, jj, kk, n, *ind1, *ind2, nr_ind1, nr_ind2, potid;
     double K, Kr0, r0, r2, r6;
     double al, ar, am, vm, A, B, q;
-    struct potential *p;
+    struct MxPotential *p;
     
     /* Check inputs. */
     if ( e == NULL )

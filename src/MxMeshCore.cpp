@@ -11,11 +11,11 @@
 #include "MxDebug.h"
 
 
-static CType vertexType{.tp_name="MxVertex", .tp_base=CObject_TypePtr};
+static CType vertexType{};
 CType *MxVertex_Type = &vertexType;
 
 
-MxVertex::MxVertex(CType* derivedType) : CObject{0, derivedType}
+MxVertex::MxVertex(CType* derivedType)  /* CObject{0, derivedType}*/
 {
 }
 
@@ -26,7 +26,7 @@ MxVertex::MxVertex() : MxVertex{MxVertex_Type}
 }
 
 MxVertex::MxVertex(float mass, float area, const Magnum::Vector3 &pos) :
-        CObject{0, MxVertex_Type},
+        /*CObject{0, MxVertex_Type}*/
         mass{mass}, area{area}, position{pos} {
 };
 

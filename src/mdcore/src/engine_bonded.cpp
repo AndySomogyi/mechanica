@@ -43,7 +43,7 @@
 #include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "runner.h"
 #include "bond.h"
 #include "rigid.h"
@@ -1921,7 +1921,7 @@ int engine_bond_eval ( struct engine *e ) {
  * where @c i and @c j may be the same type ID.
  */
 
-int engine_bond_addpot ( struct engine *e , struct potential *p , int i , int j ) {
+int engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 
 	/* check for nonsense. */
 	if ( e == NULL )
@@ -1949,9 +1949,9 @@ int engine_bond_addpot ( struct engine *e , struct potential *p , int i , int j 
  * @return The ID of the added dihedral potential or < 0 on error (see #engine_err).
  */
 
-int engine_dihedral_addpot ( struct engine *e , struct potential *p ) {
+int engine_dihedral_addpot ( struct engine *e , struct MxPotential *p ) {
 
-	struct potential **dummy;
+	struct MxPotential **dummy;
 
 	/* check for nonsense. */
 	if ( e == NULL )
@@ -1960,9 +1960,9 @@ int engine_dihedral_addpot ( struct engine *e , struct potential *p ) {
 	/* Is there enough room in p_dihedral? */
 	if ( e->nr_dihedralpots == e->dihedralpots_size ) {
 		e->dihedralpots_size += 100;
-		if ( ( dummy = (struct potential **)malloc( sizeof(struct potential *) * e->dihedralpots_size ) ) == NULL )
+		if ( ( dummy = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size ) ) == NULL )
 			return engine_err_malloc;
-		memcpy( dummy , e->p_dihedral , sizeof(struct potential *) * e->nr_dihedralpots );
+		memcpy( dummy , e->p_dihedral , sizeof(struct MxPotential *) * e->nr_dihedralpots );
 		free( e->p_dihedral );
 		e->p_dihedral = dummy;
 	}
@@ -1986,9 +1986,9 @@ int engine_dihedral_addpot ( struct engine *e , struct potential *p ) {
  * @return The ID of the added angle potential or < 0 on error (see #engine_err).
  */
 
-int engine_angle_addpot ( struct engine *e , struct potential *p ) {
+int engine_angle_addpot ( struct engine *e , struct MxPotential *p ) {
 
-	struct potential **dummy;
+	struct MxPotential **dummy;
 
 	/* check for nonsense. */
 	if ( e == NULL )
@@ -1997,9 +1997,9 @@ int engine_angle_addpot ( struct engine *e , struct potential *p ) {
 	/* Is there enough room in p_angle? */
 	if ( e->nr_anglepots == e->anglepots_size ) {
 		e->anglepots_size += 100;
-		if ( ( dummy = (struct potential **)malloc( sizeof(struct potential *) * e->anglepots_size ) ) == NULL )
+		if ( ( dummy = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size ) ) == NULL )
 			return engine_err_malloc;
-		memcpy( dummy , e->p_angle , sizeof(struct potential *) * e->nr_anglepots );
+		memcpy( dummy , e->p_angle , sizeof(struct MxPotential *) * e->nr_anglepots );
 		free( e->p_angle );
 		e->p_angle = dummy;
 	}

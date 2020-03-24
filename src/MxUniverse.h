@@ -12,14 +12,25 @@
 #include "engine.h"
 
 
-struct MxUniverse : CObject {
+struct MxUniverse : PyObject {
 
 
     /**
      * MDCore MD engine
      */
-    engine engine;
+    CListWrap potentials;
 };
+
+
+/**
+ * The the particle type type
+ */
+CAPI_DATA(PyTypeObject) MxUniverse_Type;
+
+/**
+ * The single global instance of the universe
+ */
+CAPI_DATA(MxUniverse) _universe;
 
 /**
  * Init and add to python module

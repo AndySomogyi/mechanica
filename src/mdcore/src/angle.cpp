@@ -44,7 +44,7 @@
 #include "fptype.h"
 #include "lock.h"
 #include <MxParticle.h>
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include <space_cell.h>
 #include "space.h"
@@ -85,12 +85,12 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
     struct space *s;
     struct MxParticle *pi, *pj, *pk, **partlist;
     struct space_cell **celllist;
-    struct potential *pot;
+    struct MxPotential *pot;
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
     FPTYPE rji[3], rjk[3], inji, injk, dprod;
-    struct potential **pots;
+    struct MxPotential **pots;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0;
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE], *effk[VEC_SIZE];
     FPTYPE cthetaq[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
@@ -330,13 +330,13 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
     struct space *s;
     struct MxParticle *pi, *pj, *pk, **partlist;
     struct space_cell **celllist;
-    struct potential *pot;
+    struct MxPotential *pot;
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
     FPTYPE t1, t10, t11, t12, t13, t21, t22, t23, t24, t25, t26, t27, t3,
         t5, t6, t7, t8, t9, t4, t14, t2;
-    struct potential **pots;
+    struct MxPotential **pots;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE], *effk[VEC_SIZE];
     FPTYPE cthetaq[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));

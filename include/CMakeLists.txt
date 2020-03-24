@@ -29,6 +29,7 @@ message("mx config file: ${CMAKE_CURRENT_BINARY_DIR}/mx_config.h")
 
 set (_PUBLIC_HEADERS
   Mechanica.h
+  mx_object.hpp
   mx_callable.h
   mx_function.h
   mx_list.h

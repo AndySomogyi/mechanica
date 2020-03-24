@@ -44,7 +44,7 @@
 #include "fptype.h"
 #include "lock.h"
 #include <MxParticle.h>
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include <space_cell.h>
 #include "space.h"
@@ -85,10 +85,10 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     FPTYPE r2, w;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE dx[4] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE pix[4] __attribute__ ((aligned (VEC_ALIGN)));
@@ -286,10 +286,10 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     FPTYPE r2, w;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE dx[4] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE pix[4] __attribute__ ((aligned (VEC_ALIGN)));

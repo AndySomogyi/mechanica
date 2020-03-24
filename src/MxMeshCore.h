@@ -20,6 +20,8 @@
 
 
 
+
+
 namespace Magnum {
 /** @brief Three-component unsigned integer vector */
 typedef Math::Vector3<UnsignedShort> Vector3us;

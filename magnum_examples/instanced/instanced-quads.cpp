@@ -1,15 +1,33 @@
 #include <Magnum/Magnum.h>
-#include <Magnum/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Platform/GlfwApplication.h>
-#include <Magnum/Shader.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/Shaders/Shaders.h>
 #include <Magnum/Math/Color.h>
-#include <Magnum/Context.h>
-#include <Magnum/Version.h>
-#include <Magnum/AbstractShaderProgram.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
+
+#include <Magnum/Magnum.h>
+#include <Corrade/Utility/Resource.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
+#include <Magnum/GL/Mesh.h>
+#include <Magnum/Mesh.h>
+#include <Magnum/Math/Vector3.h>
+#include <Magnum/Platform/GlfwApplication.h>
+#include <Magnum/GL/Shader.h>
+#include <Magnum/Shaders/Shaders.h>
+#include <Magnum/Math/Color.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
+
+#include <Corrade/Containers/Reference.h>
+
 
 
 using namespace Magnum;
@@ -48,23 +66,23 @@ struct TriangleVertex {
     Color3 color;
 };
 
-typedef Attribute<0, Vector2> PosAttr;
-typedef Attribute<1, Color3> ColorAttr;
-typedef Attribute<2, Vector2> OffsetAttr;
+typedef GL::Attribute<0, Vector2> PosAttr;
+typedef GL::Attribute<1, Color3> ColorAttr;
+typedef GL::Attribute<2, Vector2> OffsetAttr;
 
-class ShaderProgram : public AbstractShaderProgram {
+class ShaderProgram : public GL::AbstractShaderProgram {
 public:
 
     explicit ShaderProgram() {
-        MAGNUM_ASSERT_VERSION_SUPPORTED(Version::GL330);
+        MAGNUM_ASSERT_GL_VERSION_SUPPORTED(GL::Version::GL330);
 
-        Shader vert{Version::GL330, Shader::Type::Vertex};
-        Shader frag{Version::GL330, Shader::Type::Fragment};
+        GL::Shader vert{GL::Version::GL330, GL::Shader::Type::Vertex};
+        GL::Shader frag{GL::Version::GL330, GL::Shader::Type::Fragment};
 
         vert.addSource(vertSrc);
         frag.addSource(fragSrc);
 
-        CORRADE_INTERNAL_ASSERT_OUTPUT(Shader::compile({vert, frag}));
+        CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({vert, frag}));
 
         attachShaders({vert, frag});
 
@@ -80,16 +98,15 @@ class InstancedQuads: public Platform::GlfwApplication {
     private:
         void drawEvent() override;
 
-        Buffer vertexBuffer;
-        Buffer offsetBuffer;
-        Mesh mesh;
+        GL::Buffer vertexBuffer;
+        GL:: Buffer offsetBuffer;
+        GL::Mesh mesh;
         ShaderProgram shaderProgram;
 };
 
 InstancedQuads::InstancedQuads(const Arguments& arguments) :
-        Platform::GlfwApplication{arguments, Configuration{}.
-            setVersion(Version::GL410).
-            setTitle("Instanced Drawing Example")} {
+                Platform::GlfwApplication{arguments, Configuration{}.setTitle("Instanced Drawing Example"),
+                GLConfiguration{}.setVersion(GL::Version::GL410)} {
 
     static const TriangleVertex vertices[] = {
         // positions     // colors
@@ -102,7 +119,7 @@ InstancedQuads::InstancedQuads(const Arguments& arguments) :
         {{ 0.05f,  0.05f},  {0.0f, 1.0f, 1.0f}}
     };
 
-   vertexBuffer.setData(vertices, BufferUsage::StaticDraw);
+   vertexBuffer.setData(vertices, GL::BufferUsage::StaticDraw);
 
    Vector2 translations[100];
 
@@ -119,7 +136,7 @@ InstancedQuads::InstancedQuads(const Arguments& arguments) :
         }
     }
 
-   offsetBuffer.setData(translations, BufferUsage::StaticDraw);
+   offsetBuffer.setData(translations, GL::BufferUsage::StaticDraw);
 
    mesh.setPrimitive(MeshPrimitive::Triangles)
        .setCount(6)
@@ -132,7 +149,7 @@ InstancedQuads::InstancedQuads(const Arguments& arguments) :
 }
 
 void InstancedQuads::drawEvent() {
-    defaultFramebuffer.clear(FramebufferClear::Color);
+    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
     mesh.draw(shaderProgram);
 

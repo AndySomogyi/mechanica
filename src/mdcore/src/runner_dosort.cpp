@@ -49,7 +49,7 @@
 #include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include "engine.h"
 #include "runner.h"
@@ -110,7 +110,7 @@ __attribute__ ((flatten)) int runner_dosort ( struct runner *r , struct space_ce
     if ( r->e->flags & engine_flag_localparts ) {
         parts = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count );
         memcpy( parts , c->parts , sizeof(struct MxParticle) * count );
-        }
+    }
     else
         parts = c->parts;
         
@@ -134,17 +134,15 @@ __attribute__ ((flatten)) int runner_dosort ( struct runner *r , struct space_ce
             p = &( parts[i] );
             iparts[i] = (i << 16) |
                 (unsigned int)( dscale * ( bias + p->x[0]*shiftn[0] + p->x[1]*shiftn[1] + p->x[2]*shiftn[2] ) );
-            }
+        }
 
         /* Sort this data in descending order. */
         runner_sort_descending( iparts , count );
     
-        }
+    }
 
-        
     /* since nothing bad happened to us... */
     return runner_err_ok;
-
-    }
+}
     
     

@@ -19,7 +19,10 @@
  ******************************************************************************/
 #ifndef INCLUDE_POTENTIAL_H_
 #define INCLUDE_POTENTIAL_H_
+
 #include "platform.h"
+#include "fptype.h"
+#include "carbon.h"
 
 MDCORE_BEGIN_DECLS
 
@@ -59,7 +62,7 @@ extern int potential_err;
 
 
 /** The #potential structure. */
-typedef struct potential {
+typedef struct MxPotential : PyObject {
 
 	/** Coefficients for the interval transform. */
 	FPTYPE alpha[4];
@@ -76,28 +79,28 @@ typedef struct potential {
 	/** Nr of intervals. */
 	int n;
 
-} potential;
+} MxPotential;
 
 
 /** Fictitious null potential. */
-extern struct potential potential_null;
+extern struct MxPotential potential_null;
 
 
 /* associated functions */
-void potential_clear ( struct potential *p );
-int potential_init ( struct potential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol );
+void potential_clear ( struct MxPotential *p );
+int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol );
 int potential_getcoeffs ( double (*f)( double ) , double (*fp)( double ) , FPTYPE *xi , int n , FPTYPE *c , FPTYPE *err );
 double potential_getalpha ( double (*f6p)( double ) , double a , double b );
-struct potential *potential_create_LJ126 ( double a , double b , double A , double B , double tol );
-struct potential *potential_create_LJ126_switch ( double a , double b , double A , double B , double s , double tol );
-struct potential *potential_create_LJ126_Ewald ( double a , double b , double A , double B , double q , double kappa , double tol );
-struct potential *potential_create_LJ126_Ewald_switch ( double a , double b , double A , double B , double q , double kappa , double s , double tol );
-struct potential *potential_create_LJ126_Coulomb ( double a , double b , double A , double B , double q , double tol );
-struct potential *potential_create_Ewald ( double a , double b , double q , double kappa , double tol );
-struct potential *potential_create_Coulomb ( double a , double b , double q , double tol );
-struct potential *potential_create_harmonic ( double a , double b , double K , double r0 , double tol );
-struct potential *potential_create_harmonic_angle ( double a , double b , double K , double theta0 , double tol );
-struct potential *potential_create_harmonic_dihedral ( double K , int n , double delta , double tol );
+struct MxPotential *potential_create_LJ126 ( double a , double b , double A , double B , double tol );
+struct MxPotential *potential_create_LJ126_switch ( double a , double b , double A , double B , double s , double tol );
+struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double A , double B , double q , double kappa , double tol );
+struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , double A , double B , double q , double kappa , double s , double tol );
+struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , double A , double B , double q , double tol );
+struct MxPotential *potential_create_Ewald ( double a , double b , double q , double kappa , double tol );
+struct MxPotential *potential_create_Coulomb ( double a , double b , double q , double tol );
+struct MxPotential *potential_create_harmonic ( double a , double b , double K , double r0 , double tol );
+struct MxPotential *potential_create_harmonic_angle ( double a , double b , double K , double theta0 , double tol );
+struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , double delta , double tol );
 
 /* These functions are now all in potential_eval.h. */
 /*
@@ -124,6 +127,13 @@ double potential_Coulomb_p ( double r );
 double potential_Coulomb_6p ( double r );
 double potential_switch ( double r , double A , double B );
 double potential_switch_p ( double r , double A , double B );
+
+/**
+ * The type of each individual particle.
+ */
+CAPI_DATA(PyTypeObject) MxPotential_Type;
+
+HRESULT MxPotential_init(PyObject *m);
 
 MDCORE_END_DECLS
 #endif // INCLUDE_POTENTIAL_H_

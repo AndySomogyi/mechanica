@@ -10,13 +10,16 @@
 
 
 
-static CType edgeType{.tp_name="MxEdge", .tp_base=CObject_TypePtr} ;
+static CType edgeType{} ;
 CType *MxEdge_Type = &edgeType;
 
 
+//MxEdge::MxEdge(uint id) : CObject{0, MxEdge_Type}, id{id}
+//{
+//}
+    
 
-
-MxEdge::MxEdge(uint id) : CObject{0, MxEdge_Type}, id{id}
+MxEdge::MxEdge(uint id) : id{id}
 {
 }
 

@@ -55,7 +55,7 @@
 #include "task.h"
 #include "queue.h"
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "runner.h"
 #include "bond.h"
 #include "rigid.h"
@@ -232,20 +232,20 @@ int engine_verlet_update ( struct engine *e ) {
 				}
 			}
 #pragma omp critical
-maxdx = fmax( lmaxdx , maxdx );
+			maxdx = fmax( lmaxdx , maxdx );
 		}
 #else
-	for ( cid = 0 ; cid < s->nr_real ; cid++ ) {
-		c = &(s->cells[s->cid_real[cid]]);
-		for ( pid = 0 ; pid < c->count ; pid++ ) {
-			p = &(c->parts[pid]);
-			for ( dx = 0.0 , k = 0 ; k < 3 ; k++ ) {
-				w = p->x[k] - c->oldx[ 4*pid + k ];
-				dx += w*w;
-			}
-			maxdx = fmax( dx , maxdx );
-		}
-	}
+        for ( cid = 0 ; cid < s->nr_real ; cid++ ) {
+            c = &(s->cells[s->cid_real[cid]]);
+            for ( pid = 0 ; pid < c->count ; pid++ ) {
+                p = &(c->parts[pid]);
+                for ( dx = 0.0 , k = 0 ; k < 3 ; k++ ) {
+                    w = p->x[k] - c->oldx[ 4*pid + k ];
+                    dx += w*w;
+                }
+                maxdx = fmax( dx , maxdx );
+            }
+        }
 #endif
 
 #ifdef WITH_MPI
@@ -257,9 +257,9 @@ if ( ( e->flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
 }
 #endif
 
-/* Are we still in the green? */
-maxdx = sqrt(maxdx);
-s->verlet_rebuild = ( 2.0*maxdx > skin );
+        /* Are we still in the green? */
+        maxdx = sqrt(maxdx);
+        s->verlet_rebuild = ( 2.0*maxdx > skin );
 
 	}
 
@@ -276,32 +276,32 @@ s->verlet_rebuild = ( 2.0*maxdx > skin );
 			if ( engine_exchange_wait( e ) < 0 )
 				return error(engine_err);
 #endif
-tic = getticks() - tic;
-e->timers[engine_timer_exchange1] += tic;
-e->timers[engine_timer_verlet] -= tic;
+        tic = getticks() - tic;
+        e->timers[engine_timer_exchange1] += tic;
+        e->timers[engine_timer_verlet] -= tic;
 
-/* Move the particles to the respecitve cells. */
-if ( engine_shuffle( e ) < 0 )
-	return error(engine_err);
+        /* Move the particles to the respecitve cells. */
+        if ( engine_shuffle( e ) < 0 )
+            return error(engine_err);
 
-/* Store the current positions as a reference. */
-#pragma omp parallel for schedule(static), private(cid,c,pid,p,k)
-for ( cid = 0 ; cid < s->nr_real ; cid++ ) {
-	c = &(s->cells[s->cid_real[cid]]);
-	if ( c->oldx == NULL || c->oldx_size < c->count ) {
-		free(c->oldx);
-		c->oldx_size = c->size + 20;
-		c->oldx = (FPTYPE *)malloc( sizeof(FPTYPE) * 4 * c->oldx_size );
-	}
-	for ( pid = 0 ; pid < c->count ; pid++ ) {
-		p = &(c->parts[pid]);
-		for ( k = 0 ; k < 3 ; k++ )
-			c->oldx[ 4*pid + k ] = p->x[k];
-	}
-}
+        /* Store the current positions as a reference. */
+        #pragma omp parallel for schedule(static), private(cid,c,pid,p,k)
+        for ( cid = 0 ; cid < s->nr_real ; cid++ ) {
+            c = &(s->cells[s->cid_real[cid]]);
+            if ( c->oldx == NULL || c->oldx_size < c->count ) {
+                free(c->oldx);
+                c->oldx_size = c->size + 20;
+                c->oldx = (FPTYPE *)malloc( sizeof(FPTYPE) * 4 * c->oldx_size );
+            }
+            for ( pid = 0 ; pid < c->count ; pid++ ) {
+                p = &(c->parts[pid]);
+                for ( k = 0 ; k < 3 ; k++ )
+                    c->oldx[ 4*pid + k ] = p->x[k];
+            }
+        }
 
-/* Set the maximum displacement to zero. */
-s->maxdx = 0;
+        /* Set the maximum displacement to zero. */
+        s->maxdx = 0;
 
 	}
 
@@ -1019,7 +1019,7 @@ int engine_flush_ghosts ( struct engine *e ) {
  * otherwise it is cleared.
  */
 
-int engine_setexplepot ( struct engine *e , struct potential *ep ) {
+int engine_setexplepot ( struct engine *e , struct MxPotential *ep ) {
 
 	/* check inputs. */
 	if ( e == NULL )
@@ -1574,7 +1574,7 @@ int engine_addtype ( struct engine *e , double mass , double charge , char *name
  * where @c i and @c j may be the same type ID.
  */
 
-int engine_addpot ( struct engine *e , struct potential *p , int i , int j ) {
+int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 
 	/* check for nonsense. */
 	if ( e == NULL )
@@ -2226,23 +2226,7 @@ int engine_finalize ( struct engine *e ) {
 }
 
 
-/**
- * @brief Initialize an #engine with the given data.
- *
- * @param e The #engine to initialize.
- * @param origin An array of three doubles containing the cartesian origin
- *      of the space.
- * @param dim An array of three doubles containing the size of the space.
- * @param L The minimum cell edge length in each dimension.
- * @param cutoff The maximum interaction cutoff to use.
- * @param period A bitmask describing the periodicity of the domain
- *      (see #space_periodic_full).
- * @param max_type The maximum number of particle types that will be used
- *      by this engine.
- * @param flags Bit-mask containing the flags for this engine.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
- */
+
 
 int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
 		double cutoff , unsigned int period , int max_type , unsigned int flags ) {
@@ -2346,21 +2330,21 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 	e->nr_sets = 0;
 
 	/* allocate the interaction matrices */
-	if ( ( e->p = (struct potential **)malloc( sizeof(struct potential *) * max_type * max_type ) ) == NULL )
+	if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type ) ) == NULL )
 		return error(engine_err_malloc);
-	bzero( e->p , sizeof(struct potential *) * max_type * max_type );
-	if ( (e->p_bond = (struct potential **)malloc( sizeof(struct potential *) * max_type * max_type )) == NULL)
+	bzero( e->p , sizeof(struct MxPotential *) * max_type * max_type );
+	if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type )) == NULL)
 		return error(engine_err_malloc);
-	bzero( e->p_bond , sizeof(struct potential *) * max_type * max_type );
+	bzero( e->p_bond , sizeof(struct MxPotential *) * max_type * max_type );
 	e->anglepots_size = 100;
-	if ( (e->p_angle = (struct potential **)malloc( sizeof(struct potential *) * e->anglepots_size )) == NULL)
+	if ( (e->p_angle = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size )) == NULL)
 		return error(engine_err_malloc);
-	bzero( e->p_angle , sizeof(struct potential *) * e->anglepots_size );
+	bzero( e->p_angle , sizeof(struct MxPotential *) * e->anglepots_size );
 	e->nr_anglepots = 0;
 	e->dihedralpots_size = 100;
-	if ( (e->p_dihedral = (struct potential **)malloc( sizeof(struct potential *) * e->dihedralpots_size )) == NULL)
+	if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)
 		return error(engine_err_malloc);
-	bzero( e->p_dihedral , sizeof(struct potential *) * e->dihedralpots_size );
+	bzero( e->p_dihedral , sizeof(struct MxPotential *) * e->dihedralpots_size );
 	e->nr_dihedralpots = 0;
 
 	/* Make sortlists? */
@@ -2391,3 +2375,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 			return engine_err_ok;
 
 }
+
+// the single static engine instance per process
+engine _Engine = {
+        .flags = 0
+};

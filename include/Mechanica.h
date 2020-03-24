@@ -28,7 +28,7 @@ typedef double MxReal;
 #error no windowless application available on this platform
 #endif
 
-
+#include <mx_object.hpp>
 #include <mx_particle.h>
 #include <mx_module.h>
 #include <mx_number.h>

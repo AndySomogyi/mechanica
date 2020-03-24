@@ -11,10 +11,10 @@
 #include <iostream>
 #include "MxEdge.h"
 
-static CType partialPolygonType{.tp_name="MxPartialPolygon", .tp_base=CObject_TypePtr};
+static CType partialPolygonType{};
 CType *MxPartialPolygon_Type = &partialPolygonType;
 
-static MxPolygonType polygonType{"MxPolygonType", CObject_TypePtr};
+static MxPolygonType polygonType{"PolygonType", NULL};
 MxPolygonType *MxPolygon_Type = &polygonType;
 
 static std::string to_string(CCellPtr cell) {

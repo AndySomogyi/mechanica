@@ -1,16 +1,16 @@
 #include <Magnum/Magnum.h>
-#include <Magnum/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix4.h>
 #include <Magnum/Platform/GlfwApplication.h>
-#include <Magnum/Shader.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/Shaders/Shaders.h>
 #include <Magnum/Math/Color.h>
-#include <Magnum/Context.h>
-#include <Magnum/Version.h>
-#include <Magnum/AbstractShaderProgram.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
 #include <chrono>
 
 using namespace Magnum;

@@ -20,7 +20,7 @@
 #ifndef INCLUDE_ENGINE_H_
 #define INCLUDE_ENGINE_H_
 
-#include "Mechanica.h"
+#include "carbon.h"
 #include "platform.h"
 #include "pthread.h"
 #include "space.h"
@@ -78,6 +78,7 @@ MDCORE_BEGIN_DECLS
 #define engine_flag_async                8192
 #define engine_flag_sets                 16384
 #define engine_flag_nullpart             32768
+#define engine_flag_initialized          65536
 
 #define engine_bonds_chunk               100
 #define engine_angles_chunk              100
@@ -154,10 +155,10 @@ typedef struct engine {
 	struct MxParticleType *types;
 
 	/** The interaction matrix */
-	struct potential **p, **p_bond, **p_angle, **p_dihedral;
+	struct MxPotential **p, **p_bond, **p_angle, **p_dihedral;
 
 	/** The explicit electrostatic potential. */
-	struct potential *ep;
+	struct MxPotential *ep;
 
 	/** Mutexes, conditions and counters for the barrier */
 	pthread_mutex_t barrier_mutex;
@@ -295,21 +296,21 @@ typedef struct engine_comm {
 
 
 /* associated functions */
-int engine_addpot ( struct engine *e , struct potential *p , int i , int j );
+int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
 int engine_addtype ( struct engine *e , double mass , double charge , char *name , char *name2 );
 int engine_advance ( struct engine *e );
-int engine_angle_addpot ( struct engine *e , struct potential *p );
+int engine_angle_addpot ( struct engine *e , struct MxPotential *p );
 int engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
 int engine_angle_eval ( struct engine *e );
 int engine_barrier ( struct engine *e );
-int engine_bond_addpot ( struct engine *e , struct potential *p , int i , int j );
+int engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
 int engine_bond_add ( struct engine *e , int i , int j );
 int engine_bond_eval ( struct engine *e );
 int engine_bonded_eval ( struct engine *e );
 int engine_bonded_eval_sets ( struct engine *e );
 int engine_bonded_sets ( struct engine *e , int max_sets );
 int engine_dihedral_add ( struct engine *e , int i , int j , int k , int l , int pid );
-int engine_dihedral_addpot ( struct engine *e , struct potential *p );
+int engine_dihedral_addpot ( struct engine *e , struct MxPotential *p );
 int engine_dihedral_eval ( struct engine *e );
 int engine_dump_PSF ( struct engine *e , FILE *psf , FILE *pdb , char *excl[] , int nr_excl );
 int engine_exclusion_add ( struct engine *e , int i , int j );
@@ -320,8 +321,34 @@ int engine_flush_ghosts ( struct engine *e );
 int engine_flush ( struct engine *e );
 int engine_gettype ( struct engine *e , char *name );
 int engine_gettype2 ( struct engine *e , char *name2 );
+
+/**
+ * @brief Initialize an #engine with the given data.
+ *
+ * The number of spatial cells in each cartesion dimension is floor( dim[i] / L[i] ), or
+ * the physical size of the space in that dimension divided by the minimum size size of
+ * each cell.
+ *
+ * @param e The #engine to initialize.
+ * @param origin An array of three doubles containing the cartesian origin
+ *      of the space.
+ * @param dim An array of three doubles containing the size of the space.
+ *
+ * @param L The minimum spatial cell edge length in each dimension.
+ *
+ * @param cutoff The maximum interaction cutoff to use.
+ * @param period A bitmask describing the periodicity of the domain
+ *      (see #space_periodic_full).
+ * @param max_type The maximum number of particle types that will be used
+ *      by this engine.
+ * @param flags Bit-mask containing the flags for this engine.
+ *
+ * @return #engine_err_ok or < 0 on error (see #engine_err).
+ */
 int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
 		double cutoff , unsigned int period , int max_type , unsigned int flags );
+
+
 int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid ,
 		int *vid , double *q , unsigned int *flags , int N );
 int engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
@@ -334,7 +361,7 @@ int engine_rigid_add ( struct engine *e , int pid , int pjd , double d );
 int engine_rigid_eval ( struct engine *e );
 int engine_rigid_sort ( struct engine *e );
 int engine_rigid_unsort ( struct engine *e );
-int engine_setexplepot ( struct engine *e , struct potential *ep );
+int engine_setexplepot ( struct engine *e , struct MxPotential *ep );
 int engine_shuffle ( struct engine *e );
 int engine_split_bisect ( struct engine *e , int N );
 int engine_split ( struct engine *e );
@@ -378,6 +405,13 @@ int engine_split_METIS ( struct engine *e, int N, int flags);
 #ifdef WITH_METIS
 int engine_split_METIS ( struct engine *e, int N, int flags);
 #endif
+
+/**
+ * Single static instance of the md engine per process.
+ *
+ * Even for MPI enabled, as each MPI process will initialize the engine with different comm and rank.
+ */
+CAPI_DATA(engine) _Engine;
 
 MDCORE_END_DECLS
 #endif // INCLUDE_ENGINE_H_

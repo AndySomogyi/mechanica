@@ -46,7 +46,7 @@
 #include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include "engine.h"
 #include "runner.h"
@@ -82,7 +82,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
     struct space *s;
     int i, j, k;
     struct MxParticle *parts_i, *parts_j;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     struct engine *eng;
     int emt, pioff, dmaxdist, dnshift;
     FPTYPE cutoff, cutoff2, r2, w;
@@ -93,7 +93,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
     int pid, count_i, count_j;
     double epot = 0.0;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE dx[4] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE pix[4] __attribute__ ((aligned (VEC_ALIGN)));
@@ -334,13 +334,13 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     int i, j, k;
     struct MxParticle *parts;
     double epot = 0.0;
-    struct potential *pot, **pots;
+    struct MxPotential *pot, **pots;
     struct engine *eng;
     int emt, pioff;
     FPTYPE cutoff2, r2, w;
     FPTYPE *pif;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE dx[4] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE pix[4] __attribute__ ((aligned (VEC_ALIGN)));
@@ -555,7 +555,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     double epot = 0.0;
     struct engine *eng;
     struct MxParticle *part_i, *part_j, *parts_i, *parts_j;
-    struct potential *pot;
+    struct MxPotential *pot;
     struct space *s;
 #if defined(VECTORIZE)
     int l, icount = 0;
@@ -566,7 +566,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     FPTYPE e[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE f[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE dxq[VEC_SIZE*3];
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
 #else
     FPTYPE e, f, dx[4], pix[4];
 #endif

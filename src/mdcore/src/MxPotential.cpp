@@ -23,13 +23,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
+#include <MxPotential.h>
 #include <string.h>
 
 
 /* include local headers */
 #include "errs.h"
 #include "fptype.h"
-#include "potential.h"
 #include "potential_eval.h"
 
 /** Macro to easily define vector types. */
@@ -41,7 +41,7 @@ int potential_err = potential_err_ok;
 
 /** The null potential */
 FPTYPE c_null[] = { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO };
-struct potential potential_null = { { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } , c_null , 0.0 , DBL_MAX , potential_flag_none , 1 };
+struct MxPotential potential_null = { PyObject_HEAD_INIT(&MxPotential_Type) { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } , c_null , 0.0 , DBL_MAX , potential_flag_none , 1 };
 
 
 /* the error macro. */
@@ -298,12 +298,12 @@ double potential_create_harmonic_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_harmonic ( double a , double b , double K , double r0 , double tol ) {
+struct MxPotential *potential_create_harmonic ( double a , double b , double K , double r0 , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -383,9 +383,9 @@ double potential_create_harmonic_dihedral_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_harmonic_dihedral ( double K , int n , double delta , double tol ) {
+struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , double delta , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 	double a = -1.0, b = 1.0;
 
 	/* Adjust end-points if delta is not a multiple of pi. */
@@ -395,7 +395,7 @@ struct potential *potential_create_harmonic_dihedral ( double K , int n , double
 	}
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -453,13 +453,13 @@ double potential_create_harmonic_angle_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_harmonic_angle ( double a , double b , double K , double theta0 , double tol ) {
+struct MxPotential *potential_create_harmonic_angle ( double a , double b , double K , double theta0 , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 	double left, right;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -522,12 +522,12 @@ double potential_create_Ewald_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_Ewald ( double a , double b , double q , double kappa , double tol ) {
+struct MxPotential *potential_create_Ewald ( double a , double b , double q , double kappa , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -586,12 +586,12 @@ double potential_create_LJ126_Ewald_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_LJ126_Ewald ( double a , double b , double A , double B , double q , double kappa , double tol ) {
+struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double A , double B , double q , double kappa , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -656,12 +656,12 @@ double potential_create_LJ126_Ewald_switch_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_LJ126_Ewald_switch ( double a , double b , double A , double B , double q , double kappa , double s , double tol ) {
+struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , double A , double B , double q , double kappa , double s , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -715,12 +715,12 @@ double potential_create_Coulomb_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_Coulomb ( double a , double b , double q , double tol ) {
+struct MxPotential *potential_create_Coulomb ( double a , double b , double q , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -778,12 +778,12 @@ double potential_create_LJ126_Coulomb_d6fdr6 ( double r ) {
  *      or @c NULL on error (see #potential_err).
  */
 
-struct potential *potential_create_LJ126_Coulomb ( double a , double b , double A , double B , double q , double tol ) {
+struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , double A , double B , double q , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -836,12 +836,12 @@ double potential_create_LJ126_d6fdr6 ( double r ) {
  *
  */
 
-struct potential *potential_create_LJ126 ( double a , double b , double A , double B , double tol ) {
+struct MxPotential *potential_create_LJ126 ( double a , double b , double A , double B , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -896,12 +896,12 @@ double potential_create_LJ126_switch_d6fdr6 ( double r ) {
  *
  */
 
-struct potential *potential_create_LJ126_switch ( double a , double b , double A , double B , double s , double tol ) {
+struct MxPotential *potential_create_LJ126_switch ( double a , double b , double A , double B , double s , double tol ) {
 
-	struct potential *p;
+	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct potential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
@@ -928,7 +928,7 @@ struct potential *potential_create_LJ126_switch ( double a , double b , double A
  * @param p Pointer to the #potential to clear.
  */
 
-void potential_clear ( struct potential *p ) {
+void potential_clear ( struct MxPotential *p ) {
 
 	/* Do nothing? */
 	if ( p == NULL )
@@ -968,7 +968,7 @@ void potential_clear ( struct potential *p ) {
  * The zeroth interval contains a linear extension of @c f for values < a.
  */
 
-int potential_init ( struct potential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol ) {
+int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol ) {
 
 	double alpha, w;
 	int l = potential_ivalsa, r = potential_ivalsb, m;
@@ -1592,4 +1592,35 @@ double potential_getalpha ( double (*f6p)( double ) , double a , double b ) {
 	return (alpha[0] + alpha[3]) / 2;
 
 }
+
+
+PyTypeObject MxPotential_Type = {
+        PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = "Potential",
+        .tp_doc = "Custom objects",
+        .tp_basicsize = sizeof(MxPotential),
+        .tp_itemsize = 0,
+        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+        .tp_new = NULL,
+        .tp_members = NULL,
+        .tp_descr_get = (descrgetfunc)NULL,
+        .tp_init = (initproc)NULL
+};
+
+
+HRESULT MxPotential_init(PyObject *m)
+{
+    if (PyType_Ready((PyTypeObject*)&MxPotential_Type) < 0) {
+        return E_FAIL;
+    }
+
+    Py_INCREF(&MxPotential_Type);
+    if (PyModule_AddObject(m, "Potential", (PyObject *)&MxPotential_Type) < 0) {
+        Py_DECREF(&MxPotential_Type);
+        return E_FAIL;
+    }
+
+    return S_OK;
+}
+
 

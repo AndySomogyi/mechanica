@@ -1,84 +1,30 @@
-/*******************************************************************************
- * This file is part of mdcore.
- * Coypright (c) 2010 Pedro Gonnet (gonnet@maths.ox.ac.uk)
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
- ******************************************************************************/
 
-// include some standard headers
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <float.h>
-#include <pthread.h>
-#include <time.h>
 
-#include "cycle.h"
-
-#include "mdcore_single.h"
-
-/* MPI headers. */
-#ifdef WITH_MPI
-#include <mpi.h>
-#endif
-
-/* FFTW3 headers. */
-#ifdef HAVE_FFTW3
-#include <complex.h>
-#include <fftw3.h>
-#endif
-
-/* OpenMP headers. */
-#ifdef HAVE_OPENMP
-#include <omp.h>
-#endif
-
-/* What to do if ENGINE_FLAGS was not defined? */
-#ifndef ENGINE_FLAGS
-#define ENGINE_FLAGS engine_flag_none
-#endif
-#ifndef CPU_TPS
-#define CPU_TPS 2.67e+9
-#endif
 
 
 int main ( int argc , char *argv[] ) {
 
-    // set space origin to 0,0,0
     const double origin[3] = { 0.0 , 0.0 , 0.0 };
-
-    // size of space, in length units
+    // double dim[3] = { 3*3.166 , 3.166 , 3.166 };
+    // int nr_mols = 3*1000;
+    // const double dim[3] = { 6.332 , 6.332 , 6.332 };
+    // const int nr_mols = 8000;
+    // const double dim[3] = { 4.0 , 4.0 , 4.0 };
+    // const int nr_mols = 2016;
     double dim[3] = { 8.0 , 8.0 , 8.0 };
-
-    // number of molecules
     int nr_mols = 16128;
-
+    // double dim[3] = { 16.0 , 16.0 , 16.0 };
+    // int nr_mols = 129024;
     double Temp = 300.0;
     double cutoff = 1.0;
 
     double x[3], vtot[3] = { 0.0 , 0.0 , 0.0 };
     double epot, ekin, temp, cellwidth;
-
+    // FPTYPE ee, eff;
     struct engine e;
-
     struct MxParticle pO, pH;
-
-    // three kinds of interaction potentials
-    struct MxPotential *pot_OO, *pot_OH, *pot_HH;
-
+    struct potential *pot_OO, *pot_OH, *pot_HH;
+    // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
     int nx, ny, nz;
     double hx, hy, hz;
@@ -130,6 +76,19 @@ int main ( int argc , char *argv[] ) {
     printf("main: cutoff set to %22.16e.\n", cutoff);
     printf("main: nr tasks: %i.\n",e.s.nr_tasks);
 
+    /* mix-up the pair list just for kicks
+    printf("main: shuffling the interaction pairs... "); fflush(stdout);
+    srand(6178);
+    for ( i = 0 ; i < e.s.nr_pairs ; i++ ) {
+        j = rand() % e.s.nr_pairs;
+        if ( i != j ) {
+            cp = e.s.pairs[i];
+            e.s.pairs[i] = e.s.pairs[j];
+            e.s.pairs[j] = cp;
+            }
+        }
+    printf("done.\n"); fflush(stdout); */
+
 
     // initialize the O-H potential
     if ( ( pot_OH = potential_create_Ewald( 0.1 , 1.0 , -0.35921288 , 3.0 , 1.0e-3 ) ) == NULL ) {
@@ -172,6 +131,29 @@ int main ( int argc , char *argv[] ) {
     pot_OO->alpha[1] = 2.619222661792581e-03;
     pot_OO->alpha[2] = 7.1842576e-01;
 #endif
+
+    // initialize the expl. electrostatic potential
+    /* if ( ( pot_ee = potential_create_Ewald( 0.1 , 1.0 , 1.0 , 3.0 , 1.0e-4 ) ) == NULL ) {
+        printf("main: potential_create_LJ126_Ewald failed with potential_err=%i.\n",potential_err);
+        errs_dump(stdout);
+        return 1;
+        }
+    printf("main: constructed expl. electrostatic potential with %i intervals.\n",pot_ee->n); fflush(stdout);
+    if ( engine_setexplepot( &e , pot_ee ) < 0 ) {
+        printf("main: engine_setexplepot failed with engine_err=%i.\n",engine_err);
+        errs_dump(stdout);
+        return 1;
+        } */
+
+    /* dump the OO-potential to make sure its ok... 
+    for ( i = 0 ; i < 1000 ; i++ ) {
+        temp = 0.2 + (double)i/1000 * 0.8;
+        potential_eval( pot_OO , temp*temp , &ee , &eff );
+        printf("%23.16e %23.16e %23.16e %23.16e %23.16e\n", temp , ee , eff , 
+             potential_LJ126(temp,2.637775819766153e-06,2.619222661792581e-03) + 7.1842576e-01*potential_Ewald(temp,3.0) ,
+             potential_LJ126_p(temp,2.637775819766153e-06,2.619222661792581e-03) + 7.1842576e-01*potential_Ewald_p(temp,3.0) );
+        }
+    return 0; */
 
 
     /* register the particle types. */

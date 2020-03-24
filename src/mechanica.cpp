@@ -26,6 +26,11 @@
 #include "MxSimulator.h"
 #include "MxSurfaceSimulator.h"
 #include "MxCylinderModel.h"
+#include "mdcore_single.h"
+#include "MxUniverse.h"
+
+#define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
+#include "numpy/arrayobject.h"
 
 
 
@@ -56,12 +61,28 @@ static PyObject * moduleinit(void)
     std::cout << MX_FUNCTION << std::endl;
     PyObject *m;
 
+    PyObject *carbonModule = PyInit_carbon();
+
+
+
+
+    if(carbonModule == NULL) {
+        std::cout << "could not initialize carbon: "  << std::endl;
+        return NULL;
+    }
 
     m = PyModule_Create(&mechanica_module);
 
 
-    if (m == NULL)
+    if (m == NULL) {
+        std::cout << "could not create mechanica module: "  << std::endl;
         return NULL;
+    }
+
+    if(PyModule_AddObject(m, "carbon", carbonModule) != 0) {
+        std::cout << "could not add carbon module "  << std::endl;
+        return NULL;
+    }
 
     /*
 
@@ -100,6 +121,9 @@ static PyObject * moduleinit(void)
     MxSimulator_init(m);
     MxSurfaceSimulator_init(m);
     MxCylinderModel_init(m);
+    MxParticle_init(m);
+    MxPotential_init(m);
+    MxUniverse_init(m);
     
     mechanicaModule = m;
 
@@ -109,6 +133,7 @@ static PyObject * moduleinit(void)
 
 PyMODINIT_FUNC PyInit__mechanica(void)
 {
+    std::cout << MX_FUNCTION << std::endl;
     return moduleinit();
 }
 
@@ -116,11 +141,17 @@ PyMODINIT_FUNC PyInit__mechanica(void)
 /**
  * Initialize the entire runtime.
  */
-CAPI_FUNC(int) Mx_Initialize(int) {
+CAPI_FUNC(HRESULT) Mx_Initialize(int args) {
+
+    std::cout << MX_FUNCTION << std::endl;
+
+    HRESULT result = E_FAIL;
+
     if(!Py_IsInitialized()) {
         Py_Initialize();
     }
     
+
     if(mechanicaModule == NULL) {
         moduleinit();
     }

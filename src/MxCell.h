@@ -35,7 +35,7 @@ CAPI_DATA(struct CType*) MxCell_Type;
 
 struct MxCellType : CType {
 
-    MxCellType(const char* name, CType *type) : CType{{0, .ob_type=type}, .tp_name = name} {};
+    MxCellType(const char* name, CType *type)  {};
 
     //MxCellType() : CType{CType_Type} {};
 
@@ -98,8 +98,11 @@ struct MxCell : CObject, MxMeshNode {
 
     static CType *type() { return MxCell_Type; };
 
-    MxCell(uint id, CType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "") :
-        CObject{0, type}, MxMeshNode{msh, id}, stateVector{stateVector}, name{nm} {};
+    MxCell(uint id, CType *type, MeshPtr msh, MxReal *stateVector, const std::string& nm = "")
+    : CObject(MxCell_Type), MxMeshNode(msh, id)
+    {
+
+    };
 
     /**
      * the closed set of faces that define the boundary of this cell

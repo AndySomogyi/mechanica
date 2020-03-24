@@ -28,7 +28,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/errs.h"
   "${MDCORE_SOURCE_DIR}/include/lock.h"
   "${MDCORE_SOURCE_DIR}/include/MxParticle.h"
-  "${MDCORE_SOURCE_DIR}/include/potential.h"
+  "${MDCORE_SOURCE_DIR}/include/MxPotential.h"
   "${MDCORE_SOURCE_DIR}/include/platform.h"
   "${MDCORE_SOURCE_DIR}/include/space_cell.h"
   "${MDCORE_SOURCE_DIR}/include/spme.h"
@@ -67,7 +67,7 @@ SET(SOURCES
   MxParticle.cpp
   runner.cpp
   engine.cpp
-  potential.cpp
+  MxPotential.cpp
   space.cpp
   errs.cpp
   bond.cpp
@@ -84,6 +84,7 @@ SET(SOURCES
   runner_dosort.cpp
   task.cpp
   spme.cpp
+  runner_verlet.cpp
   )
 
 if(MDCORE_USE_MPI)
@@ -141,24 +142,29 @@ function(add_mdcore_single)
 
   source_group("Includes" FILES ${SINGLE_HEADERS})
   add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
-  
+
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
 
-  
+  # hack for getting compile definitions through to eclipse project files,
+  # this is NOT needed for the build, just for the clipse project files
+  message("setting Eclipse project MDCORE_SINGLE preprocessor definition")
+  add_definitions(-DMDCORE_SINGLE)
+
   # temporarily add add these includes until we get a stable public API
-  target_include_directories(mdcore_single PUBLIC ${MDCORE_INCLUDE_DIR} 
+  target_include_directories(mdcore_single PUBLIC ${MDCORE_INCLUDE_DIR}
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    ${CMAKE_CURRENT_SOURCE_DIR}
     #${PYTHON_INCLUDE_DIRS}
     #${NUMPY_INCLUDE_DIR}
     #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
   )
- 
+
  target_link_libraries(mdcore_single
   Carbon::Carbon
   DirectXMath
   Python::Python
+  Python::NumPy
   glfw
   JPEG::JPEG
   voro++

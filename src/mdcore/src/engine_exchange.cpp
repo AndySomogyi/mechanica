@@ -43,7 +43,7 @@
 #include <MxParticle.h>
 #include <space_cell.h>
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "runner.h"
 #include "bond.h"
 #include "rigid.h"

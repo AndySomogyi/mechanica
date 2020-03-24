@@ -1,9 +1,16 @@
 import _mechanica
 
+import ctypes
 from _mechanica import Application
 from _mechanica import Simulator
 from _mechanica import SurfaceSimulator
 from _mechanica import CylinderModel
+from _mechanica import ParticleType
+from _mechanica import Particle
+from _mechanica import Potential
+from _mechanica import Universe
+
+print(type(ParticleType))
 
 try:
     import IPython

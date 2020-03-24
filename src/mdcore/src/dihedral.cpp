@@ -44,7 +44,7 @@
 #include "fptype.h"
 #include "lock.h"
 #include <MxParticle.h>
-#include "potential.h"
+#include <MxPotential.h>
 #include "potential_eval.h"
 #include <space_cell.h>
 #include "space.h"
@@ -86,16 +86,16 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
     struct space *s;
     struct MxParticle *pi, *pj, *pk, *pl, **partlist;
     struct space_cell **celllist;
-    struct potential *pot;
+    struct MxPotential *pot;
     FPTYPE xi[3], xj[3], xk[3], xl[3], dxi[3], dxj[3], dxl[3], cphi;
     FPTYPE wi, wj, wl;
-    struct potential **pots;
+    struct MxPotential **pots;
     FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
         t22, t24, t26, t3, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40,
         t41, t42, t43, t44, t45, t46, t47, t5, t6, t7, t8, t9,
         t2, t4, t23, t25, t27, t28, t51, t52, t53, t54, t59;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE], *effk[VEC_SIZE], *effl[VEC_SIZE];
     FPTYPE cphiq[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
@@ -400,16 +400,16 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
     struct space *s;
     struct MxParticle *pi, *pj, *pk, *pl, **partlist;
     struct space_cell **celllist;
-    struct potential *pot;
+    struct MxPotential *pot;
     FPTYPE xi[3], xj[3], xk[3], xl[3], dxi[3], dxj[3], dxl[3], cphi;
     FPTYPE wi, wj, wl;
-    struct potential **pots;
+    struct MxPotential **pots;
     FPTYPE t1, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21,
         t22, t24, t26, t3, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40,
         t41, t42, t43, t44, t45, t46, t47, t5, t6, t7, t8, t9,
         t2, t4, t23, t25, t27, t28, t51, t52, t53, t54, t59;
 #if defined(VECTORIZE)
-    struct potential *potq[VEC_SIZE];
+    struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
     FPTYPE *effi[VEC_SIZE], *effj[VEC_SIZE], *effk[VEC_SIZE], *effl[VEC_SIZE];
     FPTYPE cphiq[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));

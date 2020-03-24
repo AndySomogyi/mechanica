@@ -68,7 +68,7 @@ int main ( int argc , char *argv[] ) {
     // FPTYPE ee, eff;
     struct engine e;
     struct MxParticle pAr;
-    struct potential *pot_ArAr;
+    struct MxPotential *pot_ArAr;
     // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
     int nx, ny, nz;

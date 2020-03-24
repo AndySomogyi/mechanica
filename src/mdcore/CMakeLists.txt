@@ -36,7 +36,6 @@ set(MDCORE_INCLUDE_DIR
   ${MDCORE_SOURCE_DIR}/include
   ${MDCORE_BINARY_DIR}/include
   CACHE INTERNAL "mdcore public includes" FORCE)
-  
 
 add_subdirectory(src)
 add_subdirectory(examples)

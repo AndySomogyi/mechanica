@@ -1,18 +1,18 @@
-#include <Magnum/Buffer.h>
-#include <Magnum/DefaultFramebuffer.h>
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/Mesh.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Platform/GlfwApplication.h>
 #include <MagnumPlugins/PngImporter/PngImporter.h>
 #include <Magnum/Trade/ImageData.h>
-#include <Magnum/Texture.h>
-#include <Magnum/TextureFormat.h>
-#include <Magnum/Context.h>
-#include <Magnum/Shader.h>
+#include <Magnum/GL/Texture.h>
+#include <Magnum/GL/TextureFormat.h>
+#include <Magnum/GL/Context.h>
+#include <Magnum/GL/Shader.h>
 #include <Magnum/Shaders/Shaders.h>
 #include <Magnum/Math/Color.h>
-#include <Magnum/Version.h>
-#include <Magnum/AbstractShaderProgram.h>
+#include <Magnum/GL/Version.h>
+#include <Magnum/GL/AbstractShaderProgram.h>
 #include <iostream>
 
 

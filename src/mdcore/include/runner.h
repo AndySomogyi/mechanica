@@ -147,6 +147,8 @@ int runner_verlet_fill ( struct runner *r , struct space_cell *cell_i , struct s
 int runner_dosort ( struct runner *r , struct space_cell *c , int flags );
 int runner_dopair ( struct runner *r , struct space_cell *cell_i , struct space_cell *cell_j , int sid );
 int runner_doself ( struct runner *r , struct space_cell *cell_i );
+int runner_verlet_eval ( struct runner *r , struct space_cell *c , FPTYPE *f_out );
+int runner_verlet_fill ( struct runner *r , struct space_cell *cell_i , struct space_cell *cell_j , FPTYPE *pshift );
 
 MDCORE_END_DECLS
 

@@ -51,9 +51,10 @@
 #include <space_cell.h>
 #include "task.h"
 #include "space.h"
-#include "potential.h"
+#include <MxPotential.h>
 #include "engine.h"
 #include "runner.h"
+
 
 
 
@@ -461,3 +462,168 @@ int runner_init ( struct runner *r , struct engine *e , int id ) {
     /* all is well... */
     return runner_err_ok;
 }
+
+/**
+ * @brief The #runner's main routine (for Verlet lists).
+ *
+ * @param r Pointer to the #runner to run.
+ *
+ * @return #runner_err_ok or <0 on error (see #runner_err).
+ *
+ * This is the main routine for the #runner. When called, it enters
+ * an infinite loop in which it waits at the #engine @c r->e barrier
+ * and, once having passed, checks first if the Verlet list should
+ * be re-built and then proceeds to traverse the Verlet list cell-wise
+ * and computes its interactions.
+ */
+
+int runner_run_verlet ( struct runner *r ) {
+
+    int res, i, ci, j, cj, k, eff_size = 0, acc = 0;
+    struct engine *e;
+    struct space *s;
+    struct celltuple *t;
+    struct space_cell *c;
+    FPTYPE shift[3], *eff = NULL;
+    int count;
+
+    /* check the inputs */
+    if ( r == NULL )
+        return error(runner_err_null);
+
+    /* get a pointer on the engine. */
+    e = r->e;
+    s = &(e->s);
+
+    /* give a hoot */
+    printf("runner_run: runner %i is up and running (Verlet)...\n",r->id); fflush(stdout);
+
+    /* main loop, in which the runner should stay forever... */
+    while ( 1 ) {
+
+        /* wait at the engine barrier */
+        /* printf("runner_run: runner %i waiting at barrier...\n",r->id); */
+        if ( engine_barrier(e) < 0)
+            return error(runner_err_engine);
+
+        // runner_rcount = 0;
+
+        /* Does the Verlet list need to be reconstructed? */
+        if ( s->verlet_rebuild ) {
+
+            /* Loop over tuples. */
+            while ( 1 ) {
+
+                /* Get a tuple. */
+                if ( ( res = space_gettuple( s , &t , 1 ) ) < 0 )
+                    return r->err = runner_err_space;
+
+                /* If there were no tuples left, bail. */
+                if ( res < 1 )
+                    break;
+
+                /* for each cell, prefetch the parts involved. */
+                if ( e->flags & engine_flag_prefetch )
+                    for ( i = 0 ; i < t->n ; i++ ) {
+                        c = &( s->cells[t->cellid[i]] );
+                        for ( k = 0 ; k < c->count ; k++ )
+                            acc += c->parts[k].id;
+                        }
+
+                /* Loop over all pairs in this tuple. */
+                for ( i = 0 ; i < t->n ; i++ ) {
+
+                    /* Get the cell ID. */
+                    ci = t->cellid[i];
+
+                    for ( j = i ; j < t->n ; j++ ) {
+
+                        /* Is this pair active? */
+                        if ( t->pairid[ space_pairind(i,j) ] < 0 )
+                            continue;
+
+                        /* Get the cell ID. */
+                        cj = t->cellid[j];
+
+                        /* Compute the shift between ci and cj. */
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            shift[k] = s->cells[cj].origin[k] - s->cells[ci].origin[k];
+                            if ( shift[k] * 2 > s->dim[k] )
+                                shift[k] -= s->dim[k];
+                            else if ( shift[k] * 2 < -s->dim[k] )
+                                shift[k] += s->dim[k];
+                            }
+
+                        /* Rebuild the Verlet entries for this cell pair. */
+                        if ( runner_verlet_fill( r , &(s->cells[ci]) , &(s->cells[cj]) , shift ) < 0 )
+                            return error(runner_err);
+
+                        /* release this pair */
+                        if ( space_releasepair( s , ci , cj ) < 0 )
+                            return error(runner_err_space);
+
+                        }
+
+                    }
+
+                } /* loop over tuples. */
+
+            /* did anything go wrong? */
+            if ( res < 0 )
+                return error(runner_err_space);
+
+            } /* reconstruct the Verlet list. */
+
+        /* Otherwise, just run through the Verlet list. */
+        else {
+
+            /* Check if eff is large enough and re-allocate if needed. */
+            if ( eff_size < s->nr_parts ) {
+
+                /* Free old eff? */
+                if ( eff != NULL )
+                    free( eff );
+
+                /* Allocate new eff. */
+                eff_size = s->nr_parts * 1.1;
+                if ( ( eff = (FPTYPE *)malloc( sizeof(FPTYPE) * eff_size * 4 ) ) == NULL )
+                    return error(runner_err_malloc);
+
+                }
+
+            /* Reset the force vector. */
+            bzero( eff , sizeof(FPTYPE) * s->nr_parts * 4 );
+
+            /* Re-set the potential energy. */
+            r->epot = 0.0;
+
+            /* While there are still chunks of the Verlet list out there... */
+            while ( ( count = space_getcell( s , &c ) ) > 0 ) {
+
+                /* Dispatch the interactions to runner_verlet_eval. */
+                runner_verlet_eval( r , c , eff );
+
+                }
+
+            /* did things go wrong? */
+            if ( count < 0 )
+                return error(runner_err_space);
+
+            /* Send the forces and energy back to the space. */
+            if ( space_verlet_force( s , eff , r->epot ) < 0 )
+                return error(runner_err_space);
+
+            }
+
+        /* Print the rcount. */
+        // printf("runner_run_verlet: runner_rcount=%i.\n", runner_rcount);
+        r->err = acc;
+
+        }
+
+    /* end well... */
+    return runner_err_ok;
+
+    }
+
+

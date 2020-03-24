@@ -27,7 +27,7 @@ CAPI_FUNC(wchar_t *) Mx_GetMechanicaHome(void);
 /**
  * Initialize the entire runtime.
  */
-CAPI_FUNC(int) Mx_Initialize(int);
+CAPI_FUNC(HRESULT) Mx_Initialize(int);
 
 
 CAPI_FUNC(void) Mx_Finalize(void);
