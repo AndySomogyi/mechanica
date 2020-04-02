@@ -50,6 +50,8 @@
     #endif
 #endif
 
+#undef VECTORIZE
+
 
 /* Get headers for intrinsic functions. */
 #include <immintrin.h>

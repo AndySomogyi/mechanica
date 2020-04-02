@@ -147,6 +147,8 @@ typedef struct engine {
 	int time;
 	double dt;
 
+	double temperature;
+
 	/** What is the maximum nr of types? */
 	int max_type;
 	int nr_types;
@@ -376,6 +378,15 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 int engine_unload ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
 		double *charge , unsigned int *flags , double *epot , int N );
 int engine_verlet_update ( struct engine *e );
+
+
+void engine_dump();
+
+#define ENGINE_DUMP(msg) {std::cout<<msg<<std::endl; engine_dump();}
+
+double engine_kinetic_energy(struct engine *e);
+
+double engine_temperature(struct engine *e);
 
 #ifdef WITH_MPI
 int engine_init_mpi ( struct engine *e , const double *origin , const double *dim , double *L ,

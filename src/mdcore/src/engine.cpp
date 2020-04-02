@@ -67,6 +67,8 @@
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
+#include <iostream>
+
 
 /** ID of the last error. */
 int engine_err = engine_err_ok;
@@ -125,13 +127,14 @@ int engine_shuffle ( struct engine *e ) {
 
 	/* Flush the ghost cells (to avoid overlapping particles) */
 #pragma omp parallel for schedule(static), private(cid)
-	for ( cid = 0 ; cid < s->nr_ghost ; cid++ )
+    for ( cid = 0 ; cid < s->nr_ghost ; cid++ ) {
 		space_cell_flush( &(s->cells[s->cid_ghost[cid]]) , s->partlist , s->celllist );
+    }
 
 	/* Shuffle the domain. */
-	if ( space_shuffle_local( s ) < 0 )
+    if ( space_shuffle_local( s ) < 0 ) {
 		return error(engine_err_space);
-
+    }
 
 #ifdef WITH_MPI
 	/* Get the incomming particle from other procs if needed. */
@@ -1927,22 +1930,27 @@ int engine_step ( struct engine *e ) {
 		tic = getticks();
 
 		/* Check particle movement and update cells if necessary. */
-		if ( engine_verlet_update( e ) < 0 )
+        if ( engine_verlet_update( e ) < 0 ) {
 			return error(engine_err);
+        }
 
 		/* Store the timing. */
 		e->timers[engine_timer_verlet] += getticks() - tic;
-
 	}
+    
+
 
 	/* Otherwise, if async MPI, move the particles accross the
        node boundaries. */
 	else { // if ( e->flags & engine_flag_async ) {
 		tic = getticks();
-		if ( engine_shuffle( e ) < 0 )
+        if ( engine_shuffle( e ) < 0 ) {
 			return error(engine_err_space);
+        }
 		e->timers[engine_timer_advance] += getticks() - tic;
 	}
+    
+
 
 #ifdef WITH_MPI
 	/* Re-distribute the particles to the processors. */
@@ -1975,34 +1983,39 @@ int engine_step ( struct engine *e ) {
 	}
 	else
 #endif
-if ( engine_nonbond_eval( e ) < 0 )
-	return error(engine_err);
-	e->timers[engine_timer_nonbond] += getticks() - tic;
 
-	/* Clear the verlet-rebuild flag if it was set. */
-	if ( e->flags & engine_flag_verlet && e->s.verlet_rebuild )
-		e->s.verlet_rebuild = 0;
+    if ( engine_nonbond_eval( e ) < 0 ) {
+        return error(engine_err);
+    }
 
-	/* Do bonded interactions. */
-	tic = getticks();
-	if ( e->flags & engine_flag_sets ) {
-		if ( engine_bonded_eval_sets( e ) < 0 )
-			return error(engine_err);
-	}
-	else {
-		if ( engine_bonded_eval( e ) < 0 )
-			return error(engine_err);
-	}
-	e->timers[engine_timer_bonded] += getticks() - tic;
+    e->timers[engine_timer_nonbond] += getticks() - tic;
 
-	/* update the particle velocities and positions. */
-	tic = getticks();
-	if ( engine_advance( e ) < 0 )
-		return error(engine_err);
-	e->timers[engine_timer_advance] += getticks() - tic;
+    /* Clear the verlet-rebuild flag if it was set. */
+    if ( e->flags & engine_flag_verlet && e->s.verlet_rebuild )
+        e->s.verlet_rebuild = 0;
 
-	/* Shake the particle positions? */
-	if ( e->nr_rigids > 0 ) {
+    /* Do bonded interactions. */
+    tic = getticks();
+    if ( e->flags & engine_flag_sets ) {
+        if ( engine_bonded_eval_sets( e ) < 0 )
+            return error(engine_err);
+    }
+    else {
+        if ( engine_bonded_eval( e ) < 0 )
+            return error(engine_err);
+    }
+    e->timers[engine_timer_bonded] += getticks() - tic;
+
+    /* update the particle velocities and positions. */
+    tic = getticks();
+    if ( engine_advance( e ) < 0 ) {
+        return error(engine_err);
+    }
+
+    e->timers[engine_timer_advance] += getticks() - tic;
+
+    /* Shake the particle positions? */
+    if ( e->nr_rigids > 0 ) {
 
 #ifdef WITH_MPI
 		/* If we have to do some communication first... */
@@ -2380,3 +2393,38 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 engine _Engine = {
         .flags = 0
 };
+
+
+
+void engine_dump() {
+    for(int cid = 0; cid < _Engine.s.nr_cells; ++cid) {
+        space_cell *cell = &_Engine.s.cells[cid];
+        for(int pid = 0; pid < cell->count; ++pid) {
+            MxParticle *p = &cell->parts[pid];
+
+            std::cout << "i: " << pid << ", pid: " << p->id <<
+                    ", {" << p->x[0] << ", " << p->x[1] << ", " << p->x[2] << "}"
+                    ", {" << p->v[0] << ", " << p->v[1] << ", " << p->v[2] << "}\n";
+
+        }
+    }
+}
+
+double engine_kinetic_energy(struct engine *e)
+{
+    double tot = 0;
+    for(int cid = 0; cid < _Engine.s.nr_cells; ++cid) {
+        space_cell *cell = &_Engine.s.cells[cid];
+        for(int pid = 0; pid < cell->count; ++pid) {
+            MxParticle *p = &cell->parts[pid];
+            tot += e->types[p->typeId].mass *
+                    (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
+        }
+    }
+    return 0.5 * tot / e->s.nr_parts;
+}
+
+double engine_temperature(struct engine *e)
+{
+    return 0;
+}

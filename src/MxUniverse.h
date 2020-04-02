@@ -9,7 +9,7 @@
 #define SRC_MXUNIVERSE_H_
 
 #include "mechanica_private.h"
-#include "engine.h"
+#include "mdcore_single.h"
 
 
 struct MxUniverse : PyObject {

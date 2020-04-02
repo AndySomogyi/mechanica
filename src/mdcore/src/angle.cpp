@@ -250,8 +250,8 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
             
             /* update the forces */
             for ( k = 0 ; k < 3 ; k++ ) {
-                pi->f[k] -= ( wi = eff[l] * dxi[k] );
-                pk->f[k] -= ( wk = eff[l] * dxk[k] );
+                pi->f[k] -= ( wi = eff * dxi[k] );
+                pk->f[k] -= ( wk = eff * dxk[k] );
                 pj->f[k] += wi + wk;
                 }
 

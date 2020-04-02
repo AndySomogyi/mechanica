@@ -311,9 +311,9 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
         #else
             /* evaluate the dihedral */
             #ifdef EXPLICIT_POTENTIALS
-                potential_eval_expl( pot , cphiq , &ee , &eff );
+                potential_eval_expl( pot , cphi , &ee , &eff );
             #else
-                potential_eval_r( pot , cphiq , &ee , &eff );
+                potential_eval_r( pot , cphi , &ee , &eff );
             #endif
             
             /* update the forces */
@@ -610,9 +610,9 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
         #else
             /* evaluate the dihedral */
             #ifdef EXPLICIT_POTENTIALS
-                potential_eval_expl( pot , cphiq , &ee , &eff );
+                potential_eval_expl( pot , cphi , &ee , &eff );
             #else
-                potential_eval_r( pot , cphiq , &ee , &eff );
+                potential_eval_r( pot , cphi , &ee , &eff );
             #endif
             
             /* update the forces */

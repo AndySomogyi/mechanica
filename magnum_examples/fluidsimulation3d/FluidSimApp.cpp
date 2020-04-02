@@ -77,19 +77,7 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         //setMinimalLoopPeriod(16);
     }
 
-    /* Setup ImGui
-    {
-        _imGuiContext = ImGuiIntegration::Context(Vector2{windowSize()} / dpiScaling(), windowSize(), framebufferSize());
-        ImGui::StyleColorsDark();
 
-        // Setup proper blending to be used by ImGui
-        GL::Renderer::setBlendEquation(
-            GL::Renderer::BlendEquation::Add, GL::Renderer::BlendEquation::Add);
-        GL::Renderer::setBlendFunction(
-            GL::Renderer::BlendFunction::SourceAlpha,
-            GL::Renderer::BlendFunction::OneMinusSourceAlpha);
-    }
-    */
 
     /* Setup scene objects and camera */
     {

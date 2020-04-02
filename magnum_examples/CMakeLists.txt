@@ -5,7 +5,7 @@ add_subdirectory(primitives)
 #add_subdirectory(geometry-shader)
 
 add_subdirectory(instanced)
-
+add_subdirectory(fluidsimulation3d)
 
 #add_subdirectory(multi-texture)
 
