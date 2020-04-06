@@ -170,3 +170,33 @@ the other, if Open BLAS is not setup correctly. In IPython, simply::
 And test it from python via the command line as::
 
    python3 -c "import numpy; print(numpy.get_include())"
+
+
+
+Linux
+=====
+
+
+Prerequisites:
+
+sudo apt-get install libjpeg-dev
+
+sudo apt-get install python-dev
+
+sudo apt-get install python3-pip
+pip3 install ipython --user
+
+pip3 install numpy --user
+
+
+libgl1-mesa-dev
+
+libassimp-dev
+libgl1-mesa-dev
+libxrandr-dev
+libxinerama-dev
+libxcursor-dev
+libgegl-dev
+libglfw3-dev
+
+libxi-dev

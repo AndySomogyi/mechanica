@@ -8,8 +8,8 @@
 #include "MeshOperations.h"
 #include "MxDebug.h"
 
-#define __fastcall
-#include "DirectXMath.h"
+//#define __fastcall
+//#include "DirectXMath.h"
 
 
 

@@ -7,8 +7,8 @@
 #include "MeshOperations.h"
 #include "MxDebug.h"
 
-#define __fastcall
-#include "DirectXMath.h"
+//#define __fastcall
+//#include "DirectXMath.h"
 
 bool Mx_IsPolygonToEdgeConfiguration(CEdgePtr edge) {
     return false;
