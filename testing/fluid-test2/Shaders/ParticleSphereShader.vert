@@ -38,7 +38,8 @@ uniform float pointSizeScale;
 
 uniform vec3 diffuseColor;
 
-layout(location = 0) in highp vec3 position;
+layout(location=0) in highp vec3 position;
+layout(location=1) in highp int p_index;
 
 flat out vec3 viewCenter;
 flat out vec3 color;
@@ -64,13 +65,13 @@ float rand(vec2 co) {
 
 vec3 generateVertexColor() {
     if(colorMode == 2) { /* consistent random color */
-        return vec3(rand(vec2(gl_VertexID, gl_VertexID)),
-                    rand(vec2(gl_VertexID + 1, gl_VertexID)),
-                    rand(vec2(gl_VertexID, gl_VertexID + 1)));
+        return vec3(rand(vec2(p_index, p_index)),
+                    rand(vec2(p_index + 1, p_index)),
+                    rand(vec2(p_index, p_index + 1)));
     } else if(colorMode == 1 ) { /* ramp color by particle id */
         float segmentSize = float(numParticles)/6.0f;
-        float segment = floor(float(gl_VertexID)/segmentSize);
-        float t = (float(gl_VertexID) - segmentSize*segment)/segmentSize;
+        float segment = floor(float(p_index)/segmentSize);
+        float t = (float(p_index) - segmentSize*segment)/segmentSize;
         vec3 startVal = colorRamp[int(segment)];
         vec3 endVal = colorRamp[int(segment) + 1];
         return mix(startVal, endVal, t);

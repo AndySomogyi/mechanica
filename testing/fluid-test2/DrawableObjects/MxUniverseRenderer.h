@@ -41,6 +41,9 @@ using namespace Magnum;
 
 class MxUniverseRenderer {
     public:
+
+
+
         explicit MxUniverseRenderer(const std::vector<Vector3>& points, float particleRadius);
 
         MxUniverseRenderer& draw(Containers::Pointer<SceneGraph::Camera3D>& camera, const Vector2i& viewportSize);
@@ -108,7 +111,7 @@ class MxUniverseRenderer {
         bool _dirty = false;
 
         Float _particleRadius = 1.0f;
-        ParticleSphereShader::ColorMode _colorMode = ParticleSphereShader::ColorMode::RampColorById;
+        ParticleSphereShader::ColorMode _colorMode = ParticleSphereShader::ColorMode::ConsistentRandom;
         Color3 _ambientColor{0.1f};
         Color3 _diffuseColor{0.0f, 0.5f, 0.9f};
         Color3 _specularColor{ 1.0f};

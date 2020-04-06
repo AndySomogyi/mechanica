@@ -40,7 +40,7 @@ MxUniverseRenderer::MxUniverseRenderer(const std::vector<Vector3>& points, float
     _points(points),
     _particleRadius(particleRadius),
     _mesh(GL::MeshPrimitive::Points) {
-    _mesh.addVertexBuffer(_vertexBuffer, 0, Shaders::Generic3D::Position{});
+    _mesh.addVertexBuffer(_vertexBuffer, 0, ParticleSphereShader::Position{}, ParticleSphereShader::Index{});
     _shader.reset(new ParticleSphereShader);
 }
 
@@ -61,16 +61,21 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
         // give me the damned bytes...
 
         // invalidate / resize the buffer
-        _vertexBuffer.setData({NULL, _points.size() * 3 * sizeof(float)},
+        _vertexBuffer.setData({NULL, _points.size() * sizeof(ParticleSphereShader::Vertex)},
                                         GL::BufferUsage::DynamicDraw);
 
         // get pointer to data
-        void* vertexPtr = _vertexBuffer.map(0,
-                _points.size() * 3 * sizeof(float),
+        void* tmp = _vertexBuffer.map(0,
+                _points.size() * sizeof(ParticleSphereShader::Vertex),
                 GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
-
-        memcpy(vertexPtr, _points.data(), _points.size() * 3 * sizeof(float));
-
+        
+        ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
+        
+        for(int i = 0; i < _points.size(); ++i) {
+            vertexPtr[i].pos = _points[i];
+            vertexPtr[i].index = i;
+        }
+    
         _vertexBuffer.unmap();
 
 
@@ -94,53 +99,40 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
 
 
         // invalidate / resize the buffer
-        _vertexBuffer.setData({NULL, _Engine.s.nr_parts * 3 * sizeof(float)},
+        _vertexBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex)},
                                         GL::BufferUsage::DynamicDraw);
-
-        struct Vert {
-            float x, y, z;
-        };
 
         // get pointer to data
         void* tmp = _vertexBuffer.map(0,
-                _points.size() * 3 * sizeof(float),
+                _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex),
                 GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
-        Vert* vertexPtr = (Vert*)tmp;
+        ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
 
 
         int i = 0;
         for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
             for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-                vertexPtr[i].x = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
-                vertexPtr[i].y = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
-                vertexPtr[i].z = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
+                vertexPtr[i].pos.x() = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
+                vertexPtr[i].pos.y() = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
+                vertexPtr[i].pos.z() = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
+                vertexPtr[i].index = _Engine.s.cells[cid].parts[pid].id;
+
+                MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
                 i++;
             }
         }
 
-
-        /*
-
-
-
-        for(int i = 0; i < _Engine.s.nr_parts; ++i) {
-            vertexPtr[i].x = _Engine.s.partlist[i]->x[0];
-            vertexPtr[i].y = _Engine.s.partlist[i]->x[1];
-            vertexPtr[i].z = _Engine.s.partlist[i]->x[2];
-        }
-        */
-
         _vertexBuffer.unmap();
 
 
-        _mesh.setCount(static_cast<int>(_points.size()));
+        _mesh.setCount(_Engine.s.nr_parts);
         _dirty = false;
     }
 
     (*_shader)
         /* particle data */
-        .setNumParticles(static_cast<int>(_points.size()))
+        .setNumParticles(_Engine.s.nr_parts)
         .setParticleRadius(_particleRadius)
         /* sphere render data */
         .setPointSizeScale(static_cast<float>(viewportSize.x())/

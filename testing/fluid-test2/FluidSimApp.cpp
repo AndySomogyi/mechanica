@@ -120,9 +120,9 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
             .setViewport(viewportSize);
 
         /* Set default camera parameters */
-        _defaultCamPosition = Vector3(1.5f, 3.3f, 6.0f);
+        _defaultCamPosition = Vector3(1.5f, 2.3f, 3.0f);
 
-        _defaultCamTarget   = Vector3(0.0f, 0.0f, 0.0f);
+        _defaultCamTarget   = Vector3(sideLength / 2, sideLength / 2, sideLength / 2);
 
         _objCamera->setTransformation(Matrix4::lookAt(_defaultCamPosition, _defaultCamTarget, Vector3(0, 1, 0)));
 
@@ -374,7 +374,7 @@ void FluidSimApp::initializeScene() {
         _fluidSolver->setPositions(createCubicLattice(sideLength, 0.25));
     }
 
-    initArgon(sideLength, 0.25, 0.001, 1);
+    initArgon(sideLength, 0.10, 0.0005, 0.5);
 
     /* Reset domain */
     if(_dynamicBoundary) _boundaryOffset = 0.0f;
