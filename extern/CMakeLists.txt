@@ -103,6 +103,9 @@ elseif(UNIX AND NOT APPLE)
     
   set(WITH_WINDOWLESSEGLAPPLICATION ON CACHE BOOL
     "Build WindowlessEglApplication library" FORCE)
+   
+  set(WITH_WINDOWLESSGLXAPPLICATION ON CACHE BOOL
+    "Build WindowlessGlxApplication library" FORCE)
 
 endif()
 

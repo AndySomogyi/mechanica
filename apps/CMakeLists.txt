@@ -17,7 +17,9 @@ target_link_libraries(mx-pyrun
 
 
 add_executable(mx-glinfo ${PROJECT_SOURCE_DIR}/extern/magnum/src/Magnum/Platform/gl-info.cpp)
+
 target_link_libraries(mx-glinfo PRIVATE MagnumGL)
+
 if(MAGNUM_TARGET_HEADLESS OR CORRADE_TARGET_EMSCRIPTEN OR CORRADE_TARGET_ANDROID)
     target_link_libraries(mx-glinfo PRIVATE MagnumWindowlessEglApplication)
 elseif(CORRADE_TARGET_IOS)
