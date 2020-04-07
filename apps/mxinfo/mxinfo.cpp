@@ -14,6 +14,7 @@
 
 
 #include <iostream>
+#include <Corrade/Utility/DebugStl.h>
 
 using namespace Magnum;
 using namespace Magnum::Platform;
@@ -29,7 +30,7 @@ MyApplication::MyApplication(const Arguments& arguments):
     Platform::WindowlessApplication{arguments} {}
 
 int MyApplication::exec() {
-    Utility::Debug{} << "OpenGL version:" << GL::Context::current().versionString();
+    Debug{} << "OpenGL version:" << GL::Context::current().versionString();
     Debug{} << "OpenGL renderer:" << GL::Context::current().rendererString();
 
     /* Exit with success */

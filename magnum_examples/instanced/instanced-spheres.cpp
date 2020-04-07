@@ -129,7 +129,7 @@ Polygons::Polygons(const Arguments& arguments) :
 void Polygons::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-    mesh.draw(shaderProgram);
+    shaderProgram.draw(mesh);
 
     swapBuffers();
 }

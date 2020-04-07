@@ -47,8 +47,8 @@ class FlatShadeObject: public SceneGraph::Drawable3D {
 
         void draw(const Matrix4& transformation, SceneGraph::Camera3D& camera) override {
             _shader.setColor(_color)
-                .setTransformationProjectionMatrix(camera.projectionMatrix() * transformation);
-            _mesh.draw(_shader);
+                .setTransformationProjectionMatrix(camera.projectionMatrix() * transformation)
+                .draw(_mesh);
         }
 
         FlatShadeObject& setColor(const Color3& color) { _color = color; return *this; }

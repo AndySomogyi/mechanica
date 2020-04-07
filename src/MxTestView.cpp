@@ -89,7 +89,8 @@ int testWin(int argc, char** argv) {
 
             /* Render here */
             GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
-            mesh.draw(shader);
+
+            shader.draw(mesh);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
@@ -270,8 +271,7 @@ void MxTestView::draw()
     /* Render here */
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-
-    mesh->draw(*shader);
+    shader->draw(*mesh);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);

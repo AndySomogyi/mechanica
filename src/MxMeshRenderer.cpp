@@ -151,7 +151,7 @@ void MagnumCellRenderer::draw(GL::AbstractShaderProgram& shader) {
 
     vertexBuffer.unmap();
 
-    mesh.draw(shader);
+    shader.draw(mesh);
 }
 
 HRESULT MagnumCellRenderer::invalidate() {

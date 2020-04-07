@@ -130,6 +130,8 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
         _dirty = false;
     }
 
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
     (*_shader)
         /* particle data */
         .setNumParticles(_Engine.s.nr_parts)
@@ -145,10 +147,10 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
         /* view/prj matrices and light */
         .setViewMatrix(camera->cameraMatrix())
         .setProjectionMatrix(camera->projectionMatrix())
-        .setLightDirection(_lightDir);
+        .setLightDirection(_lightDir)
+        .draw(_mesh);
 
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    _mesh.draw(*_shader);
+
 
     return *this;
 }

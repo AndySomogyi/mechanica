@@ -15,9 +15,12 @@
 #include <Magnum/GL/RenderbufferFormat.h>
 #include <Magnum/Shaders/VertexColor.h>
 #include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
+#include <Magnum/Math/Color.h>
 
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
+#include <Magnum/ImageView.h>
+
 
 using namespace Magnum;
 using namespace Magnum::Trade;
@@ -59,16 +62,16 @@ int MyApplication::exec() {
         .bind();
 
     Shaders::VertexColor2D shader;
-    mesh.draw(shader);
-    
-
+    shader.draw(mesh);
 
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
     TgaImageConverter conv;
 
-    conv.exportToFile(image, "triangle.tga");
+    MutableImageView2D im(image);
+
+    conv.exportToFile(im, "triangle.tga");
 
     return 0;
 

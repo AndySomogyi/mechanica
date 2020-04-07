@@ -63,7 +63,7 @@ static int exec() {
     Debug{} << "test framebuffer size: " << framebuffer.viewport();
 
     Shaders::VertexColor2D shader;
-    mesh.draw(shader);
+    shader.draw(mesh);
 
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);

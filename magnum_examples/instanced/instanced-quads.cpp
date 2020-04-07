@@ -151,7 +151,7 @@ InstancedQuads::InstancedQuads(const Arguments& arguments) :
 void InstancedQuads::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-    mesh.draw(shaderProgram);
+    shaderProgram.draw(mesh);
 
     swapBuffers();
 }

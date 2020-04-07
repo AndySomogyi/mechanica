@@ -33,6 +33,7 @@
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Drawable.h>
+#include <Magnum/Math/FunctionsBatch.h>
 #include <iostream>
 
 #include "DrawableObjects/WireframeObjects.h"

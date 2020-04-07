@@ -87,8 +87,7 @@ static PyObject* _testImage(PyObject* self, PyObject* args) {
         .bind();
 
     Shaders::VertexColor2D shader;
-    mesh.draw(shader);
-
+    shader.draw(mesh);
 
 
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
