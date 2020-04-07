@@ -50,6 +50,10 @@ class FluidSimApp: public Platform::GlfwApplication {
     public:
         explicit FluidSimApp(const Arguments& arguments);
 
+        int nonDisplayExec();
+
+        int exec();
+
     protected:
         void viewportEvent(ViewportEvent& event) override;
         void keyPressEvent(KeyEvent& event) override;
@@ -109,7 +113,10 @@ class FluidSimApp: public Platform::GlfwApplication {
 
 
         float sideLength = 1.0;
+
+        bool display = true;
+
+        int nSteps = 10;
+        int currentStep = 0;
 };
 
-
-MAGNUM_APPLICATION_MAIN(FluidSimApp)

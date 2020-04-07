@@ -78,7 +78,7 @@ int engine_err = engine_err_ok;
 #define error(id)				( engine_err = errs_register( id , engine_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *engine_err_msg[29] = {
+const char *engine_err_msg[29] = {
 		"Nothing bad happened.",
 		"An unexpected NULL pointer was encountered.",
 		"A call to malloc failed, probably due to insufficient memory.",

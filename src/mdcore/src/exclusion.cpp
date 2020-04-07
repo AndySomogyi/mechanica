@@ -63,7 +63,7 @@ unsigned int exclusion_rcount = 0;
 #define error(id)				( exclusion_err = errs_register( id , exclusion_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *exclusion_err_msg[2] = {
+const char *exclusion_err_msg[2] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered."
 	};

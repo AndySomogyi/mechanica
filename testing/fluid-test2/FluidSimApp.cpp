@@ -71,7 +71,7 @@ static std::vector<Vector3> createCubicLattice(float length, float spacing) {
                 float x = i * s;
                 float y = j * s;
                 float z = k * s;
-                std::cout << "{" << x << ", " << y << ", " << z << "}\n";
+                //std::cout << "{" << x << ", " << y << ", " << z << "}\n";
                 result.push_back(Vector3{x, y, z});
             }
         }
@@ -81,8 +81,19 @@ static std::vector<Vector3> createCubicLattice(float length, float spacing) {
 }
 
 FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{arguments, NoCreate} {
-    /* Setup window */
-    {
+
+    for(int i = 0; i < arguments.argc; ++i) {
+        std::cout << "arg[" << i << "]: " << arguments.argv[i] << std::endl;
+        if(strcmp("-nw", arguments.argv[i]) == 0) {
+            display = false;
+        }
+    }
+    
+    // new fluid solver
+    _fluidSolver.reset(new SPHSolver{ParticleRadius});
+
+    if(display) {
+        /* Setup window */
         const Vector2 dpiScaling = this->dpiScaling({});
         Configuration conf;
         conf.setTitle("SPH Testing")
@@ -100,12 +111,10 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         /* Loop at 60 Hz max */
         setSwapInterval(1);
         //setMinimalLoopPeriod(16);
-    }
+    
 
-
-
-    /* Setup scene objects and camera */
-    {
+        /* Setup scene objects and camera */
+    
         /* Setup scene objects */
         _scene.reset(new Scene3D{});
         _drawableGroup.reset(new SceneGraph::DrawableGroup3D{});
@@ -129,17 +138,17 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
 
         /* Initialize depth to the value at scene center */
         _lastDepth = ((_camera->projectionMatrix() * _camera->cameraMatrix()).transformPoint({}).z() + 1.0f) * 0.5f;
-    }
+    
 
-    /* Setup ground grid */
-    {
+        /* Setup ground grid */
+    
         _grid.reset(new WireframeGrid(_scene.get(), _drawableGroup.get()));
         _grid->transform(Matrix4::scaling(Vector3(0.5f)));
-    }
+    
 
-    /* Setup fluid solver */
-    {
-        _fluidSolver.reset(new SPHSolver{ParticleRadius});
+        /* Setup fluid solver */
+    
+        
 
         /* Simulation domain box */
         /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
@@ -150,10 +159,10 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
 
         /* Drawable particles */
         _drawableParticles.reset(new MxUniverseRenderer{_fluidSolver->particlePositions(), ParticleRadius});
-
-        /* Initialize scene particles */
-        initializeScene();
     }
+    
+    /* Initialize scene particles */
+    initializeScene();
 
     /* Start the timer */
     _timeline.start();
@@ -189,21 +198,7 @@ void FluidSimApp::drawEvent() {
     /* Menu for parameters */
     if(_showMenu) showMenu();
 
-    /* Render ImGui window
-    {
-        GL::Renderer::enable(GL::Renderer::Feature::Blending);
-        GL::Renderer::disable(GL::Renderer::Feature::FaceCulling);
-        GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
-        GL::Renderer::enable(GL::Renderer::Feature::ScissorTest);
 
-        _imGuiContext.drawFrame();
-
-        GL::Renderer::disable(GL::Renderer::Feature::ScissorTest);
-        GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
-        GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
-        GL::Renderer::disable(GL::Renderer::Feature::Blending);
-    }
-    */
 
     swapBuffers();
     _timeline.nextFrame();
@@ -368,6 +363,7 @@ Vector3 FluidSimApp::unproject(const Vector2i& windowPosition, float depth) cons
 
 
 void FluidSimApp::initializeScene() {
+    
     if(_fluidSolver->numParticles() > 0) {
         _fluidSolver->reset();
     } else {
@@ -383,16 +379,37 @@ void FluidSimApp::initializeScene() {
     Vector3 corner = Vector3{sideLength/2, sideLength/2, sideLength/2} * BOUNDARY_SCALE;
 
     Matrix4 trans = Matrix4::translation({sideLength, sideLength, sideLength});
-
-
-    _drawableBox->setTransformation(Matrix4::scaling(corner) * trans);
+    
+    if(display) {
+        _drawableBox->setTransformation(Matrix4::scaling(corner) * trans);
+    }
 
     //_fluidSolver->domainBox().upperDomainBound().x() = 3.0f - ParticleRadius;
     _fluidSolver->domainBox().upperDomainBound() = corner;
     _fluidSolver->domainBox().lowerDomainBound() = corner * -1.;
 
-    /* Trigger drawable object to upload particles to the GPU */
-    _drawableParticles->setDirty();
+    if(display) {
+        /* Trigger drawable object to upload particles to the GPU */
+        _drawableParticles->setDirty();
+    }
+}
+
+int FluidSimApp::nonDisplayExec()
+{
+    for(currentStep = 0; currentStep < nSteps; ++currentStep) {
+        simulationStep();
+    }
+    return 0;
+}
+
+int FluidSimApp::exec()
+{
+    if(display) {
+        return GlfwApplication::exec();
+    }
+    else {
+        return nonDisplayExec();
+    }
 }
 
 void FluidSimApp::simulationStep() {
@@ -416,6 +433,8 @@ void FluidSimApp::simulationStep() {
     _fluidSolver->advance();
 
     engineStep();
+    
+    currentStep += 1;
 }
 
 
@@ -568,10 +587,6 @@ int initArgon (float length, float spacing, double dt, float temp ) {
 
     tic = getticks();
 
-
-
-    
-
     // initialize the engine
     printf("main: initializing the engine... "); fflush(stdout);
     if ( engine_init( &_Engine , origin , dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
@@ -635,14 +650,13 @@ int initArgon (float length, float spacing, double dt, float temp ) {
 
     // set fields for all particles
     srand(6178);
+    
     pAr.flags = PARTICLE_FLAG_NONE;
     for ( k = 0 ; k < 3 ; k++ ) {
+        pAr.x[k] = 0.0;
         pAr.v[k] = 0.0;
         pAr.f[k] = 0.0;
     }
-#ifdef VECTORIZE
-    pAr.v[3] = 0.0; pAr.f[3] = 0.0; pAr.x[3] = 0.0;
-#endif
 
     // create and add the particles
     printf("main: initializing particles... "); fflush(stdout);
@@ -719,6 +733,13 @@ int initArgon (float length, float spacing, double dt, float temp ) {
 
     return 0;
 }
+
+int main(int argc, char** argv) {
+    FluidSimApp app({argc, argv});
+    return app.exec();
+}
+
+
 
 
 

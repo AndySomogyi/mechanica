@@ -43,7 +43,7 @@
 #define error(id)				( cell_err = errs_register( id , cell_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *cell_err_msg[] = {
+const char *cell_err_msg[] = {
 		"Nothing bad happened.",
 		"An unexpected NULL pointer was encountered.",
 		"A call to malloc failed, probably due to insufficient memory.",

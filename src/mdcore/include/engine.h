@@ -124,7 +124,7 @@ enum {
 extern int engine_err;
 
 /** List of error messages. */
-extern char *engine_err_msg[];
+extern const char *engine_err_msg[];
 
 
 /** 

@@ -30,7 +30,7 @@
 #define error(id)				( btree_err = errs_register( id , btree_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *btree_err_msg[4] = {
+const char *btree_err_msg[4] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory.",

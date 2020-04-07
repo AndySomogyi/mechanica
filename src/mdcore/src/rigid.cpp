@@ -60,7 +60,7 @@ unsigned int rigid_rcount = 0;
 #define error(id)				( rigid_err = errs_register( id , rigid_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *rigid_err_msg[3] = {
+const char *rigid_err_msg[3] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory."

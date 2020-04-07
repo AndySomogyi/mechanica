@@ -70,7 +70,7 @@ ticks runner_timers[runner_timer_count];
 #define error(id)				( runner_err = errs_register( id , runner_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *runner_err_msg[12] = {
+const char *runner_err_msg[12] = {
         "Nothing bad happened.",
         "An unexpected NULL pointer was encountered.",
         "A call to malloc failed, probably due to insufficient memory.",

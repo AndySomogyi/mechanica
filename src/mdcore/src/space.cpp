@@ -56,7 +56,7 @@ int space_err = space_err_ok;
 #define error(id)				( space_err = errs_register( id , space_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *space_err_msg[9] = {
+const char *space_err_msg[9] = {
         "Nothing bad happened.",
         "An unexpected NULL pointer was encountered.",
         "A call to malloc failed, probably due to insufficient memory.",

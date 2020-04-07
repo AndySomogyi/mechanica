@@ -37,7 +37,7 @@ int reader_err = reader_err_ok;
 
 
 /* list of error messages. */
-char *reader_err_msg[6] = {
+const char *reader_err_msg[6] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory.",

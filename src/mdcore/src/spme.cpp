@@ -61,7 +61,7 @@ int spme_err = spme_err_ok;
 #define error(id)				( spme_err = errs_register( id , spme_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *spme_err_msg[5] = {
+const char *spme_err_msg[5] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory.",

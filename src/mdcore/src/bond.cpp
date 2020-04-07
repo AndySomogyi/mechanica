@@ -61,7 +61,7 @@ unsigned int bond_rcount = 0;
 #define error(id)				( bond_err = errs_register( id , bond_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *bond_err_msg[2] = {
+const char *bond_err_msg[2] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered."
 	};

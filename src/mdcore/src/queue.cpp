@@ -60,7 +60,7 @@ unsigned int queue_rcount = 0;
 #define error(id)				( queue_err = errs_register( id , queue_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *queue_err_msg[5] = {
+const char *queue_err_msg[5] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory.",

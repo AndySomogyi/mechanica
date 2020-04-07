@@ -55,7 +55,7 @@
 #define error(id)				( runner_err = errs_register( id , runner_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-extern char *runner_err_msg[];
+extern const char *runner_err_msg[];
 extern unsigned int runner_rcount;
 
 

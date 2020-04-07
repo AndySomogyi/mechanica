@@ -45,10 +45,10 @@ struct MxPotential potential_null = { PyObject_HEAD_INIT(&MxPotential_Type) { FP
 
 
 /* the error macro. */
-#define error(id)				( potential_err = errs_register( id , potential_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
+#define error(id) ( potential_err = errs_register( id , potential_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *potential_err_msg[6] = {
+const char *potential_err_msg[] = {
 		"Nothing bad happened.",
 		"An unexpected NULL pointer was encountered.",
 		"A call to malloc failed, probably due to insufficient memory.",
@@ -838,13 +838,13 @@ double potential_create_LJ126_d6fdr6 ( double r ) {
 
 struct MxPotential *potential_create_LJ126 ( double a , double b , double A , double B , double tol ) {
 
-	struct MxPotential *p;
+    MxPotential *p = NULL;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0  | p == NULL) {
 		error(potential_err_malloc);
 		return NULL;
-	}
+ 	}
 
 	/* fill this potential */
 	potential_create_LJ126_A = A;

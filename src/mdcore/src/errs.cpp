@@ -88,7 +88,7 @@ int errs_dump( FILE *out ) {
  * @return The value of @c id.
  */
  
-int errs_register( int id , const char *msg , int line , const char *func , char *file ) {
+int errs_register( int id , const char *msg , int line , const char *func , const char *file ) {
 
     /* Is there any room left on the stack? */
     if ( errs_count < errs_maxstack ) {

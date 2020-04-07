@@ -52,14 +52,12 @@ unsigned int task_rcount = 0;
 #define error(id)				( task_err = errs_register( id , task_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-char *task_err_msg[4] = {
+const char *task_err_msg[4] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered.",
     "A call to malloc failed, probably due to insufficient memory.",
     "Attempted to add an unlock to a full task.",
 	};
-    
-    
 
 /**
  * @brief Add a task dependency.
