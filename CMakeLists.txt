@@ -35,6 +35,10 @@ endif()
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 17)
 
+# we're compiling a bunch of shared libs, all should be pos independent. 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+
 # Use Magnum's modules to find things, these set up cmake names / aliases using a
 # magnum friendly naming scheme, add our module finders to cmake, these find
 # stuff mechanica, needs, but magnum does not. Make sure to put Mechanica's

@@ -16,18 +16,6 @@ typedef double MxReal;
 
 #include <carbon.h>
 #include <mx_config.h>
-
-
-#if defined(MX_APPLE)
-    #include "Magnum/Platform/WindowlessCglApplication.h"
-#elif defined(MX_LINUX)
-    #include "Magnum/Platform/WindowlessEglApplication.h"
-#elif defined(MX_WINDOWS)
-#include "Magnum/Platform/WindowlessWglApplication.h"
-#else
-#error no windowless application available on this platform
-#endif
-
 #include <mx_object.hpp>
 #include <mx_particle.h>
 #include <mx_module.h>

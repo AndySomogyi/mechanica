@@ -14,6 +14,7 @@
 #include <Magnum/Math/Matrix3.h>
 #include <Corrade/Utility/Debug.h>
 #include <sstream>
+#include <array>
 
 inline std::ostream& operator<<(std::ostream& os, const Magnum::Vector3& vec)
 {

@@ -34,6 +34,7 @@
 #include <MxImageConverters.h>
 #include <alloca.h>
 #include <string.h>
+#include <tuple>
 
 /* On Windows we need to circumvent conflicting definition of INT32 in
    <windows.h> (included from OpenGL headers). Problem with libjpeg-tubo only,
