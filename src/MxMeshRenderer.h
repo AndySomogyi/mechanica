@@ -202,7 +202,7 @@ private:
      * multiplication order is the reverse of the pipeline.
      * Therefore you do totalmat = proj * view * model.
      */
-    Magnum::Matrix4 modelMat, viewMat, projMat = Magnum::Math::IdentityInit;
+    Magnum::Matrix4 modelMat, viewMat, projMat = Magnum::Matrix4{Math::IdentityInit};
 
 
 

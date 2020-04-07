@@ -33,6 +33,7 @@
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Platform/GLContext.h>
 #include <Magnum/Shaders/VertexColor.h>
+#include <Magnum/Math/Color.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>

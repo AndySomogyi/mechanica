@@ -1,11 +1,13 @@
 #include <Corrade/PluginManager/Manager.h>
 #include <Corrade/Utility/Arguments.h>
 #include <Corrade/Utility/Directory.h>
+#include "Corrade/Utility/Debug.h"
 
 #include "Magnum/Text/AbstractFont.h"
 #include "Magnum/Text/AbstractFontConverter.h"
 #include "Magnum/Text/DistanceFieldGlyphCache.h"
 #include "Magnum/Trade/AbstractImageConverter.h"
+#include <Magnum/GL/Context.h>
 
 
 #include <MxWindowless.h>
@@ -27,7 +29,7 @@ MyApplication::MyApplication(const Arguments& arguments):
     Platform::WindowlessApplication{arguments} {}
 
 int MyApplication::exec() {
-    Debug{} << "OpenGL version:" << GL::Context::current().versionString();
+    Utility::Debug{} << "OpenGL version:" << GL::Context::current().versionString();
     Debug{} << "OpenGL renderer:" << GL::Context::current().rendererString();
 
     /* Exit with success */

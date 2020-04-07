@@ -79,7 +79,7 @@ MeshVisualizerExample::MeshVisualizerExample(const Arguments& arguments):
     mesh.setPrimitive(cube.primitive())
         .setCount(cube.indices().size())
         .addVertexBuffer(positionBuffer, 0, Shaders::MeshVisualizer::Position{})
-        .setIndexBuffer(indexBuffer, 0, Mesh::IndexType::UnsignedInt);
+        .setIndexBuffer(indexBuffer, 0, GL::MeshIndexType::UnsignedInt);
 
     transformation = Matrix4::rotationX(30.0_degf)
                      * Matrix4::rotationY(40.0_degf);

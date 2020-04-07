@@ -119,7 +119,7 @@ Polygons::Polygons(const Arguments& arguments) :
            PositionAttr{},
            ColorAttr{});
 
-   mesh.setIndexBuffer(indexBuffer, 0, GL::Mesh::IndexType::UnsignedInt);
+   mesh.setIndexBuffer(indexBuffer, 0, GL::MeshIndexType::UnsignedInt);
 }
 
 void Polygons::drawEvent() {

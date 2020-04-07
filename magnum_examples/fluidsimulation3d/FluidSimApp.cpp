@@ -29,6 +29,8 @@
  */
 
 
+#include <Corrade/Utility/StlMath.h>
+#include <Magnum/Math/FunctionsBatch.h>
 #include <Magnum/Animation/Easing.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
