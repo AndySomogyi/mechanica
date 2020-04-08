@@ -299,7 +299,7 @@ typedef struct engine_comm {
 
 /* associated functions */
 int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
-int engine_addtype ( struct engine *e , double mass , double charge , char *name , char *name2 );
+int engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 );
 int engine_advance ( struct engine *e );
 int engine_angle_addpot ( struct engine *e , struct MxPotential *p );
 int engine_angle_add ( struct engine *e , int i , int j , int k , int pid );

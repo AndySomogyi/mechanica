@@ -475,11 +475,11 @@ void engineStep() {
 
     //return;
 
-    ticks tic, toc, toc_step, toc_temp;
+    ticks tic, toc_step, toc_temp;
 
-    double epot, ekin, v2, temp, cutoff = 1.0 ;
+    double epot, ekin, v2, temp;
 
-    int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
+    int   k, cid, pid;
 
     double w;
 
@@ -568,22 +568,21 @@ int initArgon (float length, float spacing, double dt, float temp ) {
     // int nr_parts = 15200;
 
 
-    double x[3], vtot[3] = { 0.0 , 0.0 , 0.0 };
+    double x[3];
 
-    double epot, ekin, v2, cutoff = length * BOUNDARY_SCALE;
+    double   cutoff = length * BOUNDARY_SCALE;
     // FPTYPE ee, eff;
 
     struct MxParticle pAr;
     struct MxPotential *pot_ArAr;
     // struct potential *pot_ee;
-    int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;
-    int nx, ny, nz;
-    double hx, hy, hz, w;
+    int  k, cid, pid, nr_runners = 1;
+
     double L[] = { length * BOUNDARY_SCALE, length * BOUNDARY_SCALE, length * BOUNDARY_SCALE };
 
     auto pos = createCubicLattice(length, spacing);
 
-    ticks tic, toc, toc_step, toc_temp;
+    ticks tic, toc;
 
     tic = getticks();
 

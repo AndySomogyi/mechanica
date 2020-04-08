@@ -1536,7 +1536,7 @@ int engine_gettype2 ( struct engine *e , char *name2 ) {
  * and less than the value @c max_type specified in #engine_init.
  */
 
-int engine_addtype ( struct engine *e , double mass , double charge , char *name , char *name2 ) {
+int engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 ) {
 
 	/* check for nonsense. */
 	if ( e == NULL )
