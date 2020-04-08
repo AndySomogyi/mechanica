@@ -370,9 +370,10 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     if ( r->e->flags & engine_flag_localparts ) {
         parts = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count );
         memcpy( parts , c->parts , sizeof(struct MxParticle) * count );
-        }
-    else
+    }
+    else {
         parts = c->parts;
+    }
         
     /* loop over all particles */
     for ( i = 1 ; i < count ; i++ ) {
@@ -400,8 +401,15 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
 
             /* fetch the potential, if any */
             pot = pots[ pioff + part_j->typeId ];
-            if ( pot == NULL )
+            if ( pot == NULL ) {
                 continue;
+            }
+
+            /* potentials have cutoff also */
+            // TODO move the square to the one-time potential init value.
+            if(r2 > (pot->b * pot->b) ) {
+                continue;
+            }
             // runner_rcount += 1;
 
             #if defined(VECTORIZE)

@@ -88,7 +88,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     c = &(p->c[ind * potential_chunk]);
     
     /* adjust x to the interval */
-    x = (r - c[0]) * c[1];
+    x = (r - c[0]) * c[1];     
     
     /* compute the potential and its derivative */
     ee = c[2] * x + c[3];

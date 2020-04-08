@@ -626,7 +626,7 @@ int initArgon (float length, float spacing, double dt, float temp ) {
 
 
     // initialize the Ar-Ar potential
-    if ( ( pot_ArAr = potential_create_LJ126( 0.275 , 1.0 , 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
+    if ( ( pot_ArAr = potential_create_LJ126( 0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
         printf("main: potential_create_LJ126 failed with potential_err=%i.\n",potential_err);
         errs_dump(stdout);
         return 1;

@@ -41,7 +41,15 @@ int potential_err = potential_err_ok;
 
 /** The null potential */
 FPTYPE c_null[] = { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO };
-struct MxPotential potential_null = { PyObject_HEAD_INIT(&MxPotential_Type) { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } , c_null , 0.0 , DBL_MAX , potential_flag_none , 1 };
+struct MxPotential potential_null = {
+        PyObject_HEAD_INIT(&MxPotential_Type)
+        { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
+        .c = c_null ,
+        .a = 0.0 ,
+        .b = DBL_MAX,
+        potential_flag_none ,
+        1
+};
 
 
 /* the error macro. */
@@ -841,7 +849,7 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
     MxPotential *p = NULL;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0  | p == NULL) {
+	if ((posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0)  || p == NULL) {
 		error(potential_err_malloc);
 		return NULL;
  	}
@@ -973,9 +981,9 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 	double alpha, w;
 	int l = potential_ivalsa, r = potential_ivalsb, m;
 	FPTYPE err_l, err_r, err_m;
-	FPTYPE *xi_l, *xi_r, *xi_m;
-	FPTYPE *c_l, *c_r, *c_m;
-	int i, k;
+	FPTYPE *xi_l = NULL, *xi_r = NULL, *xi_m = NULL;
+	FPTYPE *c_l = NULL, *c_r = NULL, *c_m = NULL;
+	int i = 0, k = 0;
 	double e;
 	FPTYPE mtol = 10 * FPTYPE_EPSILON;
 
@@ -1016,8 +1024,10 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 	/* printf("potential_init: trying l=%i...\n",l); fflush(stdout); */
 	xi_l = (FPTYPE *)malloc( sizeof(FPTYPE) * (l + 1) );
 	c_l = (FPTYPE *)malloc( sizeof(FPTYPE) * (l+1) * potential_chunk );
-	if ( posix_memalign( (void **)&c_l , potential_align , sizeof(FPTYPE) * (l+1) * potential_chunk ) < 0 )
+	if (( posix_memalign( (void **)&c_l , potential_align , sizeof(FPTYPE) * (l+1) * potential_chunk ) < 0 )
+        || c_l == NULL) {
 		return error(potential_err_malloc);
+    }
 	xi_l[0] = a; xi_l[l] = b;
 	for ( i = 1 ; i < l ; i++ ) {
 		xi_l[i] = a + (b - a) * i / l;
@@ -1072,8 +1082,9 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 		/* compute the larger interpolation... */
 		/* printf("potential_init: trying r=%i...\n",r); fflush(stdout); */
 		xi_r = (FPTYPE *)malloc( sizeof(FPTYPE) * (r + 1) );
-		if ( posix_memalign( (void **)&c_r , potential_align , sizeof(FPTYPE) * (r+1) * potential_chunk ) != 0 )
+        if ( posix_memalign( (void **)&c_r , potential_align , sizeof(FPTYPE) * (r+1) * potential_chunk ) != 0 ) {
 			return error(potential_err_malloc);
+        }
 		xi_r[0] = a; xi_r[r] = b;
 		for ( i = 1 ; i < r ; i++ ) {
 			xi_r[i] = a + (b - a) * i / r;
@@ -1084,13 +1095,15 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 					break;
 			}
 		}
-		if ( potential_getcoeffs(f,fp,xi_r,r,&c_r[potential_chunk],&err_r) < 0 )
+        if ( potential_getcoeffs(f,fp,xi_r,r,&c_r[potential_chunk],&err_r) < 0 ) {
 			return error(potential_err);
+        }
 		/* printf("potential_init: err_r=%22.16e.\n",err_r); fflush(stdout); */
 
 		/* if this is better than tolerance, break... */
-		if ( err_r < tol )
+        if ( err_r < tol ) {
 			break;
+        }
 
 		/* Have we too many intervals? */
 		else if ( 2*r > potential_ivalsmax ) {
@@ -1118,8 +1131,9 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 		/* construct that interpolation */
 		/* printf("potential_init: trying m=%i...\n",m); fflush(stdout); */
 		xi_m = (FPTYPE *)malloc( sizeof(FPTYPE) * (m + 1) );
-		if ( posix_memalign( (void **)&c_m , potential_align , sizeof(FPTYPE) * (m+1) * potential_chunk ) != 0 )
+        if ( posix_memalign( (void **)&c_m , potential_align , sizeof(FPTYPE) * (m+1) * potential_chunk ) != 0 ) {
 			return error(potential_err_malloc);
+        }
 		xi_m[0] = a; xi_m[m] = b;
 		for ( i = 1 ; i < m ; i++ ) {
 			xi_m[i] = a + (b - a) * i / m;
