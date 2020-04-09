@@ -34,11 +34,13 @@
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Drawable.h>
 #include <Magnum/Math/FunctionsBatch.h>
+
 #include <iostream>
+
+#include <string>
 
 #include "DrawableObjects/WireframeObjects.h"
 
-#include "SPH/SPHSolver.h"
 #include "FluidSimApp.h"
 
 
@@ -46,11 +48,13 @@ using namespace Magnum;
 using namespace Math::Literals;
 
 namespace {
-    constexpr Float ParticleRadius = 0.02f;
+    constexpr Float ParticleRadius = 0.2f;
 }
 
 static void engineStep();
-static int initArgon ( float length, float spacing, double dt = 0.005, float temp = 100 );
+
+static int initArgon (const Vector3 &origin, const Vector3 &dim,
+        int nParticles, double dt = 0.005, float temp = 100 );
 
 static const double BOUNDARY_SCALE = 1.05;
 
@@ -80,17 +84,68 @@ static std::vector<Vector3> createCubicLattice(float length, float spacing) {
     return result;
 }
 
+#include <random>
+#include <iostream>
+
+
+static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3 &corner2, int nParticles) {
+    std::vector<Vector3> result;
+
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> disx(corner1[0], corner2[0]);
+    std::uniform_real_distribution<> disy(corner1[1], corner2[1]);
+    std::uniform_real_distribution<> disz(corner1[2], corner2[2]);
+
+    for(int i = 0; i < nParticles; ++i) {
+        result.push_back(Vector3{disx(gen), disy(gen), disz(gen)});
+
+    }
+
+    return result;
+}
+
 FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{arguments, NoCreate} {
 
     for(int i = 0; i < arguments.argc; ++i) {
         std::cout << "arg[" << i << "]: " << arguments.argv[i] << std::endl;
+        std::string arg(arguments.argv[i]);
+
         if(strcmp("-nw", arguments.argv[i]) == 0) {
             display = false;
         }
+
+        else if(arg.find("-parts=") == 0) {
+            try {
+                nParticles = std::stoi(arg.substr(7));
+                std::cout << "particles: " << nParticles << std::endl;
+            }
+            catch (...) {
+                std::cerr << "ERROR invalid particles!\n";
+            }
+        }
+
+        else if(arg.find("-dt=") == 0) {
+            try {
+                dt = std::stof(arg.substr(4));
+                std::cout << "dt: " << dt << std::endl;
+            }
+            catch (...) {
+                std::cerr << "ERROR invalid dt!\n";
+            }
+        }
+
+        else if(arg.find("-temp=") == 0) {
+            try {
+                temp = std::stof(arg.substr(6));
+                std::cout << "temp: " << temp << std::endl;
+            }
+            catch (...) {
+                std::cerr << "ERROR invalid temp!\n";
+            }
+        }
     }
     
-    // new fluid solver
-    _fluidSolver.reset(new SPHSolver{ParticleRadius});
 
     if(display) {
         /* Setup window */
@@ -111,6 +166,9 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         /* Loop at 60 Hz max */
         setSwapInterval(1);
         //setMinimalLoopPeriod(16);
+
+
+        center = (dim + origin) / 2.;
     
 
         /* Setup scene objects and camera */
@@ -121,7 +179,6 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
 
         /* Configure camera */
         _objCamera.reset(new Object3D{ _scene.get() });
-        _objCamera->setTransformation(Matrix4::lookAt(Vector3(0, 1.5, 8), Vector3(0, 0, 0), Vector3(0, 1, 0)));
 
         const auto viewportSize = GL::defaultFramebuffer.viewport().size();
         _camera.reset(new SceneGraph::Camera3D{ *_objCamera });
@@ -130,9 +187,9 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
             .setViewport(viewportSize);
 
         /* Set default camera parameters */
-        _defaultCamPosition = Vector3(1.5f, 2.3f, 3.0f);
+        _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
 
-        _defaultCamTarget   = Vector3(sideLength / 2, sideLength / 2, sideLength / 2);
+        _defaultCamTarget   = {0,0,0};
 
         _objCamera->setTransformation(Matrix4::lookAt(_defaultCamPosition, _defaultCamTarget, Vector3(0, 1, 0)));
 
@@ -142,8 +199,9 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
 
         /* Setup ground grid */
     
+        // grid is ???
         _grid.reset(new WireframeGrid(_scene.get(), _drawableGroup.get()));
-        _grid->transform(Matrix4::scaling(Vector3(0.5f)));
+        _grid->transform(Matrix4::scaling(Vector3(1.f))  );
     
 
         /* Setup fluid solver */
@@ -154,15 +212,27 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
         _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
 
-        //_drawableBox->transform(Matrix4::scaling(Vector3{ 1.5, 1.5, 0.5 }) * Matrix4::translation(Vector3(1)));
+        // box is cube of side length 2 centered at origin
+        _drawableBox->transform(Matrix4::scaling(Vector3(sideLength / 2)) );
         _drawableBox->setColor(Color3(1, 1, 0));
 
         /* Drawable particles */
-        _drawableParticles.reset(new MxUniverseRenderer{_fluidSolver->particlePositions(), ParticleRadius});
+        _drawableParticles.reset(new MxUniverseRenderer{ParticleRadius});
+
+        _drawableParticles->setModelViewTransform(Matrix4::translation(-center));
     }
     
     /* Initialize scene particles */
-    initializeScene();
+    initArgon(origin, dim, nParticles, 0.01, 0.01);
+
+    /* Reset domain */
+    if(_dynamicBoundary) _boundaryOffset = 0.0f;
+
+
+    if(display) {
+        /* Trigger drawable object to upload particles to the GPU */
+        _drawableParticles->setDirty();
+    }
 
     /* Start the timer */
     _timeline.start();
@@ -364,34 +434,8 @@ Vector3 FluidSimApp::unproject(const Vector2i& windowPosition, float depth) cons
 
 void FluidSimApp::initializeScene() {
     
-    if(_fluidSolver->numParticles() > 0) {
-        _fluidSolver->reset();
-    } else {
 
-        _fluidSolver->setPositions(createCubicLattice(sideLength, 0.25));
-    }
 
-    initArgon(sideLength, 0.10, 0.0005, 0.5);
-
-    /* Reset domain */
-    if(_dynamicBoundary) _boundaryOffset = 0.0f;
-
-    Vector3 corner = Vector3{sideLength/2, sideLength/2, sideLength/2} * BOUNDARY_SCALE;
-
-    Matrix4 trans = Matrix4::translation({sideLength, sideLength, sideLength});
-    
-    if(display) {
-        _drawableBox->setTransformation(Matrix4::scaling(corner) * trans);
-    }
-
-    //_fluidSolver->domainBox().upperDomainBound().x() = 3.0f - ParticleRadius;
-    _fluidSolver->domainBox().upperDomainBound() = corner;
-    _fluidSolver->domainBox().lowerDomainBound() = corner * -1.;
-
-    if(display) {
-        /* Trigger drawable object to upload particles to the GPU */
-        _drawableParticles->setDirty();
-    }
 }
 
 int FluidSimApp::nonDisplayExec()
@@ -424,13 +468,6 @@ void FluidSimApp::simulationStep() {
         offset = Math::lerp(0.0f, 0.5f, Animation::Easing::quadraticInOut(_boundaryOffset));
     }
 
-    // _drawableBox->setTransformation(
-    //    Matrix4::scaling(Vector3{1.5f - offset, 1.5f, 0.5f})* Matrix4::translation(Vector3{1.0f}));
-
-    //_fluidSolver->domainBox().upperDomainBound().x() = 2.0f*(1.5f - offset) - ParticleRadius;
-
-    /* Run simulation one time step */
-    _fluidSolver->advance();
 
     engineStep();
     
@@ -557,38 +594,45 @@ void engineStep() {
 
 
 
-int initArgon (float length, float spacing, double dt, float temp ) {
+int initArgon (const Vector3 &origin, const Vector3 &dim,
+        int nParticles, double dt, float temp ) {
 
-    const double origin[3] = { 0.0 , 0.0 , 0.0 };
-    // double dim[3] = { 20.0 , 20.0 , 20.0 };
-    // int nr_parts = 121600;
-    double dim[3] = { length * BOUNDARY_SCALE, length * BOUNDARY_SCALE, length * BOUNDARY_SCALE };
-    // int nr_parts = 20712;
-    //int nr_parts = 32680;
-    // int nr_parts = 15200;
+    double length = dim[0] - origin[0];
 
+    double L[] = { 0.1 * length , 0.1* length , 0.1*  length  };
 
     double x[3];
 
-    double   cutoff = length * BOUNDARY_SCALE;
-    // FPTYPE ee, eff;
+    double   cutoff = 0.1 * length;
 
     struct MxParticle pAr;
     struct MxPotential *pot_ArAr;
-    // struct potential *pot_ee;
-    int  k, cid, pid, nr_runners = 1;
 
-    double L[] = { length * BOUNDARY_SCALE, length * BOUNDARY_SCALE, length * BOUNDARY_SCALE };
+    int  k, cid, pid, nr_runners = 8;
 
-    auto pos = createCubicLattice(length, spacing);
+    auto pos = fillCubeRandom(origin, dim, nParticles);
 
     ticks tic, toc;
 
     tic = getticks();
 
+    double _origin[3];
+    double _dim[3];
+    for(int i = 0; i < 3; ++i) {
+        _origin[i] = origin[i];
+        _dim[i] = dim[i];
+    }
+
     // initialize the engine
+    printf("main: initializing the engine... ");
+    printf("main: requesting origin = [ %f , %f , %f ].\n", _origin[0], _origin[1], _origin[2] );
+    printf("main: requesting dimensions = [ %f , %f , %f ].\n", _dim[0], _dim[1], _dim[2] );
+    printf("main: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
+    printf("main: requesting cutoff = %22.16e.\n", cutoff);
+    fflush(stdout);
+
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , origin , dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
+    if ( engine_init( &_Engine , _origin , _dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return 1;
@@ -602,8 +646,6 @@ int initArgon (float length, float spacing, double dt, float temp ) {
     
     printf("done.\n"); fflush(stdout);
     
-    
-
     // set the interaction cutoff
     printf("main: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
     printf("main: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );

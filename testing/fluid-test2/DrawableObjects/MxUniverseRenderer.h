@@ -44,7 +44,7 @@ class MxUniverseRenderer {
 
 
 
-        explicit MxUniverseRenderer(const std::vector<Vector3>& points, float particleRadius);
+        explicit MxUniverseRenderer(float particleRadius);
 
         MxUniverseRenderer& draw(Containers::Pointer<SceneGraph::Camera3D>& camera, const Vector2i& viewportSize);
 
@@ -104,10 +104,24 @@ class MxUniverseRenderer {
             return *this;
         }
 
+        MxUniverseRenderer& setModelViewTransform(const Magnum::Matrix4& mat) {
+            modelViewMat = mat;
+            _shader->setViewMatrix(modelViewMat);
+            return *this;
+        }
+
+        MxUniverseRenderer& setProjectionTransform(const Magnum::Matrix4& mat) {
+            projMat = mat;
+            _shader->setProjectionMatrix(projMat);
+            return *this;
+        }
+
+
+
         bool renderUniverse = true;
 
     private:
-        const std::vector<Vector3>& _points;
+
         bool _dirty = false;
 
         Float _particleRadius = 1.0f;
@@ -121,6 +135,17 @@ class MxUniverseRenderer {
         GL::Buffer _vertexBuffer;
         GL::Mesh _mesh;
         Containers::Pointer<ParticleSphereShader> _shader;
+
+        /**
+         * Only set a single combined matrix in the shader, this way,
+         * the shader only performs a single matrix multiply of the vertices, update the
+         * shader matrix whenever any of these change.
+         *
+         * multiplication order is the reverse of the pipeline.
+         * Therefore you do totalmat = proj * view * model.
+         */
+        Magnum::Matrix4 modelViewMat = Matrix4{Math::IdentityInit};
+        Magnum::Matrix4 projMat =  Matrix4{Math::IdentityInit};
 };
 
 

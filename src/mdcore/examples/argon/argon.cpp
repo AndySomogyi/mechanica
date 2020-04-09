@@ -91,16 +91,23 @@ int main ( int argc , char *argv[] ) {
     }
     else
         cellwidth = 1.0;
-    printf("main: cell width set to %22.16e.\n", cellwidth);
+
 
     // initialize the engine
-    printf("main: initializing the engine... "); fflush(stdout);
+    printf("main: initializing the engine... ");
+    printf("main: requesting origin = [ %f , %f , %f ].\n", origin[0], origin[1], origin[2] );
+    printf("main: requesting dimensions = [ %f , %f , %f ].\n", dim[0], dim[1], dim[2] );
+    printf("main: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
+    printf("main: requesting cutoff = %22.16e.\n", cutoff);
+    fflush(stdout);
+
     if ( engine_init( &e , origin , dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return 1;
     }
-    printf("done.\n"); fflush(stdout);
+
+    printf("main: engine_init done.\n"); fflush(stdout);
 
     // set the interaction cutoff
     printf("main: cell dimensions = [ %i , %i , %i ].\n", e.s.cdim[0] , e.s.cdim[1] , e.s.cdim[2] );
@@ -210,6 +217,7 @@ int main ( int argc , char *argv[] ) {
 
     // start the engine
 
+    printf("main: starting engine with nr_runners: %i.\n",nr_runners);
     if ( engine_start( &e , nr_runners , nr_runners ) != 0 ) {
         printf("main: engine_start failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);

@@ -37,7 +37,6 @@ using namespace Magnum;
 using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;
 using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
 
-class SPHSolver;
 class WireframeGrid;
 class WireframeBox;
 class MxUniverseRenderer;
@@ -94,7 +93,6 @@ class FluidSimApp: public Platform::GlfwApplication {
         Containers::Pointer<SceneGraph::Camera3D> _camera;
 
         /* Fluid simulation system */
-        Containers::Pointer<SPHSolver> _fluidSolver;
         Containers::Pointer<WireframeBox> _drawableBox;
         Int _substeps = 1;
         bool _pausedSimulation = false;
@@ -112,11 +110,20 @@ class FluidSimApp: public Platform::GlfwApplication {
         Timeline _timeline;
 
 
-        float sideLength = 1.0;
+        float sideLength = 10.0;
 
         bool display = true;
 
         int nSteps = 10;
         int currentStep = 0;
+
+        int nParticles = 1000;
+
+        Vector3 origin = {0.0, 0.0, 0.0};
+        Vector3 dim = {10., 10., 10.};
+        Vector3 center;
+
+        float dt = 0.01;
+        float temp = 1;
 };
 
