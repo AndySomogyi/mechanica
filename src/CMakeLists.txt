@@ -107,6 +107,10 @@ set(SRC
   MxImageConverters.cpp
   MxCylinderModel.cpp
   MxUniverse.cpp
+  MxWindow.cpp
+  MxWindowProxy.cpp
+  MxWindowHost.cpp
+  MxWindowNative.cpp
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -173,6 +177,11 @@ set(HEADERS
   MxImageConverters.h
   MxCylinderModel.h
   MxUniverse.h
+
+  MxWindow.cpp
+  MxWindowProxy.cpp
+  MxWindowHost.cpp
+  MxWindowNative.cpp
   )
 
 
@@ -323,6 +332,7 @@ target_link_libraries(mechanica_py
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
+  MagnumGlfwApplication
   )
 
 if(MX_APPLE)
@@ -379,6 +389,7 @@ target_link_libraries(mechanica_shared
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
+  MagnumGlfwApplication
   )
 
 if(MX_APPLE)

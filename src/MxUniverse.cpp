@@ -6,6 +6,7 @@
  */
 
 #include <MxUniverse.h>
+#include <iostream>
 
 MxUniverse universe = {
 
@@ -64,6 +65,20 @@ PyTypeObject MxUniverse_Type = {
 };
 
 
-void MxUniverse_init(PyObject* m)
+HRESULT MxUniverse_init(PyObject* m)
 {
+    std::cout << "registering Universe" << std::endl;
+
+    if (PyType_Ready((PyTypeObject*)&MxUniverse_Type) < 0) {
+        std::cout << "could not initialize MxUniverse_Type " << std::endl;
+        return E_FAIL;
+    }
+
+    Py_INCREF(&MxUniverse_Type);
+    if (PyModule_AddObject(m, "Universe", (PyObject *)&MxUniverse_Type) < 0) {
+        Py_DECREF(&MxUniverse_Type);
+        return E_FAIL;
+    }
+    
+    return S_OK;
 }

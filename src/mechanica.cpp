@@ -28,6 +28,11 @@
 #include "MxCylinderModel.h"
 #include "mdcore_single.h"
 #include "MxUniverse.h"
+#include "MxWindow.h";
+#include "MxWindowNative.h";
+#include "MxWindowProxy.h";
+#include "MxWindowHost.h";
+
 
 #define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
 #include "numpy/arrayobject.h"
@@ -124,6 +129,10 @@ static PyObject * moduleinit(void)
     MxParticle_init(m);
     MxPotential_init(m);
     MxUniverse_init(m);
+    MxWindow_init(m);
+    MxWindowNative_init(m);
+    MxWindowProxy_init(m);
+    MxWindowHost_init(m);
     
     mechanicaModule = m;
 

@@ -35,7 +35,7 @@ CAPI_DATA(MxUniverse) _universe;
 /**
  * Init and add to python module
  */
-void MxUniverse_init(PyObject *m);
+HRESULT MxUniverse_init(PyObject *m);
 
 
 

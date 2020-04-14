@@ -172,6 +172,15 @@ And test it from python via the command line as::
    python3 -c "import numpy; print(numpy.get_include())"
 
 
+Debugging Mechanica From Python
+-------------------------------
+
+We provide the `mx-pyrun` app / projct. This is a trivial program that simply
+calls the main Python `main` routine, but the purpose of this probram is to
+serve as a target app, as an entry point in your IDE so that the mechanica
+python library can be loaded and stepped through. 
+
+
 
 Linux
 =====

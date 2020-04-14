@@ -6,6 +6,23 @@
  */
 
 #include <MxSimulator.h>
+#include <MxUI.h>
+#include <MxTestView.h>
+
+#include <Magnum/GL/Context.h>
+
+#if defined(MX_APPLE)
+    #include "Magnum/Platform/WindowlessCglApplication.h"
+#elif defined(MX_LINUX)
+    #include "Magnum/Platform/WindowlessEglApplication.h"
+#elif defined(MX_WINDOWS)
+    #include "Magnum/Platform/WindowlessWglApplication.h"
+#else
+    #error no windowless application available on this platform
+#endif
+
+
+#include "Magnum/Platform/GlfwApplication.h"
 
 
 /**
@@ -28,12 +45,7 @@ static PyObject *Noddy_name(MxSimulator* self)
 }
 
 
-static PyMethodDef methods[] = {
-    {"name", (PyCFunction)Noddy_name, METH_NOARGS,
-     "Return the name, combining the first and last name"
-    },
-    {NULL}  /* Sentinel */
-};
+
 
 
 #if 0
@@ -80,6 +92,22 @@ PyTypeObject THPLegacyVariableType = {
 #endif
 
 
+#define MX_CLASS METH_CLASS | METH_VARARGS | METH_KEYWORDS
+
+
+static PyMethodDef methods[] = {
+        { "pollEvents", (PyCFunction)MxPyUI_PollEvents, MX_CLASS, NULL },
+        { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, MX_CLASS, NULL },
+        { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, MX_CLASS, NULL },
+        { "initializeGraphics", (PyCFunction)MxPyUI_InitializeGraphics, MX_CLASS, NULL },
+        { "createTestWindow", (PyCFunction)MxPyUI_CreateTestWindow, MX_CLASS, NULL },
+        { "testWin", (PyCFunction)PyTestWin, MX_CLASS, NULL },
+        { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, MX_CLASS, NULL },
+        { NULL, NULL, 0, NULL }
+};
+
+
+
 
 static PyTypeObject SimulatorType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
@@ -117,7 +145,7 @@ static PyTypeObject SimulatorType = {
     .tp_descr_get = 0, 
     .tp_descr_set = 0, 
     .tp_dictoffset = 0, 
-    .tp_init = (initproc)init,
+    .tp_init = (initproc)0,
     .tp_alloc = 0, 
     .tp_new = PyType_GenericNew,
     .tp_free = 0,  
@@ -147,12 +175,7 @@ static PyTypeObject SimulatorType = {
 
 PyTypeObject *MxSimuator_Type = &SimulatorType;
 
-static PyModuleDef custommodule = {
-    PyModuleDef_HEAD_INIT,
-    .m_name = "custom",
-    .m_doc = "Example module that creates an extension type.",
-    .m_size = -1,
-};
+
 
 HRESULT MxSimulator_init(PyObject* m) {
 
