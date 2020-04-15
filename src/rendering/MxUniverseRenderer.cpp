@@ -23,7 +23,7 @@
 
 #include <Corrade/Utility/Assert.h>
 #include <Corrade/Containers/ArrayView.h>
-#include <DrawableObjects/MxUniverseRenderer.h>
+#include <rendering/MxUniverseRenderer.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/Math/Functions.h>
 #include <Magnum/Shaders/Generic.h>

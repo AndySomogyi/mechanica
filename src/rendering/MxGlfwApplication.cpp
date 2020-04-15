@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxGlfwApplication.h>
+#include <rendering/MxGlfwApplication.h>
 
 
 #include <cstring>

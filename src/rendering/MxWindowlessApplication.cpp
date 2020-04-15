@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxWindowlessApplication.h>
+#include <rendering/MxWindowlessApplication.h>
 
 #include <iostream>
 

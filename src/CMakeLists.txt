@@ -95,22 +95,32 @@ set(SRC
   MxPolygonAreaConstraint.cpp
   MxCellVolumeConstraint.cpp
   MxRenderTarget.cpp
-  MxWindowView.cpp
+
   MxImageView.cpp
-  ArcBallInteractor.cpp
+
   MxUI.cpp
   MxTestView.cpp
-  MxApplication.cpp
-  MxGlfwApplication.cpp
-  MxWindowlessApplication.cpp
   MxSurfaceSimulator.cpp
   MxImageConverters.cpp
   MxCylinderModel.cpp
   MxUniverse.cpp
-  MxWindow.cpp
-  MxWindowProxy.cpp
-  MxWindowHost.cpp
-  MxWindowNative.cpp
+
+
+  rendering/ArcBallInteractor.cpp
+  rendering/MxGlfwApplication.cpp
+  rendering/MxWindowlessApplication.cpp
+  rendering/MxApplication.cpp
+  rendering/MxWindowView.cpp
+  rendering/MxWindow.cpp
+  rendering/MxWindowProxy.cpp
+  rendering/MxWindowHost.cpp
+  rendering/MxGlfwWindow.cpp
+  rendering/MxRenderer.cpp
+  rendering/MxUniverseRenderer.cpp
+
+
+  shaders/ParticleSphereShader.cpp
+
   ${AST_SRC}
 #  ${X3D_SRC}
   )
@@ -164,24 +174,32 @@ set(HEADERS
   MxPolygonAreaConstraint.h
   MxCellVolumeConstraint.h
   MxRenderTarget.h
-  MxWindowView.h
+
   MxImageView.h
-  ArcBallInteractor.h
   MxUI.h
   MxTestView.h
-  MxWindowless.h
-  MxApplication.h
-  MxGlfwApplication.h
-  MxWindowlessApplication.h
+
   MxSurfaceSimulator.h
   MxImageConverters.h
   MxCylinderModel.h
   MxUniverse.h
 
-  MxWindow.cpp
-  MxWindowProxy.cpp
-  MxWindowHost.cpp
-  MxWindowNative.cpp
+  rendering/ArcBallInteractor.h
+  rendering/MxGlfwApplication.h
+  rendering/MxWindowlessApplication.h
+  rendering/MxWindowless.h
+  rendering/MxApplication.h
+  rendering/MxWindowView.h
+  rendering/MxWindow.h
+  rendering/MxWindowProxy.h
+  rendering/MxWindowHost.h
+  rendering/MxGlfwWindow.h
+  rendering/MxRenderer.h
+  rendering/MxUniverseRenderer.h
+  rendering/WireframeObjects.h
+  rendering/FlatShadeObject.h
+
+  shaders/ParticleSphereShader.h
   )
 
 
@@ -267,6 +285,9 @@ target_link_libraries(mechanica_obj
 
 
 source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
+source_group("Rendering" REGULAR_EXPRESSION "rendering/.*")
+source_group("Shaders" REGULAR_EXPRESSION "shaders/.*")
+
 
 #message("MECHANICA_PUBLIC_HEADERS: ${MECHANICA_PUBLIC_HEADERS}")
 

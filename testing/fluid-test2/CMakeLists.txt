@@ -36,14 +36,14 @@ if(FLUID_SIMULATION_EXAMPLE_USE_TBB)
 endif()
 
 set_directory_properties(PROPERTIES CORRADE_USE_PEDANTIC_FLAGS ON)
-corrade_add_resource(FluidTest2Resources resources.conf)
+#corrade_add_resource(FluidTest2Resources resources.conf)
 
 include_directories(.)
 file(GLOB_RECURSE CPP_FILES *.cpp)
 
 add_executable(fluid-test2 WIN32
     ${CPP_FILES}
-    ${FluidTest2Resources})
+    )
 
   target_link_libraries(fluid-test2 PRIVATE
     Mechanica::Mechanica

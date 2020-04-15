@@ -29,7 +29,7 @@
 
 #include <LangevinPropagator.h>
 #include "CylinderModel.h"
-#include "ArcBallInteractor.h"
+#include "rendering/ArcBallInteractor.h"
 
 struct CylinderTest {
 

@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxWindowHost.h>
+#include <rendering/MxWindowHost.h>
 
 HRESULT MxWindowHost_init(PyObject *m)
 {

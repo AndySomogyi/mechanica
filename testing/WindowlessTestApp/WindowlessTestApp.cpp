@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxWindowless.h>
+#include <rendering/MxWindowless.h>
 
 #include <Magnum/DebugTools/Screenshot.h>
 #include <Magnum/GL/Buffer.h>

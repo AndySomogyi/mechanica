@@ -13,7 +13,7 @@
 #include "MxPropagator.h"
 #include "MxController.h"
 #include "MxView.h"
-#include "MxApplication.h"
+#include "rendering/MxApplication.h"
 
 enum MxSimulator_Key {
     MXSIMULATOR_NONE,

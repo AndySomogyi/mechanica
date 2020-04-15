@@ -22,7 +22,7 @@
 #endif
 
 
-#include "MxGlfwApplication.h"
+#include "rendering/MxGlfwApplication.h"
 
 #include <map>
 

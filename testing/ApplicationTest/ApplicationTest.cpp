@@ -19,7 +19,7 @@
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
 
-#include <MxApplication.h>
+#include <rendering/MxApplication.h>
 #include <MxSurfaceSimulator.h>
 #include <Corrade/Utility/Directory.h>
 #include <MxImageConverters.h>

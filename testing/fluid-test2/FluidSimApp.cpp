@@ -21,7 +21,7 @@
     Lesser General Public License for more details.
  */
 
-#include <DrawableObjects/MxUniverseRenderer.h>
+
 #include <Magnum/Animation/Easing.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Renderer.h>
@@ -39,7 +39,8 @@
 
 #include <string>
 
-#include "DrawableObjects/WireframeObjects.h"
+#include <rendering/MxUniverseRenderer.h>
+#include <rendering/WireframeObjects.h>
 
 #include "FluidSimApp.h"
 
@@ -774,8 +775,21 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     return 0;
 }
-
+        void test() {
+            
+            glfwInit ();
+            
+            int majorVersion = 0;
+            glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+            
+            std::cout << "major version: " << majorVersion << std::endl;
+        }
+        
 int main(int argc, char** argv) {
+    
+    //test();
+    
+    
     FluidSimApp app({argc, argv});
     return app.exec();
 }

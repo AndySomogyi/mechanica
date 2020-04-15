@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#include <MxWindowNative.h>
+#include <rendering/MxGlfwWindow.h>
 
-HRESULT MxWindowNative_init(PyObject *m)
+HRESULT MxGlfwWindow_init(PyObject *m)
 {
 }

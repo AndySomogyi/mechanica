@@ -10,7 +10,7 @@
 #include <Magnum/GL/Context.h>
 
 
-#include <MxWindowless.h>
+#include <rendering/MxWindowless.h>
 
 
 #include <iostream>

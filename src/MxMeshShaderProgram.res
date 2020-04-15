@@ -55,3 +55,12 @@ alias=compatibility.glsl
 [file]
 filename=shaders/generic.glsl
 alias=generic.glsl
+
+
+[file]
+filename=shaders/ParticleSphereShader.vert
+alias=ParticleSphereShader.vert
+
+[file]
+filename=shaders/ParticleSphereShader.frag
+alias=ParticleSphereShader.frag

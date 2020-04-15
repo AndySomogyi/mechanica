@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#ifndef SRC_MXWINDOWNATIVE_H_
-#define SRC_MXWINDOWNATIVE_H_
+#ifndef SRC_MXGLFWWINDOW_H_
+#define SRC_MXGLFWWINDOW_H_
 
 #include <mechanica_private.h>
 #include <GLFW/glfw3.h>
@@ -14,7 +14,8 @@
 
 
 
-struct MxWindowNative : PyObject
+
+struct MxGlfwWindow : PyObject
 {
 };
 
@@ -22,13 +23,13 @@ struct MxWindowNative : PyObject
 /**
  * The the particle type type
  */
-CAPI_DATA(PyTypeObject) MxWindowNative_Type;
+CAPI_DATA(PyTypeObject) MxGlfwWindow_Type;
 
 
 
 /**
  * Init and add to python module
  */
-HRESULT MxWindowNative_init(PyObject *m);
+HRESULT MxGlfwWindow_init(PyObject *m);
 
-#endif /* SRC_MXWINDOWNATIVE_H_ */
+#endif /* SRC_MXGLFWWINDOW_H_ */

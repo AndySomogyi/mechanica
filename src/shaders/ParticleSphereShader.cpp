@@ -33,7 +33,13 @@
 
 
 ParticleSphereShader::ParticleSphereShader() {
-    Utility::Resource rs("shaders");
+
+    assert(Utility::Resource::hasGroup("MxMeshShaderProgram"));
+
+
+    Utility::Resource rs("MxMeshShaderProgram");
+
+    std::string s = rs.get("ParticleSphereShader.vert");
 
     GL::Shader vertShader{GL::Version::GL330, GL::Shader::Type::Vertex};
     GL::Shader fragShader{GL::Version::GL330, GL::Shader::Type::Fragment};

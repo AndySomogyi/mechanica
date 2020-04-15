@@ -10,11 +10,11 @@
 
 #include <Mechanica.h>
 #include "mechanica_private.h"
-#include "MxApplication.h"
+#include "rendering/MxApplication.h"
 #include "MxCylinderModel.h"
 #include "LangevinPropagator.h"
 #include "MxMeshRenderer.h"
-#include "ArcBallInteractor.h"
+#include "rendering/ArcBallInteractor.h"
 
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Framebuffer.h>

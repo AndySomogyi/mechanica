@@ -5,8 +5,8 @@
  *      Author: andy
  */
 
-#include <MxApplication.h>
-#include <MxWindowlessApplication.h>
+#include <rendering/MxApplication.h>
+#include <rendering/MxWindowlessApplication.h>
 
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Framebuffer.h>

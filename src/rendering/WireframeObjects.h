@@ -33,7 +33,7 @@
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
 #include <Magnum/Trade/MeshData3D.h>
 
-#include "DrawableObjects/FlatShadeObject.h"
+#include <rendering/FlatShadeObject.h>
 
 using namespace Magnum;
 

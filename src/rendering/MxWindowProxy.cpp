@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxWindowProxy.h>
+#include <rendering/MxWindowProxy.h>
 
 HRESULT MxWindowProxy_init(PyObject *m)
 {
