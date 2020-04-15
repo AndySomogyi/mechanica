@@ -39,7 +39,7 @@
 
 #include <string>
 
-#include <mechanica.h>
+#include <Mechanica.h>
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/WireframeObjects.h>
 
