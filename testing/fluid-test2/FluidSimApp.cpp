@@ -39,6 +39,7 @@
 
 #include <string>
 
+#include <mechanica.h>
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/WireframeObjects.h>
 
@@ -160,6 +161,11 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         if(!tryCreate(conf, glConf)) {
             create(conf, glConf.setSampleCount(0));
         }
+
+        // TODO temporary hack to initialized mechanica becasue we create
+        // context here.
+        Mx_Initialize(0);
+
 
         GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
         GL::Renderer::setClearColor(Color3{0.35f});

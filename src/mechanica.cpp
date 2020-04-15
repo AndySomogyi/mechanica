@@ -160,6 +160,12 @@ CAPI_FUNC(HRESULT) Mx_Initialize(int args) {
         Py_Initialize();
     }
     
+    // GL symbols are globals in each shared library address space,
+    // if the app already initialized gl, we need to get the symbols here
+    if(Magnum::GL::Context::hasCurrent() && !glCreateProgram) {
+        flextGLInit(Magnum::GL::Context::current());
+    }
+
 
     if(mechanicaModule == NULL) {
         moduleinit();
