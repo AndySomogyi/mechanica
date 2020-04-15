@@ -245,7 +245,7 @@ static PyMethodDef methods[] = {
 };
 
 
-static PyTypeObject SimulatorType = {
+static PyTypeObject MxSimulator_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     .tp_name = "mechanica.Simulator",
     .tp_basicsize = sizeof(MxSimulator),
@@ -296,21 +296,6 @@ static PyTypeObject SimulatorType = {
     .tp_finalize = 0, 
 };
 
-/*
-  PyVarObject_HEAD_INIT(NULL, 0)
-  tp_name : "mechanica.Simulator",
-  tp_basicsize : sizeof(MxSimulator),
-  tp_itemsize : 0,
-  tp_flags : Py_TPFLAGS_DEFAULT,
-  tp_doc : "Custom objects",
-  tp_methods : methods,
-  tp_init : init,
-  tp_new : PyType_GenericNew,
-*/
-
-
-PyTypeObject *MxSimuator_Type = &SimulatorType;
-
 
 
 HRESULT MxSimulator_init(PyObject* m) {
@@ -319,13 +304,13 @@ HRESULT MxSimulator_init(PyObject* m) {
 
 
 
-    if (PyType_Ready((PyTypeObject *)MxSimuator_Type) < 0)
+    if (PyType_Ready((PyTypeObject *)&MxSimulator_Type) < 0)
         return E_FAIL;
 
 
 
-    Py_INCREF(MxSimuator_Type);
-    PyModule_AddObject(m, "Simulator", (PyObject *) MxSimuator_Type);
+    Py_INCREF(&MxSimulator_Type);
+    PyModule_AddObject(m, "Simulator", (PyObject *) &MxSimulator_Type);
 
     return 0;
 }
