@@ -245,7 +245,7 @@ static PyMethodDef methods[] = {
 };
 
 
-static PyTypeObject MxSimulator_Type = {
+PyTypeObject MxSimulator_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     .tp_name = "mechanica.Simulator",
     .tp_basicsize = sizeof(MxSimulator),
