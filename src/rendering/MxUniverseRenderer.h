@@ -30,7 +30,7 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/SceneGraph/Camera.h>
 
-#include "Shaders/ParticleSphereShader.h"
+#include "shaders/ParticleSphereShader.h"
 
 #include <MxUniverse.h>
 

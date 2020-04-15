@@ -31,6 +31,7 @@
 #include <Magnum/Math/Matrix4.h>
 
 
+#include <assert.h>
 
 ParticleSphereShader::ParticleSphereShader() {
 
