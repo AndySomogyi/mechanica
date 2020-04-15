@@ -100,9 +100,9 @@ MxGlfwApplication::MxGlfwApplication(const Arguments& arguments, NoCreateT):
         _commandLineDpiScalingPolicy = Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Framebuffer;
     #else
     else if(dpiScaling == "virtual")
-        _commandLineDpiScalingPolicy = Implementation::GlfwDpiScalingPolicy::Virtual;
+        _commandLineDpiScalingPolicy = Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Virtual;
     else if(dpiScaling == "physical")
-        _commandLineDpiScalingPolicy = Implementation::GlfwDpiScalingPolicy::Physical;
+        _commandLineDpiScalingPolicy = Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Physical;
     #endif
     else if(dpiScaling.find_first_of(" \t\n") != std::string::npos)
         _commandLineDpiScaling = args.value<Vector2>("dpi-scaling");
@@ -163,14 +163,14 @@ Vector2 MxGlfwApplication::dpiScaling(const Configuration& configuration) {
     /* Otherwise there's a choice between virtual and physical DPI scaling */
     #else
     /* Try to get virtual DPI scaling first, if supported and requested */
-    if(dpiScalingPolicy == Implementation::GlfwDpiScalingPolicy::Virtual) {
+    if(dpiScalingPolicy == Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Virtual) {
         /* Use Xft.dpi on X11. This could probably be dropped for GLFW 3.3+
            as glfwGetMonitorContentScale() does the same, but I'd still need to
            keep it for 2.2 and below, plus the same code needs to be used for
            SDL anyway. So keeping it to reduce the chance for unexpected minor
            differences across app implementations. */
         #ifdef _MAGNUM_PLATFORM_USE_X11
-        const Vector2 dpiScaling{Implementation::x11DpiScaling()};
+        const Vector2 dpiScaling{Magnum::Platform::Implementation::x11DpiScaling()};
         if(!dpiScaling.isZero()) {
             Debug{verbose} << "Platform::MxGlfwApplication: virtual DPI scaling" << dpiScaling.x();
             return dpiScaling;
@@ -185,7 +185,7 @@ Vector2 MxGlfwApplication::dpiScaling(const Configuration& configuration) {
            app is not DPI aware. If it's desired to get the DPI value
            unconditionally, the user should use physical DPI scaling instead. */
         #elif defined(CORRADE_TARGET_WINDOWS) && !defined(CORRADE_TARGET_WINDOWS_RT)
-        if(!Implementation::isWindowsAppDpiAware()) {
+        if(!Magnum::Platform::Implementation::isWindowsAppDpiAware()) {
             Warning{verbose} << "Platform::MxGlfwApplication: your application is not set as DPI-aware, DPI scaling won't be used";
             return Vector2{1.0f};
         }
@@ -207,7 +207,7 @@ Vector2 MxGlfwApplication::dpiScaling(const Configuration& configuration) {
 
     /* At this point, either the virtual DPI query failed or a physical DPI
        scaling is requested */
-    CORRADE_INTERNAL_ASSERT(dpiScalingPolicy == Implementation::GlfwDpiScalingPolicy::Virtual || dpiScalingPolicy == Implementation::GlfwDpiScalingPolicy::Physical);
+    CORRADE_INTERNAL_ASSERT(dpiScalingPolicy == Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Virtual || dpiScalingPolicy == Magnum::Platform::Implementation::GlfwDpiScalingPolicy::Physical);
 
     /* Physical DPI scaling. Enable only on Linux (where it gets the usually
        very-off value from X11) and on non-RT Windows (where it calculates it
