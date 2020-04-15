@@ -148,34 +148,47 @@ static PyObject *simulator_gl_info(PyTypeObject *type, PyObject *args, PyObject 
 static PyObject *simulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     std::cout << MX_FUNCTION << std::endl;
-    
+
     if(Mx_Simulator) {
         Py_INCREF(Mx_Simulator);
         return Mx_Simulator;
     }
 
-    int argc = 0;
-    char** argv = NULL;
-    Platform::WindowlessApplication::Arguments margs(argc, argv);
+    int glfw = true;
 
-    MxWindowlessApplication *app = new MxWindowlessApplication(margs);
-    
-    bool result = app->tryCreateContext({});
-    
-    if(!result) {
-        std::cout << "could not create context..." << std::endl;
-        delete app;
+    if(glfw) {
+        int argc = 0;
+        char** argv = NULL;
+        MxGlfwApplication::Arguments margs(argc, argv);
+        MxGlfwApplication *app = new MxGlfwApplication(margs);
         
-        Py_RETURN_NONE;
+        Mx_Simulator = (MxSimulator *) type->tp_alloc(type, 0);
+        Mx_Simulator->applicaiton = app;
+        Mx_Simulator->kind = MXSIMULATOR_GLFW;
     }
-    
+    else {
+        int argc = 0;
+        char** argv = NULL;
+        Platform::WindowlessApplication::Arguments margs(argc, argv);
 
+        MxWindowlessApplication *app = new MxWindowlessApplication(margs);
 
-    Mx_Simulator = (MxSimulator *) type->tp_alloc(type, 0);
+        bool result = app->tryCreateContext({});
 
-    Mx_Simulator->applicaiton = app;
-    Mx_Simulator->kind = MXSIMULATOR_WINDOWLESS;
+        if(!result) {
+            std::cout << "could not create context..." << std::endl;
+            delete app;
 
+            Py_RETURN_NONE;
+        }
+
+        Mx_Simulator = (MxSimulator *) type->tp_alloc(type, 0);
+
+        Mx_Simulator->applicaiton = app;
+        Mx_Simulator->kind = MXSIMULATOR_WINDOWLESS;
+    }
+
+    Py_INCREF(Mx_Simulator);
     return (PyObject *) Mx_Simulator;
 }
 

@@ -54,7 +54,22 @@ enum class MxGlfwApplication::Flag: UnsignedByte {
     #endif
 };
 
-MxGlfwApplication::MxGlfwApplication(const Arguments& arguments): MxGlfwApplication{arguments, Configuration{}} {}
+MxGlfwApplication::MxGlfwApplication(const Arguments& arguments) :
+    MxGlfwApplication{arguments, NoCreate} {
+        
+        const Vector2 dpiScaling = this->dpiScaling({});
+        Configuration conf;
+        conf.setTitle("SPH Testing")
+            .setSize(conf.size(), dpiScaling)
+            .setWindowFlags(Configuration::WindowFlag::Resizable);
+        GLConfiguration glConf;
+        glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
+        if(!tryCreate(conf, glConf)) {
+            create(conf, glConf.setSampleCount(0));
+        }
+
+
+}
 
 MxGlfwApplication::MxGlfwApplication(const Arguments& arguments, const Configuration& configuration): MxGlfwApplication{arguments, NoCreate} {
     create(configuration);
