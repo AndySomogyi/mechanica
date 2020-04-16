@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxUI.h>
+#include <rendering/MxUI.h>
 #include "MxTestView.h"
 #include <iostream>
 

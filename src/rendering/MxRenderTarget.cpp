@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxRenderTarget.h>
+#include <rendering/MxRenderTarget.h>
 
 MxRenderTarget::MxRenderTarget()
 {

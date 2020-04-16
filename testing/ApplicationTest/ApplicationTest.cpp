@@ -22,7 +22,7 @@
 #include <rendering/MxApplication.h>
 #include <MxSurfaceSimulator.h>
 #include <Corrade/Utility/Directory.h>
-#include <MxImageConverters.h>
+#include <rendering/MxImageConverters.h>
 
 using namespace Magnum;
 using namespace Magnum::Trade;

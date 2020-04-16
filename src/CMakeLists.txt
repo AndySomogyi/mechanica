@@ -5,6 +5,9 @@ add_compile_options(-DMX_STRICT)
 
 add_subdirectory(mdcore)
 
+# quiet linker warnings on Apple
+# set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 # Make sure the compiler can find include files for our Hello library
 # when other libraries or executables link to Hello
 include_directories(PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -23,7 +26,6 @@ file(GLOB AST_SRC
 #  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 #  "x3d/*.cpp"
 #  )
-
 
 # Resources for the MxMeshShaderProgram
 corrade_add_resource(MxMeshShaderProgramRes MxMeshShaderProgram.res)
@@ -60,15 +62,12 @@ set(SRC
   MxModel.cpp
   MxSystem.cpp
   MxPropagator.cpp
-
   MxCompositeParticle.cpp
   MxController.cpp
   MxView.cpp
   MxLattice.cpp
   MxLatticeCluster.cpp
   MxCell.cpp
-  MxMeshRenderer.cpp
-  MxMeshShaderProgram.cpp
   MeshPropagator.cpp
   MxMeshPottsPropagator.cpp
   MxExecutionContext.cpp
@@ -94,17 +93,11 @@ set(SRC
   MxPolygonSurfaceTensionForce.cpp
   MxPolygonAreaConstraint.cpp
   MxCellVolumeConstraint.cpp
-  MxRenderTarget.cpp
-
-  MxImageView.cpp
-
-  MxUI.cpp
-  MxTestView.cpp
   MxSurfaceSimulator.cpp
-  MxImageConverters.cpp
   MxCylinderModel.cpp
   MxUniverse.cpp
 
+  MxPyTest.cpp
 
   rendering/ArcBallInteractor.cpp
   rendering/MxGlfwApplication.cpp
@@ -116,8 +109,16 @@ set(SRC
   rendering/MxWindowHost.cpp
   rendering/MxGlfwWindow.cpp
   rendering/MxRenderer.cpp
+  rendering/MxUniverseRendererOld.cpp
   rendering/MxUniverseRenderer.cpp
 
+  rendering/MxMeshRenderer.cpp
+  rendering/MxMeshShaderProgram.cpp
+  rendering/MxRenderTarget.cpp
+  rendering/MxImageView.cpp
+  rendering/MxUI.cpp
+  rendering/MxTestView.cpp
+  rendering/MxImageConverters.cpp
 
   shaders/ParticleSphereShader.cpp
 
@@ -151,8 +152,7 @@ set(HEADERS
   MxLattice.h
   MxLatticeCluster.h
   MxCell.h
-  MxMeshRenderer.h
-  MxMeshShaderProgram.h
+
   MeshPropagator.h
   MxMeshPottsPropagator.h
   MxExecutionContext.h
@@ -173,16 +173,11 @@ set(HEADERS
   MxPolygonSurfaceTensionForce.h
   MxPolygonAreaConstraint.h
   MxCellVolumeConstraint.h
-  MxRenderTarget.h
-
-  MxImageView.h
-  MxUI.h
-  MxTestView.h
-
   MxSurfaceSimulator.h
-  MxImageConverters.h
   MxCylinderModel.h
   MxUniverse.h
+
+  MxPyTest.h
 
   rendering/ArcBallInteractor.h
   rendering/MxGlfwApplication.h
@@ -195,9 +190,17 @@ set(HEADERS
   rendering/MxWindowHost.h
   rendering/MxGlfwWindow.h
   rendering/MxRenderer.h
+  rendering/MxUniverseRendererOld.h
   rendering/MxUniverseRenderer.h
   rendering/WireframeObjects.h
   rendering/FlatShadeObject.h
+  rendering/MxMeshRenderer.h
+  rendering/MxMeshShaderProgram.h
+  rendering/MxRenderTarget.h
+  rendering/MxImageView.h
+  rendering/MxUI.h
+  rendering/MxTestView.h
+  rendering/MxImageConverters.h
 
   shaders/ParticleSphereShader.h
   )
@@ -235,6 +238,9 @@ add_library(mechanica_obj
   )
 
 message("Shader Program Res: ${MxMeshShaderProgramRes}")
+
+
+target_include_directories(mechanica_obj PRIVATE ${PYBIND11_INCLUDE_DIR})
 
 # set_target_properties(mechanica PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

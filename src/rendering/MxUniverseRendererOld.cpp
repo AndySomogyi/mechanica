@@ -23,12 +23,12 @@
 
 #include <Corrade/Utility/Assert.h>
 #include <Corrade/Containers/ArrayView.h>
-#include <rendering/MxUniverseRenderer.h>
+#include <rendering/MxUniverseRendererOld.h>
 #include <Magnum/GL/Renderer.h>
 #include <Magnum/Math/Functions.h>
 #include <Magnum/Shaders/Generic.h>
 #include <Magnum/SceneGraph/Drawable.h>
-#include <Magnum/Trade/MeshData.h>
+#include <Magnum/Trade/MeshData3D.h>
 
 #include <iostream>
 
@@ -36,14 +36,14 @@
 
 using namespace Magnum::Math::Literals;
 
-MxUniverseRenderer::MxUniverseRenderer(float particleRadius):
+MxUniverseRendererOld::MxUniverseRendererOld(float particleRadius):
     _particleRadius(particleRadius),
     _mesh(GL::MeshPrimitive::Points) {
     _mesh.addVertexBuffer(_vertexBuffer, 0, ParticleSphereShader::Position{}, ParticleSphereShader::Index{});
     _shader.reset(new ParticleSphereShader);
 }
 
-MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Camera3D>& camera,
+MxUniverseRendererOld& MxUniverseRendererOld::draw(Containers::Pointer<SceneGraph::Camera3D>& camera,
         const Vector2i& viewportSize) {
 
 

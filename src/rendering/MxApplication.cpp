@@ -17,7 +17,7 @@
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>
 #include <Corrade/Utility/Directory.h>
-#include <MxImageConverters.h>
+#include <rendering/MxImageConverters.h>
 #include <Magnum/Math/Color.h>
 
 using namespace Magnum;

@@ -20,18 +20,20 @@
 #include "MxModel.h"
 #include "MxSystem.h"
 #include "MxPropagator.h"
-#include "MxUI.h"
-#include "MxTestView.h"
+#include <rendering/MxUI.h>
+#include "rendering/MxTestView.h"
 #include "rendering/MxApplication.h"
 #include "MxSimulator.h"
 #include "MxSurfaceSimulator.h"
 #include "MxCylinderModel.h"
 #include "mdcore_single.h"
 #include "MxUniverse.h"
-#include "rendering/MxWindow.h";
-#include <rendering/MxGlfwWindow.h>;
-#include "rendering/MxWindowProxy.h";
-#include "rendering/MxWindowHost.h";
+#include "rendering/MxWindow.h"
+#include <rendering/MxGlfwWindow.h>
+#include "rendering/MxWindowProxy.h"
+#include "rendering/MxWindowHost.h"
+
+#include "MxPyTest.h"
 
 
 #define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
@@ -134,6 +136,8 @@ static PyObject * moduleinit(void)
     MxWindowProxy_init(m);
     MxWindowHost_init(m);
     
+    MxPyTest_init(m);
+
     mechanicaModule = m;
 
     return m;

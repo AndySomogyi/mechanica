@@ -29,6 +29,34 @@
 #include <structmember.h>
 #include <MxNumpy.h>
 
+#include <pybind11/pybind11.h>
+
+
+
+
+struct Foo {
+    int x; int y; int z;
+};
+
+
+PyObject *test() {
+
+    int i = 0;
+
+    pybind11::handle h = pybind11::cast(i);
+
+    Foo f;
+
+    pybind11::handle h2 = pybind11::cast(f);
+
+
+
+
+    return h.ptr();
+}
+ 
+
+
 
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     

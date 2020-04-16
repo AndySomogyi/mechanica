@@ -160,22 +160,22 @@ function(add_mdcore_single)
     #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
   )
 
- target_link_libraries(mdcore_single
+ target_link_libraries(mdcore_single PUBLIC
   Carbon::Carbon
   DirectXMath
   Python::Python
   Python::NumPy
-  glfw
-  JPEG::JPEG
-  voro++
-  sundials_cvode_static
-  ${OPENGL_LIBRARIES}
-
   )
 
 
-  message("setting mdcore_single interface includes: ${MDCORE_INCLUDE_DIR}")
-  
+#target_link_libraries(mdcore_single PRIVATE pybind11::module)
+
+message("pybind header: ${PYBIND11_INCLUDE_DIR}")
+
+target_include_directories(mdcore_single PRIVATE ${PYBIND11_INCLUDE_DIR})
+
+message("setting mdcore_single interface includes: ${MDCORE_INCLUDE_DIR}")
+
 endfunction(add_mdcore_single)
 
 # alwasy build the single precision version

@@ -6,8 +6,8 @@
  */
 
 #include <iostream>
-#include <MxMeshRenderer.h>
-#include <MxMeshShaderProgram.h>
+#include <rendering/MxMeshRenderer.h>
+#include <rendering/MxMeshShaderProgram.h>
 
 typedef MxMeshShaderProgram ShaderProgram;
 

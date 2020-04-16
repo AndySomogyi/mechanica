@@ -39,7 +39,7 @@ using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
 
 class WireframeGrid;
 class WireframeBox;
-class MxUniverseRenderer;
+class MxUniverseRendererOld;
 
 #include <MxUniverse.h>
 
@@ -101,7 +101,7 @@ class FluidSimApp: public Platform::GlfwApplication {
         Float _boundaryOffset = 0.0f; /* For boundary animation */
 
         /* Drawable particles */
-        Containers::Pointer<MxUniverseRenderer> _drawableParticles;
+        Containers::Pointer<MxUniverseRendererOld> _drawableParticles;
 
         /* Ground grid */
         Containers::Pointer<WireframeGrid> _grid;

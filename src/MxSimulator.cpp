@@ -6,8 +6,8 @@
  */
 
 #include <MxSimulator.h>
-#include <MxUI.h>
-#include <MxTestView.h>
+#include <rendering/MxUI.h>
+#include <rendering/MxTestView.h>
 
 #include <Magnum/GL/Context.h>
 

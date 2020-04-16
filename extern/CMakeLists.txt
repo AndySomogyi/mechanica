@@ -5,6 +5,9 @@ add_subdirectory(carbon)
 add_subdirectory(glfw)
 
 
+set(PYBIND11_CPP_STANDARD -std=c++14)
+add_subdirectory(pybind11)
+
 # glfw does not set it's target include directories, but it turns out we
 # can set them after the glfw subproject is processed.
 # This approach enables us to simply target_link_libraries(MyProgram glfw), and

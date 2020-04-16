@@ -22,3 +22,11 @@
 [submodule "extern/carbon"]
 	path = extern/carbon
 	url = https://github.com/AndySomogyi/carbon.git
+[submodule "extern/pybind11"]
+	path = extern/pybind11
+	url = https://github.com/pybind/pybind11.git
+	branch = stable
+[submodule "extern/magnum-bindings"]
+	path = extern/magnum-bindings
+	url = https://github.com/mosra/magnum-bindings.git
+	branch = master

@@ -14,7 +14,7 @@
 #include <set>
 
 #include "MxDebug.h"
-#include "MxMeshRenderer.h"
+#include <rendering/MxMeshRenderer.h>
 
 static MxCellType cellType{"CellType", NULL};
 CType *MxCell_Type = &cellType;

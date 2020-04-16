@@ -38,6 +38,8 @@ set(CMAKE_CXX_STANDARD 17)
 # we're compiling a bunch of shared libs, all should be pos independent. 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# quiet linker warnings on Apple
+# set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 # Use Magnum's modules to find things, these set up cmake names / aliases using a
 # magnum friendly naming scheme, add our module finders to cmake, these find

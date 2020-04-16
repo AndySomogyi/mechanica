@@ -25,7 +25,7 @@
 
 
 #include <iostream>
-#include <MxMeshRenderer.h>
+#include <rendering/MxMeshRenderer.h>
 
 #include <LangevinPropagator.h>
 #include "CylinderModel.h"

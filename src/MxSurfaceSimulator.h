@@ -13,8 +13,8 @@
 #include "rendering/MxApplication.h"
 #include "MxCylinderModel.h"
 #include "LangevinPropagator.h"
-#include "MxMeshRenderer.h"
-#include "rendering/ArcBallInteractor.h"
+#include <rendering/MxMeshRenderer.h>
+#include <rendering/ArcBallInteractor.h>
 
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Framebuffer.h>

@@ -30,85 +30,86 @@
 #include <Magnum/Math/Color.h>
 #include <Magnum/SceneGraph/Camera.h>
 
-#include <MxUniverse.h>
-#include <rendering/MxRenderer.h>
 #include <shaders/ParticleSphereShader.h>
+#include <MxUniverse.h>
 
 using namespace Magnum;
 
 
 
 
-struct MxUniverseRenderer : MxRenderer {
+class MxUniverseRendererOld {
+    public:
 
 
-        explicit MxUniverseRenderer(float particleRadius);
 
-        MxUniverseRenderer& draw(Containers::Pointer<SceneGraph::Camera3D>& camera, const Vector2i& viewportSize);
+        explicit MxUniverseRendererOld(float particleRadius);
+
+        MxUniverseRendererOld& draw(Containers::Pointer<SceneGraph::Camera3D>& camera, const Vector2i& viewportSize);
 
         bool& isDirty() { return _dirty; }
 
-        MxUniverseRenderer& setDirty() {
+        MxUniverseRendererOld& setDirty() {
             _dirty = true;
             return *this;
         }
 
         Float& particleRadius() { return _particleRadius; }
 
-        MxUniverseRenderer& setParticleRadius(Float radius) {
+        MxUniverseRendererOld& setParticleRadius(Float radius) {
             _particleRadius = radius;
             return *this;
         }
 
         ParticleSphereShader::ColorMode& colorMode() { return _colorMode; }
 
-        MxUniverseRenderer& setColorMode(ParticleSphereShader::ColorMode colorMode) {
+        MxUniverseRendererOld& setColorMode(ParticleSphereShader::ColorMode colorMode) {
             _colorMode = colorMode;
             return *this;
         }
 
         Color3& ambientColor() { return _ambientColor; }
 
-        MxUniverseRenderer& setAmbientColor(const Color3& color) {
+        MxUniverseRendererOld& setAmbientColor(const Color3& color) {
             _ambientColor = color;
             return *this;
         }
 
         Color3& diffuseColor() { return _diffuseColor; }
 
-        MxUniverseRenderer& setDiffuseColor(const Color3& color) {
+        MxUniverseRendererOld& setDiffuseColor(const Color3& color) {
             _diffuseColor = color;
             return *this;
         }
 
         Color3& specularColor() { return _specularColor; }
 
-        MxUniverseRenderer& setSpecularColor(const Color3& color) {
+        MxUniverseRendererOld& setSpecularColor(const Color3& color) {
             _specularColor = color;
             return *this;
         }
 
         Float& shininess() { return _shininess; }
 
-        MxUniverseRenderer& setShininess(Float shininess) {
+        MxUniverseRendererOld& setShininess(Float shininess) {
             _shininess = shininess;
             return *this;
         }
 
         Vector3& lightDirection() { return _lightDir; }
 
-        MxUniverseRenderer& setLightDirection(const Vector3& lightDir) {
+        MxUniverseRendererOld& setLightDirection(const Vector3& lightDir) {
             _lightDir = lightDir;
             return *this;
         }
 
-        MxUniverseRenderer& setModelViewTransform(const Magnum::Matrix4& mat) {
+        MxUniverseRendererOld& setModelViewTransform(const Magnum::Matrix4& mat) {
             modelViewMat = mat;
             _shader->setViewMatrix(modelViewMat);
             return *this;
         }
 
-        MxUniverseRenderer& setProjectionTransform(const Magnum::Matrix4& mat) {
+        MxUniverseRendererOld& setProjectionTransform(const Magnum::Matrix4& mat) {
             projMat = mat;
             _shader->setProjectionMatrix(projMat);
             return *this;

@@ -17,6 +17,9 @@
 
 struct MxGlfwWindow : PyObject
 {
+
+    // it's a wrapper around a native GLFW window
+    GLFWwindow* _window;
 };
 
 

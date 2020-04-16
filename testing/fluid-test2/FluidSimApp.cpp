@@ -40,7 +40,7 @@
 #include <string>
 
 #include <Mechanica.h>
-#include <rendering/MxUniverseRenderer.h>
+#include <rendering/MxUniverseRendererOld.h>
 #include <rendering/WireframeObjects.h>
 
 #include "FluidSimApp.h"
@@ -224,7 +224,7 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         _drawableBox->setColor(Color3(1, 1, 0));
 
         /* Drawable particles */
-        _drawableParticles.reset(new MxUniverseRenderer{ParticleRadius});
+        _drawableParticles.reset(new MxUniverseRendererOld{ParticleRadius});
 
         _drawableParticles->setModelViewTransform(Matrix4::translation(-center));
     }
