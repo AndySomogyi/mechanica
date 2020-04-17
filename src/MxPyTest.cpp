@@ -55,7 +55,7 @@ static PyMethodDef pytest_methods[] = {
 
 
 
-static PyTypeObject MxPyTest_Type = {
+PyTypeObject MxPyTest_Type = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     .tp_name = "Test",
     .tp_basicsize = sizeof(MxPyTest),

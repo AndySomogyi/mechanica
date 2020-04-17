@@ -1,5 +1,11 @@
 add_executable(argon argon.cpp)
+
 target_compile_definitions(argon PUBLIC ENGINE_FLAGS=engine_flag_none FPTYPE_SINGLE)
-target_link_libraries(argon mdcore_single)
+
+find_package(Threads REQUIRED)
+
+target_link_libraries(argon
+	mdcore_single
+	Threads::Threads)
 
   
