@@ -39,6 +39,10 @@
 #define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
 #include "numpy/arrayobject.h"
 
+#include <pybind11/pybind11.h>
+
+#include <magnum/bootstrap.h>
+
 
 
 static PyMethodDef methods[] = {
@@ -113,6 +117,20 @@ static PyObject * moduleinit(void)
     PyModule_AddObject(m, "_CAPI", api_object);
 
      */
+
+    pybind11::module rootModule = pybind11::reinterpret_borrow<pybind11::module>(m);
+
+    //pybind11::module rootModule(rootHandle);
+
+
+    pybind11::module math = rootModule.def_submodule("math", "math module");
+
+    //pybind11::module math = rootModule.def_submodule("math");
+
+
+    //magnum::math(m, math);
+
+    magnum::math(rootModule, math);
 
 
 

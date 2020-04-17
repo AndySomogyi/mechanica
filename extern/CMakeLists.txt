@@ -128,8 +128,6 @@ set(BUILD_KINSOL         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 
 add_subdirectory(sundials)
 
-
-
 add_library(DirectXMath INTERFACE)
 
 target_compile_options(DirectXMath INTERFACE -fms-extensions)
@@ -148,3 +146,48 @@ target_include_directories(DirectXMath INTERFACE
 #set_target_properties(DirectXMath::DirectXMath PROPERTIES
 #  INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXMath/Inc/>
 #  )
+
+
+set(MAGNUM_PYTHON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/magnum-bindings/src/python/magnum)
+
+set(magnum_SRCS
+    #magnum.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.matrixfloat.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.matrixdouble.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.range.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.vectorfloat.cpp
+    ${MAGNUM_PYTHON_SOURCE_DIR}/math.vectorintegral.cpp)
+
+
+# this is the "object library" target: compiles the sources only once
+# need at least one src file in a project for xcode to build it, xcode
+# won't work if any product *only* has an object src
+add_library(Magnum_PyBind
+  OBJECT
+  ${magnum_SRCS}
+  )
+
+
+
+set_target_properties(Magnum_PyBind PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_include_directories(Magnum_PyBind PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/magnum-bindings/src/python/
+  ${CMAKE_CURRENT_SOURCE_DIR}/magnum-bindings/src/
+)
+
+target_link_libraries(Magnum_PyBind PUBLIC
+  Python::Python
+  Magnum::Magnum
+  )
+
+target_link_libraries(Magnum_PyBind PRIVATE Magnum::Magnum ${magnum_LIBS})
+
+target_include_directories(Magnum_PyBind PRIVATE ${PYBIND11_INCLUDE_DIR})
+
+#set_target_properties(Magnum_PyBind PROPERTIES
+#    FOLDER "lib"
+#    OUTPUT_NAME "magnum_pybind"
+#    LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+

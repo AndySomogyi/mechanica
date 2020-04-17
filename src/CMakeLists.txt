@@ -326,6 +326,8 @@ target_include_directories(mechanica_shared PUBLIC
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
+target_include_directories(mechanica_shared PRIVATE ${PYBIND11_INCLUDE_DIR})
+
 
 
 # shared and static libraries built from the same object files
@@ -343,6 +345,8 @@ target_include_directories(mechanica_py PRIVATE
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
+target_include_directories(mechanica_py PRIVATE ${PYBIND11_INCLUDE_DIR})
+
 
 
 target_link_libraries(mechanica_py
@@ -358,8 +362,8 @@ target_link_libraries(mechanica_py
   JPEG::JPEG
   voro++
   sundials_cvode_static
-  ${OPENGL_LIBRARIES}
   MagnumGlfwApplication
+  Magnum_PyBind
   )
 
 if(MX_APPLE)
@@ -415,8 +419,8 @@ target_link_libraries(mechanica_shared
   JPEG::JPEG
   voro++
   sundials_cvode_static
-  ${OPENGL_LIBRARIES}
   MagnumGlfwApplication
+  Magnum_PyBind
   )
 
 if(MX_APPLE)
