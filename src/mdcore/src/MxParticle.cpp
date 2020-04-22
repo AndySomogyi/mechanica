@@ -31,6 +31,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include <MxPy.h>
+
 
 
 
@@ -39,7 +41,38 @@ struct Foo {
 };
 
 
+//template <typename C, typename D, typename... Extra>
+//class_ &def_readwrite(const char *name, D C::*pm, const Extra&... extra) {
+
+
+    
+    
+template<typename C, typename T>
+void f(T C::*pm)
+{
+    std::cout << "sizeof pm: " << sizeof(pm) << std::endl;
+    std::cout << "sizeof T: " << sizeof(T) << std::endl;
+    //std::cout << "sizeof *pm: " << sizeof(MxParticle::*pm) << std::endl;
+    std::cout << typeid(T).name() << std::endl;
+    
+    if(std::is_same<T, float>::value) {
+        std::cout << "is float" << std::endl;
+    }
+    
+    if(std::is_same<T, Magnum::Vector3>::value) {
+        std::cout << "is vec" << std::endl;
+    }
+    
+    std::cout << "offset of: " << offset_of(pm);
+}
+
 PyObject *test() {
+
+    pybind11::module m;
+
+
+    pybind11::class_<Foo>(m, "Pet")
+        .def_readwrite("name", &Foo::x);
 
     int i = 0;
 
@@ -75,54 +108,86 @@ static int particle_init(MxParticle *self, PyObject *args, PyObject *kwds) {
     //self->mass = 3.14;
 
     //PyObject *o = PyObject_GetAttrString(self, "mass");
-
-
-
-    self->pos = PyList_New(3);
-
-    PyList_SetItem(self->pos, 0, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->pos, 1, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->pos, 2, PyFloat_FromDouble(0.0));
-
-    self->vel = PyList_New(3);
-
-    PyList_SetItem(self->vel, 0, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->vel, 1, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->vel, 2, PyFloat_FromDouble(0.0));
-
-    self->force = PyList_New(3);
-
-    PyList_SetItem(self->force, 0, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->force, 1, PyFloat_FromDouble(0.0));
-    PyList_SetItem(self->force, 2, PyFloat_FromDouble(0.0));
-
-
     return 0;
 }
 
-static PyMemberDef particle_members[] = {
-    {
-        .name = "position",
-        .type = T_OBJECT,
-        .offset = offsetof(MxParticle, pos),
-        .flags = 0,
-        .doc = NULL
-    },
-    {
-        .name = "velocity",
-        .type = T_OBJECT,
-        .offset = offsetof(MxParticle, vel),
-        .flags = 0,
-        .doc = NULL
-    },
-    {
-        .name = "force",
-        .type = T_OBJECT,
-        .offset = offsetof(MxParticle, force),
-        .flags = 0,
-        .doc = NULL
-    },
-    {NULL},
+
+
+
+struct Offset {
+    uint32_t kind;
+    uint32_t offset;
+};
+
+static_assert(sizeof(Offset) == sizeof(void*), "error, void* must be 64 bit");
+
+static_assert(sizeof(MxGetSetDefInfo) == sizeof(void*), "error, void* must be 64 bit");
+static_assert(sizeof(MxGetSetDef) == sizeof(PyGetSetDef), "error, void* must be 64 bit");
+
+PyObject * vector4_getter(MxParticle *obj, void *closure) {
+    void* pClosure = &closure;
+    Offset o = *(Offset*)pClosure;
+
+    char* pVec = ((char*)obj) + o.offset;
+
+    Magnum::Vector4 *vec = (Magnum::Vector4 *)pVec;
+
+    pybind11::handle h = pybind11::cast(vec).release();
+    
+    //pybind11::object h2 = pybind11::cast(*vec);
+    
+
+    
+    PyObject *result = h.ptr();
+    
+    std::cout << "result: " << result << std::endl;
+    std::cout << "result.refcnt: " << result->ob_refcnt << std::endl;
+    std::cout << "result.type: " << result->ob_type->tp_name << std::endl;
+
+    return result;
+
+}
+
+int vector4_setter(PyObject *, PyObject *, void *) {
+
+    return -1;
+
+}
+
+
+
+::PyGetSetDef create_vector4_getset() {
+
+    ::PyGetSetDef result;
+
+    result.name = "foo";
+    result.get = (getter)vector4_getter;
+    result.set = vector4_setter;
+    result.doc = "docs";
+
+    Offset o = {0, offsetof(MxParticle, position)};
+
+    void** p = (void**)&o;
+
+
+    result.closure = (void*)(*p);
+
+
+    return result;
+
+}
+
+
+
+
+
+PyGetSetDef particle_getsets[] = {
+        //create_vector4_getset(),
+    MakeAttibute("position", "doc", &MxParticle::position),
+    MakeAttibute("velocity", "doc", &MxParticle::velocity),
+    MakeAttibute("force", "doc", &MxParticle::force),
+    MakeAttibute("q", "doc", &MxParticle::q),
+    {NULL}
 };
 
 
@@ -131,8 +196,8 @@ MxParticleType MxParticle_Type = {
 {
   {
       PyVarObject_HEAD_INIT(NULL, 0)
-      .tp_name = "Particle",
-      .tp_basicsize = sizeof(MxParticle),
+      .tp_name =           "Particle",
+      .tp_basicsize =      sizeof(MxParticle),
       .tp_itemsize =       0, 
       .tp_dealloc =        0, 
       .tp_print =          0, 
@@ -146,11 +211,11 @@ MxParticleType MxParticle_Type = {
       .tp_hash =           0, 
       .tp_call =           0, 
       .tp_str =            0, 
-      .tp_getattro = particle_getattro,
+      .tp_getattro =       0,
       .tp_setattro =       0, 
       .tp_as_buffer =      0, 
-      .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-      .tp_doc = "Custom objects",
+      .tp_flags =          Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+      .tp_doc =            "Custom objects",
       .tp_traverse =       0, 
       .tp_clear =          0, 
       .tp_richcompare =    0, 
@@ -158,16 +223,16 @@ MxParticleType MxParticle_Type = {
       .tp_iter =           0, 
       .tp_iternext =       0, 
       .tp_methods =        0, 
-      .tp_members = particle_members,
-      .tp_getset =         0, 
+      .tp_members =        0,
+      .tp_getset =         particle_getsets,
       .tp_base =           0, 
       .tp_dict =           0, 
       .tp_descr_get =      0, 
       .tp_descr_set =      0, 
       .tp_dictoffset =     0, 
-      .tp_init = (initproc)particle_init,
+      .tp_init =           (initproc)particle_init,
       .tp_alloc =          0, 
-      .tp_new = PyType_GenericNew,
+      .tp_new =            PyType_GenericNew,
       .tp_free =           0, 
       .tp_is_gc =          0, 
       .tp_bases =          0, 
@@ -232,21 +297,8 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
  */
 
 
-/*
- const char *name;
- int type;
- Py_ssize_t offset;
- int flags;
- const char *doc;
- */
-static PyMemberDef particle_type_members[] = {
-    {
-        .name = "mass",
-        .type = T_DOUBLE,
-        .offset = offsetof(MxParticleType, mass),
-        .flags = 0,
-        .doc = NULL
-    },
+static PyGetSetDef particle_type_getset[] = {
+    MakeAttibute("mass", "doc", &MxParticleType::mass),
     {NULL},
 };
 
@@ -272,8 +324,8 @@ static int particle_type_init(MxParticleType *self, PyObject *args, PyObject *kw
 
 PyTypeObject MxParticleType_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ParticleType",
-    .tp_basicsize = sizeof(MxParticleType),
+    .tp_name =           "ParticleType",
+    .tp_basicsize =      sizeof(MxParticleType),
     .tp_itemsize =       0, 
     .tp_dealloc =        0, 
     .tp_print =          0, 
@@ -290,8 +342,8 @@ PyTypeObject MxParticleType_Type = {
     .tp_getattro =       0, 
     .tp_setattro =       0, 
     .tp_as_buffer =      0, 
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = "Custom objects",
+    .tp_flags =          Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc =            "Custom objects",
     .tp_traverse =       0, 
     .tp_clear =          0, 
     .tp_richcompare =    0, 
@@ -299,16 +351,16 @@ PyTypeObject MxParticleType_Type = {
     .tp_iter =           0, 
     .tp_iternext =       0, 
     .tp_methods =        0, 
-    .tp_members = particle_type_members,
-    .tp_getset =         0, 
+    .tp_members =        0,
+    .tp_getset =         particle_type_getset,
     .tp_base =           0, 
     .tp_dict =           0, 
-    .tp_descr_get = (descrgetfunc)particle_type_descr_get,
+    .tp_descr_get =      (descrgetfunc)particle_type_descr_get,
     .tp_descr_set =      0, 
     .tp_dictoffset =     0, 
-    .tp_init = (initproc)particle_type_init,
+    .tp_init =           (initproc)particle_type_init,
     .tp_alloc =          0, 
-    .tp_new = particle_type_new,
+    .tp_new =            particle_type_new,
     .tp_free =           0, 
     .tp_is_gc =          0, 
     .tp_bases =          0, 
@@ -351,6 +403,8 @@ int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int 
     p->typeId = type;
     p->flags = flags;
 
+
+
     /* all is well... */
     return PARTICLE_ERR_OK;
 
@@ -376,7 +430,13 @@ static void printTypeInfo(const char* name, PyTypeObject *p) {
 HRESULT MxParticle_init(PyObject *m)
 {
     
-    //PyMember_GetOne(NULL, NULL);
+    
+    
+    f<>(&MxParticle::q);
+    
+    f<>(&MxParticle::position);
+    
+    f<>(&MxParticle::x);
     
     std::cout <<
     "sizeof PyHeapTypeObject: " << sizeof(PyHeapTypeObject) << ",\n"

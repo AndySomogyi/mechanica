@@ -23,6 +23,11 @@
 #include "fptype.h"
 #include "carbon.h"
 
+
+#include <Magnum/Magnum.h>
+#include <Magnum/Math/Vector4.h>
+
+
 /* error codes */
 #define PARTICLE_ERR_OK                 0
 #define PARTICLE_ERR_NULL              -1
@@ -55,16 +60,28 @@ extern int particle_err;
 struct MxParticle : PyObject  {
 
 	/** Particle position */
-	FPTYPE x[4] __attribute__ ((aligned (16)));
+    union {
+        FPTYPE x[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 position __attribute__ ((aligned (16))) = {0,0,0};
+    };
 
 	/** Particle velocity */
-	FPTYPE v[4] __attribute__ ((aligned (16)));
+    union {
+        FPTYPE v[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 velocity __attribute__ ((aligned (16))) = {0,0,0};
+    };
 
 	/** Particle force */
-	FPTYPE f[4] __attribute__ ((aligned (16)));
+    union {
+        FPTYPE f[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 force __attribute__ ((aligned (16))) = {0,0,0};
+    };
+
 
 	/** individual particle charge, if needed. */
 	float q;
+    
+    float volume;
 
 	/** Particle id and type */
 	int id, vid;
@@ -74,14 +91,6 @@ struct MxParticle : PyObject  {
 
 	/** Particle flags */
 	unsigned short int flags;
-
-	PyObject *pos;
-
-	PyObject *vel;
-
-	PyObject *force;
-
-
 };
 
 

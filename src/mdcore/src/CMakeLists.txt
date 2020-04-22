@@ -52,6 +52,7 @@ set(PRIVATE_HEADERS
   "mainpage.h"
   "potential_eval.h"
   "reader.h"
+  "MxPy.h"
   )
 
 #add_library(${_target} ${ARGN} ${_header_list})
@@ -85,6 +86,7 @@ SET(SOURCES
   task.cpp
   spme.cpp
   runner_verlet.cpp
+  MxPy.cpp
   )
 
 if(MDCORE_USE_MPI)
@@ -140,7 +142,7 @@ function(add_mdcore_single)
 
   message("SINGLE_HEADERS: ${SINGLE_HEADERS}")
 
-  source_group("Includes" FILES ${SINGLE_HEADERS})
+  source_group("Sources" FILES ${SOURCES} ${SINGLE_HEADERS})
   add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
 
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
@@ -165,10 +167,9 @@ function(add_mdcore_single)
   DirectXMath
   Python::Python
   Python::NumPy
+  Magnum::Magnum
   )
 
-
-#target_link_libraries(mdcore_single PRIVATE pybind11::module)
 
 message("pybind header: ${PYBIND11_INCLUDE_DIR}")
 

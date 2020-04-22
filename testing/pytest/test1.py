@@ -50,3 +50,18 @@ print("getting p mass")
 print(p.mass)
 
 
+def bumpVec(p):
+    p.position[0] += 1
+    print(p.position)
+    
+    
+for i in range(5):
+    bumpVec(p)
+    
+    
+print("final foo:")
+print(p.position)
+
+
+
+
