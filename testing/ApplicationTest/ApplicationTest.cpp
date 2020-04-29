@@ -104,7 +104,7 @@ int main (int argc, char** argv) {
 
     MxApplicationConfig conf = {};
 
-    PyObject *app = MxApplication_New(argc, argv, &conf);
+
 
 
     MxSurfaceSimulator_Config simConf = {{600,900}, modelPath.c_str()};
@@ -117,9 +117,6 @@ int main (int argc, char** argv) {
 
     exec();
 
-    Py_DECREF(app);
-
-    MxApplication::destroy();
 
 }
 

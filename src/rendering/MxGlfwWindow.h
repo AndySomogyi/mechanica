@@ -9,17 +9,21 @@
 #define SRC_MXGLFWWINDOW_H_
 
 #include <mechanica_private.h>
+
+#include <rendering/MxWindow.h>
 #include <GLFW/glfw3.h>
 
 
 
 
 
-struct MxGlfwWindow : PyObject
+struct MxGlfwWindow : MxWindow
 {
 
     // it's a wrapper around a native GLFW window
     GLFWwindow* _window;
+
+    float f;
 };
 
 

@@ -10,7 +10,7 @@
 
 #include <mechanica_private.h>
 
-class MxWindow
+struct MxWindow : PyObject
 {
 };
 

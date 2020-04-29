@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-
+/*
 
 
 static Magnum::Platform::WindowlessApplication::Configuration
@@ -24,17 +24,44 @@ static Magnum::Platform::WindowlessApplication::Configuration
 
     return result;
 }
+*/
 
 
-MxWindowlessApplication::MxWindowlessApplication(
-        int argc, char** argv, const MxApplication::Configuration& conf) :
-        Magnum::Platform::WindowlessApplication({argc, argv}, config(conf)) {
 
-}
 
 MxWindowlessApplication::~MxWindowlessApplication()
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
+MxWindowlessApplication::MxWindowlessApplication(const Arguments &args) :
+    WindowlessApplication{args, Magnum::NoCreate}
+{
+}
 
+bool MxWindowlessApplication::tryCreateContext(
+        const Configuration &conf)
+{
+    return WindowlessApplication::tryCreateContext(conf);
+}
+
+HRESULT MxWindowlessApplication::MxWindowlessApplication::pollEvents()
+{
+    return E_NOTIMPL;
+}
+
+HRESULT MxWindowlessApplication::MxWindowlessApplication::waitEvents()
+{
+    return E_NOTIMPL;
+}
+
+HRESULT MxWindowlessApplication::MxWindowlessApplication::waitEventsTimeout(
+        double timeout)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT MxWindowlessApplication::MxWindowlessApplication::postEmptyEvent()
+{
+    return E_NOTIMPL;
+}

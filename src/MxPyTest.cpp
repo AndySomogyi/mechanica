@@ -21,12 +21,12 @@ struct Foo {
 // call this function once, when the main library is initialized from Python .
 static void Foo_init(PyObject *module) {
 
-    pybind11::class_<Foo> foo(module, "Foo");
+    //pybind11::class_<Foo> foo(module, "Foo");
 
-    foo.def(pybind11::init<>());
-    foo.def_readwrite("x", &Foo::x);
-    foo.def_readwrite("y", &Foo::y);
-    foo.def_readwrite("z", &Foo::z);
+    //foo.def(pybind11::init<>());
+    //foo.def_readwrite("x", &Foo::x);
+    //foo.def_readwrite("y", &Foo::y);
+    //foo.def_readwrite("z", &Foo::z);
 }
 
 

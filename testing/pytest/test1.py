@@ -20,8 +20,37 @@ print(sys.path)
 import mechanica as m
 import _mechanica
 
+
+
 print ("mechanica file: " + m.__file__, flush=True)
 print("_mechanica file: " + _mechanica.__file__, flush=True)
+
+_mechanica.test("foo")
+
+w = _mechanica.Window();
+
+print("w.f: ", w.f) 
+
+
+c = m.Simulator.Config()
+
+c.windowless = False
+
+s = m.Simulator(c, foo='bar', bar=1)
+
+print("s.foo: ", s.foo)
+
+
+
+
+
+foo = _mechanica.Foo("foo")
+
+
+
+foo.stuff(this="that", stuff="this")
+
+
 
 
 class S(ctypes.Structure) : pass

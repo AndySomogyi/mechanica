@@ -86,6 +86,76 @@ PyGetSetDef MakeAttibute(const char* name, const char* doc, T C::*pm) {
     return *((PyGetSetDef*)&result);
 }
 
+#include <pybind11/pybind11.h>
+
+template<typename Klass, typename VarType, VarType Klass::*pm>
+PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
+
+    PyGetSetDef result;
+
+
+    // Convert lambda 'la' to function pointer 'ptr':
+    auto la = []( int a ) { return a + 1; };
+    int (*ptr)( int ) = la;
+
+    //    The get function takes one PyObject* parameter (the instance) and a
+    //    function pointer (the associated closure):
+    //
+    //    typedef PyObject *(*getter)(PyObject *, void *);
+    //    It should return a new reference on success or NULL with a set
+    //    exception on failure.
+    //
+    //    set functions take two PyObject* parameters (the instance and the value to be set) and a function pointer (the associated closure):
+    //
+    //    typedef int (*setter)(PyObject *, PyObject *, void *);
+    //    In case the attribute should be deleted the second parameter is NULL. Should return 0 on success or -1 with a set exception on failure.
+
+    auto get = [](PyObject* s, void *) -> PyObject* {
+        Klass *self = (Klass*)s;
+        VarType var = self->*pm;
+        try {
+            pybind11::object obj = pybind11::cast(var);
+            pybind11::handle result = obj.inc_ref();
+            return result.ptr();
+        }
+        catch(std::exception &e) {
+            PyErr_SetString(PyExc_ValueError, e.what());
+            return NULL;
+        }
+        catch(...) {
+            PyErr_SetString(PyExc_ValueError, "Unknown Error");
+            return NULL;
+        }
+    };
+    
+    auto set = [](PyObject *s, PyObject *obj, void *) -> int {
+        Klass *self = (Klass*)s;
+        VarType *var = &(self->*pm);
+        
+        
+        try {
+            VarType o = pybind11::cast<VarType>(obj);
+            *var = o;
+            return 0;
+        }
+        catch(std::exception &e) {
+            PyErr_SetString(PyExc_ValueError, e.what());
+            return -1;
+        }
+        catch(...) {
+            PyErr_SetString(PyExc_ValueError, "Unknown Error");
+            return -1;
+        }
+
+    };
+
+    result.doc = doc;
+    result.name = name;
+    result.get = (getter)get;
+    result.set = (setter)set;
+    return result;
+}
+
 
 
 #endif /* SRC_MDCORE_SRC_MXPY_H_ */

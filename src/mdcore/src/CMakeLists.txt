@@ -45,6 +45,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/cycle.h"
   "${MDCORE_SOURCE_DIR}/include/fptype.h"
   "${MDCORE_SOURCE_DIR}/include/mdcore_config.h"
+  "${MDCORE_SOURCE_DIR}/include/MxPy.h"
   )
 
 set(PRIVATE_HEADERS
@@ -52,7 +53,6 @@ set(PRIVATE_HEADERS
   "mainpage.h"
   "potential_eval.h"
   "reader.h"
-  "MxPy.h"
   )
 
 #add_library(${_target} ${ARGN} ${_header_list})

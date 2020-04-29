@@ -118,35 +118,82 @@ public:
 };
 
 
-struct MxApplication : CObject
+struct MxApplication
 {
 public:
 
-    typedef MxApplicationConfig Configuration;
+    /**
+     * python list of windows.
+     *
+     * We do some pretty low level stuff with window events, so keep then as python objects.
+     */
+    PyObject *windows;
+
+    virtual ~MxApplication() {};
 
 
-    static MxApplication *get();
+    /**
+     * This function processes only those events that are already in the event
+     * queue and then returns immediately. Processing events will cause the window
+     * and input callbacks associated with those events to be called.
+     *
+     * On some platforms, a window move, resize or menu operation will cause
+     * event processing to block. This is due to how event processing is designed
+     * on those platforms. You can use the window refresh callback to redraw the
+     * contents of your window when necessary during such operations.
+     */
+    virtual HRESULT pollEvents () = 0;
 
-    static HRESULT create(int argv, char** argc, const Configuration& conf);
+    /**
+     *   This function puts the calling thread to sleep until at least one
+     *   event is available in the event queue. Once one or more events are
+     *   available, it behaves exactly like glfwPollEvents, i.e. the events
+     *   in the queue are processed and the function then returns immediately.
+     *   Processing events will cause the window and input callbacks associated
+     *   with those events to be called.
+     *
+     *   Since not all events are associated with callbacks, this function may return
+     *   without a callback having been called even if you are monitoring all callbacks.
+     *
+     *  On some platforms, a window move, resize or menu operation will cause event
+     *  processing to block. This is due to how event processing is designed on
+     *  those platforms. You can use the window refresh callback to redraw the
+     *  contents of your window when necessary during such operations.
+     */
+    virtual HRESULT waitEvents () = 0;
 
-    static HRESULT destroy();
+    /**
+     * This function puts the calling thread to sleep until at least
+     * one event is available in the event queue, or until the specified
+     * timeout is reached. If one or more events are available, it behaves
+     * exactly like pollEvents, i.e. the events in the queue are
+     * processed and the function then returns immediately. Processing
+     * events will cause the window and input callbacks associated with those
+     * events to be called.
+     *
+     * The timeout value must be a positive finite number.
+     * Since not all events are associated with callbacks, this function may
+     * return without a callback having been called even if you are monitoring
+     * all callbacks.
+     *
+     * On some platforms, a window move, resize or menu operation will cause
+     * event processing to block. This is due to how event processing is designed
+     * on those platforms. You can use the window refresh callback to redraw the
+     * contents of your window when necessary during such operations.
+     */
 
-    class MxApplicationImpl *impl;
+    virtual HRESULT waitEventsTimeout(double  timeout) = 0;
+
+
+    /**
+     * This function posts an empty event from the current thread
+     * to the event queue, causing waitEvents or waitEventsTimeout to return.
+     */
+    virtual HRESULT postEmptyEvent() = 0;
+
 };
 
-class MxApplicationImpl {
-public:
 
-    virtual ~MxApplicationImpl() {};
-};
 
-/**
- * The type object for a MxSymbol.
- */
-CAPI_DATA(PyTypeObject) *MxApplication_Type;
-
-HRESULT MxApplication_init(PyObject *m);
-
-PyObject *MxApplication_New(int argc, char** argv, const MxApplicationConfig *conf);
 
 #endif /* SRC_MXAPPLICATION_H_ */

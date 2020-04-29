@@ -243,11 +243,7 @@ HRESULT MxSurfaceSimulator::createContext(const Configuration& configuration) {
 
     /* Window flags */
 
-    if(MxApplication::get() == nullptr) {
-        std::cout << "WTF, application does not exist... \n";
 
-
-    }
     
     assert(Magnum::GL::Context::hasCurrent() && "must have context, should be created by application");
 
