@@ -40,17 +40,16 @@
 #include <string>
 
 #include <Mechanica.h>
-#include <rendering/MxUniverseRendererOld.h>
 #include <rendering/WireframeObjects.h>
 
-#include "FluidSimApp.h"
+#include "FluidSimTest.h"
 
 
 using namespace Magnum;
 using namespace Math::Literals;
 
 namespace {
-constexpr Float ParticleRadius = 0.2f;
+    constexpr Float ParticleRadius = 0.2f;
 }
 
 static void engineStep();
@@ -107,7 +106,9 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
     return result;
 }
 
-FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{arguments, NoCreate} {
+FluidSimTest::FluidSimTest(const Arguments& arguments) :
+        Platform::Application{arguments, NoCreate},
+        mxWindow{NULL} {
 
     for(int i = 0; i < arguments.argc; ++i) {
         std::cout << "arg[" << i << "]: " << arguments.argv[i] << std::endl;
@@ -147,6 +148,9 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
             }
         }
     }
+    
+    /* Initialize scene particles */
+    initArgon(origin, dim, nParticles, 0.01, 0.01);
 
 
     if(display) {
@@ -154,8 +158,8 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         const Vector2 dpiScaling = this->dpiScaling({});
         Configuration conf;
         conf.setTitle("SPH Testing")
-                    .setSize(conf.size(), dpiScaling)
-                    .setWindowFlags(Configuration::WindowFlag::Resizable);
+            .setSize(conf.size(), dpiScaling)
+            .setWindowFlags(Configuration::WindowFlag::Resizable);
         GLConfiguration glConf;
         glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
         if(!tryCreate(conf, glConf)) {
@@ -165,72 +169,18 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         // TODO temporary hack to initialized mechanica becasue we create
         // context here.
         Mx_Initialize(0);
-
-
-        GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
-        GL::Renderer::setClearColor(Color3{0.35f});
-
-        /* Loop at 60 Hz max */
-        setSwapInterval(1);
-        //setMinimalLoopPeriod(16);
-
-
-        center = (dim + origin) / 2.;
-
-
-        /* Setup scene objects and camera */
-
-        /* Setup scene objects */
-        _scene.reset(new Scene3D{});
-        _drawableGroup.reset(new SceneGraph::DrawableGroup3D{});
-
-        /* Configure camera */
-        _objCamera.reset(new Object3D{ _scene.get() });
-
+        
         const auto viewportSize = GL::defaultFramebuffer.viewport().size();
-        _camera.reset(new SceneGraph::Camera3D{ *_objCamera });
 
-        _camera->setProjectionMatrix(Matrix4::perspectiveProjection(45.0_degf, Vector2{ viewportSize }.aspectRatio(), 0.01f, 1000.0f))
-                    .setViewport(viewportSize);
-
-        /* Set default camera parameters */
-        _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
-
-        _defaultCamTarget   = {0,0,0};
-
-        _objCamera->setTransformation(Matrix4::lookAt(_defaultCamPosition, _defaultCamTarget, Vector3(0, 1, 0)));
-
-        /* Initialize depth to the value at scene center */
-        _lastDepth = ((_camera->projectionMatrix() * _camera->cameraMatrix()).transformPoint({}).z() + 1.0f) * 0.5f;
-
-
-        /* Setup ground grid */
-
-        // grid is ???
-        _grid.reset(new WireframeGrid(_scene.get(), _drawableGroup.get()));
-        _grid->transform(Matrix4::scaling(Vector3(1.f))  );
-
-
-        /* Setup fluid solver */
-
-
-
-        /* Simulation domain box */
-        /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
-        _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
-
-        // box is cube of side length 2 centered at origin
-        _drawableBox->transform(Matrix4::scaling(Vector3(sideLength / 2)) );
-        _drawableBox->setColor(Color3(1, 1, 0));
+        const auto viewportSize2  = GL::defaultFramebuffer.viewport().size();
+        mxWindow = new MxGlfwWindow(window());
+        
 
         /* Drawable particles */
-        _drawableParticles.reset(new MxUniverseRendererOld{ParticleRadius});
-
-        _drawableParticles->setModelViewTransform(Matrix4::translation(-center));
+        _drawableParticles.reset(new MxUniverseRenderer{mxWindow, ParticleRadius});
     }
+    
 
-    /* Initialize scene particles */
-    initArgon(origin, dim, nParticles, 0.01, 0.01);
 
     /* Reset domain */
     if(_dynamicBoundary) _boundaryOffset = 0.0f;
@@ -245,7 +195,7 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
     _timeline.start();
 }
 
-void FluidSimApp::drawEvent() {
+void FluidSimTest::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
 
@@ -261,19 +211,11 @@ void FluidSimApp::drawEvent() {
         for(Int i = 0; i < _substeps; ++i) simulationStep();
     }
 
-    /* Draw objects */
-    {
-        /* Trigger drawable object to update the particles to the GPU */
-        _drawableParticles->setDirty();
+
         /* Draw particles */
-        _drawableParticles->draw(_camera, framebufferSize());
+        _drawableParticles->draw();
 
-        /* Draw other objects (ground grid) */
-        _camera->draw(*_drawableGroup);
-    }
 
-    /* Menu for parameters */
-    if(_showMenu) showMenu();
 
 
 
@@ -284,168 +226,27 @@ void FluidSimApp::drawEvent() {
     redraw();
 }
 
-void FluidSimApp::viewportEvent(ViewportEvent& event) {
-    /* Resize the main framebuffer */
-    GL::defaultFramebuffer.setViewport({{}, event.framebufferSize()});
-
-    /* Relayout ImGui */
-    //_imGuiContext.relayout(Vector2{event.windowSize()}/event.dpiScaling(), event.windowSize(), event.framebufferSize());
-
-    /* Recompute the camera's projection matrix */
-    _camera->setViewport(event.framebufferSize());
-}
-
-void FluidSimApp::keyPressEvent(Platform::GlfwApplication::KeyEvent& event) {
-    switch(event.key()) {
-    case KeyEvent::Key::H:
-        _showMenu ^= true;
-        event.setAccepted(true);
-        break;
-    case KeyEvent::Key::R:
-        initializeScene();
-        event.setAccepted(true);
-        break;
-    case KeyEvent::Key::Space:
-        _pausedSimulation ^= true;
-        event.setAccepted(true);
-        break;
-    default:
-        break;
-        //            if(_imGuiContext.handleKeyPressEvent(event)) {
-        //                event.setAccepted(true);
-        //            }
-    }
-}
-
-void FluidSimApp::keyReleaseEvent(KeyEvent& event) {
-    //    if(_imGuiContext.handleKeyReleaseEvent(event)) {
-    //        event.setAccepted(true);
-    //        return;
-    //    }
-}
-
-void FluidSimApp::mousePressEvent(MouseEvent& event) {
-
-
-    if((event.button() != MouseEvent::Button::Left)
-            && (event.button() != MouseEvent::Button::Right)) {
-        return;
-    }
-
-    /* Update camera */
-    {
-        _prevMousePosition = event.position();
-        const Float currentDepth = depthAt(event.position());
-        const Float depth = currentDepth == 1.0f ? _lastDepth : currentDepth;
-        _translationPoint = unproject(event.position(), depth);
-
-        /* Update the rotation point only if we're not zooming against infinite
-           depth or if the original rotation point is not yet initialized */
-        if(currentDepth != 1.0f || _rotationPoint.isZero()) {
-            _rotationPoint = _translationPoint;
-            _lastDepth = depth;
-        }
-    }
-
-    _mousePressed = true;
-}
-
-void FluidSimApp::mouseReleaseEvent(MouseEvent& event) {
-    _mousePressed = false;
-
-}
-
-void FluidSimApp::mouseMoveEvent(MouseMoveEvent& event) {
-
-    if(!(event.buttons() & MouseMoveEvent::Button::Left)
-            && !(event.buttons() & MouseMoveEvent::Button::Right)) {
-        return;
-    }
-
-    const Vector2 delta = 3.0f*Vector2{event.position() - _prevMousePosition}/Vector2{framebufferSize()};
-    _prevMousePosition = event.position();
-
-    if(event.buttons() & MouseMoveEvent::Button::Left) {
-        _objCamera->transformLocal(
-                Matrix4::translation(_rotationPoint)*
-                Matrix4::rotationX(-0.51_radf*delta.y())*
-                Matrix4::rotationY(-0.51_radf*delta.x())*
-                Matrix4::translation(-_rotationPoint));
-    } else {
-        const Vector3 p = unproject(event.position(), _lastDepth);
-        _objCamera->translateLocal(_translationPoint - p); /* is Z always 0? */
-        _translationPoint = p;
-    }
-
-    event.setAccepted();
-}
-
-void FluidSimApp::mouseScrollEvent(MouseScrollEvent& event) {
-    const Float delta = event.offset().y();
-    if(Math::abs(delta) < 1.0e-2f) {
-        return;
-    }
-
-    //    if(_imGuiContext.handleMouseScrollEvent(event)) {
-    //        /* Prevent scrolling the page */
-    //        event.setAccepted();
-    //        return;
-    //    }
-
-    const Float currentDepth = depthAt(event.position());
-    const Float depth = currentDepth == 1.0f ? _lastDepth : currentDepth;
-    const Vector3 p = unproject(event.position(), depth);
-    /* Update the rotation point only if we're not zooming against infinite
-       depth or if the original rotation point is not yet initialized */
-    if(currentDepth != 1.0f || _rotationPoint.isZero()) {
-        _rotationPoint = p;
-        _lastDepth = depth;
-    }
-
-    /* Move towards/backwards the rotation point in cam coords */
-    _objCamera->translateLocal(_rotationPoint * delta * 0.1f);
-}
-
-void FluidSimApp::textInputEvent(TextInputEvent& event) {
-    //    if(_imGuiContext.handleTextInputEvent(event)) {
-    //        event.setAccepted(true);
-    //    }
-}
-
-Float FluidSimApp::depthAt(const Vector2i& windowPosition) {
-    /* First scale the position from being relative to window size to being
-       relative to framebuffer size as those two can be different on HiDPI
-       systems */
-    const Vector2i position = windowPosition*Vector2{framebufferSize()}/Vector2{windowSize()};
-    const Vector2i fbPosition{position.x(), GL::defaultFramebuffer.viewport().sizeY() - position.y() - 1};
-
-    GL::defaultFramebuffer.mapForRead(GL::DefaultFramebuffer::ReadAttachment::Front);
-    Image2D data = GL::defaultFramebuffer.read(
-            Range2Di::fromSize(fbPosition, Vector2i{1}).padded(Vector2i{2}),
-            {GL::PixelFormat::DepthComponent, GL::PixelType::Float});
-
-    return Math::min<Float>(Containers::arrayCast<const Float>(data.data()));
-}
-
-Vector3 FluidSimApp::unproject(const Vector2i& windowPosition, float depth) const {
-    /* We have to take window size, not framebuffer size, since the position is
-       in window coordinates and the two can be different on HiDPI systems */
-    const Vector2i viewSize = windowSize();
-    const Vector2i viewPosition = Vector2i{windowPosition.x(), viewSize.y() - windowPosition.y() - 1};
-    const Vector3 in{2.0f*Vector2{viewPosition}/Vector2{viewSize} - Vector2{1.0f}, depth*2.0f - 1.0f};
-
-    return _camera->projectionMatrix().inverted().transformPoint(in);
-}
 
 
 
-void FluidSimApp::initializeScene() {
 
+
+
+
+
+
+
+
+
+
+
+void FluidSimTest::initializeScene() {
+    
 
 
 }
 
-int FluidSimApp::nonDisplayExec()
+int FluidSimTest::nonDisplayExec()
 {
     for(currentStep = 0; currentStep < nSteps; ++currentStep) {
         simulationStep();
@@ -453,7 +254,7 @@ int FluidSimApp::nonDisplayExec()
     return 0;
 }
 
-int FluidSimApp::exec()
+int FluidSimTest::exec()
 {
     if(display) {
         return GlfwApplication::exec();
@@ -463,7 +264,7 @@ int FluidSimApp::exec()
     }
 }
 
-void FluidSimApp::simulationStep() {
+void FluidSimTest::simulationStep() {
     static Float offset = 0.0f;
     if(_dynamicBoundary) {
         /* Change fluid boundary */
@@ -477,8 +278,22 @@ void FluidSimApp::simulationStep() {
 
 
     engineStep();
-
+    
     currentStep += 1;
+}
+
+void FluidSimTest::viewportEvent(ViewportEvent& event) {
+    /* Resize the main framebuffer */
+    //GL::defaultFramebuffer.setViewport({{}, event.framebufferSize()});
+
+
+
+    //event.
+    //( int x, int y);
+
+    _drawableParticles->viewportEvent(event.framebufferSize().x(), event.framebufferSize().y());
+
+
 }
 
 
@@ -529,7 +344,7 @@ void engineStep() {
 
     // take a step
     tic = getticks();
-
+    
     //ENGINE_DUMP("pre step: ");
 
     if ( engine_step( &_Engine ) != 0 ) {
@@ -537,7 +352,7 @@ void engineStep() {
         errs_dump(stdout);
         return ;
     }
-
+    
     //ENGINE_DUMP("after step: ");
 
     toc_step = getticks();
@@ -572,7 +387,7 @@ void engineStep() {
     w = sqrt( 1.0 + 0.1 * ( _Engine.temperature / temp - 1.0 ) );
 
     // scale the velocities
-
+    
     /*
     if ( i < 10000 ) {
 #pragma omp parallel for schedule(static,100), private(cid,pid,k), reduction(+:epot,ekin)
@@ -644,15 +459,15 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         errs_dump(stdout);
         return 1;
     }
-
+    
     _Engine.dt = dt;
     _Engine.temperature = temp;
 
 
     printf("main: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
-
+    
     printf("done.\n"); fflush(stdout);
-
+    
     // set the interaction cutoff
     printf("main: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
     printf("main: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
@@ -698,7 +513,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     // set fields for all particles
     srand(6178);
-
+    
     pAr.flags = PARTICLE_FLAG_NONE;
     for ( k = 0 ; k < 3 ; k++ ) {
         pAr.x[k] = 0.0;
@@ -731,15 +546,15 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
             return 1;
         }
     }
-
+    
     float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
     std::cout << "temperature before scaling: " << t << std::endl;
-
+    
     float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
 
     // sanity check
     totV2 = 0;
-
+    
     // scale velocities
     for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
@@ -781,24 +596,8 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     return 0;
 }
-void test() {
 
-    glfwInit ();
-
-    int majorVersion = 0;
-    glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
-
-    std::cout << "major version: " << majorVersion << std::endl;
-}
-
-int main(int argc, char** argv) {
-
-    //test();
-
-
-    FluidSimApp app({argc, argv});
-    return app.exec();
-}
+        
 
 
 

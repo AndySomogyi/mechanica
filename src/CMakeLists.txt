@@ -108,7 +108,6 @@ set(SRC
   rendering/MxWindowHost.cpp
   rendering/MxGlfwWindow.cpp
   rendering/MxRenderer.cpp
-  rendering/MxUniverseRendererOld.cpp
   rendering/MxUniverseRenderer.cpp
 
   rendering/MxMeshRenderer.cpp
@@ -118,6 +117,9 @@ set(SRC
   rendering/MxUI.cpp
   rendering/MxTestView.cpp
   rendering/MxImageConverters.cpp
+
+  rendering/MxUniverseRendererOld.cpp
+  rendering/FluidSimTest.cpp
 
   shaders/ParticleSphereShader.cpp
 
@@ -188,7 +190,6 @@ set(HEADERS
   rendering/MxWindowHost.h
   rendering/MxGlfwWindow.h
   rendering/MxRenderer.h
-  rendering/MxUniverseRendererOld.h
   rendering/MxUniverseRenderer.h
   rendering/WireframeObjects.h
   rendering/FlatShadeObject.h
@@ -199,6 +200,9 @@ set(HEADERS
   rendering/MxUI.h
   rendering/MxTestView.h
   rendering/MxImageConverters.h
+
+  rendering/MxUniverseRendererOld.h
+  rendering/FluidSimTest.h
 
   shaders/ParticleSphereShader.h
   )
@@ -362,6 +366,9 @@ target_link_libraries(mechanica_py
   sundials_cvode_static
   MagnumGlfwApplication
   Magnum_PyBind
+  Magnum::SceneGraph
+  Magnum::Primitives
+  Magnum::MeshTools
   )
 
 if(MX_APPLE)
@@ -419,6 +426,9 @@ target_link_libraries(mechanica_shared
   sundials_cvode_static
   MagnumGlfwApplication
   Magnum_PyBind
+  Magnum::SceneGraph
+  Magnum::Primitives
+  Magnum::MeshTools
   )
 
 if(MX_APPLE)

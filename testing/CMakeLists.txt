@@ -14,6 +14,7 @@
 #add_subdirectory(qtest)
 add_subdirectory(twave)
 add_subdirectory(fluid-test2)
+add_subdirectory(fluid-test3)
 
 
 if(MX_APPLE)

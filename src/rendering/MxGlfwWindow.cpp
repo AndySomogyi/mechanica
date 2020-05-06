@@ -7,9 +7,10 @@
 
 #include <rendering/MxGlfwWindow.h>
 
-#include <Python.h>
 #include <MxPy.h>
 #include <iostream>
+
+using namespace Magnum;
 
 
 
@@ -70,7 +71,7 @@ void testtt() {
     PyGetSetDef gs = MakeAttibuteGetSet<MxGlfwWindow, float, &MxGlfwWindow::f>("", "");
     
     
-    MxGlfwWindow win;
+    MxGlfwWindow win(NULL);
     
     PyObject *obj = gs.get(&win, NULL);
     
@@ -165,4 +166,30 @@ HRESULT MxGlfwWindow_init(PyObject *m)
         return -1;
     }
     return 0;
+}
+
+MxGlfwWindow::MxGlfwWindow(GLFWwindow *win)
+{
+    _window = win;
+}
+
+MxGlfwWindow::State MxGlfwWindow::getMouseButtonState(MouseButton mouseButton)
+{
+    return (State)glfwGetMouseButton(_window, (int)mouseButton);
+}
+
+Magnum::Vector2i MxGlfwWindow::framebufferSize() const {
+    CORRADE_ASSERT(_window, "Platform::GlfwApplication::framebufferSize(): no window opened", {});
+
+    Vector2i size;
+    glfwGetFramebufferSize(_window, &size.x(), &size.y());
+    return size;
+}
+
+Vector2i MxGlfwWindow::windowSize() const {
+    CORRADE_ASSERT(_window, "Platform::GlfwApplication::windowSize(): no window opened", {});
+
+    Vector2i size;
+    glfwGetWindowSize(_window, &size.x(), &size.y());
+    return size;
 }

@@ -32,6 +32,7 @@
 #include <rendering/MxGlfwWindow.h>
 #include "rendering/MxWindowProxy.h"
 #include "rendering/MxWindowHost.h"
+#include <rendering/MxUniverseRenderer.h>
 
 #include "MxPyTest.h"
 
@@ -153,6 +154,7 @@ static PyObject * moduleinit(void)
     MxGlfwWindow_init(m);
     MxWindowProxy_init(m);
     MxWindowHost_init(m);
+    MyUniverseRenderer_Init(m);
     
     MxPyTest_init(m);
 

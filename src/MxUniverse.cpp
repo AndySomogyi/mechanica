@@ -136,6 +136,33 @@ HRESULT MxUniverse_init(PyObject* m)
     
     u.def_property_readonly_static("dim", &universe_dim);
 
+    u.def_property_readonly_static("temperature",
+        [](py::object self) -> double {
+            UNIVERSE_CHECK();
+            return engine_temperature(&_Engine);
+        }
+    );
+
+    u.def_property_readonly_static("kinetic_energy",
+        [](py::object self) -> double {
+            UNIVERSE_CHECK();
+            return engine_kinetic_energy(&_Engine);
+        }
+    );
+
+    u.def_property_readonly_static("time",
+        [](py::object self) -> double {
+            UNIVERSE_CHECK();
+            return _Engine.time * _Engine.dt;
+        }
+    );
+
+    u.def_property_readonly_static("dt",
+        [](py::object self) -> double {
+            UNIVERSE_CHECK();
+            return _Engine.dt;
+        }
+    );
 
     py::class_<MxUniverseConfig> uc(u, "Config");
     uc.def(py::init());
@@ -150,4 +177,14 @@ HRESULT MxUniverse_init(PyObject* m)
 
 
     return S_OK;
+}
+
+Magnum::Vector3 MxUniverse::origin()
+{
+    return Vector3{_Engine.s.origin[0], _Engine.s.origin[1], _Engine.s.origin[2]};
+}
+
+Magnum::Vector3 MxUniverse::dim()
+{
+    return Vector3{_Engine.s.dim[0], _Engine.s.dim[1], _Engine.s.dim[2]};
 }

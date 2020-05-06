@@ -191,6 +191,9 @@ public:
      */
     virtual HRESULT postEmptyEvent() = 0;
 
+
+    virtual HRESULT setSwapInterval(int si) = 0;
+
 };
 
 

@@ -19,6 +19,10 @@ struct MxUniverse  {
      * MDCore MD engine
      */
     CListWrap potentials;
+
+    static Magnum::Vector3 origin();
+
+    static  Magnum::Vector3 dim();
 };
 
 /**

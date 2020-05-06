@@ -113,7 +113,9 @@ public:
      * This function posts an empty event from the current thread
      * to the event queue, causing waitEvents or waitEventsTimeout to return.
      */
-    virtual HRESULT postEmptyEvent();
+    HRESULT postEmptyEvent() override;
+
+    HRESULT setSwapInterval(int si) override { return E_NOTIMPL;};
 
 private:
     virtual int exec() override { return 0; };

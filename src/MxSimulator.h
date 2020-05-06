@@ -17,6 +17,7 @@
 #include "Magnum/Platform/GLContext.h"
 #include "Magnum/Platform/Implementation/DpiScaling.h"
 #include "MxUniverse.h"
+#include <rendering/MxUniverseRenderer.h>
 
 enum MxSimulator_Key {
     MXSIMULATOR_NONE,
@@ -103,39 +104,59 @@ struct MxSimulator {
      */
     enum WindowFlags : UnsignedShort
     {
-        Fullscreen = 1 << 0, /**< Fullscreen window */
-        Resizable = 1 << 1, /**< Resizable window */
-        Hidden = 1 << 2, /**< Hidden window */
+        Fullscreen = 1 << 0,   /**< Fullscreen window */
 
         /**
+         * No window decoration
+         * @m_since_latest
+         */
+        Borderless = 1 << 1,
+
+        Resizable = 1 << 2,    /**< Resizable window */
+        Hidden = 1 << 3,       /**< Hidden window */
+
+         /**
          * Maximized window
          *
          * @note Supported since GLFW 3.2.
          */
-        Maximized = 1 << 3,
+        Maximized = 1 << 4,
 
-        Minimized = 1 << 4, /**< Minimized window */
-        Floating = 1 << 5, /**< Window floating above others, top-most */
+        Minimized = 1 << 5,    /**< Minimized window */
+
+        /**
+         * Always on top
+         * @m_since_latest
+         */
+        Floating = 1 << 6,
+
+
 
         /**
          * Automatically iconify (minimize) if fullscreen window loses
          * input focus
          */
-        AutoIconify = 1 << 6,
+        AutoIconify = 1 << 7,
 
-        Focused = 1 << 7, /**< Window has input focus */
+        /**
+         * Window has input focus
+         *
+         * @todo there's also GLFW_FOCUS_ON_SHOW, what's the difference?
+         */
+        Focused = 1 << 8,
 
         /**
          * Do not create any GPU context. Use together with
-         * @ref MxGlfwApplication(const Arguments&),
-         * @ref MxGlfwApplication(const Arguments&, const Configuration&),
+         * @ref GlfwApplication(const Arguments&),
+         * @ref GlfwApplication(const Arguments&, const Configuration&),
          * @ref create(const Configuration&) or
          * @ref tryCreate(const Configuration&) to prevent implicit
          * creation of an OpenGL context.
          *
          * @note Supported since GLFW 3.2.
          */
-        Contextless = 1 << 8
+        Contextless = 1 << 9
+
     };
 
 
@@ -273,6 +294,8 @@ struct MxSimulator {
 
     // python list of windows.
     PyObject *windows;
+
+    MxUniverseRenderer *renderer;
 };
 
 
@@ -287,7 +310,7 @@ CAPI_DATA(MxSimulator*) Simulator;
  *
  * items: an array of config items, at least one.
  */
-CAPI_FUNC(MxSimulator*) MxSimulator_New(MxSimulator_ConfigurationItem *items);
+CAPI_FUNC(MxSimulator*) MxSimulator_New(PyObject *args, PyObject *kw_args);
 
 CAPI_FUNC(MxSimulator*) MxSimulator_Get();
 
@@ -356,7 +379,26 @@ CAPI_FUNC(HRESULT) MxSimulator_PostEmptyEvent();
 HRESULT MxSimulator_init(PyObject *o);
 
 
-#ifdef MAGNUM_TARGET_GL
+/**
+ * This function sets the swap interval for the current OpenGL or OpenGL ES context, i.e. the number of screen updates to wait from the time glfwSwapBuffers was called before swapping the buffers and returning. This is sometimes called vertical synchronization, vertical retrace synchronization or just vsync.
+
+A context that supports either of the WGL_EXT_swap_control_tear and GLX_EXT_swap_control_tear extensions also accepts negative swap intervals, which allows the driver to swap immediately even if a frame arrives a little bit late. You can check for these extensions with glfwExtensionSupported.
+
+A context must be current on the calling thread. Calling this function without a current context will cause a GLFW_NO_CURRENT_CONTEXT error.
+
+This function does not apply to Vulkan. If you are rendering with Vulkan, see the present mode of your swapchain instead.
+
+Parameters
+[in]    interval    The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
+Errors
+Possible errors include GLFW_NOT_INITIALIZED, GLFW_NO_CURRENT_CONTEXT and GLFW_PLATFORM_ERROR.
+Remarks
+This function is not called during context creation, leaving the swap interval set to whatever is the default on that platform. This is done because some swap interval extensions used by GLFW do not allow the swap interval to be reset to zero once it has been set to a non-zero value.
+Some GPU drivers do not honor the requested swap interval, either because of a user setting that overrides the application's request or due to bugs in the driver.
+ */
+HRESULT MxSimulator_SwapInterval(int si);
+
+
 /**
  @brief OpenGL context configuration
  
@@ -375,7 +417,7 @@ public:
      *
      * @see @ref Flags, @ref setFlags(), @ref GL::Context::Flag
      */
-    enum class Flag: UnsignedByte {
+    enum  Flag: uint32_t {
 #ifndef MAGNUM_TARGET_GLES
         /**
          * Forward compatible context
@@ -412,7 +454,7 @@ public:
      *
      * @see @ref setFlags(), @ref GL::Context::Flags
      */
-    typedef Containers::EnumSet<Flag> Flags;
+    typedef uint32_t Flags;
     
     explicit GLConfig();
     ~GLConfig();
@@ -558,7 +600,5 @@ private:
     bool _srgbCapable;
 };
 
-CORRADE_ENUMSET_OPERATORS(MxSimulator::GLConfig::Flags)
-#endif
 
 #endif /* SRC_MXSIMULATOR_H_ */

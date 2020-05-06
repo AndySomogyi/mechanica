@@ -46,84 +46,86 @@ class MxUniverseRendererOld;
 
 
 class FluidSimApp: public Platform::GlfwApplication {
-    public:
-        explicit FluidSimApp(const Arguments& arguments);
+public:
+    explicit FluidSimApp(const Arguments& arguments);
 
-        int nonDisplayExec();
+    virtual ~FluidSimApp() {};
 
-        int exec();
+    int nonDisplayExec();
 
-    protected:
-        void viewportEvent(ViewportEvent& event) override;
-        void keyPressEvent(KeyEvent& event) override;
-        void keyReleaseEvent(KeyEvent& event) override;
-        void mousePressEvent(MouseEvent& event) override;
-        void mouseReleaseEvent(MouseEvent& event) override;
-        void mouseMoveEvent(MouseMoveEvent& event) override;
-        void mouseScrollEvent(MouseScrollEvent& event) override;
-        void textInputEvent(TextInputEvent& event) override;
-        void drawEvent() override;
+    int exec();
 
-        /* Helper functions for camera movement */
-        Float depthAt(const Vector2i& windowPosition);
-        Vector3 unproject(const Vector2i& windowPosition, Float depth) const;
+protected:
+    void viewportEvent(ViewportEvent& event) override;
+    void keyPressEvent(KeyEvent& event) override;
+    void keyReleaseEvent(KeyEvent& event) override;
+    void mousePressEvent(MouseEvent& event) override;
+    void mouseReleaseEvent(MouseEvent& event) override;
+    void mouseMoveEvent(MouseMoveEvent& event) override;
+    void mouseScrollEvent(MouseScrollEvent& event) override;
+    void textInputEvent(TextInputEvent& event) override;
+    void drawEvent() override;
 
-        /* Fluid simulation helper functions */
-        void showMenu() {};
-        void initializeScene();
-        void simulationStep();
+    /* Helper functions for camera movement */
+    Float depthAt(const Vector2i& windowPosition);
+    Vector3 unproject(const Vector2i& windowPosition, Float depth) const;
 
-        /* Window control */
-        bool _showMenu = true;
-        //ImGuiIntegration::Context _imGuiContext{NoCreate};
+    /* Fluid simulation helper functions */
+    void showMenu() {};
+    void initializeScene();
+    void simulationStep();
 
-        /* Scene and drawable group must be constructed before camera and other
+    /* Window control */
+    bool _showMenu = true;
+    //ImGuiIntegration::Context _imGuiContext{NoCreate};
+
+    /* Scene and drawable group must be constructed before camera and other
         scene objects */
-        Containers::Pointer<Scene3D> _scene;
-        Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
+    Containers::Pointer<Scene3D> _scene;
+    Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
 
-        /* Camera helpers */
-        Vector3 _defaultCamPosition{0.0f, 1.5f, 8.0f};
-        Vector3 _defaultCamTarget{0.0f, 0.0f, 0.0f};
+    /* Camera helpers */
+    Vector3 _defaultCamPosition{0.0f, 1.5f, 8.0f};
+    Vector3 _defaultCamTarget{0.0f, 0.0f, 0.0f};
 
-        Vector2i _prevMousePosition;
-        Vector3  _rotationPoint, _translationPoint;
-        Float _lastDepth;
-        Containers::Pointer<Object3D> _objCamera;
-        Containers::Pointer<SceneGraph::Camera3D> _camera;
+    Vector2i _prevMousePosition;
+    Vector3  _rotationPoint, _translationPoint;
+    Float _lastDepth;
+    Containers::Pointer<Object3D> _objCamera;
+    Containers::Pointer<SceneGraph::Camera3D> _camera;
 
-        /* Fluid simulation system */
-        Containers::Pointer<WireframeBox> _drawableBox;
-        Int _substeps = 1;
-        bool _pausedSimulation = false;
-        bool _mousePressed = false;
-        bool _dynamicBoundary = true;
-        Float _boundaryOffset = 0.0f; /* For boundary animation */
+    /* Fluid simulation system */
+    Containers::Pointer<WireframeBox> _drawableBox;
+    Int _substeps = 1;
+    bool _pausedSimulation = false;
+    bool _mousePressed = false;
+    bool _dynamicBoundary = true;
+    Float _boundaryOffset = 0.0f; /* For boundary animation */
 
-        /* Drawable particles */
-        Containers::Pointer<MxUniverseRendererOld> _drawableParticles;
+    /* Drawable particles */
+    Containers::Pointer<MxUniverseRendererOld> _drawableParticles;
 
-        /* Ground grid */
-        Containers::Pointer<WireframeGrid> _grid;
+    /* Ground grid */
+    Containers::Pointer<WireframeGrid> _grid;
 
-        /* Timeline to adjust number of simulation steps per frame */
-        Timeline _timeline;
+    /* Timeline to adjust number of simulation steps per frame */
+    Timeline _timeline;
 
 
-        float sideLength = 10.0;
+    float sideLength = 10.0;
 
-        bool display = true;
+    bool display = true;
 
-        int nSteps = 10;
-        int currentStep = 0;
+    int nSteps = 10;
+    int currentStep = 0;
 
-        int nParticles = 1000;
+    int nParticles = 1000;
 
-        Vector3 origin = {0.0, 0.0, 0.0};
-        Vector3 dim = {10., 10., 10.};
-        Vector3 center;
+    Vector3 origin = {0.0, 0.0, 0.0};
+    Vector3 dim = {10., 10., 10.};
+    Vector3 center;
 
-        float dt = 0.01;
-        float temp = 1;
+    float dt = 0.01;
+    float temp = 1;
 };
 

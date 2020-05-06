@@ -12,6 +12,8 @@
 
 struct MxWindow : PyObject
 {
+
+
 };
 
 /**

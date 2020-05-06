@@ -25,11 +25,6 @@ import _mechanica
 print ("mechanica file: " + m.__file__, flush=True)
 print("_mechanica file: " + _mechanica.__file__, flush=True)
 
-_mechanica.test("foo")
-
-w = _mechanica.Window();
-
-print("w.f: ", w.f) 
 
 
 c = m.Simulator.Config()
@@ -37,6 +32,8 @@ c = m.Simulator.Config()
 c.windowless = False
 
 s = m.Simulator(c, foo='bar', bar=1)
+
+print ("renderer: " , Simulator.renderer)
 
 print("s.foo: ", s.foo)
 

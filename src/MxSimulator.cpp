@@ -24,8 +24,10 @@ namespace py = pybind11;
 MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
-            _windowFlags{MxSimulator::WindowFlags::Focused},
-            _dpiScalingPolicy{DpiScalingPolicy::Default} {}
+            _dpiScalingPolicy{DpiScalingPolicy::Default},
+            _windowless{false} {
+    _windowFlags = MxSimulator::WindowFlags::Resizable;
+}
 
 
 
@@ -68,6 +70,14 @@ struct Foo {
 #define SIMULATOR_CHECK()  if (!Simulator) { return mx_error(E_INVALIDARG, "Simulator is not initialized"); }
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
+
+#define PYSIMULATOR_CHECK() { \
+    if(!Simulator) { \
+        throw std::domain_error(std::string("Simulator Error in ") + MX_FUNCTION + ": Simulator not initialized"); \
+    } \
+}
+
+
 
 
 void test(const Foo& f) {
@@ -204,29 +214,19 @@ struct PySimulator : MxSimulator {
             
             std::cout << "creating GLFW app" << std::endl;
             
-            MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs, conf);
+            MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
+
+            glfwApp->createContext(conf);
             
             this->app = glfwApp;
+            this->renderer = new MxUniverseRenderer(glfwApp->getWindow());
         }
 
 
 
-        std::cout << "contains foo: : " << kwargs.contains("foo") << std::endl;
-        
-        for(auto i : kwargs) {
-            
-            std::string key  = i.first.cast<std::string>();
-            
-            std::cout << "key: " << key << std::endl;
-            
-        }
-        
-        if(windowless) {
 
-        }
-        else  {
 
-        }
+
 
 
         
@@ -411,6 +411,12 @@ HRESULT MxSimulator_init(PyObject* m) {
     sim.def_static("wait_events", &pysimulator_wait_events);
     sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
 
+    sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
+            PYSIMULATOR_CHECK();
+            return py::handle(Simulator->renderer);
+        }
+    );
+
 
 
     py::enum_<MxSimulator::WindowFlags>(sim, "WindowFlags", py::arithmetic())
@@ -451,55 +457,9 @@ HRESULT MxSimulator_init(PyObject* m) {
     return 0;
 }
 
-CAPI_FUNC(MxSimulator*) MxSimulator_New(MxSimulator_ConfigurationItem *items)
+CAPI_FUNC(MxSimulator*) MxSimulator_New(PyObject *_args, PyObject *_kw_args)
 {
-    /*
-     *
-     *
-     *     std::cout << MX_FUNCTION << std::endl;
 
-    if(Simulator) {
-        Py_INCREF(Simulator);
-        return Simulator;
-    }
-
-    int glfw = true;
-
-    if(glfw) {
-        int argc = 0;
-        char** argv = NULL;
-        MxGlfwApplication::Arguments margs(argc, argv);
-        MxGlfwApplication *app = new MxGlfwApplication(margs);
-
-        Simulator = (MxSimulator *) type->tp_alloc(type, 0);
-        Simulator->applicaiton = app;
-        Simulator->kind = MXSIMULATOR_GLFW;
-    }
-    else {
-        int argc = 0;
-        char** argv = NULL;
-        Platform::WindowlessApplication::Arguments margs(argc, argv);
-
-        app = new MxWindowlessApplication(margs);
-
-        bool result = app->tryCreateContext({});
-
-        if(!result) {
-            std::cout << "could not create context..." << std::endl;
-            delete app;
-
-            Py_RETURN_NONE;
-        }
-
-        Simulator = (MxSimulator *) type->tp_alloc(type, 0);
-
-        Simulator->applicaiton = app;
-        Simulator->kind = MXSIMULATOR_WINDOWLESS;
-    }
-
-    Py_INCREF(Simulator);
-    return (PyObject *) Simulator;
-     */
 }
 
 CAPI_FUNC(MxSimulator*) MxSimulator_Get()
@@ -535,4 +495,10 @@ CAPI_FUNC(HRESULT) MxSimulator_PostEmptyEvent()
 {
     SIMULATOR_CHECK();
     return Simulator->app->postEmptyEvent();
+}
+
+HRESULT MxSimulator_SwapInterval(int si)
+{
+    SIMULATOR_CHECK();
+    return Simulator->app->setSwapInterval(si);
 }
