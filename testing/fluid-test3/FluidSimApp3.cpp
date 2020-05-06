@@ -26,9 +26,6 @@
 #include <rendering/FluidSimTest.h>
 
 
-using namespace Magnum;
-using namespace Math::Literals;
-
 int main(int argc, char** argv) {
 
     FluidSimTest app({argc, argv});

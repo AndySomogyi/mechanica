@@ -189,13 +189,19 @@ struct MxUniverseRenderer : MxRenderer {
     Vector2i _prevMousePosition;
     Vector3  _rotationPoint, _translationPoint;
     Float _lastDepth;
-    Containers::Pointer<Object3D> _objCamera;
-    Containers::Pointer<SceneGraph::Camera3D> _camera;
+
 
     /* Scene and drawable group must be constructed before camera and other
     scene objects */
     Containers::Pointer<Scene3D> _scene;
     Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
+    Containers::Pointer<Object3D> _objCamera;
+    Containers::Pointer<SceneGraph::Camera3D> _camera;
+    /* Ground grid */
+     Containers::Pointer<WireframeGrid> _grid;
+
+     /* Fluid simulation system */
+     Containers::Pointer<WireframeBox> _drawableBox;
 
     /* Camera helpers */
     Vector3 _defaultCamPosition{0.0f, 1.5f, 8.0f};
@@ -205,11 +211,7 @@ struct MxUniverseRenderer : MxRenderer {
 
     float sideLength = 10.0;
 
-    /* Ground grid */
-    Containers::Pointer<WireframeGrid> _grid;
 
-    /* Fluid simulation system */
-    Containers::Pointer<WireframeBox> _drawableBox;
 
     MxGlfwWindow *window;
 

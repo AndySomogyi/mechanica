@@ -21,6 +21,7 @@
     Lesser General Public License for more details.
  */
 
+#include "FluidSimTest.h"
 
 #include <Magnum/Animation/Easing.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
@@ -42,7 +43,39 @@
 #include <Mechanica.h>
 #include <rendering/WireframeObjects.h>
 
-#include "FluidSimTest.h"
+
+
+// include some standard headers
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <math.h>
+#include <float.h>
+#include <pthread.h>
+#include <time.h>
+#include "cycle.h"
+#include "mdcore_single.h"
+
+/* MPI headers. */
+#ifdef HAVE_MPI
+#include <mpi.h>
+#endif
+
+/* FFTW3 headers. */
+#ifdef HAVE_FFTW3
+#include <complex.h>
+#include <fftw3.h>
+#endif
+
+
+
+/* What to do if ENGINE_FLAGS was not defined? */
+#ifndef ENGINE_FLAGS
+#define ENGINE_FLAGS engine_flag_none
+#endif
+#ifndef CPU_TPS
+#define CPU_TPS 2.67e+9
+#endif
 
 
 using namespace Magnum;
@@ -296,39 +329,13 @@ void FluidSimTest::viewportEvent(ViewportEvent& event) {
 
 }
 
-
-
-// include some standard headers
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <float.h>
-#include <pthread.h>
-#include <time.h>
-#include "cycle.h"
-#include "mdcore_single.h"
-
-/* MPI headers. */
-#ifdef HAVE_MPI
-#include <mpi.h>
-#endif
-
-/* FFTW3 headers. */
-#ifdef HAVE_FFTW3
-#include <complex.h>
-#include <fftw3.h>
-#endif
+FluidSimTest::~FluidSimTest() {
+    std::cout << MX_FUNCTION << std::endl;
+}
 
 
 
-/* What to do if ENGINE_FLAGS was not defined? */
-#ifndef ENGINE_FLAGS
-#define ENGINE_FLAGS engine_flag_none
-#endif
-#ifndef CPU_TPS
-#define CPU_TPS 2.67e+9
-#endif
+
 
 void engineStep() {
 

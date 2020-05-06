@@ -76,7 +76,7 @@ class FluidSimTest: public Platform::GlfwApplication {
 
         int exec();
 
-        virtual ~FluidSimTest() {};
+        virtual ~FluidSimTest();
 
 
     protected:

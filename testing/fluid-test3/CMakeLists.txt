@@ -47,15 +47,15 @@ add_executable(fluid-test3 WIN32
 
 target_link_libraries(fluid-test3
   Mechanica::Mechanica
-  Magnum::Application
-  Magnum::GL
-  Magnum::Magnum
-  Magnum::MeshTools
-  Magnum::Primitives
-  Magnum::SceneGraph
-  Magnum::Shaders
-  Threads::Threads
-  Magnum::GlfwApplication
+  #Magnum::Application
+  #Magnum::GL
+  #Magnum::Magnum
+  #Magnum::MeshTools
+  #Magnum::Primitives
+  #Magnum::SceneGraph
+  #Magnum::Shaders
+  #Threads::Threads
+  #Magnum::GlfwApplication
   )
 
 install(TARGETS fluid-test3 DESTINATION ${MAGNUM_BINARY_INSTALL_DIR})
