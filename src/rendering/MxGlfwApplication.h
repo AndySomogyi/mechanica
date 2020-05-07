@@ -134,6 +134,7 @@ public:
          /* Timeline to adjust number of simulation steps per frame */
          Timeline _timeline;
 
+    HRESULT mainLoopIteration(double timeout) override;
 };
 
 

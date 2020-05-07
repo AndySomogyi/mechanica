@@ -173,3 +173,12 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
     return exec();
 }
+
+
+
+HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
+    GlfwApplication::mainLoopIteration();
+    return S_OK;
+}
+
+

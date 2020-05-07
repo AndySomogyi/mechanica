@@ -195,6 +195,9 @@ public:
     virtual HRESULT postEmptyEvent() = 0;
 
 
+    virtual HRESULT mainLoopIteration(double timeout) { return E_NOTIMPL; };
+
+
     virtual HRESULT setSwapInterval(int si) = 0;
 
 

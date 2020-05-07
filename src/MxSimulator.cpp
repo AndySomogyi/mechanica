@@ -31,6 +31,10 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
 #endif
 
 
+static void interactiveRun();
+
+static void ipythonInputHook(py::args args);
+
 MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
@@ -407,6 +411,10 @@ static void pysimulator_wait_events(py::args args) {
     }
 };
 
+static py::object ftest() {
+    return py::cpp_function([](int x) -> int {return x + 10;});
+}
+
 
 
 
@@ -421,6 +429,8 @@ HRESULT MxSimulator_init(PyObject* m) {
     sim.def_static("wait_events", &pysimulator_wait_events);
     sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
     sim.def_static("run", [](){PY_CHECK(MxSimulator_Run());});
+    sim.def_static("ftest", &ftest);
+    sim.def_static("irun", &interactiveRun);
 
 
     sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
@@ -778,12 +788,15 @@ void engineStep() {
 
     toc_temp = getticks();
 
+    /*
+
     printf("time:%i, epot:%e, ekin:%e, temp:%e, swaps:%i, stalls: %i %.3f %.3f %.3f ms\n",
             _Engine.time,epot,ekin,temp,_Engine.s.nr_swaps,_Engine.s.nr_stalls,
             (double)(toc_temp-tic) * 1000 / CPU_TPS,
             (double)(toc_step-tic) * 1000 / CPU_TPS,
             (double)(toc_temp-toc_step) * 1000 / CPU_TPS);
     fflush(stdout);
+    */
 
     // print some particle data
     // printf("main: part 13322 is at [ %e , %e , %e ].\n",
@@ -812,4 +825,77 @@ CAPI_FUNC(HRESULT) MxSimulator_Run()
 {
     SIMULATOR_CHECK();
     return Simulator->app->run();
+}
+
+CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
+{
+    SIMULATOR_CHECK();
+    try {
+
+    }
+    catch(std::exception  &err) {
+
+    }
+    catch (pybind11::error_already_set &err) {
+
+    }
+    catch(...) {
+
+    }
+}
+
+
+
+
+static void interactiveRun() {
+    std::cout << "entering " << MX_FUNCTION << std::endl;
+    PYSIMULATOR_CHECK();
+    // Try to import ipython
+
+    /**
+     *        """
+        Registers the mechanica input hook with the ipython pt_inputhooks
+        class.
+
+        The ipython TerminalInteractiveShell.enable_gui('name') method
+        looks in the registered input hooks in pt_inputhooks, and if it
+        finds one, it activtes that hook.
+
+        To acrtivate the gui mode, call:
+
+        ip = IPython.get_ipython()
+        ip.
+        """
+        import IPython.terminal.pt_inputhooks as pt_inputhooks
+        pt_inputhooks.register("mechanica", inputhook)
+     *
+     */
+
+
+    py::object pt_inputhooks = py::module::import("IPython.terminal.pt_inputhooks");
+    py::object reg = pt_inputhooks.attr("register");
+
+    py::cpp_function ih(ipythonInputHook);
+    reg("mechanica", ih);
+
+    // import IPython
+    // ip = IPython.get_ipython()
+    py::object ipython = py::module::import("IPython");
+    py::object get_ipython = ipython.attr("get_ipython");
+    py::object ip = get_ipython();
+
+    py::object enable_gui = ip.attr("enable_gui");
+
+    enable_gui("mechanica");
+
+    std::cout << "leaving " << MX_FUNCTION << std::endl;
+}
+
+static void ipythonInputHook(py::args args) {
+    py::object context = args[0];
+    py::object input_is_ready = context.attr("input_is_ready");
+
+    while(!input_is_ready().cast<bool>()) {
+        Simulator->app->mainLoopIteration(0.001);
+    }
 }

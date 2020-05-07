@@ -387,6 +387,13 @@ CAPI_FUNC(HRESULT) MxSimulator_PostEmptyEvent();
  */
 CAPI_FUNC(HRESULT) MxSimulator_Run();
 
+/**
+ * ipython version of the run loop. This checks the ipython context and lets
+ * ipython process keyboard input, while we also run the simulator and
+ * process window messages.
+ */
+CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun();
+
 
 
 // internal method to initialize the simulator type.
