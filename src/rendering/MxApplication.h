@@ -15,6 +15,9 @@
 
 #include <GLFW/glfw3.h>
 
+#include <rendering/MxUniverseRenderer.h>
+#include <rendering/MxGlfwWindow.h>
+
 
 /**
  * Set config options for opengl for now.
@@ -193,6 +196,19 @@ public:
 
 
     virtual HRESULT setSwapInterval(int si) = 0;
+
+
+    // temporary hack until we setup events correctly
+    virtual MxGlfwWindow *getWindow() {
+        return NULL;
+    }
+
+
+    virtual MxUniverseRenderer *getRenderer() {
+        return NULL;
+    }
+
+    virtual HRESULT run() {return E_NOTIMPL;};
 
 };
 

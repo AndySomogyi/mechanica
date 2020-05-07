@@ -276,6 +276,17 @@ struct MxSimulator {
             _windowless = val;
         }
 
+
+        Vector3 origin;
+
+        Vector3 dim;
+
+        float dt;
+
+        float temp;
+
+        int nParticles;
+
         
 
     private:
@@ -294,8 +305,6 @@ struct MxSimulator {
 
     // python list of windows.
     PyObject *windows;
-
-    MxUniverseRenderer *renderer;
 };
 
 
@@ -372,6 +381,11 @@ CAPI_FUNC(HRESULT) MxSimulator_WaitEventsTimeout(double  timeout);
  * to the event queue, causing waitEvents or waitEventsTimeout to return.
  */
 CAPI_FUNC(HRESULT) MxSimulator_PostEmptyEvent();
+
+/**
+ * runs the event loop until window close
+ */
+CAPI_FUNC(HRESULT) MxSimulator_Run();
 
 
 
@@ -599,6 +613,11 @@ private:
     Flags _flags;
     bool _srgbCapable;
 };
+
+int initArgon (const Vector3 &origin, const Vector3 &dim,
+        int nParticles, double dt = 0.005, float temp = 100 );
+
+void engineStep();
 
 
 #endif /* SRC_MXSIMULATOR_H_ */

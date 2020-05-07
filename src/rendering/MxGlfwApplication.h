@@ -15,6 +15,7 @@
 #include <Magnum/Platform/GlfwApplication.h>
 
 #include <rendering/MxGlfwWindow.h>
+#include <rendering/MxUniverseRenderer.h>
 
 
 using namespace Magnum::Platform;
@@ -49,7 +50,7 @@ public:
      * on those platforms. You can use the window refresh callback to redraw the
      * contents of your window when necessary during such operations.
      */
-    virtual HRESULT pollEvents ();
+     HRESULT pollEvents () override;
 
     /**
      *   This function puts the calling thread to sleep until at least one
@@ -67,7 +68,7 @@ public:
      *  those platforms. You can use the window refresh callback to redraw the
      *  contents of your window when necessary during such operations.
      */
-    virtual HRESULT waitEvents ();
+    HRESULT waitEvents () override;
 
     /**
      * This function puts the calling thread to sleep until at least
@@ -89,26 +90,49 @@ public:
      * contents of your window when necessary during such operations.
      */
 
-    virtual HRESULT waitEventsTimeout(double  timeout);
+    HRESULT waitEventsTimeout(double  timeout) override;
 
 
     /**
      * This function posts an empty event from the current thread
      * to the event queue, causing waitEvents or waitEventsTimeout to return.
      */
-    virtual HRESULT postEmptyEvent();
+    HRESULT postEmptyEvent() override;
 
 
-    virtual HRESULT setSwapInterval(int si);
+    HRESULT setSwapInterval(int si) override;
 
 
-    virtual void drawEvent();
+    void drawEvent() override;
 
 
-    MxGlfwWindow *getWindow();
+    MxGlfwWindow *getWindow() override;
+
+
+    MxUniverseRenderer *getRenderer() override;
+
+    void simulationStep();
+
+    HRESULT run() override;
 
 
     MxGlfwWindow *_win;
+
+    int currentStep = 0;
+
+    // TODO implement events and move these to simulator.
+    MxUniverseRenderer *_ren;
+
+    Int _substeps = 1;
+         bool _pausedSimulation = false;
+         bool _mousePressed = false;
+         bool _dynamicBoundary = true;
+
+         Float _boundaryOffset = 0.0f; /* For boundary animation */
+
+
+         /* Timeline to adjust number of simulation steps per frame */
+         Timeline _timeline;
 
 };
 
