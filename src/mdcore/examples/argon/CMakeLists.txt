@@ -6,6 +6,5 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(argon
 	mdcore_single
-	Threads::Threads)
-
-  
+	Threads::Threads
+	Mechanica::Mechanica)

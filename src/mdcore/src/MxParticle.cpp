@@ -32,6 +32,8 @@
 #include <pybind11/pybind11.h>
 
 #include <MxPy.h>
+#include "engine.h"
+#include "space.h"
 
 
 
@@ -534,6 +536,20 @@ int MxParticleCheck(PyObject *o)
     return -1;
 }
 
+MxParticle* MxParticle_New(const MxParticle *data)
+{
+    MxParticle part = *data;
+
+    double x[] = {part.position[0], part.position[1], part.position[2]};
+
+    space *s = &(_Engine.s);
+
+    MxParticle *result = NULL;
+
+    space_addpart(s ,  &part,  x, &result);
+
+    return result;
+}
 //static PyObject *
 //PyCStructType_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 //{

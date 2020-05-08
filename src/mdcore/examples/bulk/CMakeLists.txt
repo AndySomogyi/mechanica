@@ -48,7 +48,8 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(bulk_noverlet
 	mdcore_single
-	Threads::Threads)
+	Threads::Threads
+	Mechanica::Mechanica)
 
 
 
@@ -65,7 +66,8 @@ target_compile_definitions(bulk_pseudoverlet PUBLIC ENGINE_FLAGS=engine_flag_ver
 
 target_link_libraries(bulk_pseudoverlet
 	mdcore_single
-	Threads::Threads)
+	Threads::Threads
+	Mechanica::Mechanica)
 
 # Using CUDA and Verlet lists
 # Sources for bulk_cuda_verlet

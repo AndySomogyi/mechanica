@@ -33,11 +33,13 @@ c.windowless = False
 
 s = m.Simulator(c, foo='bar', bar=1)
 
-print ("renderer: " , Simulator.renderer)
+print ("renderer: " , m.Simulator.renderer)
 
 print("s.foo: ", s.foo)
 
+print("part len: ", len(m.Universe.particles))
 
+print(m.Universe.particles[10])
 
 
 

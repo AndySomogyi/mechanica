@@ -145,6 +145,11 @@ CAPI_FUNC(int) MxParticleCheck(PyObject *o);
 /* associated functions */
 int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
 
+/**
+ * Creates a new MxParticle
+ */
+CAPI_FUNC(MxParticle*) MxParticle_New(const MxParticle *data);
+
 
 /**
  * internal function to initalize the particle and particle types

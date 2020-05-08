@@ -38,7 +38,8 @@ target_compile_definitions(neon PUBLIC ENGINE_FLAGS=engine_flag_none)
 
 target_link_libraries(neon
 	mdcore_single
-	Threads::Threads)
+	Threads::Threads
+	Mechanica::Mechanica)
 
 # Using pairwise Verlet lists of the second kind
 # Sources for neon_pseudoverlet
@@ -46,5 +47,5 @@ add_executable(neon_pseudoverlet neon.cpp)
 target_compile_definitions(neon_pseudoverlet PUBLIC ENGINE_FLAGS=engine_flag_verlet_pseudo)
 target_link_libraries(neon_pseudoverlet
 	mdcore_single
-	Threads::Threads)
-
+	Threads::Threads
+	Mechanica::Mechanica)

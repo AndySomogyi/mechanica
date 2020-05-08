@@ -1866,6 +1866,10 @@ epot += epot_local;
 								pthread_mutex_unlock(&c_dest->cell_mutex);
 
 								s->celllist[ p->id ] = c_dest;
+
+								// remove a particle from a cell. if the part was the last in the
+								// cell, simply dec the count, otherwise, move the last part
+								// in the cell to the ejected part's prev loc.
 								c->count -= 1;
 								if ( pid < c->count ) {
 									c->parts[pid] = c->parts[c->count];

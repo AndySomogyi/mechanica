@@ -23,6 +23,9 @@ struct MxUniverse  {
     static Magnum::Vector3 origin();
 
     static  Magnum::Vector3 dim();
+
+    // python binding to get particles.
+    PyObject *_particleMapping;
 };
 
 /**
