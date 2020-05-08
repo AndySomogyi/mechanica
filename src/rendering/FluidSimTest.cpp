@@ -155,6 +155,9 @@ FluidSimTest::FluidSimTest(const Arguments& arguments) :
             }
         }
     }
+        
+    /* Initialize scene particles */
+    initArgon(origin, dim, nParticles, 0.01, 0.01);
     
 
 

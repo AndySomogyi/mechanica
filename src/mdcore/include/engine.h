@@ -26,7 +26,6 @@
 #include "space.h"
 #include "cycle.h"
 
-MDCORE_BEGIN_DECLS
 
 /* engine error codes */
 #define engine_err_ok                    0
@@ -298,31 +297,31 @@ typedef struct engine_comm {
 
 
 /* associated functions */
-int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
-int engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 );
-int engine_advance ( struct engine *e );
-int engine_angle_addpot ( struct engine *e , struct MxPotential *p );
-int engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
-int engine_angle_eval ( struct engine *e );
-int engine_barrier ( struct engine *e );
-int engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
-int engine_bond_add ( struct engine *e , int i , int j );
-int engine_bond_eval ( struct engine *e );
-int engine_bonded_eval ( struct engine *e );
-int engine_bonded_eval_sets ( struct engine *e );
-int engine_bonded_sets ( struct engine *e , int max_sets );
-int engine_dihedral_add ( struct engine *e , int i , int j , int k , int l , int pid );
-int engine_dihedral_addpot ( struct engine *e , struct MxPotential *p );
-int engine_dihedral_eval ( struct engine *e );
-int engine_dump_PSF ( struct engine *e , FILE *psf , FILE *pdb , char *excl[] , int nr_excl );
-int engine_exclusion_add ( struct engine *e , int i , int j );
-int engine_exclusion_eval ( struct engine *e );
-int engine_exclusion_shrink ( struct engine *e );
-int engine_finalize ( struct engine *e );
-int engine_flush_ghosts ( struct engine *e );
-int engine_flush ( struct engine *e );
-int engine_gettype ( struct engine *e , char *name );
-int engine_gettype2 ( struct engine *e , char *name2 );
+CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
+CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 );
+CAPI_FUNC(int) engine_advance ( struct engine *e );
+CAPI_FUNC(int) engine_angle_addpot ( struct engine *e , struct MxPotential *p );
+CAPI_FUNC(int) engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
+CAPI_FUNC(int) engine_angle_eval ( struct engine *e );
+CAPI_FUNC(int) engine_barrier ( struct engine *e );
+CAPI_FUNC(int) engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
+CAPI_FUNC(int) engine_bond_add ( struct engine *e , int i , int j );
+CAPI_FUNC(int) engine_bond_eval ( struct engine *e );
+CAPI_FUNC(int) engine_bonded_eval ( struct engine *e );
+CAPI_FUNC(int) engine_bonded_eval_sets ( struct engine *e );
+CAPI_FUNC(int) engine_bonded_sets ( struct engine *e , int max_sets );
+CAPI_FUNC(int) engine_dihedral_add ( struct engine *e , int i , int j , int k , int l , int pid );
+CAPI_FUNC(int) engine_dihedral_addpot ( struct engine *e , struct MxPotential *p );
+CAPI_FUNC(int) engine_dihedral_eval ( struct engine *e );
+CAPI_FUNC(int) engine_dump_PSF ( struct engine *e , FILE *psf , FILE *pdb , char *excl[] , int nr_excl );
+CAPI_FUNC(int) engine_exclusion_add ( struct engine *e , int i , int j );
+CAPI_FUNC(int) engine_exclusion_eval ( struct engine *e );
+CAPI_FUNC(int) engine_exclusion_shrink ( struct engine *e );
+CAPI_FUNC(int) engine_finalize ( struct engine *e );
+CAPI_FUNC(int) engine_flush_ghosts ( struct engine *e );
+CAPI_FUNC(int) engine_flush ( struct engine *e );
+CAPI_FUNC(int) engine_gettype ( struct engine *e , char *name );
+CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 
 /**
  * @brief Initialize an #engine with the given data.
@@ -347,74 +346,74 @@ int engine_gettype2 ( struct engine *e , char *name2 );
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  */
-int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
+CAPI_FUNC(int) engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
 		double cutoff , unsigned int period , int max_type , unsigned int flags );
 
 
-int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid ,
+CAPI_FUNC(int) engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid ,
 		int *vid , double *q , unsigned int *flags , int N );
-int engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
+CAPI_FUNC(int) engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
 		double *charge , unsigned int *flags , int N );
-int engine_nonbond_eval ( struct engine *e );
-int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , int rigidH );
-int engine_read_psf ( struct engine *e , int psf , int pdb );
-int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol , int rigidH );
-int engine_rigid_add ( struct engine *e , int pid , int pjd , double d );
-int engine_rigid_eval ( struct engine *e );
-int engine_rigid_sort ( struct engine *e );
-int engine_rigid_unsort ( struct engine *e );
-int engine_setexplepot ( struct engine *e , struct MxPotential *ep );
-int engine_shuffle ( struct engine *e );
-int engine_split_bisect ( struct engine *e , int N );
-int engine_split ( struct engine *e );
+CAPI_FUNC(int) engine_nonbond_eval ( struct engine *e );
+CAPI_FUNC(int) engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , int rigidH );
+CAPI_FUNC(int) engine_read_psf ( struct engine *e , int psf , int pdb );
+CAPI_FUNC(int) engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol , int rigidH );
+CAPI_FUNC(int) engine_rigid_add ( struct engine *e , int pid , int pjd , double d );
+CAPI_FUNC(int) engine_rigid_eval ( struct engine *e );
+CAPI_FUNC(int) engine_rigid_sort ( struct engine *e );
+CAPI_FUNC(int) engine_rigid_unsort ( struct engine *e );
+CAPI_FUNC(int) engine_setexplepot ( struct engine *e , struct MxPotential *ep );
+CAPI_FUNC(int) engine_shuffle ( struct engine *e );
+CAPI_FUNC(int) engine_split_bisect ( struct engine *e , int N );
+CAPI_FUNC(int) engine_split ( struct engine *e );
 
-int engine_start ( struct engine *e , int nr_runners , int nr_queues );
-int engine_step ( struct engine *e );
-int engine_timers_reset ( struct engine *e );
-int engine_unload_marked ( struct engine *e , double *x , double *v , int *type , int *pid ,
+CAPI_FUNC(int) engine_start ( struct engine *e , int nr_runners , int nr_queues );
+CAPI_FUNC(int) engine_step ( struct engine *e );
+CAPI_FUNC(int) engine_timers_reset ( struct engine *e );
+CAPI_FUNC(int) engine_unload_marked ( struct engine *e , double *x , double *v , int *type , int *pid ,
 		int *vid , double *q , unsigned int *flags , double *epot , int N );
-int engine_unload_strays ( struct engine *e , double *x , double *v , int *type , int *pid ,
+CAPI_FUNC(int) engine_unload_strays ( struct engine *e , double *x , double *v , int *type , int *pid ,
 		int *vid , double *q , unsigned int *flags , double *epot , int N );
-int engine_unload ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
+CAPI_FUNC(int) engine_unload ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid ,
 		double *charge , unsigned int *flags , double *epot , int N );
-int engine_verlet_update ( struct engine *e );
+CAPI_FUNC(int) engine_verlet_update ( struct engine *e );
 
 
-void engine_dump();
+CAPI_FUNC(void) engine_dump();
 
 #define ENGINE_DUMP(msg) {std::cout<<msg<<std::endl; engine_dump();}
 
-double engine_kinetic_energy(struct engine *e);
+CAPI_FUNC(double) engine_kinetic_energy(struct engine *e);
 
-double engine_temperature(struct engine *e);
+CAPI_FUNC(double) engine_temperature(struct engine *e);
 
 #ifdef WITH_MPI
-int engine_init_mpi ( struct engine *e , const double *origin , const double *dim , double *L ,
+CAPI_FUNC(int) engine_init_mpi ( struct engine *e , const double *origin , const double *dim , double *L ,
 		double cutoff , unsigned int period , int max_type , unsigned int flags , MPI_Comm comm ,
 		int rank );
-int engine_exchange ( struct engine *e );
-int engine_exchange_async ( struct engine *e );
-int engine_exchange_async_run ( struct engine *e );
-int engine_exchange_incomming ( struct engine *e );
-int engine_exchange_rigid ( struct engine *e );
-int engine_exchange_rigid_async ( struct engine *e );
-int engine_exchange_rigid_async_run ( struct engine *e );
-int engine_exchange_rigid_wait ( struct engine *e );
-int engine_exchange_wait ( struct engine *e );
+CAPI_FUNC(int) engine_exchange ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_async ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_async_run ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_incomming ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_rigid ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_rigid_async ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_rigid_async_run ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_rigid_wait ( struct engine *e );
+CAPI_FUNC(int) engine_exchange_wait ( struct engine *e );
 #endif
 
 #if defined(HAVE_CUDA) && defined(WITH_CUDA)
-int engine_nonbond_cuda ( struct engine *e );
-int engine_cuda_load ( struct engine *e );
-int engine_cuda_load_parts ( struct engine *e );
-int engine_cuda_unload_parts ( struct engine *e );
-int engine_cuda_setdevice ( struct engine *e , int id );
-int engine_cuda_setdevices ( struct engine *e , int nr_devices , int *ids );
-int engine_split_METIS ( struct engine *e, int N, int flags);
+CAPI_FUNC(int) engine_nonbond_cuda ( struct engine *e );
+CAPI_FUNC(int) engine_cuda_load ( struct engine *e );
+CAPI_FUNC(int) engine_cuda_load_parts ( struct engine *e );
+CAPI_FUNC(int) engine_cuda_unload_parts ( struct engine *e );
+CAPI_FUNC(int) engine_cuda_setdevice ( struct engine *e , int id );
+CAPI_FUNC(int) engine_cuda_setdevices ( struct engine *e , int nr_devices , int *ids );
+CAPI_FUNC(int) engine_split_METIS ( struct engine *e, int N, int flags);
 #endif
 
 #ifdef WITH_METIS
-int engine_split_METIS ( struct engine *e, int N, int flags);
+CAPI_FUNC(int) engine_split_METIS ( struct engine *e, int N, int flags);
 #endif
 
 /**
@@ -424,6 +423,8 @@ int engine_split_METIS ( struct engine *e, int N, int flags);
  */
 CAPI_DATA(engine) _Engine;
 
-MDCORE_END_DECLS
+CAPI_FUNC(struct engine*) engine_get();
+
+
 #endif // INCLUDE_ENGINE_H_
 

@@ -1377,7 +1377,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 			p.q = q[j];
 
 		/* add the part to the space. */
-		if ( space_addpart( s , &p , &x[3*j] ) < 0 )
+		if ( space_addpart( s , &p , &x[3*j], NULL ) < 0 )
 			return error(engine_err_space);
 
 	}
@@ -1446,7 +1446,7 @@ int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , 
 			p.q = q[j];
 
 		/* add the part to the space. */
-		if ( space_addpart( s , &p , &x[3*j] ) < 0 )
+		if ( space_addpart( s , &p , &x[3*j], NULL ) < 0 )
 			return error(engine_err_space);
 
 	}
@@ -2245,157 +2245,155 @@ int engine_finalize ( struct engine *e ) {
 
 
 int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
-		double cutoff , unsigned int period , int max_type , unsigned int flags ) {
+        double cutoff , unsigned int period , int max_type , unsigned int flags ) {
 
-	int cid;
+    int cid;
 
-	/* make sure the inputs are ok */
-	if ( e == NULL || origin == NULL || dim == NULL || L == NULL )
-		return error(engine_err_null);
+    /* make sure the inputs are ok */
+    if ( e == NULL || origin == NULL || dim == NULL || L == NULL )
+        return error(engine_err_null);
 
-	/* Check for bad flags. */
+    /* Check for bad flags. */
 #ifdef FPTYPE_DOUBLE
-	if ( e->flags & engine_flag_cuda )
-		return error(engine_err_cudasp);
+    if ( e->flags & engine_flag_cuda )
+        return error(engine_err_cudasp);
 #endif
 
-	/* init the space with the given parameters */
-	if ( space_init( &(e->s) , origin , dim , L , cutoff , period ) < 0 )
-		return error(engine_err_space);
+    /* init the space with the given parameters */
+    if ( space_init( &(e->s) , origin , dim , L , cutoff , period ) < 0 )
+        return error(engine_err_space);
 
-	/* Set some flag implications. */
-	if ( flags & engine_flag_verlet_pseudo )
-		flags |= engine_flag_verlet_pairwise;
-	if ( flags & engine_flag_verlet_pairwise )
-		flags |= engine_flag_verlet;
-	if ( flags & engine_flag_cuda )
-		flags |= engine_flag_nullpart;
+    /* Set some flag implications. */
+    if ( flags & engine_flag_verlet_pseudo )
+        flags |= engine_flag_verlet_pairwise;
+    if ( flags & engine_flag_verlet_pairwise )
+        flags |= engine_flag_verlet;
+    if ( flags & engine_flag_cuda )
+        flags |= engine_flag_nullpart;
 
-	/* Set the flags. */
-	e->flags = flags;
+    /* Set the flags. */
+    e->flags = flags;
 
-	/* By default there is only one node. */
-	e->nr_nodes = 1;
+    /* By default there is only one node. */
+    e->nr_nodes = 1;
 
-	/* Init the timers. */
-	if ( engine_timers_reset( e ) < 0 )
-		return error(engine_err);
+    /* Init the timers. */
+    if ( engine_timers_reset( e ) < 0 )
+        return error(engine_err);
 
-	/* Init the runners to 0. */
-	e->runners = NULL;
-	e->nr_runners = 0;
+    /* Init the runners to 0. */
+    e->runners = NULL;
+    e->nr_runners = 0;
 
-	/* Start with no queues. */
-	e->queues = NULL;
-	e->nr_queues = 0;
+    /* Start with no queues. */
+    e->queues = NULL;
+    e->nr_queues = 0;
 
-	/* Init the bonds array. */
-	e->bonds_size = 100;
-	if ( ( e->bonds = (struct bond *)malloc( sizeof( struct bond ) * e->bonds_size ) ) == NULL )
-		return error(engine_err_malloc);
-	e->nr_bonds = 0;
+    /* Init the bonds array. */
+    e->bonds_size = 100;
+    if ( ( e->bonds = (struct bond *)malloc( sizeof( struct bond ) * e->bonds_size ) ) == NULL )
+        return error(engine_err_malloc);
+    e->nr_bonds = 0;
 
-	/* Init the exclusions array. */
-	e->exclusions_size = 100;
-	if ( ( e->exclusions = (struct exclusion *)malloc( sizeof( struct exclusion ) * e->exclusions_size ) ) == NULL )
-		return error(engine_err_malloc);
-	e->nr_exclusions = 0;
+    /* Init the exclusions array. */
+    e->exclusions_size = 100;
+    if ( ( e->exclusions = (struct exclusion *)malloc( sizeof( struct exclusion ) * e->exclusions_size ) ) == NULL )
+        return error(engine_err_malloc);
+    e->nr_exclusions = 0;
 
-	/* Init the rigids array. */
-	e->rigids_size = 100;
-	if ( ( e->rigids = (struct rigid *)malloc( sizeof( struct rigid ) * e->rigids_size ) ) == NULL )
-		return error(engine_err_malloc);
-	e->nr_rigids = 0;
-	e->tol_rigid = 1e-6;
-	e->nr_constr = 0;
-	e->part2rigid = NULL;
+    /* Init the rigids array. */
+    e->rigids_size = 100;
+    if ( ( e->rigids = (struct rigid *)malloc( sizeof( struct rigid ) * e->rigids_size ) ) == NULL )
+        return error(engine_err_malloc);
+    e->nr_rigids = 0;
+    e->tol_rigid = 1e-6;
+    e->nr_constr = 0;
+    e->part2rigid = NULL;
 
-	/* Init the angles array. */
-	e->angles_size = 100;
-	if ( ( e->angles = (struct angle *)malloc( sizeof( struct angle ) * e->angles_size ) ) == NULL )
-		return error(engine_err_malloc);
-	e->nr_angles = 0;
+    /* Init the angles array. */
+    e->angles_size = 100;
+    if ( ( e->angles = (struct angle *)malloc( sizeof( struct angle ) * e->angles_size ) ) == NULL )
+        return error(engine_err_malloc);
+    e->nr_angles = 0;
 
-	/* Init the dihedrals array. */
-	e->dihedrals_size = 100;
-	if ( ( e->dihedrals = (struct dihedral *)malloc( sizeof( struct dihedral ) * e->dihedrals_size ) ) == NULL )
-		return error(engine_err_malloc);
-	e->nr_dihedrals = 0;
+    /* Init the dihedrals array. */
+    e->dihedrals_size = 100;
+    if ( ( e->dihedrals = (struct dihedral *)malloc( sizeof( struct dihedral ) * e->dihedrals_size ) ) == NULL )
+        return error(engine_err_malloc);
+    e->nr_dihedrals = 0;
 
-	/* set the maximum nr of types */
-	if ( flags & engine_flag_nullpart )
-		max_type += 1;
-	e->max_type = max_type;
-	e->nr_types = 0;
-	if ( ( e->types = (struct MxParticleType *)malloc( sizeof(struct MxParticleType) * max_type ) ) == NULL )
-		return error(engine_err_malloc);
-	if ( flags & engine_flag_nullpart ) {
-		e->types[0].id = 0;
-		e->types[0].mass = 0.0;
-		e->types[0].imass = 0.0;
-		e->types[0].charge = 0.0;
-		e->types[0].eps = 0.0;
-		e->types[0].rmin = 0.0;
-		strcpy( e->types[0].name , "NULL" );
-		strcpy( e->types[0].name2 , "NULL" );
-		e->nr_types = 1;
-	}
+    /* set the maximum nr of types */
+    if ( flags & engine_flag_nullpart )
+        max_type += 1;
+    e->max_type = max_type;
+    e->nr_types = 0;
+    if ( ( e->types = (struct MxParticleType *)malloc( sizeof(struct MxParticleType) * max_type ) ) == NULL )
+        return error(engine_err_malloc);
+    if ( flags & engine_flag_nullpart ) {
+        e->types[0].id = 0;
+        e->types[0].mass = 0.0;
+        e->types[0].imass = 0.0;
+        e->types[0].charge = 0.0;
+        e->types[0].eps = 0.0;
+        e->types[0].rmin = 0.0;
+        strcpy( e->types[0].name , "NULL" );
+        strcpy( e->types[0].name2 , "NULL" );
+        e->nr_types = 1;
+    }
 
-	/* Init the sets. */
-	e->sets = NULL;
-	e->nr_sets = 0;
+    /* Init the sets. */
+    e->sets = NULL;
+    e->nr_sets = 0;
 
-	/* allocate the interaction matrices */
-	if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type ) ) == NULL )
-		return error(engine_err_malloc);
-	bzero( e->p , sizeof(struct MxPotential *) * max_type * max_type );
-	if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type )) == NULL)
-		return error(engine_err_malloc);
-	bzero( e->p_bond , sizeof(struct MxPotential *) * max_type * max_type );
-	e->anglepots_size = 100;
-	if ( (e->p_angle = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size )) == NULL)
-		return error(engine_err_malloc);
-	bzero( e->p_angle , sizeof(struct MxPotential *) * e->anglepots_size );
-	e->nr_anglepots = 0;
-	e->dihedralpots_size = 100;
-	if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)
-		return error(engine_err_malloc);
-	bzero( e->p_dihedral , sizeof(struct MxPotential *) * e->dihedralpots_size );
-	e->nr_dihedralpots = 0;
+    /* allocate the interaction matrices */
+    if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type ) ) == NULL )
+        return error(engine_err_malloc);
+    bzero( e->p , sizeof(struct MxPotential *) * max_type * max_type );
+    if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type )) == NULL)
+        return error(engine_err_malloc);
+    bzero( e->p_bond , sizeof(struct MxPotential *) * max_type * max_type );
+    e->anglepots_size = 100;
+    if ( (e->p_angle = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size )) == NULL)
+        return error(engine_err_malloc);
+    bzero( e->p_angle , sizeof(struct MxPotential *) * e->anglepots_size );
+    e->nr_anglepots = 0;
+    e->dihedralpots_size = 100;
+    if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)
+        return error(engine_err_malloc);
+    bzero( e->p_dihedral , sizeof(struct MxPotential *) * e->dihedralpots_size );
+    e->nr_dihedralpots = 0;
 
-	/* Make sortlists? */
-			if ( flags & engine_flag_verlet_pseudo ) {
-				for ( cid = 0 ; cid < e->s.nr_cells ; cid++ )
-					if ( e->s.cells[cid].flags & cell_flag_marked )
-						if ( ( e->s.cells[cid].sortlist = (unsigned int *)malloc( sizeof(unsigned int) * 13 * e->s.cells[cid].size ) ) == NULL )
-							return error(engine_err_malloc);
-			}
+    /* Make sortlists? */
+    if ( flags & engine_flag_verlet_pseudo ) {
+        for ( cid = 0 ; cid < e->s.nr_cells ; cid++ )
+            if ( e->s.cells[cid].flags & cell_flag_marked )
+                if ( ( e->s.cells[cid].sortlist = (unsigned int *)malloc( sizeof(unsigned int) * 13 * e->s.cells[cid].size ) ) == NULL )
+                    return error(engine_err_malloc);
+    }
 
-			/* init the barrier variables */
-			e->barrier_count = 0;
-			if ( pthread_mutex_init( &e->barrier_mutex , NULL ) != 0 ||
-					pthread_cond_init( &e->barrier_cond , NULL ) != 0 ||
-					pthread_cond_init( &e->done_cond , NULL ) != 0)
-				return error(engine_err_pthread);
+    /* init the barrier variables */
+    e->barrier_count = 0;
+    if ( pthread_mutex_init( &e->barrier_mutex , NULL ) != 0 ||
+            pthread_cond_init( &e->barrier_cond , NULL ) != 0 ||
+            pthread_cond_init( &e->done_cond , NULL ) != 0)
+        return error(engine_err_pthread);
 
-			/* init the barrier */
-			if (pthread_mutex_lock(&e->barrier_mutex) != 0)
-				return error(engine_err_pthread);
-			e->barrier_count = 0;
+    /* init the barrier */
+    if (pthread_mutex_lock(&e->barrier_mutex) != 0)
+        return error(engine_err_pthread);
+    e->barrier_count = 0;
 
-			/* Init the comm arrays. */
-			e->send = NULL;
-			e->recv = NULL;
+    /* Init the comm arrays. */
+    e->send = NULL;
+    e->recv = NULL;
 
-			/* all is well... */
-			return engine_err_ok;
+    e->flags |= engine_flag_initialized;
+
+    /* all is well... */
+    return engine_err_ok;
 
 }
 
-// the single static engine instance per process
-engine _Engine = {
-        .flags = 0
-};
 
 
 
@@ -2431,3 +2429,5 @@ double engine_temperature(struct engine *e)
 {
     return 0;
 }
+
+

@@ -22,6 +22,12 @@ target_link_libraries(mx-pyrun
 
 add_executable(mx-glinfo ${PROJECT_SOURCE_DIR}/extern/magnum/src/Magnum/Platform/gl-info.cpp)
 
+set_target_properties(mx-glinfo PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN 1
+  )
+
+
 target_link_libraries(mx-glinfo PRIVATE MagnumGL)
 
 if(MAGNUM_TARGET_HEADLESS OR CORRADE_TARGET_EMSCRIPTEN OR CORRADE_TARGET_ANDROID)

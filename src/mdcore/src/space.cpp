@@ -366,22 +366,8 @@ int space_shuffle_local ( struct space *s ) {
 }
 
 
-/**
- * @brief Add a #part to a #space at the given coordinates.
- *
- * @param s The space to which @c p should be added.
- * @param p The #part to be added.
- * @param x A pointer to an array of three doubles containing the particle
- *      position.
- *
- * @returns #space_err_ok or < 0 on error (see #space_err).
- *
- * Inserts a #part @c p into the #space @c s at the position @c x.
- * Note that since particle positions in #part are relative to the cell, that
- * data in @c p is overwritten and @c x is used.
- */
 
-int space_addpart ( struct space *s , struct MxParticle *p , double *x ) {
+int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct MxParticle **result ) {
 
     int k, ind[3];
     struct MxParticle **temp;

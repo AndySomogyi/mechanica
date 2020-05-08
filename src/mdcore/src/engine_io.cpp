@@ -1572,7 +1572,7 @@ int engine_read_psf ( struct engine *e , int psf , int pdb ) {
             p.q = e->types[typeids[pid-1]].charge;
             p.flags = PARTICLE_FLAG_NONE;
             p.typeId = typeids[pid-1];
-            if ( space_addpart( &e->s , &p , x ) < 0 )
+            if ( space_addpart( &e->s , &p , x , NULL) < 0 )
                 return error(engine_err_space);
                 
             /* Skip the rest of the line. */

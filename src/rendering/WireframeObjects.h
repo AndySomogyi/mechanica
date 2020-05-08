@@ -40,7 +40,7 @@ using namespace Magnum;
 using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;
 using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
 
-class WireframeObject {
+class CAPI_EXPORT WireframeObject {
     public:
         explicit WireframeObject(Scene3D* const scene, SceneGraph::DrawableGroup3D* const drawableGroup) {
             _obj3D.reset(new Object3D{scene});
@@ -68,14 +68,14 @@ class WireframeObject {
         Containers::Pointer<FlatShadeObject> _drawableObj;
 };
 
-class WireframeBox: public WireframeObject {
+class CAPI_EXPORT WireframeBox: public WireframeObject {
     public:
         explicit WireframeBox(Scene3D* const scene, SceneGraph::DrawableGroup3D* const drawableGroup): WireframeObject{scene, drawableGroup} {
             _mesh = MeshTools::compile(Primitives::cubeWireframe());
         }
 };
 
-class WireframeGrid: public WireframeObject {
+class CAPI_EXPORT WireframeGrid: public WireframeObject {
     public:
         explicit WireframeGrid(Scene3D* const scene, SceneGraph::DrawableGroup3D* const drawableGroup): WireframeObject{scene, drawableGroup} {
             using namespace Magnum::Math::Literals;

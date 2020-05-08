@@ -181,7 +181,7 @@ int main ( int argc , char *argv[] ) {
                 temp = 0.275 / sqrt( pAr.v[0]*pAr.v[0] + pAr.v[1]*pAr.v[1] + pAr.v[2]*pAr.v[2] );
                 pAr.v[0] *= temp; pAr.v[1] *= temp; pAr.v[2] *= temp;
                 vtot[0] += pAr.v[0]; vtot[1] += pAr.v[1]; vtot[2] += pAr.v[2];
-                if ( space_addpart( &(e.s) , &pAr , x ) != 0 ) {
+                if ( space_addpart( &(e.s) , &pAr , x, NULL ) != 0 ) {
                     printf("main: space_addpart failed with space_err=%i.\n",space_err);
                     errs_dump(stdout);
                     return 1;

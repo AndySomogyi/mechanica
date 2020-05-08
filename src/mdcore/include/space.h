@@ -234,24 +234,41 @@ typedef struct space {
 
 
 /* associated functions */
-int space_init ( struct space *s , const double *origin , const double *dim , double *L , double cutoff , unsigned int period );
-int space_getsid ( struct space *s , struct space_cell **ci , struct space_cell **cj , FPTYPE *shift );
-int space_shuffle ( struct space *s );
-int space_shuffle_local ( struct space *s );
-int space_addpart ( struct space *s , struct MxParticle *p , double *x );
-int space_prepare ( struct space *s );
-int space_getpos ( struct space *s , int id , double *x );
-int space_setpos ( struct space *s , int id , double *x );
-int space_flush ( struct space *s );
-int space_flush_ghosts ( struct space *s );
-struct task *space_addtask ( struct space *s , int type , int subtype , int flags , int i , int j );
+CAPI_FUNC(int) space_init ( struct space *s , const double *origin , const double *dim , double *L , double cutoff , unsigned int period );
+CAPI_FUNC(int) space_getsid ( struct space *s , struct space_cell **ci , struct space_cell **cj , FPTYPE *shift );
+CAPI_FUNC(int) space_shuffle ( struct space *s );
+CAPI_FUNC(int) space_shuffle_local ( struct space *s );
+
+/**
+ * @brief Add a #part to a #space at the given coordinates.
+ *
+ * @param s The space to which @c p should be added.
+ * @param p The #part to be added.
+ * @param x A pointer to an array of three doubles containing the particle
+ *      position.
+ *
+ * @returns #space_err_ok or < 0 on error (see #space_err).
+ *
+ * Inserts a #part @c p into the #space @c s at the position @c x.
+ * Note that since particle positions in #part are relative to the cell, that
+ * data in @c p is overwritten and @c x is used.
+ */
+CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,  double *x, struct MxParticle **result );
 
 
-int space_verlet_init ( struct space *s , int list_global );
-int space_gettuple ( struct space *s , struct celltuple **out , int wait );
-int space_getcell ( struct space *s , struct space_cell **out );
-int space_verlet_force ( struct space *s , FPTYPE *f , double epot );
-int space_releasepair ( struct space *s , int ci , int cj );
+CAPI_FUNC(int) space_prepare ( struct space *s );
+CAPI_FUNC(int) space_getpos ( struct space *s , int id , double *x );
+CAPI_FUNC(int) space_setpos ( struct space *s , int id , double *x );
+CAPI_FUNC(int) space_flush ( struct space *s );
+CAPI_FUNC(int) space_flush_ghosts ( struct space *s );
+CAPI_FUNC(struct task*) space_addtask ( struct space *s , int type , int subtype , int flags , int i , int j );
+
+
+CAPI_FUNC(int) space_verlet_init ( struct space *s , int list_global );
+CAPI_FUNC(int) space_gettuple ( struct space *s , struct celltuple **out , int wait );
+CAPI_FUNC(int) space_getcell ( struct space *s , struct space_cell **out );
+CAPI_FUNC(int) space_verlet_force ( struct space *s , FPTYPE *f , double epot );
+CAPI_FUNC(int) space_releasepair ( struct space *s , int ci , int cj );
 
 MDCORE_END_DECLS
 #endif // INCLUDE_SPACE_H_

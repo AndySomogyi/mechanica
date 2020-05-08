@@ -71,7 +71,7 @@ struct MxUniverseConfig {
 /**
  * The single global instance of the universe
  */
-CAPI_DATA(MxUniverse*) Universe;
+CAPI_DATA(MxUniverse) Universe;
 
 /**
  * Init and add to python module

@@ -45,6 +45,10 @@ add_executable(fluid-test2 WIN32
     ${CPP_FILES}
     )
 
+set_target_properties(fluid-test2 PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN 1
+  )
 
 target_link_libraries(fluid-test2
   Mechanica::Mechanica

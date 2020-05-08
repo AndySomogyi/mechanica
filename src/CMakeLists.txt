@@ -218,6 +218,7 @@ set(HEADERS
 # linked into the real libraries below.
 #add_library(mechanica_OBJECTS OBJECT ${SRC} ${HEADERS})
 
+
 # get the include directories of the dependencies that the mechanica objects use
 # really goofy design decision in design of CMake OBJECT libraries -- no transitive includes
 #target_include_directories(mechanica_OBJECTS PRIVATE $<TARGET_PROPERTY:mdcore_single,INTERFACE_INCLUDE_DIRECTORIES>)
@@ -237,6 +238,11 @@ add_library(mechanica_obj
   ${PROJECT_BINARY_DIR}/include/mx_config.h
   ${HEADERS}
   ${MxMeshShaderProgramRes}
+  )
+
+set_target_properties(mechanica_obj PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN 1
   )
 
 message("Shader Program Res: ${MxMeshShaderProgramRes}")
@@ -317,6 +323,11 @@ add_library(mechanica_shared SHARED
   mechanica.cpp
   )
 
+set_target_properties(mechanica_shared PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN 1
+  )
+
 set_target_properties(mechanica_shared PROPERTIES OUTPUT_NAME mechanica)
 
 target_include_directories(mechanica_shared PUBLIC
@@ -337,6 +348,12 @@ add_library(mechanica_py SHARED
   $<TARGET_OBJECTS:mechanica_obj>
   mechanica.cpp
   )
+
+set_target_properties(mechanica_py PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN 1
+  )
+
 
 target_include_directories(mechanica_py PRIVATE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>

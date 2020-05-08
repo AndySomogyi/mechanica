@@ -261,6 +261,8 @@ void FluidSimApp::drawEvent() {
         for(Int i = 0; i < _substeps; ++i) simulationStep();
     }
 
+    std::cout << "cells: " << engine_get()->s.nr_cells << ", parts: " <<  engine_get()->s.nr_parts << std::endl;
+
     /* Draw objects */
     {
         /* Trigger drawable object to update the particles to the GPU */
@@ -519,6 +521,8 @@ void engineStep() {
 
     //return;
 
+    engine *e = engine_get();
+
     ticks tic, toc_step, toc_temp;
 
     double epot, ekin, v2, temp;
@@ -532,7 +536,7 @@ void engineStep() {
 
     //ENGINE_DUMP("pre step: ");
 
-    if ( engine_step( &_Engine ) != 0 ) {
+    if ( engine_step(e) != 0 ) {
         printf("main: engine_step failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return ;
@@ -557,29 +561,29 @@ void engineStep() {
 
 
     // get the total COM-velocities and ekin
-    epot = _Engine.s.epot; ekin = 0.0;
+    epot = e->s.epot; ekin = 0.0;
 #pragma omp parallel for schedule(static,100), private(cid,pid,k,v2), reduction(+:epot,ekin)
-    for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-        for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+    for ( cid = 0 ; cid < e->s.nr_cells ; cid++ ) {
+        for ( pid = 0 ; pid < e->s.cells[cid].count ; pid++ ) {
             for ( v2 = 0.0 , k = 0 ; k < 3 ; k++ )
-                v2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
+                v2 += e->s.cells[cid].parts[pid].v[k] * e->s.cells[cid].parts[pid].v[k];
             ekin += 0.5 * 39.948 * v2;
         }
     }
 
     // compute the temperature and scaling
-    temp = ekin / ( 1.5 * 6.022045E23 * 1.380662E-26 * _Engine.s.nr_parts );
-    w = sqrt( 1.0 + 0.1 * ( _Engine.temperature / temp - 1.0 ) );
+    temp = ekin / ( 1.5 * 6.022045E23 * 1.380662E-26 * e->s.nr_parts );
+    w = sqrt( 1.0 + 0.1 * ( e->temperature / temp - 1.0 ) );
 
     // scale the velocities
 
     /*
     if ( i < 10000 ) {
 #pragma omp parallel for schedule(static,100), private(cid,pid,k), reduction(+:epot,ekin)
-        for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-            for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+        for ( cid = 0 ; cid < e->s.nr_cells ; cid++ ) {
+            for ( pid = 0 ; pid < e->s.cells[cid].count ; pid++ ) {
                 for ( k = 0 ; k < 3 ; k++ )
-                    _Engine.s.cells[cid].parts[pid].v[k] *= w;
+                    e->s.cells[cid].parts[pid].v[k] *= w;
             }
         }
     }
@@ -588,7 +592,7 @@ void engineStep() {
     toc_temp = getticks();
 
     printf("time:%i, epot:%e, ekin:%e, temp:%e, swaps:%i, stalls: %i %.3f %.3f %.3f ms\n",
-            _Engine.time,epot,ekin,temp,_Engine.s.nr_swaps,_Engine.s.nr_stalls,
+            e->time,epot,ekin,temp,e->s.nr_swaps,e->s.nr_stalls,
             (double)(toc_temp-tic) * 1000 / CPU_TPS,
             (double)(toc_step-tic) * 1000 / CPU_TPS,
             (double)(toc_temp-toc_step) * 1000 / CPU_TPS);
@@ -603,6 +607,8 @@ void engineStep() {
 
 int initArgon (const Vector3 &origin, const Vector3 &dim,
         int nParticles, double dt, float temp ) {
+    
+    engine *e = engine_get();
 
     double length = dim[0] - origin[0];
 
@@ -639,25 +645,25 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
     fflush(stdout);
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
+    if ( engine_init(e , _origin , _dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return 1;
     }
 
-    _Engine.dt = dt;
-    _Engine.temperature = temp;
+    e->dt = dt;
+    e->temperature = temp;
 
 
-    printf("main: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
+    printf("main: n_cells: %i, cell width set to %22.16e.\n", e->s.nr_cells, cutoff);
 
     printf("done.\n"); fflush(stdout);
 
     // set the interaction cutoff
-    printf("main: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
-    printf("main: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
+    printf("main: cell dimensions = [ %i , %i , %i ].\n", e->s.cdim[0] , e->s.cdim[1] , e->s.cdim[2] );
+    printf("main: cell size = [ %e , %e , %e ].\n" , e->s.h[0] , e->s.h[1] , e->s.h[2] );
     printf("main: cutoff set to %22.16e.\n", cutoff);
-    printf("main: nr tasks: %i.\n",_Engine.s.nr_tasks);
+    printf("main: nr tasks: %i.\n",e->s.nr_tasks);
 
     /* mix-up the pair list just for kicks
     printf("main: shuffling the interaction pairs... "); fflush(stdout);
@@ -683,14 +689,14 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
 
     /* register the particle types. */
-    if ( ( pAr.typeId = engine_addtype( &_Engine , 39.948 , 0.0 , "Ar" , "Ar" ) ) < 0 ) {
+    if ( ( pAr.typeId = engine_addtype(e , 39.948 , 0.0 , "Ar" , "Ar" ) ) < 0 ) {
         printf("main: call to engine_addtype failed.\n");
         errs_dump(stdout);
         return 1;
     }
 
     // register these potentials.
-    if ( engine_addpot( &_Engine , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
+    if ( engine_addpot( e , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
         printf("main: call to engine_addpot failed.\n");
         errs_dump(stdout);
         return 1;
@@ -725,44 +731,44 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         x[1] = pos[i][1];
         x[2] = pos[i][2];
 
-        if ( space_addpart( &(_Engine.s) , &pAr , x ) != 0 ) {
+        if ( space_addpart( &(e->s) , &pAr , x, NULL ) != 0 ) {
             printf("main: space_addpart failed with space_err=%i.\n",space_err);
             errs_dump(stdout);
             return 1;
         }
     }
 
-    float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    float t = (1./ 3.) * e->types[pAr.typeId].mass * totV2 / e->s.nr_parts;
     std::cout << "temperature before scaling: " << t << std::endl;
 
-    float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
+    float vScale = sqrt((3./e->types[pAr.typeId].mass) * (e->temperature) / (totV2 / e->s.nr_parts));
 
     // sanity check
     totV2 = 0;
 
     // scale velocities
-    for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-        for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+    for ( cid = 0 ; cid < e->s.nr_cells ; cid++ ) {
+        for ( pid = 0 ; pid < e->s.cells[cid].count ; pid++ ) {
             for ( k = 0 ; k < 3 ; k++ ) {
-                _Engine.s.cells[cid].parts[pid].v[k] *= vScale;
-                totV2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
+                e->s.cells[cid].parts[pid].v[k] *= vScale;
+                totV2 += e->s.cells[cid].parts[pid].v[k] * e->s.cells[cid].parts[pid].v[k];
             }
         }
     }
 
-    t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    t = (1./ 3.) * e->types[pAr.typeId].mass * totV2 / e->s.nr_parts;
     std::cout << "particle temperature: " << t << std::endl;
 
 
 
 
     printf("done.\n"); fflush(stdout);
-    printf("main: inserted %i particles.\n", _Engine.s.nr_parts);
+    printf("main: inserted %i particles.\n", e->s.nr_parts);
 
     // set the time and time-step by hand
-    _Engine.time = 0;
+    e->time = 0;
 
-    printf("main: dt set to %f fs.\n", _Engine.dt*1000 );
+    printf("main: dt set to %f fs.\n", e->dt*1000 );
 
     toc = getticks();
 
@@ -772,7 +778,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     // start the engine
 
-    if ( engine_start( &_Engine , nr_runners , nr_runners ) != 0 ) {
+    if ( engine_start(e , nr_runners , nr_runners ) != 0 ) {
         printf("main: engine_start failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return 1;

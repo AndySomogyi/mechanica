@@ -223,7 +223,7 @@ int main ( int argc , char *argv[] ) {
                 temp = 0.675 / sqrt( pO.v[0]*pO.v[0] + pO.v[1]*pO.v[1] + pO.v[2]*pO.v[2] );
                 pO.v[0] *= temp; pO.v[1] *= temp; pO.v[2] *= temp;
                 vtot[0] += pO.v[0]; vtot[1] += pO.v[1]; vtot[2] += pO.v[2];
-                if ( space_addpart( &(e.s) , &pO , x ) != 0 ) {
+                if ( space_addpart( &(e.s) , &pO , x, NULL ) != 0 ) {
                     printf("main: space_addpart failed with space_err=%i.\n",space_err);
                     errs_dump(stdout);
                     return 1;
@@ -232,7 +232,7 @@ int main ( int argc , char *argv[] ) {
                 pH.vid = pO.vid;
                 pH.id = pO.id + 1;
                 pH.v[0] = pO.v[0]; pH.v[1] = pO.v[1]; pH.v[2] = pO.v[2];
-                if ( space_addpart( &(e.s) , &pH , x ) != 0 ) {
+                if ( space_addpart( &(e.s) , &pH , x, NULL ) != 0 ) {
                     printf("main: space_addpart failed with space_err=%i.\n",space_err);
                     errs_dump(stdout);
                     return 1;
@@ -241,7 +241,7 @@ int main ( int argc , char *argv[] ) {
                 x[1] += 0.09428;
                 pH.vid = pO.vid;
                 pH.id = pO.id + 2;
-                if ( space_addpart( &(e.s) , &pH , x ) != 0 ) {
+                if ( space_addpart( &(e.s) , &pH , x, NULL ) != 0 ) {
                     printf("main: space_addpart failed with space_err=%i.\n",space_err);
                     errs_dump(stdout);
                     return 1;

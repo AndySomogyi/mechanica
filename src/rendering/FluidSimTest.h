@@ -68,7 +68,7 @@ class MxUniverseRendererOld;
 
 
 
-class FluidSimTest: public Platform::GlfwApplication {
+class CAPI_EXPORT FluidSimTest: public Platform::GlfwApplication {
     public:
         explicit FluidSimTest(const Arguments& arguments);
 

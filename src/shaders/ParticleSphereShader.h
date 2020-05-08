@@ -22,12 +22,13 @@
 
 
 #pragma once
+#include <carbon.h>
 #include <Magnum/GL/AbstractShaderProgram.h>
 #include <Magnum/Math/Vector3.h>
 
 using namespace Magnum;
 
-class ParticleSphereShader: public GL::AbstractShaderProgram {
+class CAPI_EXPORT ParticleSphereShader: public GL::AbstractShaderProgram {
 public:
 
     struct Vertex {

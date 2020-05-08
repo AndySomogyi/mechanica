@@ -58,6 +58,12 @@ MxUniverseRendererOld& MxUniverseRendererOld::draw(Containers::Pointer<SceneGrap
     //                         GL::BufferUsage::DynamicDraw);
 
     // give me the damned bytes...
+    
+    int test = _Engine.s.nr_cells;
+    
+    std::cout << "cells: " << engine_get()->s.nr_cells << ", parts: " <<  engine_get()->s.nr_parts << std::endl;
+    
+    std::cout << "s cells: " << _Engine.s.nr_cells << ", s parts: " <<  _Engine.s.nr_parts << std::endl;
 
 
 
@@ -71,6 +77,11 @@ MxUniverseRendererOld& MxUniverseRendererOld::draw(Containers::Pointer<SceneGrap
             GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
     ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
+
+
+
+
+
 
 
     int i = 0;

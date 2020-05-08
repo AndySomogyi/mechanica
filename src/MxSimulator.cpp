@@ -657,7 +657,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         x[1] = pos[i][1];
         x[2] = pos[i][2];
 
-        if ( space_addpart( &(_Engine.s) , &pAr , x ) != 0 ) {
+        if ( space_addpart( &(_Engine.s) , &pAr , x, NULL ) != 0 ) {
             printf("main: space_addpart failed with space_err=%i.\n",space_err);
             errs_dump(stdout);
             return 1;

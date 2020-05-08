@@ -55,7 +55,10 @@ extern int particle_err;
  * Instance vars for each particle.
  *
  * Note that the arrays for @c x, @c v and @c f are 4 entries long for
- * propper alignment.
+ * proper alignment.
+ *
+ * All particles are stored in a series of contiguous blocks of memory that are owned
+ * by the space cells. Each space cell has a array of particle structs.
  */
 struct MxParticle : PyObject  {
 

@@ -164,7 +164,7 @@ static PyObject * moduleinit(void)
 }
 
 
-PyMODINIT_FUNC PyInit__mechanica(void)
+CAPI_FUNC(PyObject*) PyInit__mechanica(void)
 {
     std::cout << MX_FUNCTION << std::endl;
     return moduleinit();

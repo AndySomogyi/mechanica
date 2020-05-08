@@ -143,9 +143,15 @@ function(add_mdcore_single)
   message("SINGLE_HEADERS: ${SINGLE_HEADERS}")
 
   source_group("Sources" FILES ${SOURCES} ${SINGLE_HEADERS})
+
   add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
 
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
+
+  set_target_properties(mdcore_single PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN 1
+    )
 
   # hack for getting compile definitions through to eclipse project files,
   # this is NOT needed for the build, just for the clipse project files
@@ -162,7 +168,7 @@ function(add_mdcore_single)
     #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
   )
 
- target_link_libraries(mdcore_single PUBLIC
+target_link_libraries(mdcore_single PUBLIC
   Carbon::Carbon
   DirectXMath
   Python::Python

@@ -15,10 +15,24 @@ namespace py = pybind11;
 
 using Magnum::Vector3;
 
-MxUniverse* Universe = NULL;
+MxUniverse Universe;
+
+// the single static engine instance per process
+
+// complete and total hack to get the global engine to show up here
+// instead of the mdcore static lib.
+// TODO: fix this crap.
+engine _Engine = {
+        .flags = 0
+};
+
+CAPI_FUNC(struct engine*) engine_get()
+{
+    return &_Engine;
+}
 
 #define UNIVERSE_CHECK() { \
-    if (!Universe ) { \
+    if (_Engine.flags == 0 ) { \
         std::string err = "Error in "; \
         err += MX_FUNCTION; \
         err += ", Universe not initialized"; \
@@ -52,7 +66,7 @@ static Vector3 universe_dim(py::object /* self */) {
 }
 
 static PyUniverse *universe_init(const MxUniverseConfig &conf) {
-    if(Universe) {
+    if(_Engine.flags) {
         throw std::domain_error("Error, Universe is already initialized");
     }
 
@@ -65,7 +79,7 @@ static PyUniverse *universe_init(const MxUniverseConfig &conf) {
     int er = engine_init ( &_Engine , origin , dim , L ,
             conf.cutoff, space_periodic_full , conf.maxTypes , conf.flags );
 
-    Universe = new MxUniverse();
+    //Universe = new MxUniverse();
 
 
     return new PyUniverse();

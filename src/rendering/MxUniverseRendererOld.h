@@ -36,12 +36,8 @@
 using namespace Magnum;
 
 
-
-
-class MxUniverseRendererOld {
+class CAPI_EXPORT MxUniverseRendererOld {
     public:
-
-
 
         explicit MxUniverseRendererOld(float particleRadius);
 
@@ -114,8 +110,6 @@ class MxUniverseRendererOld {
             _shader->setProjectionMatrix(projMat);
             return *this;
         }
-
-
 
         bool renderUniverse = true;
 
