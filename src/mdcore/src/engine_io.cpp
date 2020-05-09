@@ -137,10 +137,10 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
                 for ( k = 0 ; k < e->nr_bonds ; k++ ) {
 
                     /* Does this bond match the types? */
-                    if ( ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId].name , type1 ) == 0 &&
-                           strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId].name , type2 ) == 0 ) ||
-                         ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId].name , type2 ) == 0 &&
-                           strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId].name , type1 ) == 0 ) ) {
+                    if ( ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId]->name , type1 ) == 0 &&
+                           strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId]->name , type2 ) == 0 ) ||
+                         ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId]->name , type2 ) == 0 &&
+                           strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId]->name , type1 ) == 0 ) ) {
 
                         /* Register as a constraint. */
                         if ( engine_rigid_add( e , e->bonds[k].i , e->bonds[k].j , 0.1*r0 ) < 0 )
@@ -165,7 +165,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
 
                     /* Fill the ind1 array. */
                     for ( nr_ind1 = 0 , k = 0 ; k < e->nr_types ; k++ )
-                        if ( strcmp( type1 , e->types[k].name ) == 0 ) {
+                        if ( strcmp( type1 , e->types[k]->name ) == 0 ) {
                             ind1[nr_ind1] = k;
                             nr_ind1 += 1;
                             }
@@ -191,11 +191,11 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
 
                     /* Fill the ind1 and ind2 arrays. */
                     for ( nr_ind1 = 0 , nr_ind2 = 0 , k = 0 ; k < e->nr_types ; k++ ) {
-                        if ( strcmp( type1 , e->types[k].name ) == 0 ) {
+                        if ( strcmp( type1 , e->types[k]->name ) == 0 ) {
                             ind1[nr_ind1] = k;
                             nr_ind1 += 1;
                             }
-                        else if ( strcmp( type2 , e->types[k].name ) == 0 ) {
+                        else if ( strcmp( type2 , e->types[k]->name ) == 0 ) {
                             ind2[nr_ind2] = k;
                             nr_ind2 += 1;
                             }
@@ -259,12 +259,12 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
             for ( k = 0 ; k < e->nr_angles ; k++ ) {
 
                 /* Does this angle match the types? */
-                if ( ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId].name , type1 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId].name , type2 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId].name , type3 ) == 0 ) ||
-                     ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId].name , type3 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId].name , type2 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId].name , type1 ) == 0 ) ) {
+                if ( ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId]->name , type1 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId]->name , type2 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId]->name , type3 ) == 0 ) ||
+                     ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId]->name , type3 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId]->name , type2 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId]->name , type1 ) == 0 ) ) {
 
                     /* Do we need to create the potential? */
                     if ( potid < 0 ) {
@@ -343,14 +343,14 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
 
                 /* Does this dihedral match the types? */
                 if ( ( e->dihedrals[k].pid == -1 ) &&
-                     ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type1 ) == 0 ) &&
-                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type2 ) == 0 ) &&
-                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type3 ) == 0 ) &&
-                         ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type4 ) == 0 ) ) ||
-                       ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type4 ) == 0 ) &&
-                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type3 ) == 0 ) &&
-                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type2 ) == 0 ) &&
-                         ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type1 ) == 0 ) ) ) ) {
+                     ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type1 ) == 0 ) &&
+                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type2 ) == 0 ) &&
+                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type3 ) == 0 ) &&
+                         ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type4 ) == 0 ) ) ||
+                       ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type4 ) == 0 ) &&
+                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type3 ) == 0 ) &&
+                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type2 ) == 0 ) &&
+                         ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type1 ) == 0 ) ) ) ) {
 
                     /* Do we need to create the potential? */
                     if ( potid < 0 ) {
@@ -420,14 +420,14 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
 
                 /* Does this dihedral match the types? */
                 if ( ( e->dihedrals[k].pid == -2 ) &&
-                     ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type1 ) == 0 ) &&
-                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type2 ) == 0 ) &&
-                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type3 ) == 0 ) &&
-                         ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type4 ) == 0 ) ) ||
-                       ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type4 ) == 0 ) &&
-                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type3 ) == 0 ) &&
-                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type2 ) == 0 ) &&
-                         ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type1 ) == 0 ) ) ) ) {
+                     ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type1 ) == 0 ) &&
+                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type2 ) == 0 ) &&
+                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type3 ) == 0 ) &&
+                         ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type4 ) == 0 ) ) ||
+                       ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type4 ) == 0 ) &&
+                         ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type3 ) == 0 ) &&
+                         ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type2 ) == 0 ) &&
+                         ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type1 ) == 0 ) ) ) ) {
 
                     /* Do we need to create the potential? */
                     if ( potid < 0 ) {
@@ -469,9 +469,9 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
 
             /* Run through the types and store the parameters for each match. */
             for ( k = 0 ; k < e->nr_types ; k++ )
-                if ( strcmp( e->types[k].name , type1 ) == 0 ) {
-                    e->types[k].eps = 4.184 * K;
-                    e->types[k].rmin = 0.05 * r0;
+                if ( strcmp( e->types[k]->name , type1 ) == 0 ) {
+                    e->types[k]->eps = 4.184 * K;
+                    e->types[k]->rmin = 0.05 * r0;
                     }
                 
             } /* non-bonded iteraction. */
@@ -496,18 +496,18 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
         for ( k = j ; k < e->nr_types ; k++ ) {
             
             /* Has a potential been specified for this case? */
-            if ( ( e->types[j].eps == 0.0 || e->types[k].eps == 0.0 ) &&
-                 ( kappa < 0.0 || e->types[j].charge == 0.0 || e->types[k].charge == 0.0 ) )
+            if ( ( e->types[j]->eps == 0.0 || e->types[k]->eps == 0.0 ) &&
+                 ( kappa < 0.0 || e->types[j]->charge == 0.0 || e->types[k]->charge == 0.0 ) )
                 continue;
                 
             /* Has this potential already been specified? */
             if ( kappa < 0.0 ) {
-                for ( jj = 0 ; jj < j && ( e->types[jj].eps != e->types[j].eps || e->types[jj].rmin != e->types[j].rmin ) ; jj++ );
-                for ( kk = 0 ; kk < k && ( e->types[kk].eps != e->types[k].eps || e->types[kk].rmin != e->types[k].rmin ) ; kk++ );
+                for ( jj = 0 ; jj < j && ( e->types[jj]->eps != e->types[j]->eps || e->types[jj]->rmin != e->types[j]->rmin ) ; jj++ );
+                for ( kk = 0 ; kk < k && ( e->types[kk]->eps != e->types[k]->eps || e->types[kk]->rmin != e->types[k]->rmin ) ; kk++ );
                 }
             else {
-                for ( jj = 0 ; jj < j && ( e->types[jj].eps != e->types[j].eps || e->types[jj].rmin != e->types[j].rmin || e->types[jj].charge != e->types[j].charge ) ; jj++ );
-                for ( kk = 0 ; kk < k && ( e->types[kk].eps != e->types[k].eps || e->types[kk].rmin != e->types[k].rmin || e->types[kk].charge != e->types[k].charge ) ; kk++ );
+                for ( jj = 0 ; jj < j && ( e->types[jj]->eps != e->types[j]->eps || e->types[jj]->rmin != e->types[j]->rmin || e->types[jj]->charge != e->types[j]->charge ) ; jj++ );
+                for ( kk = 0 ; kk < k && ( e->types[kk]->eps != e->types[k]->eps || e->types[kk]->rmin != e->types[k]->rmin || e->types[kk]->charge != e->types[k]->charge ) ; kk++ );
                 }
             if ( jj < j && kk < k ) {
                 if ( e->p[ jj + e->max_type*kk ] != NULL && engine_addpot( e , e->p[ jj + e->max_type*kk ] , j , k ) < 0 )
@@ -516,16 +516,16 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
                 }
                     
             /* Construct the common LJ parameters. */
-            K = sqrt( e->types[j].eps * e->types[k].eps );
-            r0 = e->types[j].rmin + e->types[k].rmin;
+            K = sqrt( e->types[j]->eps * e->types[k]->eps );
+            r0 = e->types[j]->rmin + e->types[k]->rmin;
             r2 = r0*r0; r6 = r2*r2*r2;
             A = K*r6*r6; B = 2*K*r6;
-            q = e->types[j].charge*e->types[k].charge;
+            q = e->types[j]->charge*e->types[k]->charge;
                 
             /* Construct the potential. */
             /* printf( "engine_read_cpf: creating %s-%s potential with A=%e B=%e q=%e.\n" ,
-                e->types[j].name , e->types[k].name , 
-                K*r6*r6 , K*2*r6 , e->types[j].charge*e->types[k].charge ); */
+                e->types[j]->name , e->types[k]->name ,
+                K*r6*r6 , K*2*r6 , e->types[j]->charge*e->types[k]->charge ); */
             if ( K == 0.0 ) {
                 if ( q != 0.0 && kappa >= 0.0 ) {
                     if ( kappa > 0.0 ) {
@@ -553,7 +553,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
                     }
                 if ( ( p = potential_create_LJ126( al , e->s.cutoff , A , B , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A , B , al , e->s.cutoff );
                     return error(engine_err_potential);
                     }
@@ -571,7 +571,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
                     }
                 if ( ( p = potential_create_LJ126_Coulomb( al , e->s.cutoff , A , B , q , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e q=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A ,B , q ,
                     al , e->s.cutoff );
                     return error(engine_err_potential);
@@ -590,7 +590,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
                     }
                 if ( ( p = potential_create_LJ126_Ewald( al , e->s.cutoff , A , B , q , kappa , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e q=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A , B , q ,
                     al , e->s.cutoff );
                     return error(engine_err_potential);
@@ -696,10 +696,10 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
             for ( k = 0 ; k < e->nr_bonds ; k++ ) {
             
                 /* Does this bond match the types? */
-                if ( ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId].name , type1 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId].name , type2 ) == 0 ) ||
-                     ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId].name , type2 ) == 0 &&
-                       strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId].name , type1 ) == 0 ) ) {
+                if ( ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId]->name , type1 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId]->name , type2 ) == 0 ) ||
+                     ( strcmp( e->types[e->s.partlist[e->bonds[k].i]->typeId]->name , type2 ) == 0 &&
+                       strcmp( e->types[e->s.partlist[e->bonds[k].j]->typeId]->name , type1 ) == 0 ) ) {
                        
                     /* Register as a constraint. */
                     if ( engine_rigid_add( e , e->bonds[k].i , e->bonds[k].j , 0.1*r0 ) < 0 )
@@ -724,7 +724,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
 
                 /* Fill the ind1 array. */
                 for ( nr_ind1 = 0 , k = 0 ; k < e->nr_types ; k++ )
-                    if ( strcmp( type1 , e->types[k].name ) == 0 ) {
+                    if ( strcmp( type1 , e->types[k]->name ) == 0 ) {
                         ind1[nr_ind1] = k;
                         nr_ind1 += 1;
                         }
@@ -750,11 +750,11 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
 
                 /* Fill the ind1 and ind2 arrays. */
                 for ( nr_ind1 = 0 , nr_ind2 = 0 , k = 0 ; k < e->nr_types ; k++ ) {
-                    if ( strcmp( type1 , e->types[k].name ) == 0 ) {
+                    if ( strcmp( type1 , e->types[k]->name ) == 0 ) {
                         ind1[nr_ind1] = k;
                         nr_ind1 += 1;
                         }
-                    else if ( strcmp( type2 , e->types[k].name ) == 0 ) {
+                    else if ( strcmp( type2 , e->types[k]->name ) == 0 ) {
                         ind2[nr_ind2] = k;
                         nr_ind2 += 1;
                         }
@@ -833,12 +833,12 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
         for ( k = 0 ; k < e->nr_angles ; k++ ) {
         
             /* Does this angle match the types? */
-            if ( ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId].name , type1 ) == 0 &&
-                   strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId].name , type2 ) == 0 &&
-                   strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId].name , type3 ) == 0 ) ||
-                 ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId].name , type3 ) == 0 &&
-                   strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId].name , type2 ) == 0 &&
-                   strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId].name , type1 ) == 0 ) ) {
+            if ( ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId]->name , type1 ) == 0 &&
+                   strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId]->name , type2 ) == 0 &&
+                   strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId]->name , type3 ) == 0 ) ||
+                 ( strcmp( e->types[e->s.partlist[e->angles[k].i]->typeId]->name , type3 ) == 0 &&
+                   strcmp( e->types[e->s.partlist[e->angles[k].j]->typeId]->name , type2 ) == 0 &&
+                   strcmp( e->types[e->s.partlist[e->angles[k].k]->typeId]->name , type1 ) == 0 ) ) {
                 
                 /* Do we need to create the potential? */
                 if ( potid < 0 ) {
@@ -926,14 +926,14 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
         
             /* Does this dihedral match the types? */
             if ( ( e->dihedrals[k].pid == -1 ) &&
-                 ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type1 ) == 0 ) &&
-                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type2 ) == 0 ) &&
-                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type3 ) == 0 ) &&
-                     ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type4 ) == 0 ) ) ||
-                   ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type4 ) == 0 ) &&
-                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type3 ) == 0 ) &&
-                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type2 ) == 0 ) &&
-                     ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type1 ) == 0 ) ) ) ) {
+                 ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type1 ) == 0 ) &&
+                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type2 ) == 0 ) &&
+                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type3 ) == 0 ) &&
+                     ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type4 ) == 0 ) ) ||
+                   ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type4 ) == 0 ) &&
+                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type3 ) == 0 ) &&
+                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type2 ) == 0 ) &&
+                     ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type1 ) == 0 ) ) ) ) {
                 
                 /* Do we need to create the potential? */
                 if ( potid < 0 ) {
@@ -1020,14 +1020,14 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
         
             /* Does this dihedral match the types? */
             if ( ( e->dihedrals[k].pid == -2 ) &&
-                 ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type1 ) == 0 ) &&
-                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type2 ) == 0 ) &&
-                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type3 ) == 0 ) &&
-                     ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type4 ) == 0 ) ) ||
-                   ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId].name , type4 ) == 0 ) &&
-                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId].name , type3 ) == 0 ) &&
-                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId].name , type2 ) == 0 ) &&
-                     ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId].name , type1 ) == 0 ) ) ) ) {
+                 ( ( ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type1 ) == 0 ) &&
+                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type2 ) == 0 ) &&
+                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type3 ) == 0 ) &&
+                     ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type4 ) == 0 ) ) ||
+                   ( ( wc[3] || strcmp( e->types[e->s.partlist[e->dihedrals[k].i]->typeId]->name , type4 ) == 0 ) &&
+                     ( wc[2] || strcmp( e->types[e->s.partlist[e->dihedrals[k].j]->typeId]->name , type3 ) == 0 ) &&
+                     ( wc[1] || strcmp( e->types[e->s.partlist[e->dihedrals[k].k]->typeId]->name , type2 ) == 0 ) &&
+                     ( wc[0] || strcmp( e->types[e->s.partlist[e->dihedrals[k].l]->typeId]->name , type1 ) == 0 ) ) ) ) {
                 
                 /* Do we need to create the potential? */
                 if ( potid < 0 ) {
@@ -1088,9 +1088,9 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
             
         /* Run through the types and store the parameters for each match. */
         for ( k = 0 ; k < e->nr_types ; k++ )
-            if ( strcmp( e->types[k].name , type1 ) == 0 ) {
-                e->types[k].eps = 4.184 * K;
-                e->types[k].rmin = 0.1 * r0;
+            if ( strcmp( e->types[k]->name , type1 ) == 0 ) {
+                e->types[k]->eps = 4.184 * K;
+                e->types[k]->rmin = 0.1 * r0;
                 }
                 
         /* Skip the rest of the line. */
@@ -1107,18 +1107,18 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
         for ( k = j ; k < e->nr_types ; k++ ) {
             
             /* Has a potential been specified for this case? */
-            if ( ( e->types[j].eps == 0.0 || e->types[k].eps == 0.0 ) &&
-                 ( kappa < 0.0 || e->types[j].charge == 0.0 || e->types[k].charge == 0.0 ) )
+            if ( ( e->types[j]->eps == 0.0 || e->types[k]->eps == 0.0 ) &&
+                 ( kappa < 0.0 || e->types[j]->charge == 0.0 || e->types[k]->charge == 0.0 ) )
                 continue;
                 
             /* Has this potential already been specified? */
             if ( kappa < 0.0 ) {
-                for ( jj = 0 ; jj < j && ( e->types[jj].eps != e->types[j].eps || e->types[jj].rmin != e->types[j].rmin ) ; jj++ );
-                for ( kk = 0 ; kk < k && ( e->types[kk].eps != e->types[k].eps || e->types[kk].rmin != e->types[k].rmin ) ; kk++ );
+                for ( jj = 0 ; jj < j && ( e->types[jj]->eps != e->types[j]->eps || e->types[jj]->rmin != e->types[j]->rmin ) ; jj++ );
+                for ( kk = 0 ; kk < k && ( e->types[kk]->eps != e->types[k]->eps || e->types[kk]->rmin != e->types[k]->rmin ) ; kk++ );
                 }
             else {
-                for ( jj = 0 ; jj < j && ( e->types[jj].eps != e->types[j].eps || e->types[jj].rmin != e->types[j].rmin || e->types[jj].charge != e->types[j].charge ) ; jj++ );
-                for ( kk = 0 ; kk < k && ( e->types[kk].eps != e->types[k].eps || e->types[kk].rmin != e->types[k].rmin || e->types[kk].charge != e->types[k].charge ) ; kk++ );
+                for ( jj = 0 ; jj < j && ( e->types[jj]->eps != e->types[j]->eps || e->types[jj]->rmin != e->types[j]->rmin || e->types[jj]->charge != e->types[j]->charge ) ; jj++ );
+                for ( kk = 0 ; kk < k && ( e->types[kk]->eps != e->types[k]->eps || e->types[kk]->rmin != e->types[k]->rmin || e->types[kk]->charge != e->types[k]->charge ) ; kk++ );
                 }
             if ( jj < j && kk < k ) {
                 if ( e->p[ jj + e->max_type*kk ] != NULL && engine_addpot( e , e->p[ jj + e->max_type*kk ] , j , k ) < 0 )
@@ -1127,16 +1127,16 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
                 }
                     
             /* Construct the common LJ parameters. */
-            K = sqrt( e->types[j].eps * e->types[k].eps );
-            r0 = e->types[j].rmin + e->types[k].rmin;
+            K = sqrt( e->types[j]->eps * e->types[k]->eps );
+            r0 = e->types[j]->rmin + e->types[k]->rmin;
             r2 = r0*r0; r6 = r2*r2*r2;
             A = K*r6*r6; B = 2*K*r6;
-            q = e->types[j].charge*e->types[k].charge;
+            q = e->types[j]->charge*e->types[k]->charge;
                 
             /* Construct the potential. */
             /* printf( "engine_read_cpf: creating %s-%s potential with A=%e B=%e q=%e.\n" ,
-                e->types[j].name , e->types[k].name , 
-                K*r6*r6 , K*2*r6 , e->types[j].charge*e->types[k].charge ); */
+                e->types[j]->name , e->types[k]->name ,
+                K*r6*r6 , K*2*r6 , e->types[j]->charge*e->types[k]->charge ); */
             if ( K == 0.0 ) {
                 if ( q != 0.0 && kappa >= 0.0 ) {
                     if ( kappa > 0.0 ) {
@@ -1164,7 +1164,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
                     }
                 if ( ( p = potential_create_LJ126_switch( al , e->s.cutoff , A , B , 0.7 , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A , B , al , e->s.cutoff );
                     return error(engine_err_potential);
                     }
@@ -1182,7 +1182,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
                     }
                 if ( ( p = potential_create_LJ126_Coulomb( al , e->s.cutoff , A , B , q , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e q=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A ,B , q ,
                     al , e->s.cutoff );
                     return error(engine_err_potential);
@@ -1201,7 +1201,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
                     }
                 if ( ( p = potential_create_LJ126_Ewald_switch( al , e->s.cutoff , A , B , q , kappa , 0.7 , tol ) ) == NULL ) {
                     printf( "engine_read_xplor: failed to create %s-%s potential with A=%e B=%e q=%e on [%e,%e].\n" ,
-                    e->types[j].name , e->types[k].name , 
+                    e->types[j]->name , e->types[k]->name ,
                     A , B , q ,
                     al , e->s.cutoff );
                     return error(engine_err_potential);
@@ -1546,7 +1546,7 @@ int engine_read_psf ( struct engine *e , int psf , int pdb ) {
                 return error(engine_err_reader);
                 
             /* Does the type match the PSF data? */
-            /* if ( strncmp( e->types[typeids[pid-1]].name , type , typelen ) != 0 )
+            /* if ( strncmp( e->types[typeids[pid-1]]->name , type , typelen ) != 0 )
                 return error(engine_err_pdb); */
                 
             /* Ignore the two following tokens. */
@@ -1569,7 +1569,7 @@ int engine_read_psf ( struct engine *e , int psf , int pdb ) {
             /* Add a part of the given type at the given location. */
             p.id = pid-1;
             p.vid = resids[pid-1];
-            p.q = e->types[typeids[pid-1]].charge;
+            p.q = e->types[typeids[pid-1]]->charge;
             p.flags = PARTICLE_FLAG_NONE;
             p.typeId = typeids[pid-1];
             if ( space_addpart( &e->s , &p , x , NULL) < 0 )
@@ -1639,17 +1639,18 @@ int engine_dump_PSF ( struct engine *e , FILE *psf , FILE *pdb , char *excl[] , 
         if ( ( p = s->partlist[pid] ) == NULL || ( c = s->celllist[pid] ) == NULL )
             continue;
         for ( k = 0 ; k < nr_excl ; k++ )
-            if ( strcmp( e->types[p->typeId].name , excl[k] ) == 0 )
+            if ( strcmp( e->types[p->typeId]->name , excl[k] ) == 0 )
                 break;
         if ( nr_excl > 0 && k < nr_excl )
             continue;
         if ( pdb != NULL )
             fprintf( pdb , "ATOM  %5d %4s %3s X%4i    %8.3f%8.3f%8.3f\n" ,
-                (p->id+1)%100000 , e->types[p->typeId].name , "" , (p->vid+1)%10000 ,
+                (p->id+1)%100000 , e->types[p->typeId]->name , "" , (p->vid+1)%10000 ,
                 10 * ( p->x[0] + c->origin[0] ) , 10 * ( p->x[1] + c->origin[1] ) , 10 * ( p->x[2] + c->origin[2] ) );
         if ( psf != NULL )
             fprintf( psf , "%8i %4s %4i %4s %4s %4s %15.6f %15.6f    0\n" ,
-                p->id+1 , "WAT" , p->vid+1 , "TIP3" , e->types[p->typeId].name , e->types[p->typeId].name , e->types[p->typeId].charge , e->types[p->typeId].mass );
+                    p->id+1 , "WAT" , p->vid+1 , "TIP3" , e->types[p->typeId]->name ,
+                    e->types[p->typeId]->name , e->types[p->typeId]->charge , e->types[p->typeId]->mass );
         }
         
     /* Close-up the PDB file. */

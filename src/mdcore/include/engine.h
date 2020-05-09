@@ -153,7 +153,7 @@ typedef struct engine {
 	int nr_types;
 
 	/** The particle types. */
-	struct MxParticleType *types;
+	struct MxParticleType **types;
 
 	/** The interaction matrix */
 	struct MxPotential **p, **p_bond, **p_angle, **p_dihedral;

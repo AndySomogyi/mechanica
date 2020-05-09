@@ -664,10 +664,10 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         }
     }
 
-    float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    float t = (1./ 3.) * _Engine.types[pAr.typeId]->mass * totV2 / _Engine.s.nr_parts;
     std::cout << "temperature before scaling: " << t << std::endl;
 
-    float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
+    float vScale = sqrt((3./_Engine.types[pAr.typeId]->mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
 
     // sanity check
     totV2 = 0;
@@ -682,7 +682,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         }
     }
 
-    t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    t = (1./ 3.) * _Engine.types[pAr.typeId]->mass * totV2 / _Engine.s.nr_parts;
     std::cout << "particle temperature: " << t << std::endl;
 
 

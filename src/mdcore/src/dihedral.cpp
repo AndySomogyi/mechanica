@@ -236,23 +236,23 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
 
         /* if ( pid == 2448 || pld == 2448 ) {
             printf( "dihedral_eval: found dihedral %i (pid=%i), %s-%s-%s-%s, cphi=%e.\n" ,
-                did , d[did].pid , e->types[pi->type].name , e->types[pj->type].name , e->types[pk->type].name , e->types[pl->type].name ,
+                did , d[did].pid , e->types[pi->type]->name , e->types[pj->type]->name , e->types[pk->type]->name , e->types[pl->type]->name ,
                 cphi );
             printf( "               force on part %i (%s) is [ %e , %e , %e ].\n" ,
-                pi->id , e->types[pi->type].name , pi->f[0] , pi->f[1] , pi->f[2] );
+                pi->id , e->types[pi->type]->name , pi->f[0] , pi->f[1] , pi->f[2] );
             printf( "               force on part %i (%s) is [ %e , %e , %e ].\n" ,
-                pj->id , e->types[pj->type].name , pj->f[0] , pj->f[1] , pj->f[2] );
+                pj->id , e->types[pj->type]->name , pj->f[0] , pj->f[1] , pj->f[2] );
             printf( "               force on part %i (%s) is [ %e , %e , %e ].\n" ,
-                pk->id , e->types[pk->type].name , pk->f[0] , pk->f[1] , pk->f[2] );
+                pk->id , e->types[pk->type]->name , pk->f[0] , pk->f[1] , pk->f[2] );
             printf( "               force on part %i (%s) is [ %e , %e , %e ].\n" ,
-                pl->id , e->types[pl->type].name , pl->f[0] , pl->f[1] , pl->f[2] );
+                pl->id , e->types[pl->type]->name , pl->f[0] , pl->f[1] , pl->f[2] );
             } */
         
         /* printf( "dihedral_eval: dihedral %i is %e rad.\n" , did , cphi ); */
         if ( cphi < pot->a || cphi > pot->b ) {
             printf( "dihedral_eval: dihedral %i (%s-%s-%s-%s) out of range [%e,%e], cphi=%e.\n" ,
-                did , e->types[pi->typeId].name , e->types[pj->typeId].name ,
-                e->types[pk->typeId].name , e->types[pl->typeId].name , pot->a ,
+                did , e->types[pi->typeId]->name , e->types[pj->typeId]->name ,
+                e->types[pk->typeId]->name , e->types[pl->typeId]->name , pot->a ,
                 pot->b , cphi );
             cphi = fmax( pot->a , fmin( pot->b , cphi ) );
             }
@@ -550,8 +550,8 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
         /* printf( "dihedral_eval: dihedral %i is %e rad.\n" , did , cphi ); */
         if ( cphi < pot->a || cphi > pot->b ) {
             printf( "dihedral_evalf: dihedral %i (%s-%s-%s-%s) out of range [%e,%e], cphi=%e.\n" ,
-                did , e->types[pi->typeId].name , e->types[pj->typeId].name ,
-                e->types[pk->typeId].name , e->types[pl->typeId].name , pot->a ,
+                did , e->types[pi->typeId]->name , e->types[pj->typeId]->name ,
+                e->types[pk->typeId]->name , e->types[pl->typeId]->name , pot->a ,
                 pot->b , cphi );
             cphi = fmax( pot->a , fmin( pot->b , cphi ) );
             }

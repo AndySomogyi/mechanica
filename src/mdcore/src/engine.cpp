@@ -1478,7 +1478,7 @@ int engine_gettype ( struct engine *e , char *name ) {
 	for ( k = 0 ; k < e->nr_types ; k++ ) {
 
 		/* Compare the name. */
-		if ( strcmp( e->types[k].name , name ) == 0 )
+		if ( strcmp( e->types[k]->name , name ) == 0 )
 			return k;
 
 	}
@@ -1510,7 +1510,7 @@ int engine_gettype2 ( struct engine *e , char *name2 ) {
 	for ( k = 0 ; k < e->nr_types ; k++ ) {
 
 		/* Compare the name. */
-		if ( strcmp( e->types[k].name2 , name2 ) == 0 )
+		if ( strcmp( e->types[k]->name2 , name2 ) == 0 )
 			return k;
 
 	}
@@ -1545,17 +1545,18 @@ int engine_addtype ( struct engine *e , double mass , double charge , const char
 		return error(engine_err_range);
 
 	/* set the type. */
-	e->types[e->nr_types].mass = mass;
-	e->types[e->nr_types].imass = 1.0 / mass;
-	e->types[e->nr_types].charge = charge;
+    e->types[e->nr_types] = (MxParticleType*)malloc(sizeof(MxParticleType));
+	e->types[e->nr_types]->mass = mass;
+	e->types[e->nr_types]->imass = 1.0 / mass;
+	e->types[e->nr_types]->charge = charge;
 	if ( name != NULL )
-		strcpy( e->types[e->nr_types].name , name );
+		strcpy( e->types[e->nr_types]->name , name );
 	else
-		strcpy( e->types[e->nr_types].name , "X" );
+		strcpy( e->types[e->nr_types]->name , "X" );
 	if ( name2 != NULL )
-		strcpy( e->types[e->nr_types].name2 , name2 );
+		strcpy( e->types[e->nr_types]->name2 , name2 );
 	else
-		strcpy( e->types[e->nr_types].name2 , "X" );
+		strcpy( e->types[e->nr_types]->name2 , "X" );
 
 	/* bring good tidings. */
 	return e->nr_types++;
@@ -1815,7 +1816,7 @@ int engine_advance ( struct engine *e ) {
 				epot_local += c->epot;
 				for ( pid = 0 ; pid < c->count ; pid++ ) {
 					p = &( c->parts[pid] );
-					w = dt * e->types[p->typeId].imass;
+					w = dt * e->types[p->typeId]->imass;
 					for ( k = 0 ; k < 3 ; k++ ) {
 						p->v[k] += p->f[k] * w;
 						p->x[k] += dt * p->v[k];
@@ -1843,7 +1844,7 @@ epot += epot_local;
 				while ( pid < c->count ) {
 
 					p = &( c->parts[pid] );
-					w = dt * e->types[p->typeId].imass;
+					w = dt * e->types[p->typeId]->imass;
 					for ( k = 0 ; k < 3 ; k++ ) {
 						p->v[k] += p->f[k] * w;
 						p->x[k] += dt * p->v[k];
@@ -2331,17 +2332,17 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         max_type += 1;
     e->max_type = max_type;
     e->nr_types = 0;
-    if ( ( e->types = (struct MxParticleType *)malloc( sizeof(struct MxParticleType) * max_type ) ) == NULL )
+    if ( ( e->types = (MxParticleType **)malloc( sizeof(MxParticleType*) * max_type ) ) == NULL )
         return error(engine_err_malloc);
     if ( flags & engine_flag_nullpart ) {
-        e->types[0].id = 0;
-        e->types[0].mass = 0.0;
-        e->types[0].imass = 0.0;
-        e->types[0].charge = 0.0;
-        e->types[0].eps = 0.0;
-        e->types[0].rmin = 0.0;
-        strcpy( e->types[0].name , "NULL" );
-        strcpy( e->types[0].name2 , "NULL" );
+        e->types[0]->id = 0;
+        e->types[0]->mass = 0.0;
+        e->types[0]->imass = 0.0;
+        e->types[0]->charge = 0.0;
+        e->types[0]->eps = 0.0;
+        e->types[0]->rmin = 0.0;
+        strcpy( e->types[0]->name , "NULL" );
+        strcpy( e->types[0]->name2 , "NULL" );
         e->nr_types = 1;
     }
 
@@ -2422,7 +2423,7 @@ double engine_kinetic_energy(struct engine *e)
         space_cell *cell = &_Engine.s.cells[cid];
         for(int pid = 0; pid < cell->count; ++pid) {
             MxParticle *p = &cell->parts[pid];
-            tot += e->types[p->typeId].mass *
+            tot += e->types[p->typeId]->mass *
                     (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
         }
     }

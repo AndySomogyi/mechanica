@@ -148,7 +148,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
         
         if ( r2 < pot->a*pot->a || r2 > pot->b*pot->b ) {
             printf( "bond_eval: bond %i (%s-%s) out of range [%e,%e], r=%e.\n" ,
-                bid , e->types[pi->typeId].name , e->types[pj->typeId].name , pot->a , pot->b , sqrt(r2) );
+                bid , e->types[pi->typeId]->name , e->types[pj->typeId]->name , pot->a , pot->b , sqrt(r2) );
             r2 = fmax( pot->a*pot->a , fmin( pot->b*pot->b , r2 ) );
             }
 
@@ -348,7 +348,7 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
 
         if ( r2 < pot->a*pot->a || r2 > pot->b*pot->b ) {
             printf( "bond_evalf: bond %i (%s-%s) out of range [%e,%e], r=%e.\n" ,
-                bid , e->types[pi->typeId].name , e->types[pj->typeId].name , pot->a , pot->b , sqrt(r2) );
+                bid , e->types[pi->typeId]->name , e->types[pj->typeId]->name , pot->a , pot->b , sqrt(r2) );
             r2 = fmax( pot->a*pot->a , fmin( pot->b*pot->b , r2 ) );
             }
 

@@ -190,7 +190,7 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
             dxk[0] , dxk[1] , dxk[2] , sqrt( dxk[0]*dxk[0] + dxk[1]*dxk[1] + dxk[2]*dxk[2] ) ); */
         if ( ctheta < pot->a || ctheta > pot->b ) {
             printf( "angle_eval[%i]: angle %i (%s-%s-%s) out of range [%e,%e], ctheta=%e.\n" ,
-                e->nodeID , aid , e->types[pi->typeId].name , e->types[pj->typeId].name , e->types[pk->typeId].name , pot->a , pot->b , ctheta );
+                e->nodeID , aid , e->types[pi->typeId]->name , e->types[pj->typeId]->name , e->types[pk->typeId]->name , pot->a , pot->b , ctheta );
             ctheta = FPTYPE_FMAX( pot->a , FPTYPE_FMIN( pot->b , ctheta ) );
             }
 
@@ -432,7 +432,7 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
         /* printf( "angle_eval: angle %i is %e rad.\n" , aid , ctheta ); */
         if ( ctheta < pot->a || ctheta > pot->b ) {
             printf( "angle_evalf: angle %i (%s-%s-%s) out of range [%e,%e], ctheta=%e.\n" ,
-                aid , e->types[pi->typeId].name , e->types[pj->typeId].name , e->types[pk->typeId].name , pot->a , pot->b , ctheta );
+                aid , e->types[pi->typeId]->name , e->types[pj->typeId]->name , e->types[pk->typeId]->name , pot->a , pot->b , ctheta );
             ctheta = fmax( pot->a , fmin( pot->b , ctheta ) );
             }
 

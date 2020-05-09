@@ -118,7 +118,7 @@ int rigid_eval_shake ( struct rigid *rs , int N , struct engine *e ) {
             if ( ( p[k] = partlist[ r->parts[k] ] ) == NULL )
                 break;
             c[k] = celllist[ r->parts[k] ];
-            m[k] = e->types[ p[k]->typeId ].mass;
+            m[k] = e->types[ p[k]->typeId ]->mass;
             }
         if ( k < nr_parts )
             continue;
@@ -315,7 +315,7 @@ int rigid_eval_pshake ( struct rigid *rs , int N , struct engine *e , int a_upda
             if ( ( p[k] = partlist[ r->parts[k] ] ) == NULL )
                 break;
             c[k] = celllist[ r->parts[k] ];
-            m[k] = e->types[ p[k]->typeId ].mass;
+            m[k] = e->types[ p[k]->typeId ]->mass;
             }
         if ( k < nr_parts )
             continue;
