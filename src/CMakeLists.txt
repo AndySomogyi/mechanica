@@ -320,6 +320,7 @@ set_property(TARGET mechanica_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 # shared and static libraries built from the same object files
 add_library(mechanica_shared SHARED
   $<TARGET_OBJECTS:mechanica_obj>
+  $<TARGET_OBJECTS:mdcore_single>
   mechanica.cpp
   )
 
@@ -346,6 +347,7 @@ target_include_directories(mechanica_shared PRIVATE ${PYBIND11_INCLUDE_DIR})
 # shared and static libraries built from the same object files
 add_library(mechanica_py SHARED
   $<TARGET_OBJECTS:mechanica_obj>
+  $<TARGET_OBJECTS:mdcore_single>
   mechanica.cpp
   )
 

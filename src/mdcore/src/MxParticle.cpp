@@ -68,27 +68,7 @@ void f(T C::*pm)
     std::cout << "offset of: " << offset_of(pm);
 }
 
-PyObject *test() {
 
-    pybind11::module m;
-
-
-    pybind11::class_<Foo>(m, "Pet")
-        .def_readwrite("name", &Foo::x);
-
-    int i = 0;
-
-    pybind11::handle h = pybind11::cast(i);
-
-    Foo f;
-
-    pybind11::handle h2 = pybind11::cast(f);
-
-
-
-
-    return h.ptr();
-}
  
 
 
@@ -180,6 +160,36 @@ int vector4_setter(PyObject *, PyObject *, void *) {
 }
 
 
+PyGetSetDef gsd = {
+        .name = "descr",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
+            std::cout << "getter(obj.type:" << on << ", p:" << p << ")" << std::endl;
+
+            bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+            bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
+
+            std::cout << "is particle: " << isParticle << std::endl;
+            std::cout << "is particle type: " << isParticleType << std::endl;
+            return PyLong_FromLong(567);
+        },
+        .set = [](PyObject *obj, PyObject *, void *p) -> int {
+            const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
+            std::cout << "setter(obj.type:" << on << ", p:" << p << ")" << std::endl;
+
+            bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+            bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
+
+            std::cout << "is particle: " << isParticle << std::endl;
+            std::cout << "is particle type: " << isParticleType << std::endl;
+
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    };
+
+
 
 
 
@@ -189,8 +199,14 @@ PyGetSetDef particle_getsets[] = {
     MakeAttibute("velocity", "doc", &MxParticle::velocity),
     MakeAttibute("force", "doc", &MxParticle::force),
     MakeAttibute("q", "doc", &MxParticle::q),
+    gsd,
     {NULL}
 };
+
+static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
+    std::cout << MX_FUNCTION << ", type: " << type->tp_name << std::endl;
+    return PyType_GenericNew(type, args, kwargs);
+}
 
 
 
@@ -234,7 +250,7 @@ MxParticleType MxParticle_Type = {
       .tp_dictoffset =     0, 
       .tp_init =           (initproc)particle_init,
       .tp_alloc =          0, 
-      .tp_new =            PyType_GenericNew,
+      .tp_new =            particle_new,
       .tp_free =           0, 
       .tp_is_gc =          0, 
       .tp_bases =          0, 
@@ -248,6 +264,8 @@ MxParticleType MxParticle_Type = {
     }
   }
 };
+
+
 
 static getattrofunc savedFunc = NULL;
 
@@ -267,19 +285,21 @@ static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
 static PyObject *
 particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    std::string t = pybind11::cast<pybind11::str>((PyObject*)type);
+    std::string a = pybind11::cast<pybind11::str>(args);
+    std::string k = pybind11::cast<pybind11::str>(kwds);
+    
+    std::cout << MX_FUNCTION << "(type: " << t << ", args: " << a << ", kwargs: " << k << ")" << std::endl;
+    
     PyTypeObject *result;
     PyObject *fields;
-
 
     /* create the new instance (which is a class,
            since we are a metatype!) */
     result = (PyTypeObject *)PyType_Type.tp_new(type, args, kwds);
-    //result = (PyTypeObject*)PyType_GenericNew(type, args, kwds);
+
     if (!result)
         return NULL;
-
-    std::cout << "type->tp_name: " << type->tp_name << std::endl;
 
     return (PyObject*)result;
 }
@@ -300,7 +320,8 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 
 static PyGetSetDef particle_type_getset[] = {
-    MakeAttibute("mass", "doc", &MxParticleType::mass),
+gsd,
+
     {NULL},
 };
 
@@ -310,17 +331,22 @@ particle_type_descr_get(PyMemberDescrObject *descr, PyObject *obj, PyObject *typ
     return PyType_Type.tp_descr_get((PyObject*)descr, obj, type);
 }
 
-static int particle_type_init(MxParticleType *self, PyObject *args, PyObject *kwds) {
-    std::cout << MX_FUNCTION << ", tp_name: " << self->ht_type.tp_name << std::endl;
+static int particle_type_init(MxParticleType *self, PyObject *_args, PyObject *kwds) {
+    
+    std::string s = pybind11::cast<pybind11::str>((PyObject*)self);
+    std::string a = pybind11::cast<pybind11::str>(_args);
+    std::string k = pybind11::cast<pybind11::str>(kwds);
+    
+    std::cout << MX_FUNCTION << "(self: " << s << ", args: " << a << ", kwargs: " << k << ")" << std::endl;
+    
+    //args is a tuple of (name, (bases, .), dict),
+    pybind11::tuple args = pybind11::reinterpret_borrow<pybind11::tuple>(_args);
+    
+    pybind11::str name = args[0];
+    pybind11::tuple bases = args[1];
+    pybind11::object dict = args[2];
 
-
-    self->charge = 1;
-    self->mass = 3.14;
-    
-    //PyObject *o = PyObject_GetAttrString(self, "mass");
-    
-    
-    return 0;
+    return MxParticleType_Init(self, dict.ptr());
 }
 
 
@@ -440,17 +466,7 @@ HRESULT MxParticle_init(PyObject *m)
     
     f<>(&MxParticle::x);
     
-    std::cout <<
-    "sizeof PyHeapTypeObject: " << sizeof(PyHeapTypeObject) << ",\n"
-    "sizeof MxParticleType: " << sizeof(MxParticleType) << ",\n"
-    "offset of id: " << offsetof(MxParticleType, id) << ",\n"
-    "offset of mass: " << offsetof(MxParticleType, mass) << ",\n"
-    "offset of imass: " << offsetof(MxParticleType, imass) << ",\n"
-    "offset of charge: " << offsetof(MxParticleType, charge) << ",\n"
-    "offset of eps: " << offsetof(MxParticleType, eps) << ",\n"
-    "offset of rmin: " << offsetof(MxParticleType, rmin) << ",\n"
-    "offset of name: " << offsetof(MxParticleType, name) << ",\n"
-    "offset of name2: " << offsetof(MxParticleType, name2) << "\n";
+
 
     /*************************************************
      *
@@ -468,6 +484,7 @@ HRESULT MxParticle_init(PyObject *m)
     
     printTypeInfo("MxParticleType_Type", &MxParticleType_Type);
     
+
     
 
     /*************************************************
@@ -485,23 +502,18 @@ HRESULT MxParticle_init(PyObject *m)
         return E_FAIL;
     }
     
-    PyMemberDef md =  {
-            .name = "mass",
-            .type = T_DOUBLE,
-            .offset = offsetof(MxParticleType, mass),
-            .flags = CDESCR_TYPE,
-            .doc = NULL
-    };
 
-    PyObject *descr = CDescr_NewMember((PyTypeObject*)&MxParticle_Type, &md);
 
-    if (descr == NULL)
-        return -1;
-    if (PyDict_SetItem(MxParticle_Type.ht_type.tp_dict, CDescr_NAME(descr), descr) < 0) {
-        Py_DECREF(descr);
-        return -1;
-    }
-    Py_DECREF(descr);
+
+    //MxParticleType_Type.tp_dict
+
+    //PyDict_SetItemString(MxParticleType_Type.tp_dict, "descr", descr);
+
+    //descr = PyDescr_NewGetSet((PyTypeObject*)&MxParticleType_Type, &gsd);
+
+    //PyDict_SetItemString(MxParticle_Type.ht_type.tp_dict, "descr", descr);
+
+
 
 
 
@@ -512,8 +524,6 @@ HRESULT MxParticle_init(PyObject *m)
         savedFunc = MxParticleType_Type.tp_getattro;
         MxParticleType_Type.tp_getattro = particle_type_getattro;
     }
-    
-
     
 
     Py_INCREF(&MxParticleType_Type);
@@ -550,8 +560,74 @@ MxParticle* MxParticle_New(const MxParticle *data)
 
     return result;
 }
-//static PyObject *
-//PyCStructType_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
-//{
-//    return StructUnionType_new(type, args, kwds, 1);
-//}
+
+
+MxParticleType* MxParticleType_New(const char *_name, PyObject *dict)
+{
+    // static PyObject *
+    // type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+    
+    PyTypeObject *p = (PyTypeObject*)&MxParticle_Type;
+    
+    pybind11::str name(_name);
+    pybind11::tuple bases(1);
+    bases[0] = (PyObject*)&MxParticle_Type;
+    pybind11::tuple args(3);
+    args[0] = name;
+    args[1] = bases;
+    args[2] = dict;
+
+    MxParticleType *result = (MxParticleType*)PyType_Type.tp_call((PyObject*)&PyType_Type, args.ptr(), NULL);
+
+    assert(result && PyType_IsSubtype((PyTypeObject*)result, (PyTypeObject*)&MxParticle_Type));
+
+    return result;
+}
+
+HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
+{
+    double mass = 1.0;
+    double charge = 0.0;
+    std::string name2;
+    
+    try {
+        pybind11::dict dict = pybind11::reinterpret_borrow<pybind11::dict>(_dict);
+        if(dict.contains("mass")) {
+            mass = dict["mass"].cast<double>();
+        }
+
+        if(dict.contains("charge")) {
+            charge = dict["charge"].cast<double>();
+        }
+        
+        if(dict.contains("name2")) {
+            name2 = dict["name2"].cast<std::string>();
+        }
+
+        int er = engine_addtype_for_type(&_Engine, mass,
+                charge, self->ht_type.tp_name , name2.c_str(), self);
+
+        return er >= 0 ? S_OK : c_error(CERR_FAIL, "failed to add new type to engine");
+    }
+    catch(const std::exception &e) {
+        return c_error(CERR_EXCEP, e.what());
+    }
+
+    return CERR_FAIL;
+}
+
+MxParticleType* MxParticleType_ForEngine(struct engine *e, double mass,
+        double charge, const char *name, const char *name2)
+{
+    pybind11::dict dict;
+
+    dict["mass"] = pybind11::cast(mass);
+    dict["charge"] = pybind11::cast(charge);
+    
+    if(name2) {
+        dict["name2"] = pybind11::cast(name2);
+    }
+
+    return MxParticleType_New(name, dict.ptr());
+}
+

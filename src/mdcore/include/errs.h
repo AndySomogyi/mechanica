@@ -34,15 +34,15 @@ MDCORE_BEGIN_DECLS
 
 
 /* Global variables. */
-extern int errs_err;
-extern const char *errs_err_msg[];
+CAPI_DATA(int) errs_err;
+CAPI_DATA(const char *) errs_err_msg[];
 
 
 /* Functions. */
 
-int errs_register( int id , const char *msg , int line , const char *func , const char *file );
-int errs_dump(FILE *out );
-void errs_clear( );
+CAPI_FUNC(int) errs_register( int id , const char *msg , int line , const char *func , const char *file );
+CAPI_FUNC(int) errs_dump(FILE *out );
+CAPI_FUNC(void) errs_clear( );
 
 
 MDCORE_END_DECLS

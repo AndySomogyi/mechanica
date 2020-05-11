@@ -30,7 +30,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error */
-extern int angle_err;
+CAPI_DATA(int) angle_err;
 
 
 /** The angle structure */

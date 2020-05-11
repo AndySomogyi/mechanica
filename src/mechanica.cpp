@@ -149,7 +149,7 @@ static PyObject * moduleinit(void)
     MxCylinderModel_init(m);
     MxParticle_init(m);
     MxPotential_init(m);
-    MxUniverse_init(m);
+    _MxUniverse_init(m);
     MxWindow_init(m);
     MxGlfwWindow_init(m);
     MxWindowProxy_init(m);

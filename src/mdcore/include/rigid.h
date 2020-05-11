@@ -37,8 +37,7 @@ MDCORE_BEGIN_DECLS
 #define rigid_pshake_maxalpha           0.1f
 
 
-/** ID of the last error */
-extern int rigid_err;
+CAPI_DATA(int) rigid_err;
 
 
 /** The rigid structure */

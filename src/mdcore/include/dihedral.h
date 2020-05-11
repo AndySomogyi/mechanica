@@ -31,7 +31,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error */
-extern int dihedral_err;
+CAPI_DATA(int) dihedral_err;
 
 
 /** The dihedral structure */

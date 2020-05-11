@@ -154,8 +154,8 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         const Vector2 dpiScaling = this->dpiScaling({});
         Configuration conf;
         conf.setTitle("SPH Testing")
-                    .setSize(conf.size(), dpiScaling)
-                    .setWindowFlags(Configuration::WindowFlag::Resizable);
+                            .setSize(conf.size(), dpiScaling)
+                            .setWindowFlags(Configuration::WindowFlag::Resizable);
         GLConfiguration glConf;
         glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
         if(!tryCreate(conf, glConf)) {
@@ -191,7 +191,7 @@ FluidSimApp::FluidSimApp(const Arguments& arguments): Platform::Application{argu
         _camera.reset(new SceneGraph::Camera3D{ *_objCamera });
 
         _camera->setProjectionMatrix(Matrix4::perspectiveProjection(45.0_degf, Vector2{ viewportSize }.aspectRatio(), 0.01f, 1000.0f))
-                    .setViewport(viewportSize);
+                            .setViewport(viewportSize);
 
         /* Set default camera parameters */
         _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
@@ -607,7 +607,7 @@ void engineStep() {
 
 int initArgon (const Vector3 &origin, const Vector3 &dim,
         int nParticles, double dt, float temp ) {
-    
+
     engine *e = engine_get();
 
     double length = dim[0] - origin[0];

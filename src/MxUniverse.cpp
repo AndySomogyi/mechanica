@@ -47,7 +47,10 @@ MxUniverseConfig::MxUniverseConfig() :
     boundaryConditions{1, 1, 1},
     cutoff{1},
     flags{0},
-    maxTypes{100}
+    maxTypes{64},
+    dt{0.01},
+    temp{1},
+    nParticles{100}
 {
 }
 
@@ -248,7 +251,7 @@ PyTypeObject ParticleList_Type = {
 };
 
 
-HRESULT MxUniverse_init(PyObject* m)
+HRESULT _MxUniverse_init(PyObject* m)
 {
     py::class_<PyUniverse> u(m, "Universe");
     u.def(py::init(&universe_init));
@@ -317,3 +320,6 @@ HRESULT MxUniverse_init(PyObject* m)
     return S_OK;
 }
 
+HRESULT MxUniverse::init(const struct MxUniverseConfig &conf)
+{
+}

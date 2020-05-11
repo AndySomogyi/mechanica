@@ -37,7 +37,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error */
-extern int spme_err;
+CAPI_DATA(int) spme_err;
 
 
 /** The spme structure */

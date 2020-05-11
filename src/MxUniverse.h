@@ -12,7 +12,7 @@
 #include "mdcore_single.h"
 
 
-struct MxUniverse  {
+struct CAPI_EXPORT MxUniverse  {
 
 
     /**
@@ -26,6 +26,9 @@ struct MxUniverse  {
 
     // python binding to get particles.
     PyObject *_particleMapping;
+
+    static HRESULT init(const struct MxUniverseConfig &conf);
+
 };
 
 /**
@@ -56,7 +59,7 @@ struct MxUniverse  {
         double cutoff , unsigned int period , int max_type , unsigned int flags );
  */
 
-struct MxUniverseConfig {
+struct CAPI_EXPORT MxUniverseConfig {
     Magnum::Vector3 origin;
     Magnum::Vector3 dim;
     Magnum::Vector3i spaceGridSize;
@@ -64,7 +67,9 @@ struct MxUniverseConfig {
     double cutoff;
     uint32_t flags;
     uint32_t maxTypes;
-
+    double dt;
+    double temp;
+    int nParticles;
     MxUniverseConfig();
 };
 
@@ -76,10 +81,12 @@ struct MxUniverseConfig {
  */
 CAPI_DATA(MxUniverse) Universe;
 
+
+
 /**
  * Init and add to python module
  */
-HRESULT MxUniverse_init(PyObject *m);
+HRESULT _MxUniverse_init(PyObject *m);
 
 
 

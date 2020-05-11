@@ -57,7 +57,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error. */
-extern int potential_err;
+CAPI_DATA(int) potential_err;
 
 
 /** The #potential structure. */
@@ -82,24 +82,50 @@ typedef struct MxPotential : PyObject {
 
 
 /** Fictitious null potential. */
-extern struct MxPotential potential_null;
+CAPI_DATA(struct MxPotential) potential_null;
 
 
 /* associated functions */
-void potential_clear ( struct MxPotential *p );
-int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol );
-int potential_getcoeffs ( double (*f)( double ) , double (*fp)( double ) , FPTYPE *xi , int n , FPTYPE *c , FPTYPE *err );
-double potential_getalpha ( double (*f6p)( double ) , double a , double b );
-struct MxPotential *potential_create_LJ126 ( double a , double b , double A , double B , double tol );
-struct MxPotential *potential_create_LJ126_switch ( double a , double b , double A , double B , double s , double tol );
-struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double A , double B , double q , double kappa , double tol );
-struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , double A , double B , double q , double kappa , double s , double tol );
-struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , double A , double B , double q , double tol );
-struct MxPotential *potential_create_Ewald ( double a , double b , double q , double kappa , double tol );
-struct MxPotential *potential_create_Coulomb ( double a , double b , double q , double tol );
-struct MxPotential *potential_create_harmonic ( double a , double b , double K , double r0 , double tol );
-struct MxPotential *potential_create_harmonic_angle ( double a , double b , double K , double theta0 , double tol );
-struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , double delta , double tol );
+CAPI_FUNC(void) potential_clear ( struct MxPotential *p );
+CAPI_FUNC(int) potential_init ( struct MxPotential *p , double (*f)( double ) ,
+							   double (*fp)( double ) , double (*f6p)( double ) ,
+							   FPTYPE a , FPTYPE b , FPTYPE tol );
+
+CAPI_FUNC(int) potential_getcoeffs ( double (*f)( double ) , double (*fp)( double ) ,
+									 FPTYPE *xi , int n , FPTYPE *c , FPTYPE *err );
+
+CAPI_FUNC(double) potential_getalpha ( double (*f6p)( double ) , double a , double b );
+
+CAPI_FUNC(struct MxPotential *) potential_create_LJ126 ( double a , double b ,
+														 double A , double B , double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_LJ126_switch ( double a , double b ,
+																double A , double B ,
+																double s , double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_LJ126_Ewald ( double a , double b ,
+															   double A , double B ,
+															   double q , double kappa ,
+															   double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_LJ126_Ewald_switch ( double a , double b ,
+																	  double A , double B ,
+																	  double q , double kappa ,
+																	  double s , double tol );
+
+CAPI_FUNC(struct MxPotential *) potential_create_LJ126_Coulomb ( double a , double b ,
+																 double A , double B ,
+																 double q , double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_Ewald ( double a , double b ,
+														 double q , double kappa ,
+														 double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_Coulomb ( double a , double b ,
+														   double q , double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_harmonic ( double a , double b ,
+															double K , double r0 ,
+															double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_harmonic_angle ( double a , double b ,
+																  double K , double theta0 ,
+																  double tol );
+CAPI_FUNC(struct MxPotential *) potential_create_harmonic_dihedral ( double K , int n ,
+																	 double delta , double tol );
 
 /* These functions are now all in potential_eval.h. */
 /*
@@ -115,17 +141,17 @@ struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , doub
  */
 
 /* helper functions */
-double potential_LJ126 ( double r , double A , double B );
-double potential_LJ126_p ( double r , double A , double B );
-double potential_LJ126_6p ( double r , double A , double B );
-double potential_Ewald ( double r , double kappa );
-double potential_Ewald_p ( double r , double kappa );
-double potential_Ewald_6p ( double r , double kappa );
-double potential_Coulomb ( double r );
-double potential_Coulomb_p ( double r );
-double potential_Coulomb_6p ( double r );
-double potential_switch ( double r , double A , double B );
-double potential_switch_p ( double r , double A , double B );
+CAPI_FUNC(double) potential_LJ126 ( double r , double A , double B );
+CAPI_FUNC(double) potential_LJ126_p ( double r , double A , double B );
+CAPI_FUNC(double) potential_LJ126_6p ( double r , double A , double B );
+CAPI_FUNC(double) potential_Ewald ( double r , double kappa );
+CAPI_FUNC(double) potential_Ewald_p ( double r , double kappa );
+CAPI_FUNC(double) potential_Ewald_6p ( double r , double kappa );
+CAPI_FUNC(double) potential_Coulomb ( double r );
+CAPI_FUNC(double) potential_Coulomb_p ( double r );
+CAPI_FUNC(double) potential_Coulomb_6p ( double r );
+CAPI_FUNC(double) potential_switch ( double r , double A , double B );
+CAPI_FUNC(double) potential_switch_p ( double r , double A , double B );
 
 /**
  * The type of each individual particle.

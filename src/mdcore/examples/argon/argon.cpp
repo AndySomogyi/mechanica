@@ -27,6 +27,7 @@
 #include <time.h>
 #include "cycle.h"
 #include "mdcore_single.h"
+#include "Mechanica.h"
 
 /* MPI headers. */
 #ifdef HAVE_MPI
@@ -53,6 +54,8 @@
 
 int main ( int argc , char *argv[] ) {
 
+    Mx_Initialize(0);
+
     const double origin[3] = { 0.0 , 0.0 , 0.0 };
     // double dim[3] = { 20.0 , 20.0 , 20.0 };
     // int nr_parts = 121600;
@@ -66,7 +69,7 @@ int main ( int argc , char *argv[] ) {
     double x[3], vtot[3] = { 0.0 , 0.0 , 0.0 };
     double epot, ekin, v2, temp, cutoff = 1.0, cellwidth;
     // FPTYPE ee, eff;
-    struct engine e;
+    struct engine& e = _Engine;
     struct MxParticle pAr;
     struct MxPotential *pot_ArAr;
     // struct potential *pot_ee;

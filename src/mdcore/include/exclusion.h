@@ -30,7 +30,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error */
-extern int exclusion_err;
+CAPI_DATA(int) exclusion_err;
 
 
 /** The exclusion structure */

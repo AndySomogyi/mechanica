@@ -72,7 +72,7 @@ enum MxSimulator_Options {
 
 CAPI_DATA(PyTypeObject) MxSimulator_Type;
 
-struct MxSimulator {
+struct CAPI_EXPORT MxSimulator {
     
     class GLConfig;
 
@@ -198,7 +198,7 @@ struct MxSimulator {
         }
 
         /** @brief Window size */
-        Vector2i size() const
+        Vector2i windowSize() const
         {
             return _size;
         }
@@ -246,7 +246,7 @@ struct MxSimulator {
          * for more information.
          * @see @ref setSize(const Vector2i&, const Vector2&)
          */
-        void setSize(const Vector2i &size)
+        void setWindowSize(const Vector2i &size)
         {
             _size = size;
         }
@@ -275,20 +275,17 @@ struct MxSimulator {
         void setWindowless(bool val) {
             _windowless = val;
         }
-
-
-        Vector3 origin;
-
-        Vector3 dim;
-
-        float dt;
-
-        float temp;
-
-        int nParticles;
-
         
+        int size() const {
+            return universeConfig.nParticles;
+        }
 
+        void setSize(int i ) {
+            universeConfig.nParticles = i;
+        }
+
+        MxUniverseConfig universeConfig;
+        
     private:
         std::string _title;
         Vector2i _size;
@@ -621,8 +618,10 @@ private:
     bool _srgbCapable;
 };
 
-int initArgon (const Vector3 &origin, const Vector3 &dim,
-        int nParticles, double dt = 0.005, float temp = 100 );
+// const Vector3 &origin, const Vector3 &dim,
+// int nParticles, double dt = 0.005, float temp = 100
+
+CAPI_FUNC(int) initArgon(const MxUniverseConfig &conf);
 
 void engineStep();
 

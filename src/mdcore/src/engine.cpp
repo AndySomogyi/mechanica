@@ -1536,7 +1536,8 @@ int engine_gettype2 ( struct engine *e , char *name2 ) {
  * and less than the value @c max_type specified in #engine_init.
  */
 
-int engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 ) {
+static int _engine_addtype ( struct engine *e , double mass , double charge ,
+        const char *name , const char *name2 ) {
 
 	/* check for nonsense. */
 	if ( e == NULL )
@@ -1559,7 +1560,30 @@ int engine_addtype ( struct engine *e , double mass , double charge , const char
 
 	/* bring good tidings. */
 	return e->nr_types++;
+}
 
+int engine_addtype ( struct engine *e , double mass , double charge ,
+        const char *name , const char *name2 ) {
+    
+    /* check for nonsense. */
+    if ( e == NULL )
+        return error(engine_err_null);
+    if ( e->nr_types >= e->max_type )
+        return error(engine_err_range);
+    
+    return MxParticleType_ForEngine(e, mass, charge, name, name2) != NULL ? e->nr_types - 1 : -1;
+}
+
+int engine_addtype_for_type(struct engine *e, double mass, double charge,
+        const char *name, const char *name2, MxParticleType *type) {
+    int index = _engine_addtype ( e ,  mass,  charge , name , name2 );
+    
+    if(index >= 0) {
+        Py_INCREF(type);
+        e->types[index].pyType = type;
+        type->data = &e->types[index];
+    }
+    return index;
 }
 
 
@@ -2331,7 +2355,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         max_type += 1;
     e->max_type = max_type;
     e->nr_types = 0;
-    if ( ( e->types = (struct MxParticleType *)malloc( sizeof(struct MxParticleType) * max_type ) ) == NULL )
+    if ( ( e->types = (struct MxParticleData *)malloc( sizeof(struct MxParticleData) * max_type ) ) == NULL )
         return error(engine_err_malloc);
     if ( flags & engine_flag_nullpart ) {
         e->types[0].id = 0;

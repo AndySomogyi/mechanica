@@ -39,12 +39,7 @@ MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
             _dpiScalingPolicy{DpiScalingPolicy::Default},
-            _windowless{false},
-            nParticles{100},
-            dt{0.01},
-            temp{1},
-            origin{{0.0, 0.0, 0.0}},
-            dim {{10., 10., 10.}} {
+            _windowless{false} {
     _windowFlags = MxSimulator::WindowFlags::Resizable;
 }
 
@@ -214,7 +209,7 @@ struct PySimulator : MxSimulator {
 
         // init the engine first
         /* Initialize scene particles */
-        initArgon(conf.origin, conf.dim, conf.nParticles, 0.01, 0.01);
+        initArgon(conf.universeConfig);
 
         
         if(conf.windowless()) {
@@ -462,11 +457,12 @@ HRESULT MxSimulator_init(PyObject* m) {
     py::class_<MxSimulator::Config> sc(sim, "Config");
     sc.def(py::init());
     sc.def_property("window_title", &MxSimulator::Config::title, &MxSimulator::Config::setTitle);
-    sc.def_property("window_size", &MxSimulator::Config::size, &MxSimulator::Config::setSize);
+    sc.def_property("window_size", &MxSimulator::Config::windowSize, &MxSimulator::Config::setWindowSize);
     sc.def_property("dpi_scaling", &MxSimulator::Config::dpiScaling, &MxSimulator::Config::setDpiScaling);
     sc.def_property("window_flags", &MxSimulator::Config::windowFlags, &MxSimulator::Config::setWindowFlags);
     sc.def_property("windowless", &MxSimulator::Config::windowless, &MxSimulator::Config::setWindowless);
-    sc.def_readwrite("size", &MxSimulator::Config::nParticles);
+    
+    sc.def_property("size", &MxSimulator::Config::size, &MxSimulator::Config::setSize);
 
     py::class_<MxSimulator::GLConfig> gc(sim, "GLConfig");
     gc.def(py::init());
@@ -533,10 +529,9 @@ HRESULT MxSimulator_SwapInterval(int si)
 }
 
 
-int initArgon (const Vector3 &origin, const Vector3 &dim,
-        int nParticles, double dt, float temp ) {
+int initArgon (const MxUniverseConfig &conf ) {
 
-    double length = dim[0] - origin[0];
+    double length = conf.dim[0] - conf.origin[0];
 
     double L[] = { 0.1 * length , 0.1* length , 0.1*  length  };
 
@@ -549,7 +544,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     int  k, cid, pid, nr_runners = 8;
 
-    auto pos = fillCubeRandom(origin, dim, nParticles);
+    auto pos = fillCubeRandom(conf.origin, conf.dim, conf.nParticles);
 
     ticks tic, toc;
 
@@ -558,8 +553,8 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
     double _origin[3];
     double _dim[3];
     for(int i = 0; i < 3; ++i) {
-        _origin[i] = origin[i];
-        _dim[i] = dim[i];
+        _origin[i] = conf.origin[i];
+        _dim[i] = conf.dim[i];
     }
 
     // initialize the engine
@@ -571,14 +566,15 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
     fflush(stdout);
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L , cutoff , space_periodic_full , 2 , engine_flag_none ) != 0 ) {
+    if ( engine_init( &_Engine , _origin , _dim , L , cutoff , space_periodic_full ,
+            conf.maxTypes , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
         return 1;
     }
 
-    _Engine.dt = dt;
-    _Engine.temperature = temp;
+    _Engine.dt = conf.dt;
+    _Engine.temperature = conf.temp;
 
 
     printf("main: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);

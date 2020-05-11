@@ -28,6 +28,7 @@
 
 int main(int argc, char** argv) {
 
+    Mx_Initialize(0);
     FluidSimTest app({argc, argv});
     return app.exec();
 }

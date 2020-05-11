@@ -120,10 +120,10 @@ enum {
 
 
 /** ID of the last error. */
-extern int engine_err;
+CAPI_DATA(int) engine_err;
 
 /** List of error messages. */
-extern const char *engine_err_msg[];
+CAPI_DATA(const char *) engine_err_msg[];
 
 
 /** 
@@ -153,7 +153,7 @@ typedef struct engine {
 	int nr_types;
 
 	/** The particle types. */
-	struct MxParticleType *types;
+	struct MxParticleData *types;
 
 	/** The interaction matrix */
 	struct MxPotential **p, **p_bond, **p_angle, **p_dihedral;
@@ -298,7 +298,6 @@ typedef struct engine_comm {
 
 /* associated functions */
 CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
-CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge , const char *name , const char *name2 );
 CAPI_FUNC(int) engine_advance ( struct engine *e );
 CAPI_FUNC(int) engine_angle_addpot ( struct engine *e , struct MxPotential *p );
 CAPI_FUNC(int) engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
@@ -322,6 +321,34 @@ CAPI_FUNC(int) engine_flush_ghosts ( struct engine *e );
 CAPI_FUNC(int) engine_flush ( struct engine *e );
 CAPI_FUNC(int) engine_gettype ( struct engine *e , char *name );
 CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
+
+
+/**
+ * @brief Add a type definition.
+ *
+ * @param e The #engine.
+ * @param mass The particle type mass.
+ * @param charge The particle type charge.
+ * @param name Particle name, can be @c NULL.
+ * @param name2 Particle second name, can be @c NULL.
+ *
+ * @return The type ID or < 0 on error (see #engine_err).
+ *
+ * The particle type ID must be an integer greater or equal to 0
+ * and less than the value @c max_type specified in #engine_init.
+ */
+CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
+        const char *name , const char *name2 );
+
+/**
+ * Creates a new data item in the engine and sets the
+ * given type pointer to it.
+ *
+ * steels a reference to type (bumps ref count).
+ */
+CAPI_FUNC(int) engine_addtype_for_type( struct engine *e , double mass ,
+        double charge , const char *name , const char *name2,
+        MxParticleType *type);
 
 /**
  * @brief Initialize an #engine with the given data.

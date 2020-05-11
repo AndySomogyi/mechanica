@@ -55,7 +55,7 @@ enum {
 
 
 /** ID of the last error */
-extern int task_err;
+CAPI_DATA(int) task_err;
 
 
 /** The task structure */

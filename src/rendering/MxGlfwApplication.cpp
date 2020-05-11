@@ -41,7 +41,7 @@
 static GlfwApplication::Configuration confconf(const MxSimulator::Config &conf) {
     GlfwApplication::Configuration res;
 
-    res.setSize(conf.size(), conf.dpiScaling());
+    res.setSize(conf.windowSize(), conf.dpiScaling());
     res.setTitle(conf.title());
     res.setWindowFlags(GlfwApplication::Configuration::WindowFlag::Resizable);
 
@@ -135,7 +135,7 @@ HRESULT MxGlfwApplication::createContext(
     const Vector2 dpiScaling = this->dpiScaling({});
     Configuration c;
     c.setTitle(conf.title())
-                .setSize(conf.size(), dpiScaling)
+                .setSize(conf.windowSize(), dpiScaling)
                 .setWindowFlags(Configuration::WindowFlag::Resizable);
     GLConfiguration glConf;
     glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);

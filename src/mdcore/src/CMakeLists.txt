@@ -144,7 +144,7 @@ function(add_mdcore_single)
 
   source_group("Sources" FILES ${SOURCES} ${SINGLE_HEADERS})
 
-  add_library(mdcore_single STATIC ${SOURCES} ${SINGLE_HEADERS})
+  add_library(mdcore_single OBJECT ${SOURCES} ${SINGLE_HEADERS})
 
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
 

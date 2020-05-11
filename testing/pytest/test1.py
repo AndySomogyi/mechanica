@@ -25,13 +25,45 @@ import _mechanica
 print ("mechanica file: " + m.__file__, flush=True)
 print("_mechanica file: " + _mechanica.__file__, flush=True)
 
-
-
 c = m.Simulator.Config()
 
 c.windowless = False
 
 s = m.Simulator(c, foo='bar', bar=1)
+
+print("creating subclass of Particle")
+
+class A (m.Particle):
+    mass = 3.14
+    charge = 2.78
+    
+
+B = type("B", (m.Particle,), {'mass':6, 'descr':5, 'charge':0})
+
+print("gettig descr...")
+o = _mechanica.Particle.descr;
+
+
+print("printing descr...")
+print(o);
+
+print("creating instance of Particle...")
+
+p = m.Particle()
+
+
+
+print("type")
+
+a = A()
+
+print(a)
+
+exit()
+
+
+
+
 
 print ("renderer: " , m.Simulator.renderer)
 

@@ -46,7 +46,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error. */
-extern int particle_err;
+CAPI_DATA(int) particle_err;
 
 
 /**
@@ -109,7 +109,7 @@ struct MxParticle : PyObject  {
  * Extend the PyHeapTypeObject, because this is the actual type that
  * gets allocated, its a python thing.
  */
-struct MxParticleType : PyHeapTypeObject {
+struct MxParticleData {
 
 	/** ID of this type */
 	int id;
@@ -123,7 +123,16 @@ struct MxParticleType : PyHeapTypeObject {
 	/** Name of this paritcle type. */
 	char name[64], name2[64];
 
+	/** pointer to the corresponding python type */
+	struct MxParticleType *pyType;
+
 } ;
+
+struct MxParticleType : PyHeapTypeObject {
+    // pointer to particle data. The particle data is stored in the
+    // engine, and should not change.
+    MxParticleData *data;
+};
 
 /**
  * The type of each individual particle.
@@ -149,6 +158,51 @@ int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int 
  * Creates a new MxParticle
  */
 CAPI_FUNC(MxParticle*) MxParticle_New(const MxParticle *data);
+
+
+/**
+ *
+ *
+ * Call to tp_new
+ * PyObject *particle_type_new(PyTypeObject *, PyObject *, PyObject *)
+ * type: <class 'ParticleType'>,
+ * args: (
+ *     'A',
+ *     (<class 'Particle'>,),
+ *     {'__module__': '__main__', '__qualname__': 'A'}
+ * ),
+ * kwargs: <NULL>)
+ *
+ * Args to tp_new should be a 3-tuple, with
+ * 0: string of name of object
+ * 1: base classes
+ * 2: dictionary
+ */
+
+
+/**
+ * Creates a new MxParticleType for the given particle data pointer.
+ *
+ * This creates a matching python type for an existing particle data,
+ * and is usually called when new types are created from C.
+ */
+MxParticleType *MxParticleType_ForEngine(struct engine *e, double mass , double charge,
+                                         const char *name , const char *name2);
+
+/**
+ * Creates and initialized a new particle type, adds it to the
+ * global engine
+ *
+ * creates both a new type, and a new data entry in the engine.
+ */
+MxParticleType* MxParticleType_New(const char *_name, PyObject *dict);
+
+/**
+ * initialized a newly allocated type
+ *
+ * adds a new data entry to the engine.
+ */
+HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
 
 
 /**

@@ -28,7 +28,8 @@
 
 #include "cycle.h"
 
-#include "mdcore_single.h"
+#include <Mechanica.h>
+#include <mdcore_single.h>
 
 /* MPI headers. */
 #ifdef WITH_MPI
@@ -72,7 +73,7 @@ int main ( int argc , char *argv[] ) {
     double x[3], vtot[3] = { 0.0 , 0.0 , 0.0 };
     double epot, ekin, temp, cellwidth;
 
-    struct engine e;
+    struct engine& e = _Engine;
 
     struct MxParticle pO, pH;
 
@@ -89,6 +90,8 @@ int main ( int argc , char *argv[] ) {
     double itpms = 1000.0 / CPU_TPS;
     int myrank = 0;
     double L[] = { cutoff , cutoff , cutoff };
+
+    Mx_Initialize(0);
 
     tic = getticks();
 
@@ -317,7 +320,7 @@ int main ( int argc , char *argv[] ) {
         nr_steps = atoi( argv[2] );
 
     // do a few steps
-    for ( i = 0 ; i < nr_steps ; i++ ) {
+    for ( i = 0 ; i < nr_steps && (PyErr_CheckSignals() == 0); i++ ) {
 
         // take a step
         tic = getticks();

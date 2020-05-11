@@ -13,6 +13,8 @@
 #ifndef INCLUDE_PLATFORM_H_
 #define INCLUDE_PLATFORM_H_
 
+#include "carbon.h"
+
 #if defined(__cplusplus)
 #define	MDCORE_BEGIN_DECLS	extern "C" {
 #define	MDCORE_END_DECLS	}

@@ -65,7 +65,7 @@ MDCORE_BEGIN_DECLS
 #define space_pairind(i,j)              ( space_maxtuples*(i) - (i)*((i)+1)/2 + (j) )
 
 /** ID of the last error */
-extern int space_err;
+CAPI_DATA(int)space_err;
 
 /** Struct for Verlet list entries. */
 struct verlet_entry {

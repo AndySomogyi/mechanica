@@ -47,7 +47,6 @@ add_executable(bulk_noverlet bulk.cpp)
 find_package(Threads REQUIRED)
 
 target_link_libraries(bulk_noverlet
-	mdcore_single
 	Threads::Threads
 	Mechanica::Mechanica)
 
@@ -65,7 +64,6 @@ add_executable(bulk_pseudoverlet bulk.cpp)
 target_compile_definitions(bulk_pseudoverlet PUBLIC ENGINE_FLAGS=engine_flag_verlet_pseudo)
 
 target_link_libraries(bulk_pseudoverlet
-	mdcore_single
 	Threads::Threads
 	Mechanica::Mechanica)
 

@@ -37,7 +37,6 @@ add_executable(neon neon.cpp)
 target_compile_definitions(neon PUBLIC ENGINE_FLAGS=engine_flag_none)
 
 target_link_libraries(neon
-	mdcore_single
 	Threads::Threads
 	Mechanica::Mechanica)
 
@@ -46,6 +45,5 @@ target_link_libraries(neon
 add_executable(neon_pseudoverlet neon.cpp)
 target_compile_definitions(neon_pseudoverlet PUBLIC ENGINE_FLAGS=engine_flag_verlet_pseudo)
 target_link_libraries(neon_pseudoverlet
-	mdcore_single
 	Threads::Threads
 	Mechanica::Mechanica)

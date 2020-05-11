@@ -62,7 +62,8 @@ enum {
 	runner_timer_sort,
 	runner_timer_count
 };
-extern ticks runner_timers[];
+CAPI_DATA(ticks) runner_timers[];
+
 #ifdef TIMER
 #define TIMER_TIC_ND tic = getticks();
 #define TIMER_TIC2_ND ticks tic2 = getticks();
@@ -94,7 +95,7 @@ MDCORE_BEGIN_DECLS
 
 
 /* the last error */
-extern int runner_err;
+CAPI_DATA(int) runner_err;
 
 
 /* The fifo-queue for dispatching. */

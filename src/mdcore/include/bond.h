@@ -29,7 +29,7 @@
 
 
 /** ID of the last error */
-extern int bond_err;
+CAPI_DATA(int) bond_err;
 
 
 /** The bond structure */

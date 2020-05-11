@@ -157,7 +157,13 @@ FluidSimTest::FluidSimTest(const Arguments& arguments) :
     }
         
     /* Initialize scene particles */
-    initArgon(origin, dim, nParticles, 0.01, 0.01);
+        MxUniverseConfig conf;
+        conf.origin = origin;
+        conf.dim = dim;
+        conf.nParticles = nParticles;
+        conf.dt = 0.01;
+        conf.temp = 0.01;
+    initArgon(conf);
     
 
 

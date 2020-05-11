@@ -51,13 +51,13 @@ MDCORE_BEGIN_DECLS
 
 
 /* Map shift vector to sortlist. */
-extern const char cell_sortlistID[27];
-extern const FPTYPE cell_shift[13*3];
-extern const char cell_flip[27]; 
+CAPI_DATA(const char) cell_sortlistID[27];
+CAPI_DATA(const FPTYPE) cell_shift[13*3];
+CAPI_DATA(const char) cell_flip[27];
 
 
 /* the last error */
-extern int cell_err;
+CAPI_DATA(int) cell_err;
 
 
 /**

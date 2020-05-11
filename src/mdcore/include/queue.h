@@ -35,7 +35,7 @@ MDCORE_BEGIN_DECLS
 
 
 /** ID of the last error */
-extern int queue_err;
+CAPI_DATA(int) queue_err;
 
 
 /** The queue structure */
