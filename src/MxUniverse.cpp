@@ -6,6 +6,7 @@
  */
 
 #include <MxUniverse.h>
+#include <MxUniverseIterators.h>
 #include <iostream>
 
 
@@ -155,88 +156,6 @@ Magnum::Vector3 MxUniverse::dim()
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////
-//// Particle List Accessor
-///////////////////////////////////////////////////////////////////////////////////////
-
-
-
-static PyMappingMethods particle_mapping =  {
-        .mp_length =  [](PyObject *) -> Py_ssize_t {
-            return _Engine.s.nr_parts;
-        },
-        .mp_subscript = [] (PyObject *, PyObject *key) -> PyObject * {
-            long index = PyLong_AsLong(key);
-            if(PyErr_Occurred()) {
-                PyErr_SetString(PyExc_TypeError, "could not convert key to number");
-                return NULL;
-            }
-            if(index < 0 || index >= _Engine.s.nr_parts) {
-                PyErr_SetString(PyExc_IndexError, "index out of range");
-                return NULL;
-            }
-            MxParticle *part = _Engine.s.partlist[index];
-            MxPyParticle *py = MxPyParticle_New(part);
-            return py;
-        },
-        .mp_ass_subscript = [] (PyObject *, PyObject *key, PyObject *value) -> int {
-            PyErr_SetString(PyExc_AttributeError, "particles is read only");
-            return -1;
-        }
-};
-
-PyTypeObject ParticleList_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "Particles",
-    .tp_basicsize = sizeof(PyObject),
-    .tp_itemsize =       0,
-    .tp_dealloc =        0,
-    .tp_print =          0,
-    .tp_getattr =        0,
-    .tp_setattr =        0,
-    .tp_as_async =       0,
-    .tp_repr =           0,
-    .tp_as_number =      0,
-    .tp_as_sequence =    0,
-    .tp_as_mapping =     &particle_mapping,
-    .tp_hash =           0,
-    .tp_call =           0,
-    .tp_str =            0,
-    .tp_getattro =       PyObject_GenericGetAttr,
-    .tp_setattro =       0,
-    .tp_as_buffer =      0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = "Custom objects",
-    .tp_traverse =       0,
-    .tp_clear =          0,
-    .tp_richcompare =    0,
-    .tp_weaklistoffset = 0,
-    .tp_iter =           0,
-    .tp_iternext =       0,
-    .tp_methods =        0,
-    .tp_members =        0,
-    .tp_getset =         0,
-    .tp_base =           0,
-    .tp_dict =           0,
-    .tp_descr_get =      0,
-    .tp_descr_set =      0,
-    .tp_dictoffset =     0,
-    .tp_init =           0,
-    .tp_alloc =          PyType_GenericAlloc,
-    .tp_new =            PyType_GenericNew,
-    .tp_free =           0,
-    .tp_is_gc =          0,
-    .tp_bases =          0,
-    .tp_mro =            0,
-    .tp_cache =          0,
-    .tp_subclasses =     0,
-    .tp_weaklist =       0,
-    .tp_del =            0,
-    .tp_version_tag =    0,
-    .tp_finalize =       0,
-};
-
-
 HRESULT _MxUniverse_init(PyObject* m)
 {
     py::class_<PyUniverse> u(m, "Universe");
@@ -279,10 +198,10 @@ HRESULT _MxUniverse_init(PyObject* m)
 
     u.def_property_readonly_static("particles",
             [](py::object self) -> py::handle {
-                return Universe._particleMapping;
+                static PyParticles particles;
+                return py::cast(particles).release();
             }
         );
-
 
 
 
@@ -295,13 +214,6 @@ HRESULT _MxUniverse_init(PyObject* m)
     uc.def_readwrite("cutoff", &MxUniverseConfig::cutoff);
     uc.def_readwrite("flags", &MxUniverseConfig::flags);
 
-
-
-    if (PyType_Ready(&ParticleList_Type) < 0) {
-            return mx_error(E_FAIL, "could not ready ParticleList type");
-    }
-
-    Universe._particleMapping = _PyObject_New(&ParticleList_Type);
 
     return S_OK;
 }

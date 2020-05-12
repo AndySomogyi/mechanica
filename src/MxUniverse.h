@@ -24,8 +24,6 @@ struct CAPI_EXPORT MxUniverse  {
 
     static  Magnum::Vector3 dim();
 
-    // python binding to get particles.
-    PyObject *_particleMapping;
 
     static HRESULT init(const struct MxUniverseConfig &conf);
 
@@ -70,6 +68,8 @@ struct CAPI_EXPORT MxUniverseConfig {
     double dt;
     double temp;
     int nParticles;
+    int threads;
+    int initParticles;
     MxUniverseConfig();
 };
 

@@ -95,6 +95,7 @@ set(SRC
   MxSurfaceSimulator.cpp
   MxCylinderModel.cpp
   MxUniverse.cpp
+  MxUniverseIterators.cpp
 
   MxPyTest.cpp
 
@@ -122,6 +123,9 @@ set(SRC
   rendering/FluidSimTest.cpp
 
   shaders/ParticleSphereShader.cpp
+
+  test_sequences_and_iterators.cpp
+
 
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -176,6 +180,7 @@ set(HEADERS
   MxSurfaceSimulator.h
   MxCylinderModel.h
   MxUniverse.h
+  MxUniverseIterators.h
 
   MxPyTest.h
 

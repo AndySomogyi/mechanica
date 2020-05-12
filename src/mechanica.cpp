@@ -28,6 +28,7 @@
 #include "MxCylinderModel.h"
 #include "mdcore_single.h"
 #include "MxUniverse.h"
+#include "MxUniverseIterators.h"
 #include "rendering/MxWindow.h"
 #include <rendering/MxGlfwWindow.h>
 #include "rendering/MxWindowProxy.h"
@@ -67,6 +68,8 @@ static struct PyModuleDef mechanica_module = {
 };
 
 static PyObject *mechanicaModule = NULL;
+
+void test_sequences(PyObject *_m);
 
 static PyObject * moduleinit(void)
 {
@@ -157,6 +160,9 @@ static PyObject * moduleinit(void)
     MyUniverseRenderer_Init(m);
     
     MxPyTest_init(m);
+
+    test_sequences(m);
+    _MxUniverseIterators_init(m);
 
     mechanicaModule = m;
 
