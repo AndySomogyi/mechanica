@@ -22,8 +22,6 @@
 #include "platform.h"
 #include "fptype.h"
 #include "carbon.h"
-
-
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
 
@@ -60,7 +58,7 @@ CAPI_DATA(int) particle_err;
  * All particles are stored in a series of contiguous blocks of memory that are owned
  * by the space cells. Each space cell has a array of particle structs.
  */
-struct MxParticle : PyObject  {
+struct MxParticle  {
 
 	/** Particle position */
     union {
@@ -96,9 +94,9 @@ struct MxParticle : PyObject  {
 	unsigned short int flags;
 };
 
-
-
-
+struct MxPyParticle : PyObject {
+    MxParticle *part;
+};
 
 /**
  * Structure containing information on each particle species.
@@ -155,10 +153,10 @@ CAPI_FUNC(int) MxParticleCheck(PyObject *o);
 int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
 
 /**
- * Creates a new MxParticle
+ * Creates a new MxPyParticle wrapper, and attach it to an existing
+ * particle
  */
-CAPI_FUNC(MxParticle*) MxParticle_New(const MxParticle *data);
-
+MxPyParticle* MxPyParticle_New(MxParticle *data);
 
 /**
  *
@@ -195,20 +193,15 @@ MxParticleType *MxParticleType_ForEngine(struct engine *e, double mass , double 
  *
  * creates both a new type, and a new data entry in the engine.
  */
-MxParticleType* MxParticleType_New(const char *_name, PyObject *dict);
+MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 
-/**
- * initialized a newly allocated type
- *
- * adds a new data entry to the engine.
- */
-HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
+
 
 
 /**
  * internal function to initalize the particle and particle types
  */
-HRESULT MxParticle_init(PyObject *m);
+HRESULT _MxParticle_init(PyObject *m);
 
 MDCORE_END_DECLS
 #endif // INCLUDE_PARTICLE_H_

@@ -125,13 +125,99 @@ typedef struct space_cell {
 
 
 /* associated functions */
-int space_cell_init ( struct space_cell *c , int *loc , double *origin , double *dim );
-struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p , struct MxParticle **partlist );
-struct MxParticle *space_cell_add_incomming ( struct space_cell *c , struct MxParticle *p );
-int space_cell_add_incomming_multiple ( struct space_cell *c , struct MxParticle *p , int count );
-int space_cell_welcome ( struct space_cell *c , struct MxParticle **partlist );
-int space_cell_load ( struct space_cell *c , struct MxParticle *parts , int nr_parts , struct MxParticle **partlist , struct space_cell **celllist );
-int space_cell_flush ( struct space_cell *c , struct MxParticle **partlist , struct space_cell **celllist );
+
+/**
+ * @brief Initialize the given cell.
+ *
+ * @param c The #cell to initialize.
+ * @param loc Array containing the location of this cell in the space.
+ * @param origin The origin of the cell in global coordinates
+ * @param dim The cell dimensions.
+ *
+ * @return #cell_err_ok or < 0 on error (see #cell_err).
+ */
+int space_cell_init ( struct space_cell *c , int *loc , double *origin ,
+        double *dim );
+
+/**
+ * @brief Add a particle to a cell.
+ *
+ * @param c The #cell to which the particle should be added.
+ * @param p The #particle to add to the cell
+ *
+ * @return A pointer to the particle data in the cell.
+ *
+ * This routine assumes the particle position has already been adjusted
+ * to the cell @c c.
+ */
+struct MxParticle *space_cell_add ( struct space_cell *c ,
+        struct MxParticle *p , struct MxParticle **partlist );
+
+/**
+ * @brief Add a particle to the incomming array of a cell.
+ *
+ * @param c The #cell to which the particle should be added.
+ * @param p The #particle to add to the cell
+ *
+ * @return A pointer to the particle data in the incomming array of
+ *      the cell.
+ *
+ * This routine assumes the particle position has already been adjusted
+ * to the cell @c c.
+ */
+struct MxParticle *space_cell_add_incomming ( struct space_cell *c ,
+        struct MxParticle *p );
+
+/**
+ * @brief Add one or more particles to the incomming array of a cell.
+ *
+ * @param c The #cell to which the particle should be added.
+ * @param p The #particle to add to the cell
+ *
+ * @return The number of incomming parts or < 0 on error (see #cell_err).
+ *
+ * This routine assumes the particle position have already been adjusted
+ * to the cell @c c.
+ */
+int space_cell_add_incomming_multiple ( struct space_cell *c ,
+        struct MxParticle *p , int count );
+
+/**
+ * @brief Move particles from the incomming buffer to the cell.
+ *
+ * @param c The #cell.
+ * @param partlist A pointer to the partlist to set the part indices.
+ *
+ * @return #cell_err_ok or < 0 on error (see #cell_err).
+ */
+int space_cell_welcome ( struct space_cell *c ,
+        struct MxParticle **partlist );
+
+/**
+ * @brief Load a block of particles to the cell.
+ *
+ * @param c The #cell.
+ * @param parts Pointer to a block of #part.
+ * @param nr_parts The number of parts to load.
+ * @param partlist A pointer to the partlist to set the part indices.
+ * @param celllist A pointer to the celllist to set the part indices.
+ *
+ * @return #cell_err_ok or < 0 on error (see #cell_err).
+ */
+int space_cell_load ( struct space_cell *c , struct MxParticle *parts ,
+        int nr_parts , struct MxParticle **partlist , struct space_cell **celllist );
+
+/**
+ * @brief Flush all the parts from a #cell.
+ *
+ * @param c The #cell to flush.
+ * @param partlist A pointer to the partlist to set the part indices.
+ * @param celllist A pointer to the celllist to set the part indices.
+ *
+ * @return #cell_err_ok or < 0 on error (see #cell_err).
+ */
+int space_cell_flush ( struct space_cell *c ,
+        struct MxParticle **partlist , struct space_cell **celllist );
 
 MDCORE_END_DECLS
 

@@ -2344,7 +2344,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         return error(engine_err_malloc);
     e->nr_angles = 0;
 
-    /* Init the dihedrals array. */
+    /* Init the dihedrals array.		 */
     e->dihedrals_size = 100;
     if ( ( e->dihedrals = (struct dihedral *)malloc( sizeof( struct dihedral ) * e->dihedrals_size ) ) == NULL )
         return error(engine_err_malloc);
@@ -2353,10 +2353,21 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* set the maximum nr of types */
     if ( flags & engine_flag_nullpart )
         max_type += 1;
-    e->max_type = max_type;
+    
+    // add one for the base type
+    e->max_type = max_type + 1;
     e->nr_types = 0;
-    if ( ( e->types = (struct MxParticleData *)malloc( sizeof(struct MxParticleData) * max_type ) ) == NULL )
+    if ( ( e->types = (struct MxParticleData *)malloc( sizeof(struct MxParticleData) * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
+    
+    //make an instance of the base particle type, all new instances of base
+    //class mechanica.Particle will be of this type
+    if(engine_addtype(e, 1, 0, "Particle", "Particle") < 0) {
+        return error(engine_err_malloc);
+    }
+    // set the singlton particle type data to the new item here.
+    MxParticle_Type.data = &e->types[0];
+    
     if ( flags & engine_flag_nullpart ) {
         e->types[0].id = 0;
         e->types[0].mass = 0.0;

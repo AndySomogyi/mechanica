@@ -68,6 +68,13 @@ void f(T C::*pm)
     std::cout << "offset of: " << offset_of(pm);
 }
 
+/**
+ * initialize a newly allocated type
+ *
+ * adds a new data entry to the engine.
+ */
+static HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
+
 
  
 
@@ -82,16 +89,7 @@ static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     return PyObject_GenericGetAttr(obj, name);
 }
 
-static int particle_init(MxParticle *self, PyObject *args, PyObject *kwds) {
-    std::cout << MX_FUNCTION << ", tp_name: " << self->ob_type->tp_name << std::endl;
 
-
-    //self->charge = 1;
-    //self->mass = 3.14;
-
-    //PyObject *o = PyObject_GetAttrString(self, "mass");
-    return 0;
-}
 
 
 
@@ -189,17 +187,260 @@ PyGetSetDef gsd = {
         .closure = NULL
     };
 
+PyGetSetDef gs_charge = {
+    .name = "charge",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->data->charge).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        
+        try {
+            double *x = &type->data->charge;
+            *x = pybind11::cast<double>(val);
+            return 0;
+        }
+        catch (const pybind11::builtin_exception &e) {
+            e.set_error();
+            return -1;
+        }
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
 
+PyGetSetDef gs_mass = {
+    .name = "mass",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->data->mass).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        
+        try {
+            double *x = &type->data->mass;
+            *x = pybind11::cast<double>(val);
+            return 0;
+        }
+        catch (const pybind11::builtin_exception &e) {
+            e.set_error();
+            return -1;
+        }
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
+PyGetSetDef gs_name = {
+    .name = "name",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->data->name).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        PyErr_SetString(PyExc_PermissionError, "read only");
+        return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
+PyGetSetDef gs_name2 = {
+    .name = "name2",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        MxParticleType *type = NULL;
+        if(isParticle) {
+            type = (MxParticleType*)obj->ob_type;
+        }
+        else {
+            type = (MxParticleType*)obj;
+        }
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->data->name2).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        PyErr_SetString(PyExc_PermissionError, "read only");
+        return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
 
 
 
 PyGetSetDef particle_getsets[] = {
-        //create_vector4_getset(),
-    MakeAttibute("position", "doc", &MxParticle::position),
-    MakeAttibute("velocity", "doc", &MxParticle::velocity),
-    MakeAttibute("force", "doc", &MxParticle::force),
-    MakeAttibute("q", "doc", &MxParticle::q),
+    gs_charge,
+    gs_mass,
+    gs_name,
+    gs_name2,
     gsd,
+    {
+        .name = "position",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            int id = ((MxPyParticle*)obj)->part->id;
+            Magnum::Vector3 vec;
+            space_getpos(&_Engine.s, id, vec.data());
+            return pybind11::cast(vec).release().ptr();
+            
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                int id = ((MxPyParticle*)obj)->part->id;
+                Magnum::Vector3 vec = pybind11::cast<Magnum::Vector3>(val);
+                space_setpos(&_Engine.s, id, vec.data());
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "velocity",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->velocity;
+            return pybind11::cast(vec).release().ptr();
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->velocity;
+                *vec = pybind11::cast<Magnum::Vector3>(val);
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "force",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->force;
+            return pybind11::cast(vec).release().ptr();
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->force;
+                *vec = pybind11::cast<Magnum::Vector3>(val);
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "id",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            int x = ((MxPyParticle*)obj)->part->id;
+            return pybind11::cast(x).release().ptr();
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                int *x = &((MxPyParticle*)obj)->part->id;
+                *x = pybind11::cast<int>(val);
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "type_id",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            int x = ((MxPyParticle*)obj)->part->typeId;
+            return pybind11::cast(x).release().ptr();
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                short *x = &((MxPyParticle*)obj)->part->typeId;
+                *x = pybind11::cast<short>(val);
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "flags",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            unsigned short x = ((MxPyParticle*)obj)->part->flags;
+            return pybind11::cast(x).release().ptr();
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                unsigned short *x = &((MxPyParticle*)obj)->part->flags;
+                *x = pybind11::cast<unsigned short>(val);
+                return 0;
+            }
+            catch (const pybind11::builtin_exception &e) {
+                e.set_error();
+                return -1;
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {NULL}
 };
 
@@ -208,14 +449,54 @@ static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwar
     return PyType_GenericNew(type, args, kwargs);
 }
 
+static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    MxParticleType *type = (MxParticleType*)self->ob_type;
+    
+    MxParticle part = {
+        .position = {},
+        .velocity = {},
+        .force = {},
+        .typeId = type->data->id,
+        .id = _Engine.s.nr_parts
+    };
+    
+    
+    try {
+        pybind11::detail::loader_life_support ls{};
+        pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
+        pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
+        
+        if(args.size() > 0) {
+            part.position = pybind11::cast<Magnum::Vector3>(args[0]);
+        }
+        
+        MxParticle *p = NULL;
+        double pos[] = {part.position[0], part.position[1], part.position[2]};
+        int result = space_addpart (&_Engine.s, &part, pos, &p);
+        
+        self->part = p;
+        
+        return 0;
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return -1;
+    }
+}
 
 
+/**
+ * The base particle type
+ * this instance points to the 0'th item in the global engine struct.
+ */
 MxParticleType MxParticle_Type = {
 {
   {
       PyVarObject_HEAD_INIT(NULL, 0)
       .tp_name =           "Particle",
-      .tp_basicsize =      sizeof(MxParticle),
+      .tp_basicsize =      sizeof(MxPyParticle),
       .tp_itemsize =       0, 
       .tp_dealloc =        0, 
       .tp_print =          0, 
@@ -258,11 +539,17 @@ MxParticleType MxParticle_Type = {
       .tp_cache =          0, 
       .tp_subclasses =     0, 
       .tp_weaklist =       0, 
-      .tp_del =            0, 
+      .tp_del =            [] (PyObject *p) -> void {
+          std::cout << "tp_del MxPyParticle" << std::endl;
+      },
       .tp_version_tag =    0, 
-      .tp_finalize =       0    
+      .tp_finalize =       [] (PyObject *p) -> void {
+          std::cout << "tp_finalize MxPyParticle" << std::endl;
+      }
     }
-  }
+  },
+    .data = NULL // when the engine is intialized, it sets this pointer to the
+                 // first element in the types list.
 };
 
 
@@ -320,8 +607,11 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 
 static PyGetSetDef particle_type_getset[] = {
-gsd,
-
+    gsd,
+    gs_charge,
+    gs_mass,
+    gs_name,
+    gs_name2,
     {NULL},
 };
 
@@ -349,7 +639,9 @@ static int particle_type_init(MxParticleType *self, PyObject *_args, PyObject *k
     return MxParticleType_Init(self, dict.ptr());
 }
 
-
+/**
+ * particle type metatype
+ */
 PyTypeObject MxParticleType_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name =           "ParticleType",
@@ -455,7 +747,7 @@ static void printTypeInfo(const char* name, PyTypeObject *p) {
      */
 }
 
-HRESULT MxParticle_init(PyObject *m)
+HRESULT _MxParticle_init(PyObject *m)
 {
     
     
@@ -546,19 +838,12 @@ int MxParticleCheck(PyObject *o)
     return -1;
 }
 
-MxParticle* MxParticle_New(const MxParticle *data)
+MxPyParticle* MxPyParticle_New(MxParticle *data)
 {
-    MxParticle part = *data;
-
-    double x[] = {part.position[0], part.position[1], part.position[2]};
-
-    space *s = &(_Engine.s);
-
-    MxParticle *result = NULL;
-
-    space_addpart(s ,  &part,  x, &result);
-
-    return result;
+    PyTypeObject *type = (PyTypeObject*)_Engine.types[data->typeId].pyType;
+    MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
+    part->part = data;
+    return part;
 }
 
 
@@ -606,6 +891,26 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
 
         int er = engine_addtype_for_type(&_Engine, mass,
                 charge, self->ht_type.tp_name , name2.c_str(), self);
+        
+        // pybind does not seem to wrap deleting item from dict, WTF?!?
+        if(self->ht_type.tp_dict) {
+            
+            PyObject *_dict = self->ht_type.tp_dict;
+            
+            pybind11::object key = pybind11::cast("mass");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+            key = pybind11::cast("charge");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+            key = pybind11::cast("name2");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+        }
+    
 
         return er >= 0 ? S_OK : c_error(CERR_FAIL, "failed to add new type to engine");
     }

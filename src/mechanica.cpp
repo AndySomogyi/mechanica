@@ -147,7 +147,7 @@ static PyObject * moduleinit(void)
     MxSimulator_init(m);
     MxSurfaceSimulator_init(m);
     MxCylinderModel_init(m);
-    MxParticle_init(m);
+    _MxParticle_init(m);
     MxPotential_init(m);
     _MxUniverse_init(m);
     MxWindow_init(m);

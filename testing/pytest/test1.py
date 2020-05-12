@@ -26,38 +26,58 @@ print ("mechanica file: " + m.__file__, flush=True)
 print("_mechanica file: " + _mechanica.__file__, flush=True)
 
 c = m.Simulator.Config()
+s = m.Simulator()
 
-c.windowless = False
+print("getting particle")
+x = m.Universe.particles[0]
 
-s = m.Simulator(c, foo='bar', bar=1)
+print("n part: ", len(m.Universe.particles))
 
-print("creating subclass of Particle")
+print("creating new base particle")
+p = m.Particle([1.,2.,3.])
 
-class A (m.Particle):
-    mass = 3.14
-    charge = 2.78
-    
+print("n part: ", len(m.Universe.particles))
 
-B = type("B", (m.Particle,), {'mass':6, 'descr':5, 'charge':0})
+print("new part position")
+print(p.position)
 
-print("gettig descr...")
-o = _mechanica.Particle.descr;
+print("creating new type")
+class B(m.Particle):
+    pass
 
+print("creating new derived type")
+b = B()
 
-print("printing descr...")
-print(o);
+print(b)
 
-print("creating instance of Particle...")
+print("getting particle")
+p = m.Universe.particles[0]
 
-p = m.Particle()
+print("printing the particle")
 
+print(p)
 
+ar = type(p)
 
-print("type")
+print("getting instance charge")
+print(p.charge)
 
-a = A()
+print("setting type.charge")
+ar.charge = 9
 
-print(a)
+print("getting instance charge")
+print(p.charge)
+
+print("setting instance charge")
+p.charge = 11
+
+print("getting type charge")
+print(ar.charge)
+
+print("setting p to none")
+p = None
+
+print("all done, calling exit")
 
 exit()
 
@@ -65,62 +85,6 @@ exit()
 
 
 
-print ("renderer: " , m.Simulator.renderer)
-
-print("s.foo: ", s.foo)
-
-print("part len: ", len(m.Universe.particles))
-
-print(m.Universe.particles[10])
-
-
-
-foo = _mechanica.Foo("foo")
-
-
-
-foo.stuff(this="that", stuff="this")
-
-
-
-
-class S(ctypes.Structure) : pass
-class P(m.Particle) : pass
-
-print("getting P mass", flush=True)
-print(P.mass)
-
-print("getting m.Particle.mass", flush=True)
-print(m.Particle.mass)
-
-print("creating P instance...", flush=True)
-
-p = P()
-
-print("setting p mass", flush=True)
-P.mass = 5
-
-print("getting P mass", flush=True)
-print(P.mass)
-
-print("creating p", flush=True)
-p = P()
-
-print("getting p mass")
-print(p.mass)
-
-
-def bumpVec(p):
-    p.position[0] += 1
-    print(p.position)
-    
-    
-for i in range(5):
-    bumpVec(p)
-    
-    
-print("final foo:")
-print(p.position)
 
 
 

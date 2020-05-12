@@ -176,26 +176,12 @@ static PyMappingMethods particle_mapping =  {
                 return NULL;
             }
             MxParticle *part = _Engine.s.partlist[index];
-            Py_XINCREF(part);
-            return part;
+            MxPyParticle *py = MxPyParticle_New(part);
+            return py;
         },
         .mp_ass_subscript = [] (PyObject *, PyObject *key, PyObject *value) -> int {
-            long index = PyLong_AsLong(key);
-              if(PyErr_Occurred()) {
-                  PyErr_SetString(PyExc_TypeError, "could not convert key to number");
-                  return -1;
-              }
-              if(index < 0 || index >= _Engine.s.nr_parts) {
-                  PyErr_SetString(PyExc_IndexError, "index out of range");
-                  return -1;
-              }
-              if(value == NULL) {
-                  std::cout << "value is NULL" << std::endl;
-              }
-              if(value == Py_None) {
-                  std::cout << "value is Py_None" << std::endl;
-              }
-              return 0;
+            PyErr_SetString(PyExc_AttributeError, "particles is read only");
+            return -1;
         }
 };
 

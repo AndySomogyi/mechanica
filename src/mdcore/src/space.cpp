@@ -44,6 +44,7 @@
 #include <space_cell.h>
 #include "task.h"
 #include "space.h"
+#include "engine.h"
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -56,7 +57,7 @@ int space_err = space_err_ok;
 #define error(id)				( space_err = errs_register( id , space_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-const char *space_err_msg[9] = {
+const char *space_err_msg[10] = {
         "Nothing bad happened.",
         "An unexpected NULL pointer was encountered.",
         "A call to malloc failed, probably due to insufficient memory.",
@@ -66,6 +67,7 @@ const char *space_err_msg[9] = {
         "Too many pairs associated with a single particle in Verlet list.",
         "Task list too short.",
         "An error occured when calling a task function.",
+        "Invalid particle id"
 };
 
 
@@ -373,6 +375,7 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     struct MxParticle **temp;
     struct space_cell **tempc, *c;
 
+
     /* check input */
     if ( s == NULL || p == NULL || x == NULL )
         return error(space_err_null);
@@ -394,6 +397,10 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
 
     /* Increase the number of parts. */
     s->nr_parts++;
+    
+    if(p->id < 0 || p->id >= s->nr_parts) {
+        return error(space_err_invalid_partid);
+    }
 
     /* get the hypothetical cell coordinate */
     for ( k = 0 ; k < 3 ; k++ )
@@ -414,7 +421,12 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     /* delegate the particle to the cell */
     if ( ( s->partlist[p->id] = space_cell_add( c , p , s->partlist ) ) == NULL )
         return error(space_err_cell);
+    
     s->celllist[p->id] = c;
+    
+    if(result) {
+        *result = s->partlist[p->id];
+    }
 
     /* end well */
     return space_err_ok;
@@ -432,7 +444,7 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
  *
  */
 
-int space_getpos ( struct space *s , int id , double *x ) {
+int space_getpos ( struct space *s , int id , FPTYPE *x ) {
 
     int k;
 
@@ -445,6 +457,25 @@ int space_getpos ( struct space *s , int id , double *x ) {
     /* Copy the position to x. */
     for ( k = 0 ; k < 3 ; k++ )
         x[k] = s->partlist[id]->x[k] + s->celllist[id]->origin[k];
+
+    /* All is well... */
+    return space_err_ok;
+
+}
+
+int space_setpos ( struct space *s , int id , FPTYPE *x ) {
+
+    int k;
+
+    /* Sanity check. */
+    if ( s == NULL || x == NULL )
+        return error(space_err_null);
+    if ( id >= s->nr_parts )
+        return error(space_err_range);
+
+    /* Copy the position to x. */
+    for ( k = 0 ; k < 3 ; k++ )
+        s->partlist[id]->x[k] = x[k] - s->celllist[id]->origin[k];
 
     /* All is well... */
     return space_err_ok;

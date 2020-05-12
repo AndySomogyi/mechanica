@@ -34,6 +34,7 @@ MDCORE_BEGIN_DECLS
 #define space_err_maxpairs              -6
 #define space_err_nrtasks               -7
 #define space_err_task                  -8
+#define space_err_invalid_partid        -9
 
 
 /* some constants */
@@ -234,18 +235,27 @@ typedef struct space {
 
 
 /* associated functions */
-CAPI_FUNC(int) space_init ( struct space *s , const double *origin , const double *dim , double *L , double cutoff , unsigned int period );
-CAPI_FUNC(int) space_getsid ( struct space *s , struct space_cell **ci , struct space_cell **cj , FPTYPE *shift );
+CAPI_FUNC(int) space_init ( struct space *s , const double *origin ,
+                           const double *dim , double *L ,
+                           double cutoff , unsigned int period );
+
+CAPI_FUNC(int) space_getsid ( struct space *s , struct space_cell **ci ,
+                             struct space_cell **cj , FPTYPE *shift );
+
 CAPI_FUNC(int) space_shuffle ( struct space *s );
 CAPI_FUNC(int) space_shuffle_local ( struct space *s );
 
 /**
- * @brief Add a #part to a #space at the given coordinates.
+ * @brief Add a #part to a #space at the given coordinates. The given
+ * particle p is only used for the attributes, it itself is not added,
+ * rather a new memory block is allocated, and the contents of p
+ * get copied in there.
  *
  * @param s The space to which @c p should be added.
  * @param p The #part to be added.
  * @param x A pointer to an array of three doubles containing the particle
  *      position.
+ * @param result pointer to the newly allocated particle.
  *
  * @returns #space_err_ok or < 0 on error (see #space_err).
  *
@@ -253,15 +263,17 @@ CAPI_FUNC(int) space_shuffle_local ( struct space *s );
  * Note that since particle positions in #part are relative to the cell, that
  * data in @c p is overwritten and @c x is used.
  */
-CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,  double *x, struct MxParticle **result );
+CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,
+        double *x, struct MxParticle **result );
 
 
 CAPI_FUNC(int) space_prepare ( struct space *s );
-CAPI_FUNC(int) space_getpos ( struct space *s , int id , double *x );
-CAPI_FUNC(int) space_setpos ( struct space *s , int id , double *x );
+CAPI_FUNC(int) space_getpos ( struct space *s , int id , FPTYPE *x );
+CAPI_FUNC(int) space_setpos ( struct space *s , int id , FPTYPE *x );
 CAPI_FUNC(int) space_flush ( struct space *s );
 CAPI_FUNC(int) space_flush_ghosts ( struct space *s );
-CAPI_FUNC(struct task*) space_addtask ( struct space *s , int type , int subtype , int flags , int i , int j );
+CAPI_FUNC(struct task*) space_addtask ( struct space *s , int type ,
+                                       int subtype , int flags , int i , int j );
 
 
 CAPI_FUNC(int) space_verlet_init ( struct space *s , int list_global );
