@@ -55,6 +55,33 @@ MDCORE_BEGIN_DECLS
 #define potential_flag_Coulomb               4
 #define potential_flag_single                6
 
+/** flag defined for r^2 input */
+#define potential_flag_r2                    1 << 0
+
+/** potential defined for r input (no sqrt) */
+#define potential_flag_r                     1 << 1
+
+/** potential has Coulomb component */
+#define potential_flag_coulomb               1 << 2
+
+/** potential has LJ component */
+#define potential_flag_lennard_jones         1 << 3
+
+/** potential defined for angle */
+#define potential_flag_angle                 1 << 4
+
+/** potential defined for harmonic */
+#define potential_flag_harmonic              1 << 5
+
+/** potential defined for harmonic */
+#define potential_flag_dihedral              1 << 6
+
+/** potential defined for harmonic */
+#define potential_flag_ewald                 1 << 7
+
+/** potential defined for switch */
+#define potential_flag_switch                1 << 8
+
 
 /** ID of the last error. */
 CAPI_DATA(int) potential_err;

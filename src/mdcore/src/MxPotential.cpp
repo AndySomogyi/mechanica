@@ -24,6 +24,7 @@
 #include <math.h>
 #include <float.h>
 #include <MxPotential.h>
+#include <MxPy.h>
 #include <string.h>
 
 
@@ -31,6 +32,8 @@
 #include "errs.h"
 #include "fptype.h"
 #include "potential_eval.h"
+
+#include <iostream>
 
 /** Macro to easily define vector types. */
 #define simd_vector(elcount, type)  __attribute__((vector_size((elcount)*sizeof(type)))) type
@@ -65,6 +68,7 @@ const char *potential_err_msg[] = {
 		"Maximum number of intervals reached before tolerance satisfied."
 };
 
+static MxPotential *potential_alloc(PyTypeObject *type);
 
 /**
  * @brief Switching function.
@@ -311,10 +315,12 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+	if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_harmonic ;
 
 	/* fill this potential */
 	potential_create_harmonic_K = K;
@@ -403,10 +409,12 @@ struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , doub
 	}
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =   potential_flag_r | potential_flag_harmonic | potential_flag_dihedral;
 
 	/* fill this potential */
 	potential_create_harmonic_dihedral_K = K;
@@ -467,10 +475,12 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 	double left, right;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r | potential_flag_angle | potential_flag_harmonic ;
 
 	/* Adjust a and b accordingly. */
 	if ( a < 0.0 )
@@ -535,10 +545,12 @@ struct MxPotential *potential_create_Ewald ( double a , double b , double q , do
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_ewald ;
 
 	/* fill this potential */
 	potential_create_Ewald_q = q;
@@ -599,10 +611,12 @@ struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double 
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones |  potential_flag_ewald ;
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_A = A;
@@ -669,10 +683,12 @@ struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , 
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_ewald | potential_flag_switch ;
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_switch_A = A;
@@ -728,10 +744,12 @@ struct MxPotential *potential_create_Coulomb ( double a , double b , double q , 
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 |  potential_flag_coulomb ;
 
 	/* fill this potential */
 	potential_create_Coulomb_q = q;
@@ -791,10 +809,12 @@ struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , doubl
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_coulomb | potential_flag_lennard_jones  ;
 
 	/* fill this potential */
 	potential_create_LJ126_Coulomb_q = q;
@@ -849,10 +869,12 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
     MxPotential *p = NULL;
 
 	/* allocate the potential */
-	if ((posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0)  || p == NULL) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
  	}
+
+    p->flags =  potential_flag_r2  | potential_flag_lennard_jones ;
 
 	/* fill this potential */
 	potential_create_LJ126_A = A;
@@ -909,10 +931,12 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 	struct MxPotential *p;
 
 	/* allocate the potential */
-	if ( posix_memalign( (void **)&p , 16 , sizeof( struct MxPotential ) ) != 0 ) {
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
 		error(potential_err_malloc);
 		return NULL;
 	}
+
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
 
 	/* fill this potential */
 	potential_create_LJ126_switch_A = A;
@@ -1607,13 +1631,344 @@ double potential_getalpha ( double (*f6p)( double ) , double a , double b ) {
 
 }
 
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
+static MxPotential *potential_alloc(PyTypeObject *type) {
+
+    std::cout << MX_FUNCTION << std::endl;
+
+    struct MxPotential *obj = NULL;
+
+    /* allocate the potential */
+    if ( posix_memalign( (void **)&obj , 16 , type->tp_basicsize ) != 0 ) {
+        return NULL;
+    }
+
+    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
+        Py_INCREF(type);
+
+
+    (void)PyObject_INIT(obj, type);
+
+
+    if (PyType_IS_GC(type)) {
+        assert(0 && "should not get here");
+        //  _PyObject_GC_TRACK(obj);
+    }
+
+    return obj;
+}
+
+static void potential_dealloc(PyObject *obj) {
+    std::cout << MX_FUNCTION << std::endl;
+
+}
+
+static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    MxPotential *self = (MxPotential*)_self;
+
+    try {
+        py::args args = py::reinterpret_borrow<py::args>(_args);
+        py::kwargs kwargs = py::reinterpret_borrow<py::kwargs>(_kwargs);
+
+        float r = py::cast<float>(args[0]);
+        
+        if(self->flags & potential_flag_r2) {
+            r = r * r;
+        }
+
+        float e;
+        float f;
+
+        potential_eval (self , r, &e, &f);
+
+        return py::cast(e).release().ptr();
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double A = arg<double>("A", 2, _args, _kwargs);
+        double B = arg<double>("B", 3, _args, _kwargs);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        return potential_create_LJ126( min, max, A, B, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
+static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double A = arg<double>("A", 2, _args, _kwargs);
+        double B = arg<double>("B", 3, _args, _kwargs);
+        double q = arg<double>("q", 4, _args, _kwargs);
+        double tol = arg<double>("tol", 5, _args, _kwargs, 0.001 * (max-min));
+        return potential_create_LJ126_Coulomb( min, max, A, B, q, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double q = arg<double>("q", 2, _args, _kwargs);
+        double kappa = arg<double>("kappa", 3, _args, _kwargs);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        return potential_create_Ewald( min, max, q, kappa, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
+static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double q = arg<double>("q", 2, _args, _kwargs);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        return potential_create_Coulomb( min, max, q, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
+static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double K = arg<double>("K", 2, _args, _kwargs);
+        double r0 = arg<double>("r0", 3, _args, _kwargs);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001);
+        return potential_create_harmonic( min, max, K, r0, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double min = arg<double>("min", 0, _args, _kwargs);
+        double max = arg<double>("max", 1, _args, _kwargs);
+        double K = arg<double>("K", 2, _args, _kwargs);
+        double theta0 = arg<double>("theta0", 3, _args, _kwargs);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 );
+        return potential_create_harmonic_angle( min, max, K, theta0, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
+static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double k = arg<double>("k", 0, _args, _kwargs);
+        int n = arg<int>("n", 1, _args, _kwargs);
+        double delta = arg<double>("delta", 2, _args, _kwargs);
+        double tol = arg<double>("tol", 3, _args, _kwargs, 0.001);
+        return potential_create_harmonic_dihedral( k, n, delta, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
+
+static PyMethodDef potential_methods[] = {
+    {
+        "lennard_jones_12_6",
+        (PyCFunction)_lennard_jones_12_6,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "Creates a #potential representing a 12-6 Lennard-Jones potential          \n"
+        "                                                                          \n"
+        "@param min The smallest radius for which the potential will be constructed. \n"
+        "@param max The largest radius for which the potential will be constructed. \n"
+        "@param A The first parameter of the Lennard-Jones potential. \n"
+        "@param B The second parameter of the Lennard-Jones potential. \n"
+        "@param tol The tolerance to which the interpolation should match the exact \n"
+        "potential. \n"
+        " \n"
+        "@return A newly-allocated #potential representing the potential \n"
+        "@f$ \left( \frac{A}{r^{12}} - \frac{B}{r^6} \right) @f$ in @f$[a,b]@f$ \n"
+        "or @c NULL on error (see #potential_err). \n"
+    },
+    {
+        "lennard_jones_12_6_coulomb",
+        (PyCFunction)_lennard_jones_12_6_coulomb,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "ewald",
+        (PyCFunction)_ewald,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "coulomb",
+        (PyCFunction)_coulomb,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "harmonic",
+        (PyCFunction)_harmonic,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "harmonic_angle",
+        (PyCFunction)_harmonic_angle,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "harmonic_dihedral",
+        (PyCFunction)_harmonic_dihedral,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {NULL}
+};
+
+
+static PyGetSetDef potential_getset[] = {
+    {
+        .name = "min",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return pybind11::cast(obj->a).release().ptr();
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "max",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return pybind11::cast(obj->b).release().ptr();
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "domain",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            py::tuple  res = py::make_tuple(obj->a, obj->b);
+            return res.release().ptr();
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "intervals",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return pybind11::cast(obj->n).release().ptr();
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {NULL}
+};
+
 
 PyTypeObject MxPotential_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "Potential",
     .tp_basicsize = sizeof(MxPotential),
     .tp_itemsize =       0, 
-    .tp_dealloc =        0, 
+    .tp_dealloc =        potential_dealloc,
     .tp_print =          0, 
     .tp_getattr =        0, 
     .tp_setattr =        0, 
@@ -1623,7 +1978,7 @@ PyTypeObject MxPotential_Type = {
     .tp_as_sequence =    0, 
     .tp_as_mapping =     0, 
     .tp_hash =           0, 
-    .tp_call =           0, 
+    .tp_call =           potential_call,
     .tp_str =            0, 
     .tp_getattro =       0, 
     .tp_setattro =       0, 
@@ -1636,16 +1991,29 @@ PyTypeObject MxPotential_Type = {
     .tp_weaklistoffset = 0, 
     .tp_iter =           0, 
     .tp_iternext =       0, 
-    .tp_methods =        0, 
+    .tp_methods =        potential_methods,
     .tp_members =        0, 
-    .tp_getset =         0, 
+    .tp_getset =         potential_getset,
     .tp_base =           0, 
     .tp_dict =           0, 
     .tp_descr_get =      0, 
     .tp_descr_set =      0, 
     .tp_dictoffset =     0, 
     .tp_init =           0, 
-    .tp_alloc =          0, 
+    .tp_alloc =          [] (struct _typeobject *type, Py_ssize_t n_items) -> PyObject* {
+
+                             if(PyType_IsSubtype(type, &MxPotential_Type) == 0) {
+                                 PyErr_SetString(PyExc_ValueError, "MxPotential.tp_alloc can only be used for MxPotential derived objects");
+                                 return NULL;
+                             }
+
+                             if(type->tp_itemsize != 0 || n_items != 0) {
+                                 PyErr_SetString(PyExc_ValueError, "MxPotential.tp_alloc can only be used for single instance potentials");
+                                 return NULL;
+                             }
+
+                             return (PyObject*)potential_alloc(type);
+                         },
     .tp_new =            0, 
     .tp_free =           0, 
     .tp_is_gc =          0, 

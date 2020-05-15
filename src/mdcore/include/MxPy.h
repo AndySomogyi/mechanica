@@ -88,6 +88,92 @@ PyGetSetDef MakeAttibute(const char* name, const char* doc, T C::*pm) {
 
 #include <pybind11/pybind11.h>
 
+template<typename T>
+T arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
+    
+    try {
+        
+        if(_args == NULL && _kwargs == NULL) {
+            throw std::runtime_error("no arguments given");
+        }
+        
+        else if(_args != NULL && _kwargs == NULL) {
+            pybind11::args args = pybind11::cast<pybind11::args>(_args);
+            return pybind11::cast<T>(args[index]);
+        }
+        
+        else if(_args == NULL && _kwargs != NULL) {
+            pybind11::kwargs kwargs = pybind11::cast<pybind11::kwargs>(_kwargs);
+            return pybind11::cast<T>(kwargs[name]);
+        }
+        
+        else {
+            pybind11::args args = pybind11::cast<pybind11::args>(_args);
+            pybind11::kwargs kwargs = pybind11::cast<pybind11::kwargs>(_kwargs);
+            
+            if(kwargs.contains(name)) {
+                if(args.size() > index) {
+                    throw std::runtime_error(std::string("value ") + name + " given as both indexed and named argument");
+                }
+                return pybind11::cast<T>(kwargs[name]);
+            }
+            return pybind11::cast<T>(args[index]);
+        }
+    }
+    catch(std::exception &e) {
+        throw std::runtime_error(std::string("error reading arugment \'") + name + "\' : " + e.what());
+    }
+};
+
+template<typename T>
+T arg(const char* name, int index, PyObject *_args, PyObject *_kwargs, T deflt) {
+    try {
+        
+        if(_args == NULL && _kwargs == NULL && index == 0) {
+            return deflt;
+        }
+        
+        if(_args == NULL && _kwargs == NULL ) {
+            throw std::runtime_error("no arguments given");
+        }
+        
+        else if(_args != NULL && _kwargs == NULL) {
+            pybind11::args args = pybind11::cast<pybind11::args>(_args);
+            if(args.size() > index) {
+                return pybind11::cast<T>(args[index]);
+            }
+            return deflt;
+        }
+        
+        else if(_args == NULL && _kwargs != NULL) {
+            pybind11::kwargs kwargs = pybind11::cast<pybind11::kwargs>(_kwargs);
+            if(kwargs.contains(name)) {
+                return pybind11::cast<T>(kwargs[name]);
+            }
+            return deflt;
+        }
+        
+        else {
+            pybind11::args args = pybind11::cast<pybind11::args>(_args);
+            pybind11::kwargs kwargs = pybind11::cast<pybind11::kwargs>(_kwargs);
+            
+            if(kwargs.contains(name)) {
+                if(args.size() > index) {
+                    throw std::runtime_error(std::string("value ") + name + " given as both indexed and named argument");
+                }
+                return pybind11::cast<T>(kwargs[name]);
+            }
+            if(args.size() > index) {
+                return pybind11::cast<T>(args[index]);
+            }
+            return deflt;
+        }
+    }
+    catch(std::exception &e) {
+        throw std::runtime_error(std::string("error reading arugment \'") + name + "\' : " + e.what());
+    }
+};
+
 template<typename Klass, typename VarType, VarType Klass::*pm>
 PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
 

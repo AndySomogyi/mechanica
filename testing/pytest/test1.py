@@ -28,6 +28,8 @@ print("_mechanica file: " + _mechanica.__file__, flush=True)
 c = m.Simulator.Config()
 s = m.Simulator()
 
+pot = m.Potential.coulomb(0.01, 10, 1)
+
 print("getting particle")
 x = m.Universe.particles[0]
 
@@ -44,6 +46,8 @@ print(p.position)
 print("creating new type")
 class B(m.Particle):
     pass
+
+m.Universe.bind(pot, B, B)
 
 print("creating new derived type")
 b = B()

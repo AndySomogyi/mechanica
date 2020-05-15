@@ -1549,6 +1549,8 @@ static int _engine_addtype ( struct engine *e , double mass , double charge ,
 	e->types[e->nr_types].mass = mass;
 	e->types[e->nr_types].imass = 1.0 / mass;
 	e->types[e->nr_types].charge = charge;
+	e->types[e->nr_types].id = e->nr_types;
+
 	if ( name != NULL )
 		strcpy( e->types[e->nr_types].name , name );
 	else
@@ -1571,7 +1573,8 @@ int engine_addtype ( struct engine *e , double mass , double charge ,
     if ( e->nr_types >= e->max_type )
         return error(engine_err_range);
     
-    return MxParticleType_ForEngine(e, mass, charge, name, name2) != NULL ? e->nr_types - 1 : -1;
+    MxParticleType *type = MxParticleType_ForEngine(e, mass, charge, name, name2);
+    return type != NULL ? type->data->id : -1;
 }
 
 int engine_addtype_for_type(struct engine *e, double mass, double charge,
@@ -1611,12 +1614,15 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 
 	/* store the potential. */
 	e->p[ i * e->max_type + j ] = p;
-	if ( i != j )
+    Py_INCREF(p);
+    
+    if ( i != j ) {
 		e->p[ j * e->max_type + i ] = p;
+        Py_INCREF(p);
+    }
 
 	/* end on a good note. */
 	return engine_err_ok;
-
 }
 
 
@@ -2355,7 +2361,10 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         max_type += 1;
     
     // add one for the base type
-    e->max_type = max_type + 1;
+    max_type += 1;
+    
+    // set the engine max type
+    e->max_type = max_type;
     e->nr_types = 0;
     if ( ( e->types = (struct MxParticleData *)malloc( sizeof(struct MxParticleData) * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
@@ -2385,12 +2394,12 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->nr_sets = 0;
 
     /* allocate the interaction matrices */
-    if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type ) ) == NULL )
+    if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
-    bzero( e->p , sizeof(struct MxPotential *) * max_type * max_type );
-    if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * max_type * max_type )) == NULL)
+    bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
+    if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->max_type * e->max_type )) == NULL)
         return error(engine_err_malloc);
-    bzero( e->p_bond , sizeof(struct MxPotential *) * max_type * max_type );
+    bzero( e->p_bond , sizeof(struct MxPotential *) * e->max_type * e->max_type );
     e->anglepots_size = 100;
     if ( (e->p_angle = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size )) == NULL)
         return error(engine_err_malloc);

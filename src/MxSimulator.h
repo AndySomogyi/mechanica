@@ -286,6 +286,14 @@ struct CAPI_EXPORT MxSimulator {
 
         MxUniverseConfig universeConfig;
         
+        std::string example;
+        
+        int threads;
+
+        int queues;
+
+        
+        
     private:
         std::string _title;
         Vector2i _size;
@@ -308,7 +316,7 @@ struct CAPI_EXPORT MxSimulator {
 /**
  * The global simulator object
  */
-CAPI_DATA(MxSimulator*) Simulator;
+// CAPI_DATA(MxSimulator*) Simulator;
 
 /**
  * Creates a new simulator if the global one does not exist,
@@ -621,7 +629,9 @@ private:
 // const Vector3 &origin, const Vector3 &dim,
 // int nParticles, double dt = 0.005, float temp = 100
 
-CAPI_FUNC(int) initArgon(const MxUniverseConfig &conf);
+CAPI_FUNC(int) universe_init(const MxUniverseConfig &conf);
+
+CAPI_FUNC(HRESULT) example_argon(const MxUniverseConfig &conf);
 
 void engineStep();
 

@@ -12,11 +12,15 @@
 
 #include <MxPy.h>
 
+#define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
+
 namespace py = pybind11;
 
 using Magnum::Vector3;
 
 MxUniverse Universe;
+
+static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b);
 
 // the single static engine instance per process
 
@@ -44,14 +48,15 @@ CAPI_FUNC(struct engine*) engine_get()
 MxUniverseConfig::MxUniverseConfig() :
     origin {0, 0, 0},
     dim {10, 10, 10},
-    spaceGridSize {1, 1, 1},
+    spaceGridSize {2, 2, 2},
     boundaryConditions{1, 1, 1},
     cutoff{1},
     flags{0},
     maxTypes{64},
     dt{0.01},
     temp{1},
-    nParticles{100}
+    nParticles{100},
+    threads{4}
 {
 }
 
@@ -88,6 +93,8 @@ static PyUniverse *universe_init(const MxUniverseConfig &conf) {
 
     return new PyUniverse();
 }
+
+
 
 
 PyTypeObject MxUniverse_Type = {
@@ -202,6 +209,13 @@ HRESULT _MxUniverse_init(PyObject* m)
                 return py::cast(particles).release();
             }
         );
+    
+    u.def_static("bind", [](py::args args, py::kwargs kwargs) -> void {
+            UNIVERSE_CHECK();
+            PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr()));
+            return;
+        }
+    );
 
 
 
@@ -220,4 +234,40 @@ HRESULT _MxUniverse_init(PyObject* m)
 
 HRESULT MxUniverse::init(const struct MxUniverseConfig &conf)
 {
+}
+
+CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
+{
+    if(args && PyTuple_Size(args) == 3) {
+        return MxUniverse_BindThing2(PyTuple_GetItem(args, 0), PyTuple_GetItem(args, 1), PyTuple_GetItem(args, 2));
+    }
+    return mx_error(E_FAIL, "bind only implmented for 3 arguments: bind(thing, a, b)");
+}
+
+CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a,
+        PyObject *b)
+{
+    if(PyObject_IsInstance(thing, (PyObject*)&MxPotential_Type)) {
+        return universe_bind_potential((MxPotential*)thing, a, b);
+    }
+    return mx_error(E_NOTIMPL, "binding currently implmented for potentials to things");
+}
+
+
+static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b) {
+    if(PyObject_TypeCheck(a, &MxParticleType_Type) &&
+       PyObject_TypeCheck(b, &MxParticleType_Type)) {
+        MxParticleData *a_type = ((MxParticleType *)a)->data;
+        MxParticleData *b_type = ((MxParticleType *)b)->data;
+        
+        if(engine_addpot(&_Engine, pot, a_type->id, b_type->id) != engine_err_ok) {
+            std::string msg = "failed to add potential to engine: error";
+            msg += std::to_string(engine_err);
+            msg += ", ";
+            msg += engine_err_msg[-engine_err];
+            return mx_error(E_FAIL, msg.c_str());
+        }
+        return S_OK;
+    }
+    return mx_error(E_FAIL, "can only add potential to particle types");
 }

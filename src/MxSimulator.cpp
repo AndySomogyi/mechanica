@@ -30,16 +30,20 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
 #define CPU_TPS 2.67e+9
 #endif
 
+static MxSimulator* Simulator = NULL;
 
 static void interactiveRun();
 
 static void ipythonInputHook(py::args args);
 
+
 MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
             _dpiScalingPolicy{DpiScalingPolicy::Default},
-            _windowless{false} {
+            _windowless{false},
+            threads{4},
+            queues{4} {
     _windowFlags = MxSimulator::WindowFlags::Resizable;
 }
 
@@ -170,6 +174,23 @@ struct ArgumentsWrapper  {
 };
 
 
+static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
+    if(kwargs.contains("example")) {
+        py::object example = kwargs["example"];
+        if(py::isinstance<py::none>(example)) {
+            conf.example = "";
+        }
+        conf.example = py::cast<std::string>(kwargs["example"]);
+    }
+    
+    if(kwargs.contains("dim")) {
+        conf.universeConfig.dim = py::cast<Vector3>(kwargs["dim"]);
+    }
+
+}
+
+static HRESULT simulator_init(py::args args, py::kwargs kwargs);
+
 /**
  * Create a private 'python' flavored version of the simulator
  * interface here to wrap with pybind11.
@@ -177,73 +198,11 @@ struct ArgumentsWrapper  {
  * Don't want to introdude pybind header file into main project and
  * and polute other files.
  */
-struct PySimulator : MxSimulator {
+struct PySimulator  {
     
     PySimulator(py::args args, py::kwargs kwargs) {
-        
-        if(Simulator) {
-            throw std::domain_error( "Error, Simulator is already initialized" );
-        }
-
-        bool windowless = false;
-        
-        // get the argv,
-        py::list argv;
-        if(kwargs.contains("argv")) {
-            argv = kwargs["argv"];
-        }
-        else {
-            argv = py::module::import("sys").attr("argv");
-        }
-        
-        Config conf;
-        GLConfig glConf;
-        
-        if(args.size() > 0) {
-            conf = args[0].cast<MxSimulator::Config>();
-        }
-
-        if(args.size() > 1) {
-            glConf = args[1].cast<MxSimulator::GLConfig>();
-        }
-
-        // init the engine first
-        /* Initialize scene particles */
-        initArgon(conf.universeConfig);
-
-        
-        if(conf.windowless()) {
-            ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
-            MxWindowlessApplication::Configuration conf;
-            
-            MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
-            
-            if(!windowlessApp->tryCreateContext(conf)) {
-                delete windowlessApp;
-                
-                throw std::domain_error("could not create windowless gl context");
-            }
-            else {
-                this->app = windowlessApp;
-            }
-        }
-        else {
-            ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
-            
-            std::cout << "creating GLFW app" << std::endl;
-            
-            MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
-
-            glfwApp->createContext(conf);
-            
-            this->app = glfwApp;
-        }
-        
-        std::cout << MX_FUNCTION << std::endl;
-
-        Simulator = this;
+        PY_CHECK(simulator_init(args, kwargs));
     }
-    
     
     py::handle foo() {
         std::cout << MX_FUNCTION << std::endl;
@@ -256,16 +215,8 @@ struct PySimulator : MxSimulator {
     
     ~PySimulator() {
         std::cout << MX_FUNCTION << std::endl;
-
-        assert(Simulator == this);
-
-        Simulator = NULL;
     }
-
 };
-
-
-
 
 
 static std::string gl_info(const Magnum::Utility::Arguments &args);
@@ -274,8 +225,6 @@ static std::string gl_info(const Magnum::Utility::Arguments &args);
 static PyObject *not_initialized_error();
 
 
-
-MxSimulator* Simulator = NULL;
 
 // (5) Initializer list constructor
 const std::map<std::string, int> configItemMap {
@@ -312,7 +261,7 @@ static PyObject *Noddy_name(MxSimulator* self)
 
 static PyObject *simulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-
+    return NULL;
 }
 
 
@@ -382,13 +331,10 @@ static PyMethodDef methods[] = {
 
 
 
-
+// TODO: this is a total hack, mostly because I don't fully understand pybind
+//       FIX THIS SHIT!
 PySimulator *PySimulator_New(py::args args, py::kwargs kwargs) {
-    if(!Simulator) {
-        Simulator = new PySimulator(args, kwargs);
-    }
-
-    return (PySimulator*)Simulator;
+    return (PySimulator*)new PySimulator(args, kwargs);
 };
 
 
@@ -463,6 +409,36 @@ HRESULT MxSimulator_init(PyObject* m) {
     sc.def_property("windowless", &MxSimulator::Config::windowless, &MxSimulator::Config::setWindowless);
     
     sc.def_property("size", &MxSimulator::Config::size, &MxSimulator::Config::setSize);
+    
+    sc.def_property("dim", [](const MxSimulator::Config &conf) { return conf.universeConfig.dim; },
+                    [](MxSimulator::Config &conf, Magnum::Vector3& vec) {conf.universeConfig.dim = vec;});
+    
+    sc.def_property("space_grid_size", [](const MxSimulator::Config &conf) { return conf.universeConfig.spaceGridSize; },
+                    [](MxSimulator::Config &conf, Magnum::Vector3i& vec) {conf.universeConfig.spaceGridSize = vec;});
+    
+    sc.def_property("boundary_conditions", [](const MxSimulator::Config &conf) { return conf.universeConfig.boundaryConditions; },
+                    [](MxSimulator::Config &conf, Magnum::Vector3ui& vec) {conf.universeConfig.boundaryConditions = vec;});
+    
+    sc.def_property("cutoff", [](const MxSimulator::Config &conf) { return conf.universeConfig.cutoff; },
+                    [](MxSimulator::Config &conf, double v) {conf.universeConfig.cutoff = v;});
+    
+    sc.def_property("flags", [](const MxSimulator::Config &conf) { return conf.universeConfig.flags; },
+                    [](MxSimulator::Config &conf, uint32_t v) {conf.universeConfig.flags = v;});
+    
+    sc.def_property("max_types", [](const MxSimulator::Config &conf) { return conf.universeConfig.maxTypes; },
+                    [](MxSimulator::Config &conf, uint32_t v) {conf.universeConfig.maxTypes = v;});
+    
+    sc.def_property("dt", [](const MxSimulator::Config &conf) { return conf.universeConfig.dt; },
+                    [](MxSimulator::Config &conf, double v) {conf.universeConfig.dt = v;});
+    
+    sc.def_property("temp", [](const MxSimulator::Config &conf) { return conf.universeConfig.temp; },
+                    [](MxSimulator::Config &conf, double v) {conf.universeConfig.temp = v;});
+    
+    sc.def_property("threads", [](const MxSimulator::Config &conf) { return conf.universeConfig.threads; },
+                    [](MxSimulator::Config &conf, int v) {conf.universeConfig.threads = v;});
+    
+
+
 
     py::class_<MxSimulator::GLConfig> gc(sim, "GLConfig");
     gc.def(py::init());
@@ -484,7 +460,7 @@ HRESULT MxSimulator_init(PyObject* m) {
 
 CAPI_FUNC(MxSimulator*) MxSimulator_New(PyObject *_args, PyObject *_kw_args)
 {
-
+    return NULL;
 }
 
 CAPI_FUNC(MxSimulator*) MxSimulator_Get()
@@ -529,22 +505,19 @@ HRESULT MxSimulator_SwapInterval(int si)
 }
 
 
-int initArgon (const MxUniverseConfig &conf ) {
+int universe_init (const MxUniverseConfig &conf ) {
 
-    double length = conf.dim[0] - conf.origin[0];
+    Magnum::Vector3 tmp = conf.dim - conf.origin;
+    Magnum::Vector3d length{tmp[0], tmp[1], tmp[2]};
+    Magnum::Vector3d spaceGridSize{conf.spaceGridSize[0], conf.spaceGridSize[2], conf.spaceGridSize[2]};
 
-    double L[] = { 0.1 * length , 0.1* length , 0.1*  length  };
+    Magnum::Vector3d L = length / spaceGridSize;
 
     double x[3];
 
-    double   cutoff = 0.1 * length;
+    double   cutoff = 0.1 * length.sum() / 3.;
 
-    struct MxParticle pAr;
-    struct MxPotential *pot_ArAr;
-
-    int  k, cid, pid, nr_runners = 8;
-
-    auto pos = fillCubeRandom(conf.origin, conf.dim, conf.nParticles);
+    int  k, cid, pid, nr_runners = conf.threads;
 
     ticks tic, toc;
 
@@ -566,7 +539,7 @@ int initArgon (const MxUniverseConfig &conf ) {
     fflush(stdout);
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L , cutoff , space_periodic_full ,
+    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , space_periodic_full ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
@@ -575,7 +548,6 @@ int initArgon (const MxUniverseConfig &conf ) {
 
     _Engine.dt = conf.dt;
     _Engine.temperature = conf.temp;
-
 
     printf("main: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
 
@@ -587,117 +559,6 @@ int initArgon (const MxUniverseConfig &conf ) {
     printf("main: cutoff set to %22.16e.\n", cutoff);
     printf("main: nr tasks: %i.\n",_Engine.s.nr_tasks);
 
-    /* mix-up the pair list just for kicks
-    printf("main: shuffling the interaction pairs... "); fflush(stdout);
-    srand(6178);
-    for ( i = 0 ; i < e.s.nr_pairs ; i++ ) {
-        j = rand() % e.s.nr_pairs;
-        if ( i != j ) {
-            cp = e.s.pairs[i];
-            e.s.pairs[i] = e.s.pairs[j];
-            e.s.pairs[j] = cp;
-            }
-        }
-    printf("done.\n"); fflush(stdout); */
-
-
-    // initialize the Ar-Ar potential
-    if ( ( pot_ArAr = potential_create_LJ126( 0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
-        printf("main: potential_create_LJ126 failed with potential_err=%i.\n",potential_err);
-        errs_dump(stdout);
-        return 1;
-    }
-    printf("main: constructed ArAr-potential with %i intervals.\n",pot_ArAr->n); fflush(stdout);
-
-
-    /* register the particle types. */
-    if ( ( pAr.typeId = engine_addtype( &_Engine , 39.948 , 0.0 , "Ar" , "Ar" ) ) < 0 ) {
-        printf("main: call to engine_addtype failed.\n");
-        errs_dump(stdout);
-        return 1;
-    }
-
-    // register these potentials.
-    if ( engine_addpot( &_Engine , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
-        printf("main: call to engine_addpot failed.\n");
-        errs_dump(stdout);
-        return 1;
-    }
-
-    // set fields for all particles
-    srand(6178);
-
-    pAr.flags = PARTICLE_FLAG_NONE;
-    for ( k = 0 ; k < 3 ; k++ ) {
-        pAr.x[k] = 0.0;
-        pAr.v[k] = 0.0;
-        pAr.f[k] = 0.0;
-    }
-
-    // create and add the particles
-    printf("main: initializing particles... "); fflush(stdout);
-
-    // total velocity squared
-    float totV2 = 0;
-
-    for(int i = 0; i < pos.size(); ++i) {
-        pAr.id = i;
-
-        pAr.v[0] = ((double)rand()) / RAND_MAX - 0.5;
-        pAr.v[1] = ((double)rand()) / RAND_MAX - 0.5;
-        pAr.v[2] = ((double)rand()) / RAND_MAX - 0.5;
-
-        totV2 +=   pAr.v[0]*pAr.v[0] + pAr.v[1]*pAr.v[1] + pAr.v[2]*pAr.v[2] ;
-
-        x[0] = pos[i][0];
-        x[1] = pos[i][1];
-        x[2] = pos[i][2];
-
-        if ( space_addpart( &(_Engine.s) , &pAr , x, NULL ) != 0 ) {
-            printf("main: space_addpart failed with space_err=%i.\n",space_err);
-            errs_dump(stdout);
-            return 1;
-        }
-    }
-
-    float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
-    std::cout << "temperature before scaling: " << t << std::endl;
-
-    float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
-
-    // sanity check
-    totV2 = 0;
-
-    // scale velocities
-    for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-        for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-            for ( k = 0 ; k < 3 ; k++ ) {
-                _Engine.s.cells[cid].parts[pid].v[k] *= vScale;
-                totV2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
-            }
-        }
-    }
-
-    t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
-    std::cout << "particle temperature: " << t << std::endl;
-
-
-
-
-    printf("done.\n"); fflush(stdout);
-    printf("main: inserted %i particles.\n", _Engine.s.nr_parts);
-
-    // set the time and time-step by hand
-    _Engine.time = 0;
-
-    printf("main: dt set to %f fs.\n", _Engine.dt*1000 );
-
-    toc = getticks();
-
-    printf("main: setup took %.3f ms.\n",(double)(toc-tic) * 1000 / CPU_TPS);
-
-
-
     // start the engine
 
     if ( engine_start( &_Engine , nr_runners , nr_runners ) != 0 ) {
@@ -706,9 +567,9 @@ int initArgon (const MxUniverseConfig &conf ) {
         return 1;
     }
 
-
     return 0;
 }
+
 
 
 
@@ -838,6 +699,82 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
     catch(...) {
 
     }
+    return E_FAIL;
+}
+
+static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
+
+    if(Simulator) {
+        throw std::domain_error( "Error, Simulator is already initialized" );
+    }
+
+    MxSimulator *sim = new MxSimulator();
+
+    // get the argv,
+    py::list argv;
+    if(kwargs.contains("argv")) {
+        argv = kwargs["argv"];
+    }
+    else {
+        argv = py::module::import("sys").attr("argv");
+    }
+
+    MxSimulator::Config conf;
+    MxSimulator::GLConfig glConf;
+
+    if(kwargs.size() > 0 && args.size() == 0) {
+        parse_kwargs(kwargs, conf);
+    }
+    else {
+        if(args.size() > 0) {
+            conf = args[0].cast<MxSimulator::Config>();
+        }
+
+        if(args.size() > 1) {
+            glConf = args[1].cast<MxSimulator::GLConfig>();
+        }
+    }
+
+    // init the engine first
+    /* Initialize scene particles */
+    universe_init(conf.universeConfig);
+
+    if(conf.example.compare("argon")==0) {
+        example_argon(conf.universeConfig);
+    }
+
+    if(conf.windowless()) {
+        ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
+        MxWindowlessApplication::Configuration conf;
+
+        MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
+
+        if(!windowlessApp->tryCreateContext(conf)) {
+            delete windowlessApp;
+
+            throw std::domain_error("could not create windowless gl context");
+        }
+        else {
+            sim->app = windowlessApp;
+        }
+    }
+    else {
+        ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
+
+        std::cout << "creating GLFW app" << std::endl;
+
+        MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
+
+        glfwApp->createContext(conf);
+
+        sim->app = glfwApp;
+    }
+
+    std::cout << MX_FUNCTION << std::endl;
+
+    Simulator = sim;
+
+    return S_OK;
 }
 
 
@@ -895,3 +832,131 @@ static void ipythonInputHook(py::args args) {
         Simulator->app->mainLoopIteration(0.001);
     }
 }
+
+HRESULT example_argon(const MxUniverseConfig &conf) {
+    
+    std::cout << "loading argon example" << std::endl;
+
+    double length = conf.dim[0] - conf.origin[0];
+
+    double L[] = { 0.1 * length , 0.1* length , 0.1*  length  };
+
+    double x[3];
+
+    double   cutoff = 0.1 * length;
+
+    struct MxParticle pAr;
+    struct MxPotential *pot_ArAr;
+
+    auto pos = fillCubeRandom(conf.origin, conf.dim, conf.nParticles);
+
+    /* mix-up the pair list just for kicks
+    printf("main: shuffling the interaction pairs... "); fflush(stdout);
+    srand(6178);
+    for ( i = 0 ; i < e.s.nr_pairs ; i++ ) {
+        j = rand() % e.s.nr_pairs;
+        if ( i != j ) {
+            cp = e.s.pairs[i];
+            e.s.pairs[i] = e.s.pairs[j];
+            e.s.pairs[j] = cp;
+            }
+        }
+    printf("done.\n"); fflush(stdout); */
+
+
+
+    // initialize the Ar-Ar potential
+    if ( ( pot_ArAr = potential_create_LJ126( 0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
+        printf("main: potential_create_LJ126 failed with potential_err=%i.\n",potential_err);
+        errs_dump(stdout);
+        return 1;
+    }
+    printf("main: constructed ArAr-potential with %i intervals.\n",pot_ArAr->n); fflush(stdout);
+
+
+    /* register the particle types. */
+    if ( ( pAr.typeId = engine_addtype( &_Engine , 39.948 , 0.0 , "Ar" , "Ar" ) ) < 0 ) {
+        printf("main: call to engine_addtype failed.\n");
+        errs_dump(stdout);
+        return 1;
+    }
+
+    // register these potentials.
+    if ( engine_addpot( &_Engine , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
+        printf("main: call to engine_addpot failed.\n");
+        errs_dump(stdout);
+        return 1;
+    }
+
+    // set fields for all particles
+    srand(6178);
+
+    pAr.flags = PARTICLE_FLAG_NONE;
+    for (int k = 0 ; k < 3 ; k++ ) {
+        pAr.x[k] = 0.0;
+        pAr.v[k] = 0.0;
+        pAr.f[k] = 0.0;
+    }
+
+    // create and add the particles
+    printf("main: initializing particles... "); fflush(stdout);
+
+    // total velocity squared
+    float totV2 = 0;
+
+    for(int i = 0; i < pos.size(); ++i) {
+        pAr.id = i;
+
+        pAr.v[0] = ((double)rand()) / RAND_MAX - 0.5;
+        pAr.v[1] = ((double)rand()) / RAND_MAX - 0.5;
+        pAr.v[2] = ((double)rand()) / RAND_MAX - 0.5;
+
+        totV2 +=   pAr.v[0]*pAr.v[0] + pAr.v[1]*pAr.v[1] + pAr.v[2]*pAr.v[2] ;
+
+        x[0] = pos[i][0];
+        x[1] = pos[i][1];
+        x[2] = pos[i][2];
+
+        if ( space_addpart( &(_Engine.s) , &pAr , x, NULL ) != 0 ) {
+            printf("main: space_addpart failed with space_err=%i.\n",space_err);
+            errs_dump(stdout);
+            return 1;
+        }
+    }
+
+    float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    std::cout << "temperature before scaling: " << t << std::endl;
+
+    float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
+
+    // sanity check
+    totV2 = 0;
+
+    // scale velocities
+    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
+        for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+            for (int k = 0 ; k < 3 ; k++ ) {
+                _Engine.s.cells[cid].parts[pid].v[k] *= vScale;
+                totV2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
+            }
+        }
+    }
+
+    t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
+    std::cout << "particle temperature: " << t << std::endl;
+
+
+
+
+    printf("done.\n"); fflush(stdout);
+    printf("main: inserted %i particles.\n", _Engine.s.nr_parts);
+
+    // set the time and time-step by hand
+    _Engine.time = 0;
+
+    printf("main: dt set to %f fs.\n", _Engine.dt*1000 );
+
+    return S_OK;
+
+}
+

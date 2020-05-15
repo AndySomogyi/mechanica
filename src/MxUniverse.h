@@ -30,7 +30,7 @@ struct CAPI_EXPORT MxUniverse  {
 };
 
 /**
- * /**
+ *
  * @brief Initialize an #engine with the given data.
  *
  * The number of spatial cells in each cartesion dimension is floor( dim[i] / L[i] ), or
@@ -53,7 +53,7 @@ struct CAPI_EXPORT MxUniverse  {
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  *
-*int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
+ * int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
         double cutoff , unsigned int period , int max_type , unsigned int flags );
  */
 
@@ -69,9 +69,14 @@ struct CAPI_EXPORT MxUniverseConfig {
     double temp;
     int nParticles;
     int threads;
-    int initParticles;
     MxUniverseConfig();
 };
+
+CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs);
+
+CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject *b);
+
+
 
 
 

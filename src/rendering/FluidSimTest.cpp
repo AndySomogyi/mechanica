@@ -163,11 +163,11 @@ FluidSimTest::FluidSimTest(const Arguments& arguments) :
         conf.nParticles = nParticles;
         conf.dt = 0.01;
         conf.temp = 0.01;
-    initArgon(conf);
+        
+        universe_init(conf);
+        
+        example_argon(conf);
     
-
-
-
     if(display) {
         /* Setup window */
         const Vector2 dpiScaling = this->dpiScaling({});

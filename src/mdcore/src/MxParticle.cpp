@@ -445,12 +445,12 @@ PyGetSetDef particle_getsets[] = {
 };
 
 static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
-    std::cout << MX_FUNCTION << ", type: " << type->tp_name << std::endl;
+    //std::cout << MX_FUNCTION << ", type: " << type->tp_name << std::endl;
     return PyType_GenericNew(type, args, kwargs);
 }
 
 static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
-    std::cout << MX_FUNCTION << std::endl;
+    // std::cout << MX_FUNCTION << std::endl;
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
@@ -468,9 +468,8 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
-        if(args.size() > 0) {
-            part.position = pybind11::cast<Magnum::Vector3>(args[0]);
-        }
+        part.position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), Magnum::Vector3{});
+        part.velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), Magnum::Vector3{});
         
         MxParticle *p = NULL;
         double pos[] = {part.position[0], part.position[1], part.position[2]};
@@ -544,7 +543,7 @@ MxParticleType MxParticle_Type = {
       },
       .tp_version_tag =    0, 
       .tp_finalize =       [] (PyObject *p) -> void {
-          std::cout << "tp_finalize MxPyParticle" << std::endl;
+          // std::cout << "tp_finalize MxPyParticle" << std::endl;
       }
     }
   },
@@ -700,35 +699,6 @@ PyTypeObject MxParticleType_Type = {
 int particle_err = PARTICLE_ERR_OK;
 
 
-/**
- * @brief Initialize a #part.
- *
- * @param p The #part to be initialized.
- * @param vid The virtual id of this #part.
- * @param type The numerical id of the particle type.
- * @param flags The particle flags.
- *
- * @return #part_err_ok or < 0 on error (see #part_err).
- *
- */
-
-int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags ) {
-
-    /* check inputs */
-    if ( p == NULL )
-        return particle_err = PARTICLE_ERR_NULL;
-
-    /* Set the paticle data. */
-    p->vid = vid;
-    p->typeId = type;
-    p->flags = flags;
-
-
-
-    /* all is well... */
-    return PARTICLE_ERR_OK;
-
-}
 
 static void printTypeInfo(const char* name, PyTypeObject *p) {
     
