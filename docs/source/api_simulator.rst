@@ -1,19 +1,22 @@
 Simulator
 ---------
 
-The Simulator is the top level interface to all of the Mechanica functionality
+.. class:: mechanica.Simulator
 
+   The Simulator is the entry point to simulation, this is the very first object
+   that needs to be initialized  before any other method can be called. All the
+   methods of the Simulator are static, but the constructor needs to be called
+   first to initialize everything.
 
+   The Simulator manages all of the operating system interface, it manages
+   window creation, end user input events, GPU access, threading, inter-process
+   messaging and so forth. All 'physical' modeling concepts to in the
+   :class:`mechanica.Universe` object. 
 
+.. method:: Simulator.__init__(conf=None, )
 
-.. class:: Simulator()
-
-   Does stuff, makes of of these
-
-
-.. method:: Simulator.doStuff()
-
-   does some more stuff
+   Initializes a simulation. All of the keyword arguments are the same as on
+   the Config object. 
 
 
 

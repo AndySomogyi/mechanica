@@ -12,6 +12,8 @@
 #include <vector>
 #include <sstream>
 
+#if MX_ASSIMP
+
 
 
 #include <assimp/Importer.hpp>      // C++ importer interface
@@ -371,286 +373,7 @@ static ImpVertex *findVertex(VectorMap &vecMap, const aiVector3D vec) {
 }
 
 
-MxMesh* MxMesh_FromFile(const char* fname, float density, IMeshObjectTypeHandler *typeHandler)
-{
-    Assimp::Importer imp;
 
-    VectorMap vecMap(0.0001);
-    EdgeVector edges;
-    ImpFaceSet triFaces;
-
-    uint flags = aiProcess_JoinIdenticalVertices |
-            //aiProcess_Triangulate |
-            aiProcess_RemoveComponent |
-            aiProcess_RemoveRedundantMaterials |
-            aiProcess_FindDegenerates;
-
-    imp.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
-            aiComponent_NORMALS |
-            aiComponent_TANGENTS_AND_BITANGENTS |
-            aiComponent_COLORS |
-            aiComponent_TEXCOORDS |
-            aiComponent_BONEWEIGHTS |
-            aiComponent_CAMERAS |
-            aiComponent_LIGHTS |
-            aiComponent_MATERIALS |
-            aiComponent_TEXTURES |
-            aiComponent_ANIMATIONS
-            );
-
-    // Reads the given file and returns its contents if successful.
-    const aiScene *scene = imp.ReadFile (fname, flags);
-
-    if(!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
-    {
-        std::cout << "ERROR::ASSIMP::" << imp.GetErrorString() << std::endl;
-        return nullptr;
-    }
-    
-    // iterate over all meshes and vertices, and add the vertices to the map
-    {
-        // global vertex id.
-        int vId = 0;
-        for(int i = 0; i < scene->mNumMeshes; ++i) {
-            aiMesh *mesh = scene->mMeshes[i];
-
-            std::cout << "processing vertices from " << mesh->mName.C_Str() << std::endl;
-
-            for(int j = 0; j < mesh->mNumVertices; ++j) {
-                const aiVector3D &vec = mesh->mVertices[j];
-                ImpVertex *v = vecMap.findVertex(vec);
-                if(v == nullptr) {
-                    v = vecMap.createVertex(vec, vId++);
-                }
-                assert(v);
-                if(!v->addMesh(mesh, j)) {
-                    return nullptr;
-                }
-            }
-        }
-
-        std::cout << "processed " << vId << " vertices" << std::endl;
-        for(auto vert : vecMap) {
-            std::cout << vert.toString() << std::endl;
-        }
-
-        int sharedVertices = 0;
-
-        for(auto vert : vecMap) {
-            if(vert.meshes.size() > 1) {
-                sharedVertices++;
-                std::cout << "shared vertex: " << vert.toString() << std::endl;
-            }
-        }
-
-        std::cout << "found " << sharedVertices << " shared vertices" << std::endl;
-    }
-    // done adding all the vertices from the file
-    
-    // process all the skeletal edges
-    for(int i = 0; i < scene->mNumMeshes; ++i) {
-        aiMesh *mesh = scene->mMeshes[i];
-
-        for(int j = 0; j < mesh->mNumFaces; ++j) {
-            aiFace *face = &mesh->mFaces[j];
-            
-            std::cout << "processing edges from mesh " << mesh->mName.C_Str() << ", face " << j << std::endl;
-
-            for(int k = 0; k < face->mNumIndices; ++k) {
-
-                const int vid0 = face->mIndices[k];
-                const int vid1 = face->mIndices[(k+1) % face->mNumIndices];
-
-                // the vertex and the next vertex in the polygon face. These are connected
-                // by a skeletal edge by definition.
-                aiVector3D av1 = mesh->mVertices[vid0];
-                aiVector3D av2 = mesh->mVertices[vid1];
-
-                ImpVertex *v1 = findVertex(vecMap, av1);
-                if(!v1) {return nullptr;}
-                ImpVertex *v2 = findVertex(vecMap, av2);
-                if(!v2) {return nullptr;}
-                
-                
-
-                if (!findImpEdge(edges, v1, v2)) {
-                    //std::cout << "no existing edge for face " << j << ", vertices " << v1->id << ", " << v2->id << std::endl;
-
-                    if(v1->edges.size() >= 4) {
-                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
-                                  << v1->toString() << " already has " << v1->edges.size()
-                                  << " edges, can't add more." << std::endl
-                                  << "tried to add edge to " << v2->toString() << std::endl
-                        << "existing edges: {";
-                        for(const ImpEdge* e : v1->edges) {
-                            std::cout << "edge: {" << e->verts[0]->toString() << ", "
-                                      << e->verts[1]->toString() << "}, ";
-                        }
-                        std::cout << "}" << std::endl;
-   
-                        //return nullptr;
-                        continue;
-                    }
-
-                    if(v2->edges.size() >= 4) {
-                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
-                                  << v2->toString() << " already has " << v2->edges.size()
-                                  << " edges, can't add more." << std::endl
-                                  << "tried to add edge to " << v1->toString() << std::endl;
-                        //return nullptr;
-                        continue;
-                    }
-                    
-                    std::cout << "creating edge: {" << v1->id << ", " << v2->id  << "}" << std::endl;
-
-                    ImpEdge *edge = createImpEdge(edges, v1, v2);
-                    v1->addEdge(edge);
-                    v2->addEdge(edge);
-
-                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
-                    //        std::to_string(j) << " edge count: " << std::to_string(v1->edges.size()) << std::endl;
-
-                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
-                    //        std::to_string((j+1) % mesh->mNumVertices)
-                    //<< " edge count: " << std::to_string(v2->edges.size()) << std::endl;
-
-                }
-                else {
-                    std::cout << "found edge for face " << j << ", vertices " << vid0 << ", " << vid1 << std::endl;
-                }
-            }
-        }
-    }
-
-    //{
-    //    int j = 0;
-    //
-    //    for(auto vert : vecMap) {
-    //        std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
-    //    }
-    //}
-
-    // now we've iterated over all vertices in the mesh, and checked to make sure that
-    // no vertex is incident to more than 4 cells, safe to make new mesh now.
-
-    // iterate over all the stored vertices in the dictionary, and make new vertices
-    // in the mesh for these.
-
-    MxMesh *mesh = new MxMesh();
-    
-    // create mesh vertices for ever vertex that we read from the file
-    for(ImpVertex &vert : vecMap) {
-        assert(vert.vert == nullptr);
-        vert.vert = mesh->createVertex({{vert.pos.x, vert.pos.y, vert.pos.z}});
-        std::cout << "created new vertex: " << vert.vert << std::endl;
-    }
-
-    // first add all the vertices that are in the skeletal edge list,
-    // these are skeletal vertices.
-    for(ImpEdge &edge : edges) {
-        edge.edge = mesh->createEdge(MxEdge_Type, edge.verts[0]->vert, edge.verts[1]->vert);
-        assert(edge.edge != nullptr);
-    }
-
-    assert(scene->mRootNode);
-
-    // A scene is organized into a hierarchical set of 'objects', starting
-    // with the root object. Each object can have multiple meshes, for different
-    // materials. We need to grab all the triangles from each mesh, and create a
-    // cell out of them.
-    // the AI mesh has a set of 'faces', Each face is a set of indices.
-    // We tell AssImp not to triangulate, so each face is a set of vertices
-    // that define the polygonal face between a pair of cells.
-    for(int i = 0; i < scene->mRootNode->mNumChildren; ++i) {
-        
-        aiNode *obj = scene->mRootNode->mChildren[i];
-        
-        std::cout << "creating new cell \"" << obj->mName.C_Str() << "\"" << std::endl;
-
-        CellPtr cell = mesh->createCell(typeHandler->cellType(obj->mName.C_Str(), i), obj->mName.C_Str());
-        
-        for(int m = 0; m < obj->mNumMeshes; ++m) {
-            
-            aiMesh *aim = scene->mMeshes[obj->mMeshes[m]];
-            
-            std::cout << "processing triangles from mesh " << aim->mName.C_Str() << "\"" << std::endl;
-
-            // these are polygonal faces, each edge in a polygonal face defines a skeletal edge.
-            for(int j = 0; j < aim->mNumFaces; ++j) {
-                aiFace *face = &aim->mFaces[j];
-
-                ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
-
-                if(!triFace) {
-                    triFaces.faces.push_back(ImpFace(typeHandler, mesh, vecMap, face, aim));
-                    assert(triFaces.findTriangulatedFace(vecMap, aim, face));
-                    triFace = &triFaces.faces.back();
-                }
-                else {
-                    std::cout << "found shared face with " << triFace->vertices.size() << " vertices" << std::endl;
-                }
-
-                addImpFaceToCell(triFace, cell);
-            }
-        }
-        
-        // done with all of the meshes for this cell, the cell should
-        // have a complete set of triangles now.
-        
-        for(PPolygonPtr pt : cell->surface) {
-            float area = Magnum::Math::triangleArea(pt->polygon->vertices[0]->position,
-                                                     pt->polygon->vertices[1]->position,
-                                                     pt->polygon->vertices[2]->position);
-            pt->mass = area * density;
-        }
-        
-
-
-        //assert(mesh->valid(cell));
-        //assert(cell->updateDerivedAttributes() == S_OK);
-        //assert(cell->isValid());
-    }
-    
-    addUnclaimedPartialTrianglesToRoot(mesh);
-
-    // at this point, all the vertices, skeletal edges and triangles have been added
-    // to the mesh, so now go over the triangles, check which ones are supposed to be
-    // connected to the skeletal edges by their vertex relationships, and connect
-    // the pointers.
-    //for(PolygonPtr tri : mesh->triangles) {
-    //    for(SkeletalEdgePtr edge : mesh->edges) {
-    //        if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
-    //            VERIFY(connectEdgeTriangle(edge, tri));
-    //        }
-    //    }
-    //}
-     
-
-    // now we have connected all the skeletal edges, but triangles with a manifold
-    // connection to neighboring triangles are still not connected, connect
-    // these now.
-    //for(PolygonPtr tri : mesh->triangles) {
-    //    for(int i = 0; i < 3; ++i) {
-    //        if(tri->neighbors[i] == nullptr) {
-    //            assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
-    //            VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->polygon));
-    //        }
-    //    }
-    //}
-    
-    for(PolygonPtr poly : mesh->polygons) {
-        assert(poly->checkEdges());
-    }
-
-    VERIFY(mesh->positionsChanged());
-
-#ifndef NDEBUG
-    for (CCellPtr cell : mesh->cells) {
-        cell->dump();
-    }
-#endif
-    return mesh;
-}
 
 
 /*
@@ -1370,3 +1093,292 @@ HRESULT MxMesh_WriteFile(const MxMesh* mesh, const char* fname)
 
     return S_OK;
 }
+
+
+MxMesh* MxMesh_FromFile(const char* fname, float density, IMeshObjectTypeHandler *typeHandler)
+{
+    Assimp::Importer imp;
+
+    VectorMap vecMap(0.0001);
+    EdgeVector edges;
+    ImpFaceSet triFaces;
+
+    uint flags = aiProcess_JoinIdenticalVertices |
+            //aiProcess_Triangulate |
+            aiProcess_RemoveComponent |
+            aiProcess_RemoveRedundantMaterials |
+            aiProcess_FindDegenerates;
+
+    imp.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
+            aiComponent_NORMALS |
+            aiComponent_TANGENTS_AND_BITANGENTS |
+            aiComponent_COLORS |
+            aiComponent_TEXCOORDS |
+            aiComponent_BONEWEIGHTS |
+            aiComponent_CAMERAS |
+            aiComponent_LIGHTS |
+            aiComponent_MATERIALS |
+            aiComponent_TEXTURES |
+            aiComponent_ANIMATIONS
+            );
+
+    // Reads the given file and returns its contents if successful.
+    const aiScene *scene = imp.ReadFile (fname, flags);
+
+    if(!scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
+    {
+        std::cout << "ERROR::ASSIMP::" << imp.GetErrorString() << std::endl;
+        return nullptr;
+    }
+
+    // iterate over all meshes and vertices, and add the vertices to the map
+    {
+        // global vertex id.
+        int vId = 0;
+        for(int i = 0; i < scene->mNumMeshes; ++i) {
+            aiMesh *mesh = scene->mMeshes[i];
+
+            std::cout << "processing vertices from " << mesh->mName.C_Str() << std::endl;
+
+            for(int j = 0; j < mesh->mNumVertices; ++j) {
+                const aiVector3D &vec = mesh->mVertices[j];
+                ImpVertex *v = vecMap.findVertex(vec);
+                if(v == nullptr) {
+                    v = vecMap.createVertex(vec, vId++);
+                }
+                assert(v);
+                if(!v->addMesh(mesh, j)) {
+                    return nullptr;
+                }
+            }
+        }
+
+        std::cout << "processed " << vId << " vertices" << std::endl;
+        for(auto vert : vecMap) {
+            std::cout << vert.toString() << std::endl;
+        }
+
+        int sharedVertices = 0;
+
+        for(auto vert : vecMap) {
+            if(vert.meshes.size() > 1) {
+                sharedVertices++;
+                std::cout << "shared vertex: " << vert.toString() << std::endl;
+            }
+        }
+
+        std::cout << "found " << sharedVertices << " shared vertices" << std::endl;
+    }
+    // done adding all the vertices from the file
+
+    // process all the skeletal edges
+    for(int i = 0; i < scene->mNumMeshes; ++i) {
+        aiMesh *mesh = scene->mMeshes[i];
+
+        for(int j = 0; j < mesh->mNumFaces; ++j) {
+            aiFace *face = &mesh->mFaces[j];
+
+            std::cout << "processing edges from mesh " << mesh->mName.C_Str() << ", face " << j << std::endl;
+
+            for(int k = 0; k < face->mNumIndices; ++k) {
+
+                const int vid0 = face->mIndices[k];
+                const int vid1 = face->mIndices[(k+1) % face->mNumIndices];
+
+                // the vertex and the next vertex in the polygon face. These are connected
+                // by a skeletal edge by definition.
+                aiVector3D av1 = mesh->mVertices[vid0];
+                aiVector3D av2 = mesh->mVertices[vid1];
+
+                ImpVertex *v1 = findVertex(vecMap, av1);
+                if(!v1) {return nullptr;}
+                ImpVertex *v2 = findVertex(vecMap, av2);
+                if(!v2) {return nullptr;}
+
+
+
+                if (!findImpEdge(edges, v1, v2)) {
+                    //std::cout << "no existing edge for face " << j << ", vertices " << v1->id << ", " << v2->id << std::endl;
+
+                    if(v1->edges.size() >= 4) {
+                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
+                                  << v1->toString() << " already has " << v1->edges.size()
+                                  << " edges, can't add more." << std::endl
+                                  << "tried to add edge to " << v2->toString() << std::endl
+                        << "existing edges: {";
+                        for(const ImpEdge* e : v1->edges) {
+                            std::cout << "edge: {" << e->verts[0]->toString() << ", "
+                                      << e->verts[1]->toString() << "}, ";
+                        }
+                        std::cout << "}" << std::endl;
+
+                        //return nullptr;
+                        continue;
+                    }
+
+                    if(v2->edges.size() >= 4) {
+                        std::cout << "error, mesh:" << mesh->mName.C_Str() << ", face: " << j << ", vertex: "
+                                  << v2->toString() << " already has " << v2->edges.size()
+                                  << " edges, can't add more." << std::endl
+                                  << "tried to add edge to " << v1->toString() << std::endl;
+                        //return nullptr;
+                        continue;
+                    }
+
+                    std::cout << "creating edge: {" << v1->id << ", " << v2->id  << "}" << std::endl;
+
+                    ImpEdge *edge = createImpEdge(edges, v1, v2);
+                    v1->addEdge(edge);
+                    v2->addEdge(edge);
+
+                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                    //        std::to_string(j) << " edge count: " << std::to_string(v1->edges.size()) << std::endl;
+
+                    //std::cout << "mesh " <<  mesh->mName.C_Str() << ", vertex " <<
+                    //        std::to_string((j+1) % mesh->mNumVertices)
+                    //<< " edge count: " << std::to_string(v2->edges.size()) << std::endl;
+
+                }
+                else {
+                    std::cout << "found edge for face " << j << ", vertices " << vid0 << ", " << vid1 << std::endl;
+                }
+            }
+        }
+    }
+
+    //{
+    //    int j = 0;
+    //
+    //    for(auto vert : vecMap) {
+    //        std::cout << "vertex: " << std::to_string(j++) << ", edge count: " << vert.edges.size() << std::endl;
+    //    }
+    //}
+
+    // now we've iterated over all vertices in the mesh, and checked to make sure that
+    // no vertex is incident to more than 4 cells, safe to make new mesh now.
+
+    // iterate over all the stored vertices in the dictionary, and make new vertices
+    // in the mesh for these.
+
+    MxMesh *mesh = new MxMesh();
+
+    // create mesh vertices for ever vertex that we read from the file
+    for(ImpVertex &vert : vecMap) {
+        assert(vert.vert == nullptr);
+        vert.vert = mesh->createVertex({{vert.pos.x, vert.pos.y, vert.pos.z}});
+        std::cout << "created new vertex: " << vert.vert << std::endl;
+    }
+
+    // first add all the vertices that are in the skeletal edge list,
+    // these are skeletal vertices.
+    for(ImpEdge &edge : edges) {
+        edge.edge = mesh->createEdge(MxEdge_Type, edge.verts[0]->vert, edge.verts[1]->vert);
+        assert(edge.edge != nullptr);
+    }
+
+    assert(scene->mRootNode);
+
+    // A scene is organized into a hierarchical set of 'objects', starting
+    // with the root object. Each object can have multiple meshes, for different
+    // materials. We need to grab all the triangles from each mesh, and create a
+    // cell out of them.
+    // the AI mesh has a set of 'faces', Each face is a set of indices.
+    // We tell AssImp not to triangulate, so each face is a set of vertices
+    // that define the polygonal face between a pair of cells.
+    for(int i = 0; i < scene->mRootNode->mNumChildren; ++i) {
+
+        aiNode *obj = scene->mRootNode->mChildren[i];
+
+        std::cout << "creating new cell \"" << obj->mName.C_Str() << "\"" << std::endl;
+
+        CellPtr cell = mesh->createCell(typeHandler->cellType(obj->mName.C_Str(), i), obj->mName.C_Str());
+
+        for(int m = 0; m < obj->mNumMeshes; ++m) {
+
+            aiMesh *aim = scene->mMeshes[obj->mMeshes[m]];
+
+            std::cout << "processing triangles from mesh " << aim->mName.C_Str() << "\"" << std::endl;
+
+            // these are polygonal faces, each edge in a polygonal face defines a skeletal edge.
+            for(int j = 0; j < aim->mNumFaces; ++j) {
+                aiFace *face = &aim->mFaces[j];
+
+                ImpFace *triFace = triFaces.findTriangulatedFace(vecMap, aim, face);
+
+                if(!triFace) {
+                    triFaces.faces.push_back(ImpFace(typeHandler, mesh, vecMap, face, aim));
+                    assert(triFaces.findTriangulatedFace(vecMap, aim, face));
+                    triFace = &triFaces.faces.back();
+                }
+                else {
+                    std::cout << "found shared face with " << triFace->vertices.size() << " vertices" << std::endl;
+                }
+
+                addImpFaceToCell(triFace, cell);
+            }
+        }
+
+        // done with all of the meshes for this cell, the cell should
+        // have a complete set of triangles now.
+
+        for(PPolygonPtr pt : cell->surface) {
+            float area = Magnum::Math::triangleArea(pt->polygon->vertices[0]->position,
+                                                     pt->polygon->vertices[1]->position,
+                                                     pt->polygon->vertices[2]->position);
+            pt->mass = area * density;
+        }
+
+
+
+        //assert(mesh->valid(cell));
+        //assert(cell->updateDerivedAttributes() == S_OK);
+        //assert(cell->isValid());
+    }
+
+    addUnclaimedPartialTrianglesToRoot(mesh);
+
+    // at this point, all the vertices, skeletal edges and triangles have been added
+    // to the mesh, so now go over the triangles, check which ones are supposed to be
+    // connected to the skeletal edges by their vertex relationships, and connect
+    // the pointers.
+    //for(PolygonPtr tri : mesh->triangles) {
+    //    for(SkeletalEdgePtr edge : mesh->edges) {
+    //        if(incidentEdgeTriangleVertices(edge, tri) && !connectedEdgeTrianglePointers(edge, tri)) {
+    //            VERIFY(connectEdgeTriangle(edge, tri));
+    //        }
+    //    }
+    //}
+
+
+    // now we have connected all the skeletal edges, but triangles with a manifold
+    // connection to neighboring triangles are still not connected, connect
+    // these now.
+    //for(PolygonPtr tri : mesh->triangles) {
+    //    for(int i = 0; i < 3; ++i) {
+    //        if(tri->neighbors[i] == nullptr) {
+    //            assert(tri->partialTriangles[0].neighbors[i] && tri->partialTriangles[1].neighbors[i]);
+    //            VERIFY(connectTriangleTriangle(tri, tri->partialTriangles[0].neighbors[i]->polygon));
+    //        }
+    //    }
+    //}
+
+    for(PolygonPtr poly : mesh->polygons) {
+        assert(poly->checkEdges());
+    }
+
+    VERIFY(mesh->positionsChanged());
+
+#ifndef NDEBUG
+    for (CCellPtr cell : mesh->cells) {
+        cell->dump();
+    }
+#endif
+    return mesh;
+}
+
+#else
+MxMesh* MxMesh_FromFile(const char* fname, float density, IMeshObjectTypeHandler *typeHandler) {
+    return NULL;
+}
+#endif
+

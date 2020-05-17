@@ -21,10 +21,13 @@ if(UNIX)
   else()
     set(MX_LINUX 1)
   endif()
-    set(MX_UNIX 1)
+  set(MX_UNIX 1)
 elseif(WIN32)
-    set(MX_WINDOWS 1)
+  set(MX_WINDOWS 1)
 endif()
+
+# directory where we build the mechanica python package
+set(MX_PYPKG_DIR ${CMAKE_BINARY_DIR}/mechanica)
 
 if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
   # hack to get eclipse C++ indexer to pick up python headers
@@ -35,7 +38,7 @@ endif()
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 17)
 
-# we're compiling a bunch of shared libs, all should be pos independent. 
+# we're compiling a bunch of shared libs, all should be pos independent.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # quiet linker warnings on Apple
@@ -143,32 +146,36 @@ include_directories(${OPENGL_INCLUDE_DIR})
 #
 #endif()
 
-find_package(Assimp REQUIRED)
+if (MX_ASSIMP)
 
-if(Assimp_FOUND)
+	find_package(Assimp REQUIRED)
+	
+	if(Assimp_FOUND)
+	
+	  if(WIN32)
+	
+	    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_DEBUG)
+	    message("ASSIMP IMPORTED_LOCATION_DEBUG: ${TMP}")
+	
+	    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_RELEASE)
+	    message("ASSIMP IMPORTED_LOCATION_RELEASE: ${TMP}")
+	
+	  else()
+	
+	    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
+	    message("ASSIMP_LIBRARIES: ${TMP}")
+	  endif(WIN32)
+	
+	  get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
+	
+	
+	  message("Assimp_INTERFACE_INCLUDE_DIRECTORIES: ${TMP}")
+	
+	
+	else()
+	  message("ASSIMP not found")
+	endif()
 
-  if(WIN32)
-
-    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_DEBUG)
-    message("ASSIMP IMPORTED_LOCATION_DEBUG: ${TMP}")
-
-    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION_RELEASE)
-    message("ASSIMP IMPORTED_LOCATION_RELEASE: ${TMP}")
-
-  else()
-
-    get_target_property(TMP Assimp::Assimp IMPORTED_LOCATION)
-    message("ASSIMP_LIBRARIES: ${TMP}")
-  endif(WIN32)
-
-  get_target_property(TMP Assimp::Assimp INTERFACE_INCLUDE_DIRECTORIES)
-
-
-  message("Assimp_INTERFACE_INCLUDE_DIRECTORIES: ${TMP}")
-
-
-else()
-  message("ASSIMP not found")
 endif()
 
 
@@ -231,3 +238,6 @@ find_package(Magnum REQUIRED
 add_subdirectory(apps)
 add_subdirectory(testing)
 add_subdirectory(magnum_examples)
+
+
+file(COPY README.md DESTINATION ${CMAKE_BINARY_DIR})

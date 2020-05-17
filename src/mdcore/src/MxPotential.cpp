@@ -78,7 +78,7 @@ static MxPotential *potential_alloc(PyTypeObject *type);
  * @param B The end of the switching region.
  */
 
-inline double potential_switch ( double r , double A , double B ) {
+double potential_switch ( double r , double A , double B ) {
 
 	if ( r < A )
 		return 1.0;
@@ -95,7 +95,7 @@ inline double potential_switch ( double r , double A , double B ) {
 
 }
 
-inline double potential_switch_p ( double r , double A , double B ) {
+double potential_switch_p ( double r , double A , double B ) {
 
 	if ( A < r && r < B ) {
 
@@ -123,7 +123,7 @@ inline double potential_switch_p ( double r , double A , double B ) {
  *      evaluated at @c r.
  */
 
-inline double potential_LJ126 ( double r , double A , double B ) {
+double potential_LJ126 ( double r , double A , double B ) {
 
 	double ir = 1.0/r, ir2 = ir * ir, ir6 = ir2*ir2*ir2, ir12 = ir6 * ir6;
 
@@ -143,7 +143,7 @@ inline double potential_LJ126 ( double r , double A , double B ) {
  *      evaluated at @c r.
  */
 
-inline double potential_LJ126_p ( double r , double A , double B ) {
+double potential_LJ126_p ( double r , double A , double B ) {
 
 	double ir = 1.0/r, ir2 = ir*ir, ir4 = ir2*ir2, ir12 = ir4*ir4*ir4;
 
@@ -163,7 +163,7 @@ inline double potential_LJ126_p ( double r , double A , double B ) {
  *      evaluated at @c r.
  */
 
-inline double potential_LJ126_6p ( double r , double A , double B ) {
+double potential_LJ126_6p ( double r , double A , double B ) {
 
 	double r2 = r * r, ir2 = 1.0 / r2, ir6 = ir2*ir2*ir2, ir12 = ir6 * ir6;
 
@@ -180,7 +180,7 @@ inline double potential_LJ126_6p ( double r , double A , double B ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Coulomb ( double r ) {
+double potential_Coulomb ( double r ) {
 
 	return potential_escale / r;
 
@@ -195,7 +195,7 @@ inline double potential_Coulomb ( double r ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Coulomb_p ( double r ) {
+double potential_Coulomb_p ( double r ) {
 
 	return -potential_escale / (r*r);
 
@@ -210,7 +210,7 @@ inline double potential_Coulomb_p ( double r ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Coulomb_6p ( double r ) {
+double potential_Coulomb_6p ( double r ) {
 
 	double r2 = r*r, r4 = r2*r2, r7 = r*r2*r4;
 
@@ -229,7 +229,7 @@ inline double potential_Coulomb_6p ( double r ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Ewald ( double r , double kappa ) {
+double potential_Ewald ( double r , double kappa ) {
 
 	return potential_escale * erfc( kappa * r ) / r;
 
@@ -245,7 +245,7 @@ inline double potential_Ewald ( double r , double kappa ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Ewald_p ( double r , double kappa ) {
+double potential_Ewald_p ( double r , double kappa ) {
 
 	double r2 = r*r, ir = 1.0 / r, ir2 = ir*ir;
 	const double isqrtpi = 0.56418958354775628695;
@@ -265,7 +265,7 @@ inline double potential_Ewald_p ( double r , double kappa ) {
  *      evaluated at @c r.
  */
 
-inline double potential_Ewald_6p ( double r , double kappa ) {
+double potential_Ewald_6p ( double r , double kappa ) {
 
 	double r2 = r*r, ir2 = 1.0 / r2, r4 = r2*r2, ir4 = ir2*ir2, ir6 = ir2*ir4;
 	double kappa2 = kappa*kappa;

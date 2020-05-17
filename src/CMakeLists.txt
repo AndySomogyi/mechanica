@@ -291,7 +291,7 @@ target_link_libraries(mechanica_obj
   Python::Python
   Python::NumPy
   glfw
-  Assimp::Assimp
+
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
@@ -302,6 +302,9 @@ target_link_libraries(mechanica_obj
   mdcore_single
   )
 
+if(MX_ASSIMP)
+	target_link_libraries(mechanica_obj   Assimp::Assimp)
+endif()
 
 source_group("Public Header Files" FILES ${MECHANICA_PUBLIC_HEADERS})
 source_group("Rendering" REGULAR_EXPRESSION "rendering/.*")
@@ -348,7 +351,6 @@ target_include_directories(mechanica_shared PUBLIC
 target_include_directories(mechanica_shared PRIVATE ${PYBIND11_INCLUDE_DIR})
 
 
-
 # shared and static libraries built from the same object files
 add_library(mechanica_py SHARED
   $<TARGET_OBJECTS:mechanica_obj>
@@ -359,6 +361,14 @@ add_library(mechanica_py SHARED
 set_target_properties(mechanica_py PROPERTIES
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN 1
+  )
+
+# copy the mechanica py lib to the package dir
+set_target_properties(mechanica_py PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MX_PYPKG_DIR}
   )
 
 
@@ -373,15 +383,12 @@ target_include_directories(mechanica_py PRIVATE
 
 target_include_directories(mechanica_py PRIVATE ${PYBIND11_INCLUDE_DIR})
 
-
-
 target_link_libraries(mechanica_py
   Carbon::Static
   Python::Python
   Python::NumPy
   mdcore_single
   glfw
-  Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
@@ -394,6 +401,10 @@ target_link_libraries(mechanica_py
   Magnum::Primitives
   Magnum::MeshTools
   )
+
+if(MX_ASSIMP)
+  target_link_libraries(mechanica_py   Assimp::Assimp)
+endif()
 
 if(MX_APPLE)
   target_link_libraries(mechanica_py MagnumWindowlessCglApplication)
@@ -430,10 +441,12 @@ set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
 
 add_custom_command(
   TARGET mechanica_py
-  DEPENDS mechanica.py
+  DEPENDS __init__.py
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/mechanica.py ${CMAKE_CURRENT_BINARY_DIR}/mechanica.py
+  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${MX_PYPKG_DIR}/__init__.py
   )
+
+file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
 
 target_link_libraries(mechanica_shared
   Carbon::Static
@@ -441,7 +454,6 @@ target_link_libraries(mechanica_shared
   Python::NumPy
   mdcore_single
   glfw
-  Assimp::Assimp
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
@@ -454,6 +466,10 @@ target_link_libraries(mechanica_shared
   Magnum::Primitives
   Magnum::MeshTools
   )
+ 
+if(MX_ASSIMP)
+	target_link_libraries(mechanica_shared   Assimp::Assimp)
+endif()
 
 if(MX_APPLE)
   target_link_libraries(mechanica_shared MagnumWindowlessCglApplication)
