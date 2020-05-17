@@ -181,13 +181,16 @@ target_include_directories(Magnum_PyBind PUBLIC
 )
 
 target_link_libraries(Magnum_PyBind PUBLIC
-  Python::Python
   Magnum::Magnum
   )
 
 target_link_libraries(Magnum_PyBind PRIVATE Magnum::Magnum ${magnum_LIBS})
 
-target_include_directories(Magnum_PyBind PRIVATE ${PYBIND11_INCLUDE_DIR})
+
+target_include_directories(Magnum_PyBind PUBLIC
+  ${Python_INCLUDE_DIRS}
+  ${PYBIND11_INCLUDE_DIR}
+  )
 
 #set_target_properties(Magnum_PyBind PROPERTIES
 #    FOLDER "lib"

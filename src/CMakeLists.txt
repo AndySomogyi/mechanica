@@ -253,7 +253,10 @@ set_target_properties(mechanica_obj PROPERTIES
 message("Shader Program Res: ${MxMeshShaderProgramRes}")
 
 
-target_include_directories(mechanica_obj PRIVATE ${PYBIND11_INCLUDE_DIR})
+target_include_directories(mechanica_obj PRIVATE
+  ${PYBIND11_INCLUDE_DIR}
+  ${MX_JPEG_INCLUDE_DIRS}
+  )
 
 # set_target_properties(mechanica PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -262,7 +265,7 @@ target_include_directories(mechanica_obj PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  #${PYTHON_INCLUDE_DIRS}
+  ${Python_INCLUDE_DIRS}
   #${NUMPY_INCLUDE_DIR}
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
@@ -283,19 +286,13 @@ foreach(dir ${dirs})
 endforeach()
 
 
-
-
 target_link_libraries(mechanica_obj
   Carbon::Static
   DirectXMath
-  Python::Python
-  Python::NumPy
   glfw
-
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  JPEG::JPEG
   voro++
   sundials_cvode_static
   ${OPENGL_LIBRARIES}
@@ -343,7 +340,7 @@ target_include_directories(mechanica_shared PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  #${PYTHON_INCLUDE_DIRS}
+  ${Python_INCLUDE_DIRS}
   #${NUMPY_INCLUDE_DIR}
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
@@ -376,23 +373,20 @@ target_include_directories(mechanica_py PRIVATE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  #${PYTHON_INCLUDE_DIRS}
+  ${Python_INCLUDE_DIRS}
   #${NUMPY_INCLUDE_DIR}
   #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
 )
 
 target_include_directories(mechanica_py PRIVATE ${PYBIND11_INCLUDE_DIR})
 
-target_link_libraries(mechanica_py
+target_link_libraries(mechanica_py PRIVATE
   Carbon::Static
-  Python::Python
-  Python::NumPy
   mdcore_single
   glfw
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  JPEG::JPEG
   voro++
   sundials_cvode_static
   MagnumGlfwApplication
@@ -400,18 +394,46 @@ target_link_libraries(mechanica_py
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools
+  ${MX_JPEG_LIBRARIES}
   )
+
+if(WIN32 OR CYGWIN)
+  # Link against the Python shared library on Windows
+  target_link_libraries(mechanica_py PRIVATE ${PYTHON_LIBRARIES})
+
+elseif(APPLE)
+  # It's quite common to have multiple copies of the same Python version
+  # installed on one's system. E.g.: one copy from the OS and another copy
+  # that's statically linked into an application like Blender or Maya.
+  # If we link our plugin library against the OS Python here and import it
+  # into Blender or Maya later on, this will cause segfaults when multiple
+  # conflicting Python instances are active at the same time (even when they
+  # are of the same version).
+
+  # Windows is not affected by this issue since it handles DLL imports
+  # differently. The solution for Linux and Mac OS is simple: we just don't
+  # link against the Python library. The resulting shared library will have
+  # missing symbols, but that's perfectly fine -- they will be resolved at
+  # import time.
+
+  target_link_libraries(mechanica_py PRIVATE "-undefined dynamic_lookup")
+
+  if(ARG_SHARED)
+    # Suppress CMake >= 3.0 warning for shared libraries
+    set_target_properties(mechanica_py PROPERTIES MACOSX_RPATH ON)
+  endif()
+endif()
 
 if(MX_ASSIMP)
   target_link_libraries(mechanica_py   Assimp::Assimp)
 endif()
 
 if(MX_APPLE)
-  target_link_libraries(mechanica_py MagnumWindowlessCglApplication)
+  target_link_libraries(mechanica_py PRIVATE MagnumWindowlessCglApplication)
 elseif(MX_LINUX)
-  target_link_libraries(mechanica_py MagnumWindowlessEglApplication)
+  target_link_libraries(mechanica_py PRIVATE MagnumWindowlessEglApplication)
 elseif(MX_WINDOWS)
-  target_link_libraries(mechanica_py MagnumWindowlessWglApplication)
+  target_link_libraries(mechanica_py PRIVATE MagnumWindowlessWglApplication)
 endif()
 
 
@@ -446,6 +468,7 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${MX_PYPKG_DIR}/__init__.py
   )
 
+
 file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
 
 target_link_libraries(mechanica_shared
@@ -457,7 +480,6 @@ target_link_libraries(mechanica_shared
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  JPEG::JPEG
   voro++
   sundials_cvode_static
   MagnumGlfwApplication
@@ -466,7 +488,7 @@ target_link_libraries(mechanica_shared
   Magnum::Primitives
   Magnum::MeshTools
   )
- 
+
 if(MX_ASSIMP)
 	target_link_libraries(mechanica_shared   Assimp::Assimp)
 endif()
@@ -487,7 +509,6 @@ endif()
 #set_target_properties(mechanica_static PROPERTIES OUTPUT_NAME mechanica)
 
 #target_link_libraries(mechanica_static
-#  Python::Python
 #  glfw
 #  Assimp::Assimp
 #  Magnum::Application

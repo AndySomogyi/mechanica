@@ -19,7 +19,7 @@ def read(fname):
 
 setup(
     name = "mechanica",
-    version = "0.0.1.a1.dev1",
+    version = "0.0.1.a1.dev3",
     author = "Andy Somogyi",
     author_email = "andy.somogyi@gmail.com",
     description = ("Interactive physics simulation engine"),
@@ -37,6 +37,6 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     package_data = { '' : ['*.so']},
-    python_requires='>=3.7.4',
+    python_requires='>=3.7.0',
     distclass=BinaryDistribution
 )

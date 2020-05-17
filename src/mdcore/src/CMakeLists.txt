@@ -163,16 +163,14 @@ function(add_mdcore_single)
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     ${CMAKE_CURRENT_SOURCE_DIR}
-    #${PYTHON_INCLUDE_DIRS}
-    #${NUMPY_INCLUDE_DIR}
+    ${Python_INCLUDE_DIRS}
+    ${Python_NumPy_INCLUDE_DIRS}
     #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
   )
 
 target_link_libraries(mdcore_single PUBLIC
   Carbon::Carbon
   DirectXMath
-  Python::Python
-  Python::NumPy
   Magnum::Magnum
   )
 

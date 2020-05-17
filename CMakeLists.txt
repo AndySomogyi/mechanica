@@ -106,6 +106,18 @@ message("JPEG_INCLUDE_DIRS: ${JPEG_INCLUDE_DIRS}")
 message("JPEG_LIBRARIES: ${JPEG_LIBRARIES}")
 message("JPEG_VERSION: ${JPEG_VERSION}")
 
+# link statically with JPEG, so we dont have to ship a dylib,
+# brew installs newer JPEG, so that conflicts with stuff
+set(MX_JPEG_INCLUDE_DIRS ${JPEG_INCLUDE_DIRS})  # /usr/local/include
+
+if(APPLE)
+  set(MX_JPEG_LIBRARIES /usr/local/lib/libjpeg.a)     #: /usr/local/lib/libjpeg.dylib
+else()
+  set(MX_JPEG_LIBRARIES ${JPEG_LIBRARIES})
+endif()
+
+message("MX_JPEG_INCLUDE_DIRS: ${MX_JPEG_INCLUDE_DIRS}")
+message("MX_JPEG_LIBRARIES: ${MX_JPEG_LIBRARIES}")
 
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/local/mechanica" CACHE PATH "Install location for Mechancia")
 
