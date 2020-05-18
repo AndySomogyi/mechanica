@@ -17,6 +17,10 @@ This is the API Reference page for the module: :mod:`mechanica`
    
 .. include:: api_simulator.rst
 
+.. include:: api_universe.rst
+
+.. include:: api_potential.rst
+
 .. include:: api_geometry.rst
 
 .. include:: api_forces.rst

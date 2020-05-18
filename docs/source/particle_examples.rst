@@ -1,0 +1,66 @@
+Argon
+=====
+
+This example will create a complete simulation of a set of argon atoms.
+
+
+First we simply import the packages, we will use Numpy to create initial conditions::
+
+
+  import mechanica as m
+  import numpy as np
+
+Define some variables that define the potential cutoff distance and size of the
+simulation domain. Potential cutoff is the maximum distance that for which the
+runtime evaluates potentials, for pefformance reasons, it shold be kept
+reasoably small.::
+
+  # potential cutf distance
+  cutoff = 1
+
+  # dimensions of universe
+  dim=[10., 10., 10.]
+
+The first thing we have to do, before we create any simulation objects is
+initialize the simulator. This essentially sets up the simulation enviorment,
+and gives us a place to create our model. :
+
+  # new simulator, don't load any example
+  m.Simulator(example="", dim=dim)
+
+# create a potential representing a 12-6 Lennard-Jones potential
+# A The first parameter of the Lennard-Jones potential.
+# B The second parameter of the Lennard-Jones potential.
+# cutoff 
+pot = m.Potential.lennard_jones_12_6(0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) 
+
+
+# create a particle type
+# all new Particle derived types are automatically
+# registered with the universe
+class Argon(m.Particle):
+    mass = 39.4
+    
+
+# bind the potential with the *TYPES* of the particles
+m.Universe.bind(pot, Argon, Argon)
+
+# uniform random cube    
+positions = np.random.uniform(low=0, high=10, size=(10000, 3))
+
+for pos in positions:
+    # calling the particle constructor implicitly adds 
+    # the particle to the universe
+    Argon(pos)
+    
+# run the simulator interactive
+m.Simulator.run()
+
+
+
+
+
+
+
+
+

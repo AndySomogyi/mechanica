@@ -13,12 +13,13 @@ Contents:
    :maxdepth: 4
 
    introduction
-   building
+   getting
    formalism
    concepts
    examples
    integrating_apps
    api_reference
+   building
    references
 
 

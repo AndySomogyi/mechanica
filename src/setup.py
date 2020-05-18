@@ -25,6 +25,7 @@ setup(
     description = ("Interactive physics simulation engine"),
     license = "LGPL",
     keywords = "physics, molecular dynamics, center model, sub-cellular element",
+    platforms = ["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
     url = "https://mechanica.readthedocs.io",
     packages=['mechanica'],
     long_description=read('README.md'),
