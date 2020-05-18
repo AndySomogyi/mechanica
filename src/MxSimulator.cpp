@@ -187,6 +187,12 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
         conf.universeConfig.dim = py::cast<Vector3>(kwargs["dim"]);
     }
 
+    if(kwargs.contains("init_particle_count")) {
+        conf.universeConfig.nParticles = py::cast<int>(kwargs["init_particle_count"]);
+    }
+
+
+
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs);
@@ -437,6 +443,8 @@ HRESULT MxSimulator_init(PyObject* m) {
     sc.def_property("threads", [](const MxSimulator::Config &conf) { return conf.universeConfig.threads; },
                     [](MxSimulator::Config &conf, int v) {conf.universeConfig.threads = v;});
     
+    sc.def_property("init_particle_count", [](const MxSimulator::Config &conf) { return conf.universeConfig.nParticles; },
+                        [](MxSimulator::Config &conf, int v) {conf.universeConfig.nParticles = v;});
 
 
 

@@ -1,7 +1,7 @@
 Simulator
 ---------
 
-.. class:: Simulator
+.. class:: Simulator(object)
 
    The Simulator is the entry point to simulation, this is the very first object
    that needs to be initialized  before any other method can be called. All the
@@ -13,10 +13,20 @@ Simulator
    messaging and so forth. All 'physical' modeling concepts to in the
    :class:`Universe` object. 
 
-.. method:: Simulator.__init__(conf=None, )
+.. method:: Simulator.__init__(self, conf=None, )
 
-   Initializes a simulation. All of the keyword arguments are the same as on
-   the Config object. 
+   Initializes a simulation. All of the keyword arguments are the same as on the
+   Config object. You can initialize the simulator via a config :class:`.Config`
+   object , or via keyword arguments. The keywords have the same name as fields
+   on the confg. 
+
+
+
+
+
+.. class:: Simulator.Config()
+
+   An object that has all the arguments to the simulator, 
 
 
 

@@ -2,6 +2,13 @@
 Introduction
 ************
 
+Mechanica is an interative particle based physics and chemistry simulation
+envioronment, with a heavy emphasis towards enableing users to model and
+simulate complex sub-cellular and cellular biological physics
+problems. Mecahnica is part of the Tellurium
+`<http://tellurium.analogmachine.org>`_ project. 
+
+
 Biological cells are the prototypical example of active matter. Cells sense and
 respond to mechanical, chemical and electrical environmental stimuli with a
 range of behaviors, including dynamic changes in morphology and mechanical

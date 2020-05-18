@@ -5,7 +5,10 @@ Getting Mechanica
 
 The easiest way to install Mechanica for most users is via PIP. We presently
 have PIP binaries for MacOS, Linux should be ready within a week or so, and it
-will take us another few weeks to create Windows binaries. 
+will take us another few weeks to create Windows binaries.
+
+Mechanica requires at least Python version 3.7.7, on Mac you can install Python
+a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_. 
 
 .. _pip-install:
 
@@ -17,7 +20,9 @@ Installing via pip
 
 Python comes with an inbuilt package management system,
 `pip <https://pip.pypa.io/en/stable>`_. Pip can install, update, or delete
-any official package.
+any official package. The PyPi home page for mechancia is
+
+`<https://pypi.org/project/mechanica/>`_.
 
 You can install packages via the command line by entering::
 
