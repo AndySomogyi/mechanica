@@ -14,14 +14,15 @@ Contents:
 
    introduction
    getting
-   formalism
+   quick_start
+   status
    concepts
    examples
-   integrating_apps
+   formalism
    api_reference
    building
    references
-
+   acknowledgements
 
 
 Indices and tables

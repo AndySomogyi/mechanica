@@ -1,7 +1,7 @@
 Simulator
 ---------
 
-.. class:: mechanica.Simulator
+.. class:: Simulator
 
    The Simulator is the entry point to simulation, this is the very first object
    that needs to be initialized  before any other method can be called. All the
@@ -11,7 +11,7 @@ Simulator
    The Simulator manages all of the operating system interface, it manages
    window creation, end user input events, GPU access, threading, inter-process
    messaging and so forth. All 'physical' modeling concepts to in the
-   :class:`mechanica.Universe` object. 
+   :class:`Universe` object. 
 
 .. method:: Simulator.__init__(conf=None, )
 
