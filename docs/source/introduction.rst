@@ -48,7 +48,7 @@ great deal of flexibility to propose and experiment with different kinds of
 interactions.
 
 This presents a significant challenge, as simulation environments that make it
-simple to the end user to write models, without resorting to hard-coding C++ or
+simple for the end user to write models without resorting to hard-coding C++ or
 FORTRAN usually are very limited in the level of flexibility they provide the
 end user. For example, if users want to write a standard molecular dynamics
 model, there are many different, really good choices of simulation engines and
@@ -57,7 +57,16 @@ files. However, as the kinds of interactions are not well standardized or
 formalized at medium length scales, users almost always are forced to resort to
 hard-coding FORTRAN or C++.
 
-Our goal here is the deliver a modeling and simulation framework that lets users
+.. figure:: length-scale.png
+    :width: 800px
+    :align: center
+    :alt: alternate text
+    :figclass: align-center
+
+    Particle Dynamics enables modeling a wide range of length scales
+
+
+Our goal here is to deliver a modeling and simulation framework that lets users
 INTERACTIVELY create, simulate and explore models at biologically relevant length
 scales. We believe that interactive simulation is key to increasing scientific
 productivity, much like interactive modeling environments such as SolidWorks has
@@ -72,18 +81,18 @@ combination of the following modeling methodologies:
 * Discrete Element Method (DEM). DEM particles add rotational degrees-of-freedom
   as well as stateful contact and often complicated geometries (including
   polyhedra).
-* Dissipative Particle Dynamics DPD is particle-based method, where particles
-  represent whole molecules or fluid regions, rather than single atoms, and
+* Dissipative Particle Dynamics (DPD) is a particle-based method, where particles
+  represent whole molecules or fluid regions rather than single atoms, and
   atomistic details are not considered relevant to the processes addressed. The
-  particles' internal degrees of freedom averaged out and represented by
+  particles' internal degrees of freedom are averaged out and represented by
   simplified pairwise dissipative and random forces, so as to conserve momentum
   locally and ensure correct hydrodynamic behavior. DPD allows much longer time
   and length scales than are possible using conventional MD simulations.
 * Sub-Cellular Element (SCM). Frequently used to model complex sub-cellular
   active mechanics. SCM are similar to DPD, where each particle represents a
-  region of space, and is governed by empirically derived potentials, but adds
+  region of space and is governed by empirically derived potentials, but adds
   active response.
-* Smoothed particle hydrodynamics (SPH) particle method very similar to DPD, and
+* Smoothed particle hydrodynamics (SPH)is a  particle method very similar to DPD and
   is frequently used to model complex fluid flows, especially large fluid
   deformations, fluid-solid interactions, and multi-scale physics.
 * Reactive Molecular Dynamics. In RMD, particles react with other particles and
@@ -96,14 +105,15 @@ combination of the following modeling methodologies:
   each particle, and host a chemical reaction network at each
   element. Furthermore, we allow users to write *fluxes* between particles. A
   flux defines a movement of material from one site to another. Furthermore, we
-  also allow users to attach their own handlers to a variety of different that
-  the particles can emit. Therefore, we also support developing full *Transport
-  Dissipative Particle Dynamics* simulations.
+  also allow users to attach their own handlers to a variety of different
+  *events* that particles (or other objects) can emit. Therefore, we also
+  support developing full *Transport Dissipative Particle Dynamics* simulations.
 * Flux Networks. The concept of a flux is extremly general, and this lets us
   define a *connector* type that lets users connect different model
-  elements. Flux networks allow us to define a wide range of problems ranging
-  from biological fluid flow in areas like the liver and they eye, to
-  Physiologically based pharmacokinetic (PBPK) to even electric circuits.  
+  elements. Flux networks allow us to define a wide range of problems,
+  from biological fluid flow in areas like the liver and the eye, to
+  physiologically based pharmacokinetic (PBPK) modeling, and  even to electric
+  circuits and pipe flow networks. 
 
 .. warning:: Only a subset of these features are presently available, and we encourage users
   to look at the :ref:`status` page, and **PLEASE LET US KNOW WHAT FEATURES YOU
@@ -111,12 +121,13 @@ combination of the following modeling methodologies:
   what features you want to see. Please contact us at `<somogyie@indiana.edu>` or
   on Twitter at `@AndySomogyi`
 
-Once we have a well defined, and user tested API for generalized particle
+Once we have a well-defined, and user tested API for generalized particle
 dynamics, we will integrate our existing *Vertex Model* code into
 Mechanica. Vertex Model is another specialized form of classical Molecular
 Dynamics, but with instead of the traditional bonded relationships of bonds,
-angles, dihedrals, impropers, Vertex Models add polygons and volumes as a new
-kind of bonded relationship.
+angles, dihedrals, impropers, Vertex Models add some new kinds of bonded
+relationships such as polygons and volumes to represent surface and volume
+forces. 
 
 
 .. figure:: intro.png
