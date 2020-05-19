@@ -2,16 +2,16 @@
 Introduction
 ************
 
-Mechanica is an interative particle based physics and chemistry simulation
-envioronment, with a heavy emphasis towards enableing users to model and
+Mechanica is an interactive particle based physics and chemistry simulation
+environment, with a heavy emphasis towards enabling users to model and
 simulate complex sub-cellular and cellular biological physics
-problems. Mecahnica is part of the Tellurium
+problems. Mechanica is part of the Tellurium
 `<http://tellurium.analogmachine.org>`_ project. 
 
-Mechanica is designed first and foremost to enable users to work interactivly
+Mechanica is designed first and foremost to enable users to work interactively
 with simulations -- so they can build, and run a simulation in real-time, and
 interact with that simulation whilst it's running. The goal is to create an
-SolidWorks type enviorment where users can create and explore virtual models of
+SolidWorks type environment where users can create and explore virtual models of
 soft condensed matter physics, with a emphasis towards biological physics.
 
 Mechanica is a native compiled C++ shared library with a native and extensive
@@ -31,42 +31,101 @@ course).
 
 
 
-Biological cells are the prototypical example of active matter. Cells sense and
-respond to mechanical, chemical and electrical environmental stimuli with a
-range of behaviors, including dynamic changes in morphology and mechanical
-properties, chemical uptake and secretion, cell differentiation, proliferation,
-death, and migration.
+
+Biological cells and biochemical molecules and particles are the prototypical
+example of active matter. These are all actively driven agents that transduct
+free energy from their environment. These agents can sense and respond to
+mechanical, chemical and electrical environmental stimuli with a range of
+behaviors, including dynamic changes in morphology and mechanical properties,
+chemical uptake and secretion, cell differentiation, proliferation, death, and
+migration.
+
+One of the greatest challenges at these medium length scales is that these
+dynamics and behaviors typically cannot be derived from first
+principles. Rather, the observed behaviors are described phenomenologically or
+empirically. Thus, the scientist exploring these kinds of phenomena needs a
+great deal of flexibility to propose and experiment with different kinds of
+interactions.
+
+This presents a significant challenge, as simulation environments that make it
+simple to the end user to write models, without resorting to hard-coding C++ or
+FORTRAN usually are very limited in the level of flexibility they provide the
+end user. For example, if users want to write a standard molecular dynamics
+model, there are many different, really good choices of simulation engines and
+these kinds of models can easily be specified by human readable configuration
+files. However, as the kinds of interactions are not well standardized or
+formalized at medium length scales, users almost always are forced to resort to
+hard-coding FORTRAN or C++.
+
+Our goal here is the deliver a modeling and simulation framework that lets users
+INTERACTIVELY create, simulate and explore models at biologically relevant length
+scales. We believe that interactive simulation is key to increasing scientific
+productivity, much like interactive modeling environments such as SolidWorks has
+revolutionized engineering practice.
+
+We thus present Mechanica, an interactive modeling and simulation environment
+based on off-lattice formalism that lets users create models for a wide range of
+biologically relevant problems, and we enable users to write models using any
+combination of the following modeling methodologies: 
+
+* Coarse Grained Molecular Dynamics
+* Discrete Element Method (DEM). DEM particles add rotational degrees-of-freedom
+  as well as stateful contact and often complicated geometries (including
+  polyhedra).
+* Dissipative Particle Dynamics DPD is particle-based method, where particles
+  represent whole molecules or fluid regions, rather than single atoms, and
+  atomistic details are not considered relevant to the processes addressed. The
+  particles' internal degrees of freedom averaged out and represented by
+  simplified pairwise dissipative and random forces, so as to conserve momentum
+  locally and ensure correct hydrodynamic behavior. DPD allows much longer time
+  and length scales than are possible using conventional MD simulations.
+* Sub-Cellular Element (SCM). Frequently used to model complex sub-cellular
+  active mechanics. SCM are similar to DPD, where each particle represents a
+  region of space, and is governed by empirically derived potentials, but adds
+  active response.
+* Smoothed particle hydrodynamics (SPH) particle method very similar to DPD, and
+  is frequently used to model complex fluid flows, especially large fluid
+  deformations, fluid-solid interactions, and multi-scale physics.
+* Reactive Molecular Dynamics. In RMD, particles react with other particles and
+  form new molecules, and can absorb or emit energy into their environment.
+  Mechanica is designed to support reactive particles, as one of our main goals is
+  very efficient particle creation and deletion. Very few classical molecular
+  dynamics packages support reactive MD, as they are almost all highly optimized
+  towards conserved number of particles.
+* Perhaps most uniquely, Mechanica allows users to attach a chemical cargo to
+  each particle, and host a chemical reaction network at each
+  element. Furthermore, we allow users to write *fluxes* between particles. A
+  flux defines a movement of material from one site to another. Furthermore, we
+  also allow users to attach their own handlers to a variety of different that
+  the particles can emit. Therefore, we also support developing full *Transport
+  Dissipative Particle Dynamics* simulations.
+* Flux Networks. The concept of a flux is extremly general, and this lets us
+  define a *connector* type that lets users connect different model
+  elements. Flux networks allow us to define a wide range of problems ranging
+  from biological fluid flow in areas like the liver and they eye, to
+  Physiologically based pharmacokinetic (PBPK) to even electric circuits.  
+
+.. warning:: Only a subset of these features are presently available, and we encourage users
+  to look at the :ref:`status` page, and **PLEASE LET US KNOW WHAT FEATURES YOU
+  WANT**. We can only deliver the kind of software users want if you let us know
+  what features you want to see. Please contact us at `<somogyie@indiana.edu>` or
+  on Twitter at `@AndySomogyi`
+
+Once we have a well defined, and user tested API for generalized particle
+dynamics, we will integrate our existing *Vertex Model* code into
+Mechanica. Vertex Model is another specialized form of classical Molecular
+Dynamics, but with instead of the traditional bonded relationships of bonds,
+angles, dihedrals, impropers, Vertex Models add polygons and volumes as a new
+kind of bonded relationship.
 
 
-Modeling and simulation of such dynamic phenomena poses a number of
-computational challenges. A simulation environment must not only be capable of
-efficiently simulating such phenomena, but must also enable users with a wide
-range of backgrounds to express such concepts using a formalism based on
-concepts, terms and principles native to the problem domain. A simulation
-environment must then be able to generate an executable model from this
-physically motivated description. Modeling and simulation of biological
-phenomena is often exploratory in that empirical scientists may observe a
-particular phenomenon, propose some mechanism that they believe could result in
-that observation, and then would like to test and evaluate this mechanism.
-Simulation environments that enable users to interactively create, manipulate,
-tune and simulate models offer significant productivity gains for users. In
-order to maximize utility, any new simulation environment must also integrate
-easily with existing workflows, frameworks and data analysis packages.
+.. figure:: intro.png
+    :width: 1000px
+    :align: center
+    :alt: alternate text
+    :figclass: align-center
 
-We present a new particle and finite-element based simulation environment,
-Mechanica, that enables users to interactively create, manipulate and simulate
-models of biological cells and tissues using an object-process formalism that
-allows for a much more natural description of physical phenomena than
-traditional imperative descriptions allow. Mechanica supports both two- and
-three-dimensional models, and is designed to integrate with existing
-applications and packages.
-
-
-.. image:: intro.jpg
-   :width: 90%
-   :align: center
-   
-
+    The kinds of problems Mechanica is designed to enable users to model. 
 
 
    
