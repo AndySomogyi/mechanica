@@ -13,15 +13,12 @@ This is the API Reference page for the module: :mod:`mechanica`
    :synopsis: Simulate and Analyze Active Mater
 
 .. moduleauthor:: Andy Somogyi <andy.somogyi@gmail.com>
-
    
 .. include:: api_simulator.rst
 
 .. include:: api_universe.rst
 
 .. include:: api_potential.rst
-
-.. include:: api_geometry.rst
 
 .. include:: api_forces.rst
 

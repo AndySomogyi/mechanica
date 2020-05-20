@@ -20,7 +20,7 @@ A potential can be treated just like any python callable object to evaluate it::
     :alt: alternate text
     :figclass: align-center
 
-    Potential is a callable object, we can plot it like such::
+    Potential is a callable object, we can invoke it like any Python function. 
 
 
 .. class:: Potential

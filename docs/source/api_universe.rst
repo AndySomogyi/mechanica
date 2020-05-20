@@ -19,8 +19,6 @@ Universe
    .. staticmethod:: bind(thing, a, b)
 
 
-
-
    .. attribute:: kinetic_energy
 
       A read-only attribute that returns the total kinetic energy of the system
@@ -71,6 +69,26 @@ Universe
       :type: Vector3
 
 
-   
+   .. staticmethod:: start()
+
+      Starts the universe time evolution, and advanced the universe forward by
+      timesteps in ``dt``. All methods to build and manipulate universe objects
+      are valid whether the universe time evolution is running or stopped.
+
+   .. staticmethod:: stop()
+
+      Stops the universe time evolution. This essentially freezes the universe,
+      everythign remains the same, except time no longer moves forward.
+
+   .. staticmethod:: step(until=None, dt=None)
+
+      Performs a single time step ``dt`` of the universe if no arguments are
+      given. Optionally runs until ``until``, and can use a different timestep
+      of ``dt``.
+
+      :param until: runs the timestep for this length of time, optional.
+      :param dt: overrides the existing time step, and uses this value for time
+                 stepping, optional. 
+
 
 
