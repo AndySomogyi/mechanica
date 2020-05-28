@@ -46,6 +46,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/fptype.h"
   "${MDCORE_SOURCE_DIR}/include/mdcore_config.h"
   "${MDCORE_SOURCE_DIR}/include/MxPy.h"
+  "${MDCORE_SOURCE_DIR}/include/MxForce.h"
   )
 
 set(PRIVATE_HEADERS
@@ -87,6 +88,7 @@ SET(SOURCES
   spme.cpp
   runner_verlet.cpp
   MxPy.cpp
+  MxForce.cpp
   )
 
 if(MDCORE_USE_MPI)
@@ -142,7 +144,8 @@ function(add_mdcore_single)
 
   message("SINGLE_HEADERS: ${SINGLE_HEADERS}")
 
-  source_group("Sources" FILES ${SOURCES} ${SINGLE_HEADERS})
+  source_group("Public Headers Files" FILES ${PUBLIC_HEADERS})
+  source_group("Source Files" FILES ${SOURCES} ${PRIVATE_HEADERS})
 
   add_library(mdcore_single OBJECT ${SOURCES} ${SINGLE_HEADERS})
 

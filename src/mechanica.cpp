@@ -34,6 +34,7 @@
 #include "rendering/MxWindowProxy.h"
 #include "rendering/MxWindowHost.h"
 #include <rendering/MxUniverseRenderer.h>
+#include <MxForce.h>
 
 #include "MxPyTest.h"
 
@@ -68,6 +69,10 @@ static struct PyModuleDef mechanica_module = {
 };
 
 static PyObject *mechanicaModule = NULL;
+
+CAPI_FUNC(PyObject*) Mx_GetModule() {
+    return mechanicaModule;
+}
 
 void test_sequences(PyObject *_m);
 
@@ -164,6 +169,8 @@ static PyObject * moduleinit(void)
     test_sequences(m);
     _MxUniverseIterators_init(m);
 
+    MXForces_Init(m);
+
     mechanicaModule = m;
 
     return m;
@@ -201,6 +208,7 @@ CAPI_FUNC(HRESULT) Mx_Initialize(int args) {
         moduleinit();
     }
     
+
     return 0;
 }
 

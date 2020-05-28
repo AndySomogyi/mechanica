@@ -262,6 +262,9 @@ CAPI_FUNC(int) space_shuffle_local ( struct space *s );
  * Inserts a #part @c p into the #space @c s at the position @c x.
  * Note that since particle positions in #part are relative to the cell, that
  * data in @c p is overwritten and @c x is used.
+ *
+ * This is a PRIVATE function, literally only the engine should call this.
+ * Does NOT manage ref count on particle types in the engine.
  */
 CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,
         double *x, struct MxParticle **result );

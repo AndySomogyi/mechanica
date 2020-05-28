@@ -731,17 +731,17 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         x[1] = pos[i][1];
         x[2] = pos[i][2];
 
-        if ( space_addpart( &(e->s) , &pAr , x, NULL ) != 0 ) {
+        if ( engine_addpart(e , &pAr , x, NULL ) != 0 ) {
             printf("main: space_addpart failed with space_err=%i.\n",space_err);
             errs_dump(stdout);
             return 1;
         }
     }
 
-    float t = (1./ 3.) * e->types[pAr.typeId].mass * totV2 / e->s.nr_parts;
+    float t = (1./ 3.) * engine_type(pAr.typeId)->mass * totV2 / e->s.nr_parts;
     std::cout << "temperature before scaling: " << t << std::endl;
 
-    float vScale = sqrt((3./e->types[pAr.typeId].mass) * (e->temperature) / (totV2 / e->s.nr_parts));
+    float vScale = sqrt((3./engine_type(pAr.typeId)->mass) * (e->temperature) / (totV2 / e->s.nr_parts));
 
     // sanity check
     totV2 = 0;
@@ -756,7 +756,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
         }
     }
 
-    t = (1./ 3.) * e->types[pAr.typeId].mass * totV2 / e->s.nr_parts;
+    t = (1./ 3.) * engine_type(pAr.typeId)->mass * totV2 / e->s.nr_parts;
     std::cout << "particle temperature: " << t << std::endl;
 
 

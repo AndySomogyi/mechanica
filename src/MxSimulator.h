@@ -104,23 +104,25 @@ struct CAPI_EXPORT MxSimulator {
      */
     enum WindowFlags : UnsignedShort
     {
-        Fullscreen = 1 << 0,   /**< Fullscreen window */
+        /**< Fullscreen window */
+        Fullscreen = 1 << 0,
 
         /**
          * No window decoration
-         * @m_since_latest
          */
         Borderless = 1 << 1,
 
         Resizable = 1 << 2,    /**< Resizable window */
         Hidden = 1 << 3,       /**< Hidden window */
 
-         /**
+
+        /**
          * Maximized window
          *
          * @note Supported since GLFW 3.2.
          */
         Maximized = 1 << 4,
+
 
         Minimized = 1 << 5,    /**< Minimized window */
 
@@ -128,7 +130,7 @@ struct CAPI_EXPORT MxSimulator {
          * Always on top
          * @m_since_latest
          */
-        Floating = 1 << 6,
+        AlwaysOnTop = 1 << 6,
 
 
 
@@ -310,6 +312,14 @@ struct CAPI_EXPORT MxSimulator {
 
     // python list of windows.
     PyObject *windows;
+
+
+    enum Flags {
+        Running = 1 << 0
+    };
+
+
+    uint32_t flags = 0;
 };
 
 
@@ -394,10 +404,14 @@ CAPI_FUNC(HRESULT) MxSimulator_Run();
 
 /**
  * ipython version of the run loop. This checks the ipython context and lets
- * ipython process keyboard input, while we also run the simulator and
+ * ipython process keyboard input, while we also run the simulator andx
  * process window messages.
  */
 CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun();
+
+CAPI_FUNC(HRESULT) MxSimulator_Show();
+
+CAPI_FUNC(HRESULT) MxSimulator_Redraw();
 
 
 
@@ -632,8 +646,6 @@ private:
 CAPI_FUNC(int) universe_init(const MxUniverseConfig &conf);
 
 CAPI_FUNC(HRESULT) example_argon(const MxUniverseConfig &conf);
-
-void engineStep();
 
 
 #endif /* SRC_MXSIMULATOR_H_ */

@@ -34,6 +34,7 @@
 #include <MxPy.h>
 #include "engine.h"
 #include "space.h"
+#include "mx_runtime.h"
 
 
 
@@ -74,6 +75,8 @@ void f(T C::*pm)
  * adds a new data entry to the engine.
  */
 static HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
+
+static void printTypeInfo(const char* name, PyTypeObject *p);
 
 
  
@@ -164,7 +167,7 @@ PyGetSetDef gsd = {
             const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
             std::cout << "getter(obj.type:" << on << ", p:" << p << ")" << std::endl;
 
-            bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+            bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
             bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
 
             std::cout << "is particle: " << isParticle << std::endl;
@@ -175,7 +178,7 @@ PyGetSetDef gsd = {
             const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
             std::cout << "setter(obj.type:" << on << ", p:" << p << ")" << std::endl;
 
-            bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+            bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
             bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
 
             std::cout << "is particle: " << isParticle << std::endl;
@@ -190,7 +193,7 @@ PyGetSetDef gsd = {
 PyGetSetDef gs_charge = {
     .name = "charge",
     .get = [](PyObject *obj, void *p) -> PyObject* {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -199,10 +202,10 @@ PyGetSetDef gs_charge = {
             type = (MxParticleType*)obj;
         }
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->data->charge).release().ptr();
+        return pybind11::cast(type->charge).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -213,7 +216,7 @@ PyGetSetDef gs_charge = {
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
         
         try {
-            double *x = &type->data->charge;
+            double *x = &type->charge;
             *x = pybind11::cast<double>(val);
             return 0;
         }
@@ -229,7 +232,7 @@ PyGetSetDef gs_charge = {
 PyGetSetDef gs_mass = {
     .name = "mass",
     .get = [](PyObject *obj, void *p) -> PyObject* {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -238,10 +241,10 @@ PyGetSetDef gs_mass = {
             type = (MxParticleType*)obj;
         }
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->data->mass).release().ptr();
+        return pybind11::cast(type->mass).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -252,7 +255,7 @@ PyGetSetDef gs_mass = {
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
         
         try {
-            double *x = &type->data->mass;
+            double *x = &type->mass;
             *x = pybind11::cast<double>(val);
             return 0;
         }
@@ -268,7 +271,7 @@ PyGetSetDef gs_mass = {
 PyGetSetDef gs_name = {
     .name = "name",
     .get = [](PyObject *obj, void *p) -> PyObject* {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -277,7 +280,7 @@ PyGetSetDef gs_name = {
             type = (MxParticleType*)obj;
         }
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->data->name).release().ptr();
+        return pybind11::cast(type->name).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
         PyErr_SetString(PyExc_PermissionError, "read only");
@@ -290,7 +293,7 @@ PyGetSetDef gs_name = {
 PyGetSetDef gs_name2 = {
     .name = "name2",
     .get = [](PyObject *obj, void *p) -> PyObject* {
-        bool isParticle = PyObject_IsInstance(obj, (PyObject*)&MxParticle_Type);
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         MxParticleType *type = NULL;
         if(isParticle) {
             type = (MxParticleType*)obj->ob_type;
@@ -299,11 +302,51 @@ PyGetSetDef gs_name2 = {
             type = (MxParticleType*)obj;
         }
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->data->name2).release().ptr();
+        return pybind11::cast(type->name2).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
         PyErr_SetString(PyExc_PermissionError, "read only");
         return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
+// temperature is an ensemble property
+PyGetSetDef gs_type_temperature = {
+    .name = "temperature",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        MxParticleType *type = type = (MxParticleType*)obj;
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->kinetic_energy).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
+PyGetSetDef gs_type_target_temperature = {
+    .name = "target_temperature",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        MxParticleType *type = (MxParticleType*)obj;
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->target_energy).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        MxParticleType *type = (MxParticleType*)obj;
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        
+        try {
+            double *x = &type->target_energy;
+            *x = pybind11::cast<double>(val);
+            return 0;
+        }
+        catch (const pybind11::builtin_exception &e) {
+            e.set_error();
+            return -1;
+        }
     },
     .doc = "test doc",
     .closure = NULL
@@ -458,7 +501,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
         .position = {},
         .velocity = {},
         .force = {},
-        .typeId = type->data->id,
+        .typeId = type->id,
         .id = _Engine.s.nr_parts
     };
     
@@ -473,7 +516,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
         
         MxParticle *p = NULL;
         double pos[] = {part.position[0], part.position[1], part.position[2]};
-        int result = space_addpart (&_Engine.s, &part, pos, &p);
+        int result = engine_addpart (&_Engine, &part, pos, &p);
         
         self->part = p;
         
@@ -489,7 +532,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
 /**
  * The base particle type
  * this instance points to the 0'th item in the global engine struct.
- */
+ *
 MxParticleType MxParticle_Type = {
 {
   {
@@ -547,9 +590,8 @@ MxParticleType MxParticle_Type = {
       }
     }
   },
-    .data = NULL // when the engine is intialized, it sets this pointer to the
-                 // first element in the types list.
 };
+*/
 
 
 
@@ -564,9 +606,45 @@ static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
     return savedFunc(obj, name);
 }
 
+/**
+ * Basically a copy of Python's
+ * PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
+ *
+ * Want to format the memory identically to Python, except we allocate
+ * the object in the engine's static array of types.
+ */
+PyObject *particle_type_alloc(PyTypeObject *type, Py_ssize_t nitems)
+{
+    printTypeInfo("particle_type_alloc", type);
 
+    MxParticleType *obj;
+    const size_t size = _PyObject_VAR_SIZE(type, nitems+1);
+    /* note that we need to add one, for the sentinel */
 
+    if (PyType_IS_GC(type)) {
+        PyErr_SetString(PyExc_MemoryError, "Fatal error, particle type can not be a garbage collected type");
+        return NULL;
+    }
+    else if(engine::nr_types >= engine::max_type) {
+        PyErr_SetString(PyExc_MemoryError, "out of memory for new particle type");
+        return NULL;
+    }
 
+    obj = &engine::types[engine::nr_types];
+    memset(obj, '\0', size);
+    obj->id = engine::nr_types;
+    engine::nr_types++;
+
+    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
+        Py_INCREF(type);
+
+    if (type->tp_itemsize == 0)
+        (void)PyObject_INIT(obj, type);
+    else
+        (void) PyObject_INIT_VAR((PyVarObject *)obj, type, nitems);
+
+    return (PyObject*)obj;
+}
 
 static PyObject *
 particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -611,6 +689,8 @@ static PyGetSetDef particle_type_getset[] = {
     gs_mass,
     gs_name,
     gs_name2,
+    gs_type_temperature,
+    gs_type_target_temperature,
     {NULL},
 };
 
@@ -678,7 +758,7 @@ PyTypeObject MxParticleType_Type = {
     .tp_descr_set =      0, 
     .tp_dictoffset =     0, 
     .tp_init =           (initproc)particle_type_init,
-    .tp_alloc =          0, 
+    .tp_alloc =          particle_type_alloc, 
     .tp_new =            particle_type_new,
     .tp_free =           0, 
     .tp_is_gc =          0, 
@@ -702,12 +782,15 @@ int particle_err = PARTICLE_ERR_OK;
 
 static void printTypeInfo(const char* name, PyTypeObject *p) {
     
-    printf("%s : {"
-           "typename: %s, \n"
-           "baseTypeName: %s \n }\n",
-           name,
-           Py_TYPE(p)->tp_name,
-           p->tp_base->tp_name);
+    uint32_t is_gc = p->tp_flags & Py_TPFLAGS_HAVE_GC;
+
+    
+    std::cout << "type: {" << std::endl;
+    std::cout << "  name: " << name << std::endl;
+    std::cout << "  type_name: " << Py_TYPE(p)->tp_name << std::endl;
+    std::cout << "  basetype_name:" << p->tp_base->tp_name << std::endl;
+    std::cout << "  have gc: " << std::to_string((bool)PyType_IS_GC(p)) << std::endl;
+    std::cout << "}" << std::endl;
     
     /*
     if(p->tp_getattro) {
@@ -719,21 +802,24 @@ static void printTypeInfo(const char* name, PyTypeObject *p) {
 
 HRESULT _MxParticle_init(PyObject *m)
 {
-    
-    
-    
     f<>(&MxParticle::q);
     
     f<>(&MxParticle::position);
     
     f<>(&MxParticle::x);
     
-
-
+    uint32_t def = Py_TPFLAGS_DEFAULT & Py_TPFLAGS_HAVE_GC;
+    
+    uint32_t base = Py_TPFLAGS_BASETYPE & Py_TPFLAGS_HAVE_GC;
+    
+    std::cout << "default: " << def << ", basetype: " << base << std::endl;
+    
     /*************************************************
      *
      * Metaclasses first
      */
+    
+   std::cout << "MxParticleType_Type have gc: " << std::to_string((bool)PyType_IS_GC(&MxParticleType_Type)) << std::endl;
 
     //PyCStructType_Type.tp_base = &PyType_Type;
     // if (PyType_Ready(&PyCStructType_Type) < 0)
@@ -743,6 +829,13 @@ HRESULT _MxParticle_init(PyObject *m)
         std::cout << "could not initialize MxParticleType_Type " << std::endl;
         return E_FAIL;
     }
+    
+    // clear the GC of the particle type. PyTypeReady causes this to
+    // inherit flags from the base type, PyType_Type. Because we
+    // manage our own memory, clear these bits.
+    MxParticleType_Type.tp_flags &= ~(Py_TPFLAGS_HAVE_GC);
+    MxParticleType_Type.tp_clear = NULL;
+    MxParticleType_Type.tp_traverse = NULL;
     
     printTypeInfo("MxParticleType_Type", &MxParticleType_Type);
     
@@ -757,30 +850,12 @@ HRESULT _MxParticle_init(PyObject *m)
     // Struct_Type.tp_base = &PyCData_Type;
     // if (PyType_Ready(&Struct_Type) < 0)
     //     return NULL;
-    Py_TYPE(&MxParticle_Type) = &MxParticleType_Type;
+    //Py_TYPE(&MxParticle_Type) = &MxParticleType_Type;
     //MxParticle_Type.tp_base = &PyBaseObject_Type;
-    if (PyType_Ready((PyTypeObject*)&MxParticle_Type) < 0) {
-        std::cout << "could not initialize MxParticle_Type " << std::endl;
-        return E_FAIL;
-    }
-    
-
-
-
-    //MxParticleType_Type.tp_dict
-
-    //PyDict_SetItemString(MxParticleType_Type.tp_dict, "descr", descr);
-
-    //descr = PyDescr_NewGetSet((PyTypeObject*)&MxParticleType_Type, &gsd);
-
-    //PyDict_SetItemString(MxParticle_Type.ht_type.tp_dict, "descr", descr);
-
-
-
-
-
-    printTypeInfo("MxParticle_Type", (PyTypeObject*)&MxParticle_Type);
-    
+    //if (PyType_Ready((PyTypeObject*)&MxParticle_Type) < 0) {
+    //    std::cout << "could not initialize MxParticle_Type " << std::endl;
+    //    return E_FAIL;
+    //}
     
     if(MxParticleType_Type.tp_getattro) {
         savedFunc = MxParticleType_Type.tp_getattro;
@@ -794,13 +869,13 @@ HRESULT _MxParticle_init(PyObject *m)
         return E_FAIL;
     }
 
-    Py_INCREF(&MxParticle_Type);
-    if (PyModule_AddObject(m, "Particle", (PyObject *)&MxParticle_Type) < 0) {
-        Py_DECREF(&MxParticle_Type);
-        return E_FAIL;
-    }
+    //Py_INCREF(&MxParticle_Type);
+    //if (PyModule_AddObject(m, "Particle", (PyObject *)&MxParticle_Type) < 0) {
+    //    Py_DECREF(&MxParticle_Type);
+    //    return E_FAIL;
+    //}
 
-    return S_OK;
+    return  engine_particle_base_init(m);;
 }
 
 int MxParticleCheck(PyObject *o)
@@ -810,7 +885,7 @@ int MxParticleCheck(PyObject *o)
 
 MxPyParticle* MxPyParticle_New(MxParticle *data)
 {
-    PyTypeObject *type = (PyTypeObject*)_Engine.types[data->typeId].pyType;
+    PyTypeObject *type = (PyTypeObject*)&_Engine.types[data->typeId];
     MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
     part->part = data;
     return part;
@@ -818,15 +893,10 @@ MxPyParticle* MxPyParticle_New(MxParticle *data)
 
 
 MxParticleType* MxParticleType_New(const char *_name, PyObject *dict)
-{
-    // static PyObject *
-    // type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
-    
-    PyTypeObject *p = (PyTypeObject*)&MxParticle_Type;
-    
+{    
     pybind11::str name(_name);
     pybind11::tuple bases(1);
-    bases[0] = (PyObject*)&MxParticle_Type;
+    bases[0] = (PyObject*)MxParticle_GetType();
     pybind11::tuple args(3);
     args[0] = name;
     args[1] = bases;
@@ -834,33 +904,39 @@ MxParticleType* MxParticleType_New(const char *_name, PyObject *dict)
 
     MxParticleType *result = (MxParticleType*)PyType_Type.tp_call((PyObject*)&PyType_Type, args.ptr(), NULL);
 
-    assert(result && PyType_IsSubtype((PyTypeObject*)result, (PyTypeObject*)&MxParticle_Type));
+    assert(result && PyType_IsSubtype((PyTypeObject*)result, (PyTypeObject*)MxParticle_GetType()));
 
     return result;
 }
 
 HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
 {
-    double mass = 1.0;
-    double charge = 0.0;
-    std::string name2;
+    self->mass = 1.0;
+    self->charge = 0.0;
+    self->target_energy = 0.;
+
+    std::strncpy(self->name, self->ht_type.tp_name, MxParticleType::MAX_NAME);
     
     try {
         pybind11::dict dict = pybind11::reinterpret_borrow<pybind11::dict>(_dict);
         if(dict.contains("mass")) {
-            mass = dict["mass"].cast<double>();
+            self->mass = dict["mass"].cast<double>();
+        }
+        
+        if(dict.contains("target_temperature")) {
+            self->target_energy = dict["target_temperature"].cast<double>();
         }
 
+        self->imass = 1.0 / self->mass;
+
         if(dict.contains("charge")) {
-            charge = dict["charge"].cast<double>();
+            self->charge = dict["charge"].cast<double>();
         }
         
         if(dict.contains("name2")) {
-            name2 = dict["name2"].cast<std::string>();
+            std::string name2 = dict["name2"].cast<std::string>();
+            std::strncpy(self->name2, name2.c_str(), MxParticleType::MAX_NAME);
         }
-
-        int er = engine_addtype_for_type(&_Engine, mass,
-                charge, self->ht_type.tp_name , name2.c_str(), self);
         
         // pybind does not seem to wrap deleting item from dict, WTF?!?
         if(self->ht_type.tp_dict) {
@@ -879,10 +955,13 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
+            key = pybind11::cast("target_temperature");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
         }
-    
-
-        return er >= 0 ? S_OK : c_error(CERR_FAIL, "failed to add new type to engine");
+        
+        return S_OK;
     }
     catch(const std::exception &e) {
         return c_error(CERR_EXCEP, e.what());
@@ -906,3 +985,67 @@ MxParticleType* MxParticleType_ForEngine(struct engine *e, double mass,
     return MxParticleType_New(name, dict.ptr());
 }
 
+CAPI_FUNC(MxParticleType*) MxParticle_GetType()
+{
+    return &engine::types[0];
+}
+
+HRESULT engine_particle_base_init(PyObject *m)
+{
+    if(engine::max_type < 2) {
+        return mx_error(E_FAIL, "must have at least space for 2 particle types");
+    }
+
+    if(engine::nr_types != 0) {
+        return mx_error(E_FAIL, "engine types already set");
+    }
+
+    if((engine::types = (MxParticleData *)malloc( sizeof(MxParticleData) * engine::max_type )) == NULL ) {
+        return mx_error(E_FAIL, "could not allocate types memory");
+    }
+    
+    ::memset(engine::types, 0, sizeof(MxParticleData) * engine::max_type);
+
+    //make an instance of the base particle type, all new instances of base
+    //class mechanica.Particle will be of this type
+    PyTypeObject *ob = (PyTypeObject*)&engine::types[0];
+    
+    Py_TYPE(ob) = &MxParticleType_Type;
+    ob->tp_base = &PyBaseObject_Type;
+    ob->tp_getset = particle_getsets;
+    ob->tp_name =         "Particle";
+    ob->tp_basicsize =     sizeof(MxPyParticle);
+    ob->tp_flags =         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+    ob->tp_doc =           "Custom objects";
+    ob->tp_getset =        particle_getsets;
+    ob->tp_init =          (initproc)particle_init;
+    ob->tp_new =           particle_new;
+    ob->tp_del =           [] (PyObject *p) -> void {
+        std::cout << "tp_del MxPyParticle" << std::endl;
+    };
+    ob->tp_finalize =      [] (PyObject *p) -> void {
+        // std::cout << "tp_finalize MxPyParticle" << std::endl;
+    };
+
+    if(PyType_Ready(ob) < 0) {
+        return mx_error(E_FAIL, "PyType_Ready on base particle failed");
+    }
+
+    engine::types[0].mass = 1.0;
+    engine::types[0].charge = 0.0;
+    engine::types[0].id = 0;
+
+    ::strncpy(engine::types[0].name, "Particle", MxParticleType::MAX_NAME);
+    ::strncpy(engine::types[0].name2, "Particle", MxParticleType::MAX_NAME);
+    
+    // set the singlton particle type data to the new item here.
+    if (PyModule_AddObject(m, "Particle", (PyObject*)&engine::types[0]) < 0) {
+        return E_FAIL;
+    }
+
+    std::cout << "added Particle to mechanica module" << std::endl;
+    
+    engine::nr_types = 1;
+    
+    return S_OK;
+}

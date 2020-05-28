@@ -88,7 +88,6 @@ set(SRC
   FlipEdgeToPolygon.cpp
   FlipPolygonToEdge.cpp
   MxConstraints.cpp
-  MxForces.cpp
   MxPolygonSurfaceTensionForce.cpp
   MxPolygonAreaConstraint.cpp
   MxCellVolumeConstraint.cpp
@@ -173,7 +172,6 @@ set(HEADERS
   SymmetricEigen.h
   GteSymmetricEigensolver3x3.h
   MxConstraints.h
-  MxForces.h
   MxPolygonSurfaceTensionForce.h
   MxPolygonAreaConstraint.h
   MxCellVolumeConstraint.h

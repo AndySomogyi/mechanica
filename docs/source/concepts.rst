@@ -41,7 +41,71 @@ logical representations of physical matter. We use a particle to represent
 either individual things such as cells, molecules, etc, or particles can
 represent clumps of matter, such a volume of fluid. Processes are the ways
 objects interact with each other. Here we will cover the basic interaction
-potentials that we provide, and will also cover reactions, fluxes and events.  
+potentials that we provide, and will also cover reactions, fluxes and events.
+
+
+Making Things Move
+------------------
+
+Newton's first law states that an object either remains at rest or continues to
+move at a constant velocity, unless acted upon by a force. That is true
+regaurdless if we are considering atoms or galaxies. In order make any object in
+Mechanica move, we must apply a force to it. To make objects move, Mechanica
+sums up all of the forces that act on an object, and uses that to calculte the
+object's velocity and position. 
+
+The nature of forces in Mechanica are *incredibly* flexible, but we provide a
+variety of built-in forces to enable common behaviors.
+
+Conservative forces are usually a kind of :class:`Potential` object, where the
+force is described in terms of it's potential energy function. Long-range,
+fluid, and most bonded interactions are examples of conservative potential
+energy fuction based forces. All potential based forces contibute to the total
+potential energy of the system, and we can read the total potential energy
+either via the :attr:`Universe.potential_energy` attribute, or we can also read
+the potential energy of all objects of a type, via the type's
+``potential_energy`` attribute.
+
+We make it easy to create forces, and apply them to objects::
+
+  # create a potential, for a simple lennard-jones fluid: 
+  fluid_potential = Potential.lennard-jones-12-6(…)
+
+  # bind it to ALL types
+  m.bind(fluid_potential, Particle, Particle) 
+
+This example creates a simple potential, and binds it to ALL objects. As all
+objects in our modeling world are either an instance of the base ``Particle``
+type, or a instance of a subclass of it.
+
+
+
+Controlling Temperature
+-----------------------
+
+
+
+
+Right now, I have the concept of a ‘Potential’, these are objects that are specified in terms of potential function, and internally, the integrator does a bit of magic with them, and uses them calculate the conservative force that gets added to the total force. Things like bonds, angles, long-range non-bonded forces are all specified in terms of potentials. This works great for conservative forces, and is numerically actually faster then specifying a force function directly. Also, but specifying conservative forces as a potential, that lets me have both a ‘potential_energy’ and a ‘kinetic_energy’ attributes on the universe (and also the object type, i.e. if a user creates a ‘MyParticleType’, they can call MyParticleType.kinetic_energy and this returns the total kinetic energy of all objets of this type).  
+
+However, for non-conservative forces, like temperature, friction, etc, these are almost always defined as forces. We can associate a potential energy with a conservative force, but not a non-conservative (or random) force.
+
+That would imply that we need have to allow the user to represent both potentials and forces. I would have preferred to just work in potential or forces, as this simplifies the things for the users, but I don’t really see a way around it. 
+
+So, user experience would be like this:
+
+# create a thermostat force, effectively maintains the temperate of a set of things
+thermostat = Force.langevin_thermostat(298)
+
+# bind it to all objects of type MyParticle
+m.bind(thermostat, MyParticle)
+
+# create a friction force
+friction = Force.friction(…)
+
+# bind it to all objects of type SomeOtherParticle
+m.bind(friction, SomeOtherParticle)
+
 
 
  .. _binding:

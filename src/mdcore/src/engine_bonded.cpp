@@ -1411,7 +1411,7 @@ int engine_bonded_eval ( struct engine *e ) {
 						i += 1;
 					while ( j >= 0 &&
 							( s->partlist[e->bonds[j].i] == NULL ||
-									s->partlist[e->bonds[j].j] == NULL ) )
+						      s->partlist[e->bonds[j].j] == NULL ))
 						j -= 1;
 					if ( i < j ) {
 						btemp = e->bonds[i];

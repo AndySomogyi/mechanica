@@ -114,7 +114,8 @@ public:
     void simulationStep();
 
     HRESULT run() override;
-
+            
+    HRESULT redraw() override;
 
     MxGlfwWindow *_win;
 
@@ -124,15 +125,15 @@ public:
     MxUniverseRenderer *_ren;
 
     Int _substeps = 1;
-         bool _pausedSimulation = false;
-         bool _mousePressed = false;
-         bool _dynamicBoundary = true;
+    bool _pausedSimulation = false;
+    bool _mousePressed = false;
+    bool _dynamicBoundary = true;
 
-         Float _boundaryOffset = 0.0f; /* For boundary animation */
+    Float _boundaryOffset = 0.0f; /* For boundary animation */
 
 
-         /* Timeline to adjust number of simulation steps per frame */
-         Timeline _timeline;
+    /* Timeline to adjust number of simulation steps per frame */
+    Timeline _timeline;
 
     HRESULT mainLoopIteration(double timeout) override;
 };

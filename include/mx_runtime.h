@@ -33,6 +33,11 @@ CAPI_FUNC(HRESULT) Mx_Initialize(int);
 CAPI_FUNC(void) Mx_Finalize(void);
 
 /**
+ * Get the global Mechanica module.
+ */
+CAPI_FUNC(PyObject*) Mx_GetModule();
+
+/**
  * Is the runtime initialized?
  */
 CAPI_FUNC(int) Mx_IsInitialized(void);

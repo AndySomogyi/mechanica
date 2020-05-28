@@ -64,6 +64,8 @@
 #include "exclusion.h"
 #include "reader.h"
 #include "engine.h"
+#include "MxForce.h"
+
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -72,6 +74,18 @@
 
 /** ID of the last error. */
 int engine_err = engine_err_ok;
+
+/** TODO, clean up this design for types and static engine. */
+/** What is the maximum nr of types? */
+int engine::max_type = 100;
+int engine::nr_types = 0;
+
+/**
+ * The particle types.
+ *
+ * Currently initialized in _MxParticle_init
+ */
+MxParticleData *engine::types = NULL;
 
 
 /* the error macro. */
@@ -1377,7 +1391,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 			p.q = q[j];
 
 		/* add the part to the space. */
-		if ( space_addpart( s , &p , &x[3*j], NULL ) < 0 )
+		if ( engine_addpart( e , &p , &x[3*j], NULL ) < 0 )
 			return error(engine_err_space);
 
 	}
@@ -1446,7 +1460,7 @@ int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , 
 			p.q = q[j];
 
 		/* add the part to the space. */
-		if ( space_addpart( s , &p , &x[3*j], NULL ) < 0 )
+		if ( engine_addpart( e , &p , &x[3*j], NULL ) < 0 )
 			return error(engine_err_space);
 
 	}
@@ -1535,35 +1549,6 @@ int engine_gettype2 ( struct engine *e , char *name2 ) {
  * The particle type ID must be an integer greater or equal to 0
  * and less than the value @c max_type specified in #engine_init.
  */
-
-static int _engine_addtype ( struct engine *e , double mass , double charge ,
-        const char *name , const char *name2 ) {
-
-	/* check for nonsense. */
-	if ( e == NULL )
-		return error(engine_err_null);
-	if ( e->nr_types >= e->max_type )
-		return error(engine_err_range);
-
-	/* set the type. */
-	e->types[e->nr_types].mass = mass;
-	e->types[e->nr_types].imass = 1.0 / mass;
-	e->types[e->nr_types].charge = charge;
-	e->types[e->nr_types].id = e->nr_types;
-
-	if ( name != NULL )
-		strcpy( e->types[e->nr_types].name , name );
-	else
-		strcpy( e->types[e->nr_types].name , "X" );
-	if ( name2 != NULL )
-		strcpy( e->types[e->nr_types].name2 , name2 );
-	else
-		strcpy( e->types[e->nr_types].name2 , "X" );
-
-	/* bring good tidings. */
-	return e->nr_types++;
-}
-
 int engine_addtype ( struct engine *e , double mass , double charge ,
         const char *name , const char *name2 ) {
     
@@ -1574,21 +1559,8 @@ int engine_addtype ( struct engine *e , double mass , double charge ,
         return error(engine_err_range);
     
     MxParticleType *type = MxParticleType_ForEngine(e, mass, charge, name, name2);
-    return type != NULL ? type->data->id : -1;
+    return type != NULL ? type->id : -1;
 }
-
-int engine_addtype_for_type(struct engine *e, double mass, double charge,
-        const char *name, const char *name2, MxParticleType *type) {
-    int index = _engine_addtype ( e ,  mass,  charge , name , name2 );
-    
-    if(index >= 0) {
-        Py_INCREF(type);
-        e->types[index].pyType = type;
-        type->data = &e->types[index];
-    }
-    return index;
-}
-
 
 /**
  * @brief Add an interaction potential.
@@ -1609,7 +1581,7 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 	/* check for nonsense. */
 	if ( e == NULL )
 		return error(engine_err_null);
-	if ( i < 0 || i >= e->max_type || j < 0 || j >= e->max_type )
+	if ( i < 0 || i >= e->nr_types || j < 0 || j >= e->nr_types )
 		return error(engine_err_range);
 
 	/* store the potential. */
@@ -1623,6 +1595,21 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 
 	/* end on a good note. */
 	return engine_err_ok;
+}
+
+CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i ) {
+    /* check for nonsense. */
+    if ( e == NULL )
+        return error(engine_err_null);
+    if ( i < 0 || i >= e->nr_types  )
+        return error(engine_err_range);
+        
+    /* store the force. */
+    e->p_singlebody[i] = p;
+    Py_INCREF(p);
+
+    /* end on a good note. */
+    return engine_err_ok;
 }
 
 
@@ -1816,119 +1803,116 @@ int engine_nonbond_eval ( struct engine *e ) {
 
 int engine_advance ( struct engine *e ) {
 
-	int cid, pid, k, delta[3], step;
-	struct space_cell *c, *c_dest;
-	struct MxParticle *p;
-	struct space *s;
-	FPTYPE dt, w, h[3];
-	double epot = 0.0, epot_local;
+    int cid, pid, k, delta[3], step;
+    struct space_cell *c, *c_dest;
+    struct MxParticle *p;
+    struct space *s;
+    FPTYPE dt, w, h[3];
+    double epot = 0.0, epot_local;
+    
+    /* Get a grip on the space. */
+    s = &(e->s);
+    dt = e->dt;
+    for ( k = 0 ; k < 3 ; k++ )
+        h[k] = s->h[k];
 
-	/* Get a grip on the space. */
-	s = &(e->s);
-	dt = e->dt;
-	for ( k = 0 ; k < 3 ; k++ )
-		h[k] = s->h[k];
+    /* update the particle velocities and positions */
+    if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi)) {
 
-	/* update the particle velocities and positions */
-	if ( e->flags & engine_flag_verlet || e->flags & engine_flag_mpi ) {
-
-		/* Collect potential energy from ghosts. */
-		for ( cid = 0 ; cid < s->nr_ghost ; cid++ )
-			epot += s->cells[ s->cid_ghost[cid] ].epot;
+        /* Collect potential energy from ghosts. */
+        for ( cid = 0 ; cid < s->nr_ghost ; cid++ )
+            epot += s->cells[ s->cid_ghost[cid] ].epot;
 
 #pragma omp parallel private(cid,c,pid,p,w,k,epot_local)
-		{
-			step = omp_get_num_threads();
-			epot_local = 0.0;
-			for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
-				c = &(s->cells[ s->cid_real[cid] ]);
-				epot_local += c->epot;
-				for ( pid = 0 ; pid < c->count ; pid++ ) {
-					p = &( c->parts[pid] );
-					w = dt * e->types[p->typeId].imass;
-					for ( k = 0 ; k < 3 ; k++ ) {
-						p->v[k] += p->f[k] * w;
-						p->x[k] += dt * p->v[k];
-					}
-				}
-			}
+        {
+            step = omp_get_num_threads();
+            epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                for ( pid = 0 ; pid < c->count ; pid++ ) {
+                    p = &( c->parts[pid] );
+                    w = dt * e->types[p->typeId].imass;
+                    for ( k = 0 ; k < 3 ; k++ ) {
+                        p->v[k] += p->f[k] * w;
+                        p->x[k] += dt * p->v[k];
+                    }
+                }
+            }
 #pragma omp atomic
-epot += epot_local;
-		}
+            epot += epot_local;
+        }
+    }
+    else {
 
-	}
-	else {
+        /* Collect potential energy from ghosts. */
+        for ( cid = 0 ; cid < s->nr_ghost ; cid++ ) {
+            epot += s->cells[ s->cid_ghost[cid] ].epot;
+        }
 
-		/* Collect potential energy from ghosts. */
-		for ( cid = 0 ; cid < s->nr_ghost ; cid++ )
-			epot += s->cells[ s->cid_ghost[cid] ].epot;
+#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
+        {
+            step = omp_get_num_threads(); epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                pid = 0;
+                while ( pid < c->count ) {
+                    p = &( c->parts[pid] );
+                    w = dt * engine::types[p->typeId].imass;
+                    for ( k = 0 ; k < 3 ; k++ ) {
+                        p->v[k] += p->f[k] * w;
+                        p->x[k] += dt * p->v[k];
+                        delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                    }
+                    
+                    /* do we have to move this particle? */
+                    if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] -= delta[k] * h[k];
+                        }
 
-#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local)
-		{
-			step = omp_get_num_threads(); epot_local = 0.0;
-			for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
-				c = &(s->cells[ s->cid_real[cid] ]);
-				epot_local += c->epot;
-				pid = 0;
-				while ( pid < c->count ) {
+                        c_dest = &( s->cells[ space_cellid( s ,
+                                (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
+                                (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
+                                (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
 
-					p = &( c->parts[pid] );
-					w = dt * e->types[p->typeId].imass;
-					for ( k = 0 ; k < 3 ; k++ ) {
-						p->v[k] += p->f[k] * w;
-						p->x[k] += dt * p->v[k];
-						delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
-					}
+                        pthread_mutex_lock(&c_dest->cell_mutex);
+                        space_cell_add_incomming( c_dest , p );
+                        pthread_mutex_unlock(&c_dest->cell_mutex);
 
-					/* do we have to move this particle? */
-							if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
-								for ( k = 0 ; k < 3 ; k++ ) {
-									p->x[k] -= delta[k] * h[k];
-								}
+                        s->celllist[ p->id ] = c_dest;
 
-								c_dest = &( s->cells[ space_cellid( s ,
-										(c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
-										(c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
-										(c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
-
-								pthread_mutex_lock(&c_dest->cell_mutex);
-								space_cell_add_incomming( c_dest , p );
-								pthread_mutex_unlock(&c_dest->cell_mutex);
-
-								s->celllist[ p->id ] = c_dest;
-
-								// remove a particle from a cell. if the part was the last in the
-								// cell, simply dec the count, otherwise, move the last part
-								// in the cell to the ejected part's prev loc.
-								c->count -= 1;
-								if ( pid < c->count ) {
-									c->parts[pid] = c->parts[c->count];
-									s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
-								}
-							}
-							else {
-								pid += 1;
-							}
-				}
-			}
+                        // remove a particle from a cell. if the part was the last in the
+                        // cell, simply dec the count, otherwise, move the last part
+                        // in the cell to the ejected part's prev loc.
+                        c->count -= 1;
+                        if ( pid < c->count ) {
+                            c->parts[pid] = c->parts[c->count];
+                            s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
+                        }
+                    }
+                    else {
+                        pid += 1;
+                    }
+                }
+            }
 #pragma omp atomic
-			epot += epot_local;
-		}
+            epot += epot_local;
+        }
 
-		/* Welcome the new particles in each cell. */
+        /* Welcome the new particles in each cell. */
 #pragma omp parallel for schedule(static)
-		for ( cid = 0 ; cid < s->nr_marked ; cid++ )
-			space_cell_welcome( &(s->cells[ s->cid_marked[cid] ]) , s->partlist );
+        for ( cid = 0 ; cid < s->nr_marked ; cid++ )
+            space_cell_welcome( &(s->cells[ s->cid_marked[cid] ]) , s->partlist );
+    }
 
-	}
+    /* Store the accumulated potential energy. */
+    s->epot_nonbond += epot;
+    s->epot += epot;
 
-	/* Store the accumulated potential energy. */
-	s->epot_nonbond += epot;
-	s->epot += epot;
-
-	/* return quietly */
-	return engine_err_ok;
-
+    /* return quietly */
+    return engine_err_ok;
 }
 
 
@@ -1954,7 +1938,11 @@ int engine_step ( struct engine *e ) {
 	/* increase the time stepper */
 	e->time += 1;
 
-	/* prepare the space */
+	// clear the energy on the types
+    // TODO: should go in prepare space for better performance
+    engine_kinetic_energy(e);
+
+	/* prepare the space, sets forces to zero */
 	tic = getticks();
 	if ( space_prepare( &e->s ) != space_err_ok )
 		return error(engine_err_space);
@@ -2356,39 +2344,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         return error(engine_err_malloc);
     e->nr_dihedrals = 0;
 
-    /* set the maximum nr of types */
-    if ( flags & engine_flag_nullpart )
-        max_type += 1;
     
-    // add one for the base type
-    max_type += 1;
-    
-    // set the engine max type
-    e->max_type = max_type;
-    e->nr_types = 0;
-    if ( ( e->types = (struct MxParticleData *)malloc( sizeof(struct MxParticleData) * e->max_type ) ) == NULL )
-        return error(engine_err_malloc);
-    
-    //make an instance of the base particle type, all new instances of base
-    //class mechanica.Particle will be of this type
-    if(engine_addtype(e, 1, 0, "Particle", "Particle") < 0) {
-        return error(engine_err_malloc);
-    }
-    // set the singlton particle type data to the new item here.
-    MxParticle_Type.data = &e->types[0];
-    
-    if ( flags & engine_flag_nullpart ) {
-        e->types[0].id = 0;
-        e->types[0].mass = 0.0;
-        e->types[0].imass = 0.0;
-        e->types[0].charge = 0.0;
-        e->types[0].eps = 0.0;
-        e->types[0].rmin = 0.0;
-        strcpy( e->types[0].name , "NULL" );
-        strcpy( e->types[0].name2 , "NULL" );
-        e->nr_types = 1;
-    }
-
     /* Init the sets. */
     e->sets = NULL;
     e->nr_sets = 0;
@@ -2410,6 +2366,11 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         return error(engine_err_malloc);
     bzero( e->p_dihedral , sizeof(struct MxPotential *) * e->dihedralpots_size );
     e->nr_dihedralpots = 0;
+
+    // init singlebody forces
+    if ( ( e->p_singlebody = (MxForce **)malloc( sizeof(MxForce *) * e->max_type ) ) == NULL )
+            return error(engine_err_malloc);
+    bzero(e->p_singlebody, sizeof(struct MxForce *) * e->max_type );
 
     /* Make sortlists? */
     if ( flags & engine_flag_verlet_pseudo ) {
@@ -2461,16 +2422,29 @@ void engine_dump() {
 
 double engine_kinetic_energy(struct engine *e)
 {
-    double tot = 0;
+    // clear the ke in the types,
+    for(int i = 0; i < engine::nr_types; ++i) {
+        engine::types[i].kinetic_energy = 0;
+    }
+    
     for(int cid = 0; cid < _Engine.s.nr_cells; ++cid) {
         space_cell *cell = &_Engine.s.cells[cid];
         for(int pid = 0; pid < cell->count; ++pid) {
             MxParticle *p = &cell->parts[pid];
-            tot += e->types[p->typeId].mass *
+            engine::types[p->typeId].kinetic_energy += engine::types[p->typeId].mass *
                     (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
         }
     }
-    return 0.5 * tot / e->s.nr_parts;
+    
+    for(int i = 1; i < engine::nr_types; ++i) {
+        engine::types[0].kinetic_energy += engine::types[i].kinetic_energy;
+        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].count);
+    }
+    
+    // TODO: super lame hack to work around bug with
+    // not setting root particle count. FIX THIS. 
+    engine::types[0].kinetic_energy /= (2. * engine::types[0].count);
+    return engine::types[0].kinetic_energy;
 }
 
 double engine_temperature(struct engine *e)
@@ -2478,4 +2452,46 @@ double engine_temperature(struct engine *e)
     return 0;
 }
 
+int engine_singlebody_set(struct engine *e, struct MxForce *f, int type_id)
+{
+    if (type_id >= e->max_type) {
+        return error(engine_err_range);
+    }
 
+    if(e->p_singlebody[type_id]) {
+        Py_DECREF(e->p_singlebody[type_id]);
+        e->p_singlebody[type_id] = NULL;
+    }
+
+    if(f) {
+        e->p_singlebody[type_id] = f;
+        Py_INCREF(f);
+    }
+
+    /* all is well... */
+    return engine_err_ok;
+}
+
+int engine_addpart(struct engine *e, struct MxParticle *p, double *x,
+        struct MxParticle **result)
+{
+    if(p->typeId < 0 || p->typeId >= e->nr_types) {
+        return error(engine_err_range);
+    }
+
+    if(space_addpart (&(e->s), p, x, result ) != 0) {
+        return error(engine_err_space);
+    }
+
+    e->types[p->typeId].count++;
+
+    return engine_err_ok;
+}
+
+CAPI_FUNC(struct MxParticleType*) engine_type(int id)
+{
+    if(id >= 0 && id < engine::nr_types) {
+        return &engine::types[id];
+    }
+    return NULL;
+}

@@ -181,7 +181,7 @@ int main ( int argc , char *argv[] ) {
                 temp = 0.35 / sqrt( pNe.v[0]*pNe.v[0] + pNe.v[1]*pNe.v[1] + pNe.v[2]*pNe.v[2] );
                 pNe.v[0] *= temp; pNe.v[1] *= temp; pNe.v[2] *= temp;
                 vtot[0] += pNe.v[0]; vtot[1] += pNe.v[1]; vtot[2] += pNe.v[2];
-                if ( space_addpart( &(e.s) , &pNe , x, NULL ) != 0 ) {
+                if ( engine_addpart(&e , &pNe , x, NULL ) != 0 ) {
                     printf("main: space_addpart failed with space_err=%i.\n",space_err);
                     errs_dump(stdout);
                     return 1;

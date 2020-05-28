@@ -92,8 +92,8 @@ void MxGlfwApplication::simulationStep() {
         offset = Math::lerp(0.0f, 0.5f, Animation::Easing::quadraticInOut(_boundaryOffset));
     }
 
-
-    engineStep();
+    // TODO: get rid of this
+    MxUniverse_Step(0,0);
 
     currentStep += 1;
 }
@@ -102,29 +102,80 @@ void MxGlfwApplication::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
 
-
     /* Pause simulation if the mouse was pressed (camera is moving around).
        This avoid freezing GUI while running the simulation */
+    
     if(!_pausedSimulation && !_mousePressed) {
         /* Adjust the substep number to maximize CPU usage each frame */
         const Float lastAvgStepTime = _timeline.previousFrameDuration()/Float(_substeps);
         const Int newSubsteps = lastAvgStepTime > 0 ? Int(1.0f/60.0f/lastAvgStepTime) + 1 : 1;
         if(Math::abs(newSubsteps - _substeps) > 1) _substeps = newSubsteps;
 
-        for(Int i = 0; i < _substeps; ++i) simulationStep();
+        // TODO: move substeps to universe step.
+        if(MxUniverse_Flag(MxUniverse_Flags::MXU_RUNNING)) {
+            for(Int i = 0; i < _substeps; ++i) {
+                MxUniverse_Step(0, 0);
+            }
+        }
     }
-
 
     /* Draw particles */
     _ren->draw();
 
-
-
     swapBuffers();
     _timeline.nextFrame();
+}
 
-    /* Run next frame immediately */
-    redraw();
+static MxGlfwApplication::Configuration magConf(const MxSimulator::Config &sc) {
+    MxGlfwApplication::Configuration mc;
+
+    mc.setTitle(sc.title());
+
+    uint32_t wf = sc.windowFlags();
+
+    if(wf & MxSimulator::AutoIconify) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::AutoIconify);
+    }
+
+    if(wf & MxSimulator::AlwaysOnTop) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::AlwaysOnTop);
+    }
+
+    if(wf & MxSimulator::AutoIconify) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::AutoIconify);
+    }
+
+    if(wf & MxSimulator::Borderless) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Borderless);
+    }
+
+    if(wf & MxSimulator::Contextless) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Contextless);
+    }
+
+    if(wf & MxSimulator::Focused) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Focused);
+    }
+
+    if(wf & MxSimulator::Fullscreen) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Fullscreen);
+    }
+    if(wf & MxSimulator::Hidden) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Hidden);
+    }
+    if(wf & MxSimulator::Maximized) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Maximized);
+    }
+    if(wf & MxSimulator::Minimized) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Minimized);
+    }
+
+    if(wf & MxSimulator::Resizable) {
+        mc.addWindowFlags(MxGlfwApplication::Configuration::WindowFlag::Resizable);
+    }
+
+
+    return mc;
 }
 
 
@@ -133,13 +184,14 @@ HRESULT MxGlfwApplication::createContext(
         const MxSimulator::Config &conf)
 {
     const Vector2 dpiScaling = this->dpiScaling({});
-    Configuration c;
-    c.setTitle(conf.title())
-                .setSize(conf.windowSize(), dpiScaling)
-                .setWindowFlags(Configuration::WindowFlag::Resizable);
+    Configuration c = magConf(conf);
+    c.setSize(conf.windowSize(), dpiScaling);
+
     GLConfiguration glConf;
     glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
 
+    glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
+    
     bool b = tryCreate(c);
 
     if(!b) {
@@ -147,6 +199,10 @@ HRESULT MxGlfwApplication::createContext(
     }
 
     _win = new MxGlfwWindow(this->window());
+    
+    if(conf.windowFlags() & MxSimulator::WindowFlags::Focused) {
+        glfwFocusWindow(this->window());
+    }
 
     _ren = new MxUniverseRenderer{_win, 0.25};
 
@@ -174,11 +230,14 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
     return exec();
 }
 
-
-
 HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
     GlfwApplication::mainLoopIteration();
     return S_OK;
 }
 
+HRESULT MxGlfwApplication::redraw()
+{
+    GlfwApplication::redraw();
+    return S_OK;
+}
 

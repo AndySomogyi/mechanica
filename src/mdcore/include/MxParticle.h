@@ -107,35 +107,52 @@ struct MxPyParticle : PyObject {
  * Extend the PyHeapTypeObject, because this is the actual type that
  * gets allocated, its a python thing.
  */
-struct MxParticleData {
-
-	/** ID of this type */
-	int id;
-
-	/** Constant physical characteristics */
-	double mass, imass, charge;
-
-	/** Nonbonded interaction parameters. */
-	double eps, rmin;
-
-	/** Name of this paritcle type. */
-	char name[64], name2[64];
-
-	/** pointer to the corresponding python type */
-	struct MxParticleType *pyType;
-
-} ;
-
 struct MxParticleType : PyHeapTypeObject {
-    // pointer to particle data. The particle data is stored in the
-    // engine, and should not change.
-    MxParticleData *data;
+    
+    static const int MAX_NAME = 64;
+    
+    /** ID of this type */
+    int id;
+    
+    /** Constant physical characteristics */
+    double mass, imass, charge;
+    
+    /**
+     * energy and potential energy of this type, this is updated by the engine
+     * each time step.
+     */
+    double kinetic_energy;
+    
+    double potential_energy;
+    
+    double target_energy;
+
+    /** Nonbonded interaction parameters. */
+    double eps, rmin;
+    
+    /** Name of this particle type. */
+    char name[MAX_NAME], name2[MAX_NAME];
+    
+    /** number of current particles of this type. Incremented in engine_addpart. */
+    unsigned count = 0;
 };
+
+typedef MxParticleType MxParticleData;
 
 /**
  * The type of each individual particle.
  */
-CAPI_DATA(MxParticleType) MxParticle_Type;
+//CAPI_DATA(MxParticleType) MxParticle_Type;
+CAPI_FUNC(MxParticleType*) MxParticle_GetType();
+
+/**
+ * initialize the base particle type in the
+ *
+ * sets the engine.types[0] particle.
+ *
+ * The engine.types array is assumed to be allocated, but not initialized.
+ */
+HRESULT engine_particle_base_init(PyObject *m);
 
 /**
  * The the particle type type
@@ -148,9 +165,6 @@ CAPI_DATA(PyTypeObject) MxParticleType_Type;
  */
 CAPI_FUNC(int) MxParticleCheck(PyObject *o);
 
-
-/* associated functions */
-int md_particle_init ( struct MxParticle *p , int vid , int type , unsigned int flags );
 
 /**
  * Creates a new MxPyParticle wrapper, and attach it to an existing

@@ -210,8 +210,16 @@ public:
     virtual MxUniverseRenderer *getRenderer() {
         return NULL;
     }
+    
+    /**
+     * post a re-draw event, to tell the renderer
+     * that it should re-draw
+     */
+    virtual HRESULT redraw() {
+        return E_NOTIMPL;
+    }
 
-    virtual HRESULT run() {return E_NOTIMPL;};
+    virtual HRESULT run() { return E_NOTIMPL;};
 
 };
 

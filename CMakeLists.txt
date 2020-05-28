@@ -78,6 +78,7 @@ message("Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
 message("Python_LIBRARIES: ${Python_LIBRARIES}")
 message("Python_LIBRARY_DIRS: ${Python_LIBRARY_DIRS}")
 message("Python_RUNTIME_LIBRARY_DIRS: ${Python_RUNTIME_LIBRARY_DIRS}")
+message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
 
 message("Python_NumPy_FOUND: ${Python_NumPy_FOUND}")
 message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")

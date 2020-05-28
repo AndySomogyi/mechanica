@@ -42,7 +42,8 @@
 
 #include <Mechanica.h>
 #include <rendering/WireframeObjects.h>
-#include "MxSimulator.h"
+#include <MxSimulator.h>
+#include <MxUniverse.h>
 
 
 
@@ -292,7 +293,7 @@ void FluidSimTest::simulationStep() {
     }
 
 
-    engineStep();
+    MxUniverse_Step(0,0);
     
     currentStep += 1;
 }

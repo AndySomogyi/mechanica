@@ -14,18 +14,12 @@
 
 struct CAPI_EXPORT MxUniverse  {
 
-
-    /**
-     * MDCore MD engine
-     */
-    CListWrap potentials;
-
     static Magnum::Vector3 origin();
 
     static  Magnum::Vector3 dim();
 
 
-    static HRESULT init(const struct MxUniverseConfig &conf);
+    bool isRunning;
 
 };
 
@@ -72,12 +66,44 @@ struct CAPI_EXPORT MxUniverseConfig {
     MxUniverseConfig();
 };
 
+CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf);
+
 CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs);
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject *b);
 
+CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a);
+
+/**
+ * runs the universe a pre-determined period of time, until.
+ * can use micro time steps of 'dt' which override the
+ * saved universe dt.
+ *
+ * if until is 0, it is ignored and the universe.dt is used.
+ * if dt is 0, it is ignored, and the universe.dt is used as
+ * a single time step.
+ */
+CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt);
 
 
+/**
+ * starts the universe time evolution. The simulator
+ * actually advances the universe, this method just
+ * tells the simulator to perform the time evolution.
+ */
+enum MxUniverse_Flags {
+    MXU_RUNNING = 1 << 0,
+};
+
+/**
+ * get a flag value
+ */
+CAPI_FUNC(int) MxUniverse_Flag(MxUniverse_Flags flag);
+
+/**
+ * sets a flag value
+ */
+CAPI_FUNC(HRESULT) MxUniverse_SetFlag(MxUniverse_Flags flag, int value);
 
 
 
@@ -85,7 +111,6 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject 
  * The single global instance of the universe
  */
 CAPI_DATA(MxUniverse) Universe;
-
 
 
 /**

@@ -50,6 +50,7 @@
 #include "potential_eval.h"
 #include "engine.h"
 #include "runner.h"
+#include "MxForce.h"
 
 /* the error macro. */
 #define error(id)				( runner_err = errs_register( id , runner_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
@@ -335,6 +336,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     struct MxParticle *parts;
     double epot = 0.0;
     struct MxPotential *pot, **pots;
+    // single body force and forces
+    MxForce *psb, **psbs;
     struct engine *eng;
     int emt, pioff;
     FPTYPE cutoff2, r2, w;
@@ -363,6 +366,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     emt = eng->max_type;
     s = &(eng->s);
     pots = eng->p;
+    psbs = eng->p_singlebody;
     cutoff2 = s->cutoff2;
     pix[3] = FPTYPE_ZERO;
     
@@ -374,8 +378,18 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     else {
         parts = c->parts;
     }
+
+    // Because of loop indexing over all particles starting at one,
+    // do the first single-body force calculation here.
+    part_i = &(parts[0]);
+    psb = psbs[part_i->typeId];
+    if(psb) {
+        psb->func(psb, part_i, part_i->f);
+    }
+
         
-    /* loop over all particles */
+    // loop over all particles , indexing here only calculates pairwise
+    // interactions, and avoids self-interactions.
     for ( i = 1 ; i < count ; i++ ) {
 
         /* get the particle */
@@ -386,11 +400,23 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         pioff = part_i->typeId * emt;
         pif = &( part_i->f[0] );
 
+        // calculate single body force if any
+        psb = psbs[part_i->typeId];
+        if(psb) {
+            psb->func(psb, part_i, part_i->f);
+        }
+
         /* loop over all other particles */
         for ( j = 0 ; j < i ; j++ ) {
 
             /* get the other particle */
             part_j = &(parts[j]);
+
+            /* fetch the potential, if any */
+            pot = pots[ pioff + part_j->typeId ];
+            if ( pot == NULL ) {
+                continue;
+            }
 
             /* get the distance between both particles */
             r2 = fptype_r2( pix , part_j->x , dx );
@@ -398,12 +424,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             /* is this within cutoff? */
             if ( r2 > cutoff2 )
                 continue;
-
-            /* fetch the potential, if any */
-            pot = pots[ pioff + part_j->typeId ];
-            if ( pot == NULL ) {
-                continue;
-            }
 
             /* potentials have cutoff also */
             // TODO move the square to the one-time potential init value.
@@ -468,7 +488,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                     w = f * dx[k];
                     pif[k] -= w;
                     part_j->f[k] += w;
-                    }
+                }
 
                 /* tabulate the energy */
                 epot += e;

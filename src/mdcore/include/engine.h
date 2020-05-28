@@ -143,23 +143,30 @@ typedef struct engine {
 	struct space s;
 
 	/** Time variables */
-	int time;
+	long time;
 	double dt;
 
 	double temperature;
 
+	/** TODO, clean up this design for types and static engine. */
 	/** What is the maximum nr of types? */
-	int max_type;
-	int nr_types;
+	static int max_type;
+	static int nr_types;
 
 	/** The particle types. */
-	struct MxParticleData *types;
+    static struct MxParticleType *types;
 
 	/** The interaction matrix */
 	struct MxPotential **p, **p_bond, **p_angle, **p_dihedral;
 
 	/** The explicit electrostatic potential. */
 	struct MxPotential *ep;
+
+	/**
+	 * vector of single body potentials for types, indexed
+	 * by type id.
+	 */
+	struct MxForce **p_singlebody;
 
 	/** Mutexes, conditions and counters for the barrier */
 	pthread_mutex_t barrier_mutex;
@@ -298,6 +305,7 @@ typedef struct engine_comm {
 
 /* associated functions */
 CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
+CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i );
 CAPI_FUNC(int) engine_advance ( struct engine *e );
 CAPI_FUNC(int) engine_angle_addpot ( struct engine *e , struct MxPotential *p );
 CAPI_FUNC(int) engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
@@ -324,6 +332,49 @@ CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 
 
 /**
+ * External C apps should call this to get a particle type ptr.
+ */
+CAPI_FUNC(struct MxParticleType*) engine_type(int id);
+
+/**
+ * @brief Add a #part to a #space at the given coordinates. The given
+ * particle p is only used for the attributes, it itself is not added,
+ * rather a new memory block is allocated, and the contents of p
+ * get copied in there.
+ *
+ * @param s The space to which @c p should be added.
+ * @param p The #part to be added.
+ * @param x A pointer to an array of three doubles containing the particle
+ *      position.
+ * @param result pointer to the newly allocated particle.
+ *
+ * @returns #space_err_ok or < 0 on error (see #space_err).
+ *
+ * Inserts a #part @c p into the #space @c s at the position @c x.
+ * Note that since particle positions in #part are relative to the cell, that
+ * data in @c p is overwritten and @c x is used.
+ *
+ * This is the single, central function that actually allocates particle space,
+ * and inserts a new particle into the engine.
+ *
+ * Increases the ref count on the particle type.
+ */
+CAPI_FUNC(int) engine_addpart ( struct engine *e ,  struct MxParticle *p ,
+        double *x, struct MxParticle **result );
+
+/**
+ * Adds a force for a given type id
+ *
+ * The engine 'borrows' (increases the ref count) to the force.
+ *
+ * @param e: engine ptr
+ * @param f: ptr to force
+ * @param id: id of particle type.
+ */
+CAPI_FUNC(int) engine_singlebody_set (struct engine *e , struct MxForce *f, int type_id);
+
+
+/**
  * @brief Add a type definition.
  *
  * @param e The #engine.
@@ -340,15 +391,6 @@ CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
         const char *name , const char *name2 );
 
-/**
- * Creates a new data item in the engine and sets the
- * given type pointer to it.
- *
- * steels a reference to type (bumps ref count).
- */
-CAPI_FUNC(int) engine_addtype_for_type( struct engine *e , double mass ,
-        double charge , const char *name , const char *name2,
-        MxParticleType *type);
 
 /**
  * @brief Initialize an #engine with the given data.
@@ -451,7 +493,6 @@ CAPI_FUNC(int) engine_split_METIS ( struct engine *e, int N, int flags);
 CAPI_DATA(engine) _Engine;
 
 CAPI_FUNC(struct engine*) engine_get();
-
 
 #endif // INCLUDE_ENGINE_H_
 

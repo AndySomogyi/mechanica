@@ -15,6 +15,7 @@
 #include <rendering/MxWindowlessApplication.h>
 #include <map>
 #include <sstream>
+#include <MxUniverse.h>
 
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
@@ -32,7 +33,7 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
 
 static MxSimulator* Simulator = NULL;
 
-static void interactiveRun();
+static void simulator_interactive_run();
 
 static void ipythonInputHook(py::args args);
 
@@ -44,7 +45,7 @@ MxSimulator::Config::Config():
             _windowless{false},
             threads{4},
             queues{4} {
-    _windowFlags = MxSimulator::WindowFlags::Resizable;
+    _windowFlags = MxSimulator::WindowFlags::Resizable | MxSimulator::WindowFlags::Focused;
 }
 
 
@@ -186,12 +187,6 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("dim")) {
         conf.universeConfig.dim = py::cast<Vector3>(kwargs["dim"]);
     }
-
-    if(kwargs.contains("init_particle_count")) {
-        conf.universeConfig.nParticles = py::cast<int>(kwargs["init_particle_count"]);
-    }
-
-
 
 }
 
@@ -377,7 +372,8 @@ HRESULT MxSimulator_init(PyObject* m) {
     sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
     sim.def_static("run", [](){PY_CHECK(MxSimulator_Run());});
     sim.def_static("ftest", &ftest);
-    sim.def_static("irun", &interactiveRun);
+    sim.def_static("irun", &simulator_interactive_run);
+    sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
 
 
     sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
@@ -400,7 +396,7 @@ HRESULT MxSimulator_init(PyObject* m) {
             .value("Hidden", MxSimulator::WindowFlags::Hidden)
             .value("Maximized", MxSimulator::WindowFlags::Maximized)
             .value("Minimized", MxSimulator::WindowFlags::Minimized)
-            .value("Floating", MxSimulator::WindowFlags::Floating)
+            .value("AlwaysOnTop", MxSimulator::WindowFlags::AlwaysOnTop)
             .value("AutoIconify", MxSimulator::WindowFlags::AutoIconify)
             .value("Focused", MxSimulator::WindowFlags::Focused)
             .value("Contextless", MxSimulator::WindowFlags::Contextless)
@@ -443,8 +439,6 @@ HRESULT MxSimulator_init(PyObject* m) {
     sc.def_property("threads", [](const MxSimulator::Config &conf) { return conf.universeConfig.threads; },
                     [](MxSimulator::Config &conf, int v) {conf.universeConfig.threads = v;});
     
-    sc.def_property("init_particle_count", [](const MxSimulator::Config &conf) { return conf.universeConfig.nParticles; },
-                        [](MxSimulator::Config &conf, int v) {conf.universeConfig.nParticles = v;});
 
 
 
@@ -580,95 +574,6 @@ int universe_init (const MxUniverseConfig &conf ) {
 
 
 
-
-void engineStep() {
-
-    //return;
-
-    ticks tic, toc_step, toc_temp;
-
-    double epot, ekin, v2, temp;
-
-    int   k, cid, pid;
-
-    double w;
-
-    // take a step
-    tic = getticks();
-
-    //ENGINE_DUMP("pre step: ");
-
-    if ( engine_step( &_Engine ) != 0 ) {
-        printf("main: engine_step failed with engine_err=%i.\n",engine_err);
-        errs_dump(stdout);
-        return ;
-    }
-
-    //ENGINE_DUMP("after step: ");
-
-    toc_step = getticks();
-
-    /* Check virtual/local ids. */
-    /* for ( cid = 0 ; cid < e.s.nr_cells ; cid++ )
-               for ( pid = 0 ; pid < e.s.cells[cid].count ; pid++ )
-                   if ( e.s.cells[cid].parts[pid].id != e.s.cells[cid].parts[pid].vid )
-                       printf( "main: inconsistent particle id/vid (%i/%i)!\n",
-                           e.s.cells[cid].parts[pid].id, e.s.cells[cid].parts[pid].vid ); */
-
-    /* Verify integrity of partlist. */
-    /* for ( k = 0 ; k < nr_mols*3 ; k++ )
-               if ( e.s.partlist[k]->id != k )
-                   printf( "main: inconsistent particle id/partlist (%i/%i)!\n", e.s.partlist[k]->id, k );
-           fflush(stdout); */
-
-
-    // get the total COM-velocities and ekin
-    epot = _Engine.s.epot; ekin = 0.0;
-#pragma omp parallel for schedule(static,100), private(cid,pid,k,v2), reduction(+:epot,ekin)
-    for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-        for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-            for ( v2 = 0.0 , k = 0 ; k < 3 ; k++ )
-                v2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
-            ekin += 0.5 * 39.948 * v2;
-        }
-    }
-
-    // compute the temperature and scaling
-    temp = ekin / ( 1.5 * 6.022045E23 * 1.380662E-26 * _Engine.s.nr_parts );
-    w = sqrt( 1.0 + 0.1 * ( _Engine.temperature / temp - 1.0 ) );
-
-    // scale the velocities
-
-    /*
-    if ( i < 10000 ) {
-#pragma omp parallel for schedule(static,100), private(cid,pid,k), reduction(+:epot,ekin)
-        for ( cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-            for ( pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-                for ( k = 0 ; k < 3 ; k++ )
-                    _Engine.s.cells[cid].parts[pid].v[k] *= w;
-            }
-        }
-    }
-     */
-
-    toc_temp = getticks();
-
-    /*
-
-    printf("time:%i, epot:%e, ekin:%e, temp:%e, swaps:%i, stalls: %i %.3f %.3f %.3f ms\n",
-            _Engine.time,epot,ekin,temp,_Engine.s.nr_swaps,_Engine.s.nr_stalls,
-            (double)(toc_temp-tic) * 1000 / CPU_TPS,
-            (double)(toc_step-tic) * 1000 / CPU_TPS,
-            (double)(toc_temp-toc_step) * 1000 / CPU_TPS);
-    fflush(stdout);
-    */
-
-    // print some particle data
-    // printf("main: part 13322 is at [ %e , %e , %e ].\n",
-    //     e.s.partlist[13322]->x[0], e.s.partlist[13322]->x[1], e.s.partlist[13322]->x[2]);
-}
-
-
 static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3 &corner2, int nParticles) {
     std::vector<Vector3> result;
 
@@ -788,7 +693,7 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
 
 
 
-static void interactiveRun() {
+static void simulator_interactive_run() {
     std::cout << "entering " << MX_FUNCTION << std::endl;
     PYSIMULATOR_CHECK();
     // Try to import ipython
@@ -872,7 +777,6 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
     printf("done.\n"); fflush(stdout); */
 
 
-
     // initialize the Ar-Ar potential
     if ( ( pot_ArAr = potential_create_LJ126( 0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
         printf("main: potential_create_LJ126 failed with potential_err=%i.\n",potential_err);
@@ -912,12 +816,14 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
     // total velocity squared
     float totV2 = 0;
 
+    float vscale = 10.0;
+
     for(int i = 0; i < pos.size(); ++i) {
         pAr.id = i;
 
-        pAr.v[0] = ((double)rand()) / RAND_MAX - 0.5;
-        pAr.v[1] = ((double)rand()) / RAND_MAX - 0.5;
-        pAr.v[2] = ((double)rand()) / RAND_MAX - 0.5;
+        pAr.v[0] = vscale * (((double)rand()) / RAND_MAX - 0.5);
+        pAr.v[1] = vscale * (((double)rand()) / RAND_MAX - 0.5);
+        pAr.v[2] = vscale * (((double)rand()) / RAND_MAX - 0.5);
 
         totV2 +=   pAr.v[0]*pAr.v[0] + pAr.v[1]*pAr.v[1] + pAr.v[2]*pAr.v[2] ;
 
@@ -925,34 +831,12 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
         x[1] = pos[i][1];
         x[2] = pos[i][2];
 
-        if ( space_addpart( &(_Engine.s) , &pAr , x, NULL ) != 0 ) {
+        if (engine_addpart( &_Engine , &pAr , x, NULL ) != 0 ) {
             printf("main: space_addpart failed with space_err=%i.\n",space_err);
             errs_dump(stdout);
             return 1;
         }
     }
-
-    float t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
-    std::cout << "temperature before scaling: " << t << std::endl;
-
-    float vScale = sqrt((3./_Engine.types[pAr.typeId].mass) * (_Engine.temperature) / (totV2 / _Engine.s.nr_parts));
-
-    // sanity check
-    totV2 = 0;
-
-    // scale velocities
-    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-        for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-            for (int k = 0 ; k < 3 ; k++ ) {
-                _Engine.s.cells[cid].parts[pid].v[k] *= vScale;
-                totV2 += _Engine.s.cells[cid].parts[pid].v[k] * _Engine.s.cells[cid].parts[pid].v[k];
-            }
-        }
-    }
-
-    t = (1./ 3.) * _Engine.types[pAr.typeId].mass * totV2 / _Engine.s.nr_parts;
-    std::cout << "particle temperature: " << t << std::endl;
-
 
 
 
@@ -968,3 +852,24 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
 
 }
 
+CAPI_FUNC(HRESULT) MxSimulator_Show()
+{
+    SIMULATOR_CHECK();
+
+    if(Simulator->flags & MxSimulator::Flags::Running) {
+        // TODO: add something to application to show window
+        return S_OK;
+    }
+
+    MxUniverse_SetFlag(MxUniverse_Flags::MXU_RUNNING, false);
+
+    simulator_interactive_run();
+
+    return S_OK;
+}
+
+CAPI_FUNC(HRESULT) MxSimulator_Redraw()
+{
+    SIMULATOR_CHECK();
+    return Simulator->app->redraw();
+}
