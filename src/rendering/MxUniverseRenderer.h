@@ -46,9 +46,14 @@
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/MxGlfwWindow.h>
 
+#include <Magnum/Platform/GlfwApplication.h>
+
 #include <rendering/MxWindow.h>
 
+#include <rendering/ArcBallCamera.h>
+
 using namespace Magnum;
+using namespace Magnum::Platform;
 
 using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;
 using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
@@ -64,7 +69,8 @@ struct MxUniverseRenderer : MxRenderer {
     // TODO, implement the event system instead of hard coding window events.
     MxUniverseRenderer(MxGlfwWindow *win, float particleRadius = 1.0);
 
-    MxUniverseRenderer& draw(Containers::Pointer<SceneGraph::Camera3D>& camera, const Vector2i& viewportSize);
+    template<typename T>
+    MxUniverseRenderer& draw(T& camera, const Vector2i& viewportSize);
 
     bool& isDirty() { return _dirty; }
 
@@ -158,6 +164,14 @@ struct MxUniverseRenderer : MxRenderer {
     void draw();
 
 
+    void viewportEvent(GlfwApplication::ViewportEvent& event);
+    void keyPressEvent(GlfwApplication::KeyEvent& event);
+    void mousePressEvent(GlfwApplication::MouseEvent& event);
+    void mouseReleaseEvent(GlfwApplication::MouseEvent& event);
+    void mouseMoveEvent(GlfwApplication::MouseMoveEvent& event);
+    void mouseScrollEvent(GlfwApplication::MouseScrollEvent& event);
+
+
 
 
 
@@ -195,8 +209,11 @@ struct MxUniverseRenderer : MxRenderer {
     scene objects */
     Containers::Pointer<Scene3D> _scene;
     Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
-    Containers::Pointer<Object3D> _objCamera;
-    Containers::Pointer<SceneGraph::Camera3D> _camera;
+
+
+    Magnum::Mechanica::ArcBallCamera *_arcball;
+
+
     /* Ground grid */
      Containers::Pointer<WireframeGrid> _grid;
 

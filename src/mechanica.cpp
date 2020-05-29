@@ -152,7 +152,7 @@ static PyObject * moduleinit(void)
     //CObject_init(m);
 
 
-    MxSimulator_init(m);
+    _MxSimulator_init(m);
     MxSurfaceSimulator_init(m);
     MxCylinderModel_init(m);
     _MxParticle_init(m);

@@ -92,6 +92,16 @@ However, for non-conservative forces, like temperature, friction, etc, these are
 
 That would imply that we need have to allow the user to represent both potentials and forces. I would have preferred to just work in potential or forces, as this simplifies the things for the users, but I don’t really see a way around it. 
 
+
+.. literalinclude:: ../../examples/two_particle_tstat.py
+
+
+The complete simulation script is here, and can be downloaded here:
+
+Download: :download:`this example script <../../examples/two_particle_tstat.py>`::
+
+
+
 So, user experience would be like this:
 
 # create a thermostat force, effectively maintains the temperate of a set of things

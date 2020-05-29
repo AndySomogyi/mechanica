@@ -136,6 +136,14 @@ public:
     Timeline _timeline;
 
     HRESULT mainLoopIteration(double timeout) override;
+
+
+    void viewportEvent(ViewportEvent& event) override;
+    void keyPressEvent(KeyEvent& event) override;
+    void mousePressEvent(MouseEvent& event) override;
+    void mouseReleaseEvent(MouseEvent& event) override;
+    void mouseMoveEvent(MouseMoveEvent& event) override;
+    void mouseScrollEvent(MouseScrollEvent& event) override;
 };
 
 

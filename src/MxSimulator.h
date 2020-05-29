@@ -74,7 +74,7 @@ CAPI_DATA(PyTypeObject) MxSimulator_Type;
 
 struct CAPI_EXPORT MxSimulator {
     
-    class GLConfig;
+    class CAPI_EXPORT GLConfig;
 
     enum class DpiScalingPolicy : UnsignedByte {
         /* Using 0 for an "unset" value */
@@ -163,7 +163,7 @@ struct CAPI_EXPORT MxSimulator {
 
 
 
-    struct Config
+    struct CAPI_EXPORT Config
     {
     public:
 
@@ -238,6 +238,19 @@ struct CAPI_EXPORT MxSimulator {
                _dpiScaling = vec;
            }
 
+
+        void setSizeAndScaling(const Vector2i& size, DpiScalingPolicy dpiScalingPolicy = DpiScalingPolicy::Default) {
+                    _size = size;
+                    _dpiScalingPolicy = dpiScalingPolicy;
+
+                }
+
+
+        void setSizeAndScaling(const Vector2i& size, const Vector2& dpiScaling) {
+                    _size = size;
+                    _dpiScaling = dpiScaling;
+        }
+
         /**
          * @brief Set window size
          * @param size              Desired window size
@@ -294,8 +307,10 @@ struct CAPI_EXPORT MxSimulator {
 
         int queues;
 
-        
-        
+        int argc = 0;
+
+        char** argv = NULL;
+
     private:
         std::string _title;
         Vector2i _size;
@@ -321,6 +336,10 @@ struct CAPI_EXPORT MxSimulator {
 
     uint32_t flags = 0;
 };
+
+
+CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf,
+        const MxSimulator::GLConfig &glConf);
 
 
 /**
@@ -416,7 +435,7 @@ CAPI_FUNC(HRESULT) MxSimulator_Redraw();
 
 
 // internal method to initialize the simulator type.
-HRESULT MxSimulator_init(PyObject *o);
+HRESULT _MxSimulator_init(PyObject *o);
 
 
 /**

@@ -23,14 +23,22 @@
 
 
 #include <Mechanica.h>
-#include <rendering/FluidSimTest.h>
+#include <MxSimulator.h>
+
 
 
 int main(int argc, char** argv) {
 
     Mx_Initialize(0);
-    FluidSimTest app({argc, argv});
-    return app.exec();
+    MxSimulator::Config conf;
+    MxSimulator::GLConfig glConf;
+
+    conf.example = "argon";
+    MxSimulator_InitConfig(conf, glConf);
+
+    MxSimulator_Run();
+
+    return 0;
 }
 
 

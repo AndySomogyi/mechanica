@@ -241,3 +241,32 @@ HRESULT MxGlfwApplication::redraw()
     return S_OK;
 }
 
+void MxGlfwApplication::viewportEvent(ViewportEvent &event)
+{
+    _ren->viewportEvent(event);
+}
+
+void MxGlfwApplication::keyPressEvent(KeyEvent &event)
+{
+    _ren->keyPressEvent(event);
+}
+
+void MxGlfwApplication::mousePressEvent(MouseEvent &event)
+{
+    _ren->mousePressEvent(event);
+}
+
+void MxGlfwApplication::mouseReleaseEvent(MouseEvent &event)
+{
+    _ren->mouseReleaseEvent(event);
+}
+
+void MxGlfwApplication::mouseMoveEvent(MouseMoveEvent &event)
+{
+    _ren->mouseMoveEvent(event);
+}
+
+void MxGlfwApplication::mouseScrollEvent(MouseScrollEvent &event)
+{
+    _ren->mouseScrollEvent(event);
+}

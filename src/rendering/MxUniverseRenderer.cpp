@@ -45,6 +45,8 @@
 #include <Magnum/SceneGraph/Drawable.h>
 #include <Magnum/Math/FunctionsBatch.h>
 
+
+
 #include <rendering/WireframeObjects.h>
 
 #include <assert.h>
@@ -69,7 +71,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     ob_refcnt = 1;
 
     setupCallbacks();
-    
+
     const auto viewportSize1 = GL::defaultFramebuffer.viewport().size();
 
 
@@ -96,24 +98,31 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _scene.reset(new Scene3D{});
     _drawableGroup.reset(new SceneGraph::DrawableGroup3D{});
 
-    /* Configure camera */
-    _objCamera.reset(new Object3D{ _scene.get() });
 
     const auto viewportSize = GL::defaultFramebuffer.viewport().size();
-    _camera.reset(new SceneGraph::Camera3D{ *_objCamera });
 
-    _camera->setProjectionMatrix(Matrix4::perspectiveProjection(45.0_degf, Vector2{ viewportSize }.aspectRatio(), 0.01f, 1000.0f))
-        .setViewport(viewportSize);
 
     /* Set default camera parameters */
     _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
 
     _defaultCamTarget   = {0,0,0};
 
-    _objCamera->setTransformation(Matrix4::lookAt(_defaultCamPosition, _defaultCamTarget, Vector3(0, 1, 0)));
 
-    /* Initialize depth to the value at scene center */
-    _lastDepth = ((_camera->projectionMatrix() * _camera->cameraMatrix()).transformPoint({}).z() + 1.0f) * 0.5f;
+    /* Set up the camera */
+    {
+        /* Setup the arcball after the camera objects */
+        const Vector3 eye = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
+        const Vector3 center{};
+        const Vector3 up = Vector3::yAxis();
+
+        //template<class Transformation> ArcBallCamera(
+        // SceneGraph::Scene<Transformation>& scene,
+        // const Vector3& cameraPosition, const Vector3& viewCenter,
+        // const Vector3& upDir, Deg fov, const Vector2i& windowSize,
+        // const Vector2i& viewportSize):
+        _arcball = new Magnum::Mechanica::ArcBallCamera(*_scene, eye, center, up, 45.0_degf,
+            win->windowSize(), win->framebufferSize());
+    }
 
 
     /* Setup ground grid */
@@ -137,9 +146,9 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     setModelViewTransform(Matrix4::translation(-center));
 }
 
-MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Camera3D>& camera,
+template<typename T>
+MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         const Vector2i& viewportSize) {
-
 
 
     // the incomprehensible template madness way of doing things.
@@ -152,7 +161,6 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
     //                         GL::BufferUsage::DynamicDraw);
 
     // give me the damned bytes...
-
 
 
     // invalidate / resize the buffer
@@ -190,24 +198,22 @@ MxUniverseRenderer& MxUniverseRenderer::draw(Containers::Pointer<SceneGraph::Cam
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
     (*_shader)
-                /* particle data */
-                .setNumParticles(_Engine.s.nr_parts)
-                .setParticleRadius(_particleRadius)
-                /* sphere render data */
-                .setPointSizeScale(static_cast<float>(viewportSize.x())/
-                        Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
-                        .setColorMode(_colorMode)
-                        .setAmbientColor(_ambientColor)
-                        .setDiffuseColor(_diffuseColor)
-                        .setSpecularColor(_specularColor)
-                        .setShininess(_shininess)
-                        /* view/prj matrices and light */
-                        .setViewMatrix(camera->cameraMatrix() * modelViewMat)
-                        .setProjectionMatrix(camera->projectionMatrix())
-                        .setLightDirection(_lightDir)
-                        .draw(_mesh);
-
-
+        /* particle data */
+        .setNumParticles(_Engine.s.nr_parts)
+        .setParticleRadius(_particleRadius)
+        /* sphere render data */
+        .setPointSizeScale(static_cast<float>(viewportSize.x())/
+                           Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
+        .setColorMode(_colorMode)
+        .setAmbientColor(_ambientColor)
+        .setDiffuseColor(_diffuseColor)
+        .setSpecularColor(_specularColor)
+        .setShininess(_shininess)
+        /* view/prj matrices and light */
+        .setViewMatrix(camera->cameraMatrix() * modelViewMat)
+        .setProjectionMatrix(camera->projectionMatrix())
+        .setLightDirection(_lightDir)
+        .draw(_mesh);
 
     return *this;
 }
@@ -283,6 +289,7 @@ HRESULT MyUniverseRenderer_Init(PyObject *m)
 
 void MxUniverseRenderer::onCursorMove(double xpos, double ypos)
 {
+    /*
     const Vector2i position(xpos, ypos);
 
 
@@ -298,9 +305,11 @@ void MxUniverseRenderer::onCursorMove(double xpos, double ypos)
             Matrix4::translation(-_rotationPoint));
     } else {
         const Vector3 p = unproject(position, _lastDepth);
-        _objCamera->translateLocal(_translationPoint - p); /* is Z always 0? */
+        _objCamera->translateLocal(_translationPoint - p); /* is Z always 0?
         _translationPoint = p;
     }
+
+*/
 
 
 }
@@ -312,7 +321,7 @@ Vector3 MxUniverseRenderer::unproject(const Vector2i& windowPosition, float dept
     const Vector2i viewPosition = Vector2i{windowPosition.x(), viewSize.y() - windowPosition.y() - 1};
     const Vector3 in{2.0f*Vector2{viewPosition}/Vector2{viewSize} - Vector2{1.0f}, depth*2.0f - 1.0f};
 
-    return _camera->projectionMatrix().inverted().transformPoint(in);
+    return in;
 }
 
 void MxUniverseRenderer::onCursorEnter(int entered)
@@ -340,19 +349,24 @@ void MxUniverseRenderer::onFramebufferSizeChange(int x, int y)
 void MxUniverseRenderer::draw() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
-
-
-
+    /* Call arcball update in every frame. This will do nothing if the camera
+           has not been changed. Otherwise, camera transformation will be
+           propagated into the camera objects. */
+    bool camChanged = _arcball->update();
 
     /* Draw objects */
-    {
-        /* Trigger drawable object to update the particles to the GPU */
-        setDirty();
-        /* Draw particles */
-        draw(_camera, window->framebufferSize());
 
-        /* Draw other objects (ground grid) */
-        _camera->draw(*_drawableGroup);
+    /* Trigger drawable object to update the particles to the GPU */
+    setDirty();
+    /* Draw particles */
+    draw(_arcball, window->framebufferSize());
+
+    /* Draw other objects (ground grid) */
+    _arcball->draw(*_drawableGroup);
+
+
+    if(camChanged) {
+        MxSimulator_Redraw();
     }
 
 }
@@ -377,7 +391,9 @@ void MxUniverseRenderer::viewportEvent(const int w, const int h) {
     GL::defaultFramebuffer.setViewport({{}, window->framebufferSize()});
 
     /* Recompute the camera's projection matrix */
-    _camera->setViewport(window->framebufferSize());
+    //_camera->setViewport(window->framebufferSize());
+
+    //_arcball->reshape(event.windowSize(), event.framebufferSize());
 }
 
 void MxUniverseRenderer::onMouseButton(int button, int action, int mods)
@@ -388,6 +404,84 @@ void MxUniverseRenderer::setupCallbacks()
 {
 
 }
+
+
+void MxUniverseRenderer::viewportEvent(GlfwApplication::ViewportEvent& event) {
+    GL::defaultFramebuffer.setViewport({{}, event.framebufferSize()});
+
+    _arcball->reshape(event.windowSize(), event.framebufferSize());
+
+    // TODO: tell the shader
+    //_shader.setViewportSize(Vector2{framebufferSize()});
+}
+
+void MxUniverseRenderer::keyPressEvent(GlfwApplication::KeyEvent& event) {
+    switch(event.key()) {
+        case GlfwApplication::KeyEvent::Key::L:
+            if(_arcball->lagging() > 0.0f) {
+                Debug{} << "Lagging disabled";
+                _arcball->setLagging(0.0f);
+            } else {
+                Debug{} << "Lagging enabled";
+                _arcball->setLagging(0.85f);
+            }
+            break;
+        case GlfwApplication::KeyEvent::Key::R:
+            _arcball->reset();
+            break;
+
+        default: return;
+    }
+
+    event.setAccepted();
+    window->redraw();
+}
+
+void MxUniverseRenderer::mousePressEvent(GlfwApplication::MouseEvent& event) {
+    /* Enable mouse capture so the mouse can drag outside of the window */
+    /** @todo replace once https://github.com/mosra/magnum/pull/419 is in */
+    //SDL_CaptureMouse(SDL_TRUE);
+
+    _arcball->initTransformation(event.position());
+
+    event.setAccepted();
+    window->redraw(); /* camera has changed, redraw! */
+
+}
+
+void MxUniverseRenderer::mouseReleaseEvent(GlfwApplication::MouseEvent& event) {
+
+}
+
+void MxUniverseRenderer::mouseMoveEvent(GlfwApplication::MouseMoveEvent& event) {
+    if(!event.buttons()) return;
+
+    if(event.modifiers() & GlfwApplication::MouseMoveEvent::Modifier::Shift) {
+        _arcball->translate(event.position());
+    }
+    else {
+        _arcball->rotate(event.position());
+    }
+
+    event.setAccepted();
+    window->redraw(); /* camera has changed, redraw! */
+}
+
+void MxUniverseRenderer::mouseScrollEvent(GlfwApplication::MouseScrollEvent& event) {
+    const Float delta = event.offset().y();
+    if(Math::abs(delta) < 1.0e-2f) return;
+
+    _arcball->zoom(delta);
+
+    event.setAccepted();
+    window->redraw(); /* camera has changed, redraw! */
+}
+
+
+
+
+
+
 //void FluidSimApp::mouseScrollEvent(MouseScrollEvent& event) {
 //    const Float delta = event.offset().y();
 //    if(Math::abs(delta) < 1.0e-2f) {

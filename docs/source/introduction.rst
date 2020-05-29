@@ -2,11 +2,11 @@
 Introduction
 ************
 
-Mechanica is an interactive particle based physics and chemistry simulation
-environment, with a heavy emphasis towards enabling users to model and
-simulate complex sub-cellular and cellular biological physics
+Mechanica is an interactive particle based physics, chemistry and biology
+simulation environment, with a heavy emphasis towards enabling users to model
+and simulate complex sub-cellular and cellular biological physics
 problems. Mechanica is part of the Tellurium
-`<http://tellurium.analogmachine.org>`_ project. 
+`<http://tellurium.analogmachine.org>`_ project.
 
 Mechanica is designed first and foremost to enable users to work interactively
 with simulations -- so they can build, and run a simulation in real-time, and

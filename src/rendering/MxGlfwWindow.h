@@ -61,6 +61,8 @@ struct MxGlfwWindow : MxWindow
 
     Magnum::Vector2i windowSize() const;
 
+    void redraw();
+
 };
 
 

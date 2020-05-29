@@ -20,16 +20,29 @@ force object.
    Creates a Berendsen thermostat
 
    :param: tau: time constant that determines how rapidly the thermostat effects
-           the system. 
+           the system.
+
+   The thermostat picks up the target temperature :math:`T_0` from the object
+   that it gets bound to. For example, if we bind a temperature to a particle
+   type, then it uses the 
           
    The Berendsen thermostat effectively re-scales the velocities of an object in
    order to make the temperature of that family of objects match a specified
-   temperature. 
+   temperature.
+
+   The Berendsen thermostat force :math:`\mathbf{F}_{temp}` has a function form of:
 
    .. math::
 
-      \frac{d \mathbf{p}_i}{dt} += \frac{\mathbf{p}_i}{\tau_T}
-          \left(\frac{T_0}{T} - 1 \right)
+      \mathbf{F}_{temp} = \frac{\mathbf{p}_i}{\tau_T}
+          \left(\frac{T_0}{T} - 1 \right),
+
+   where :math:`T` is the measured temperature of a family of
+   particles, :math:`T_0` is the control temperature, and
+   :math:`\tau_T` is the coupling constant. The coupling constant is a measure
+   of the time scale on which the thermostat operates, and has units of
+   time. Smaller values of :math:`\tau_T` result in a faster acting thermostat,
+   and larger values result in a slower acting thermostat.  
 
 
 

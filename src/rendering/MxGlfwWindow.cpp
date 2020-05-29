@@ -5,7 +5,9 @@
  *      Author: andy
  */
 
+#include <rendering/MxGlfwApplication.h>
 #include <rendering/MxGlfwWindow.h>
+
 
 #include <MxPy.h>
 #include <iostream>
@@ -193,3 +195,12 @@ Vector2i MxGlfwWindow::windowSize() const {
     glfwGetWindowSize(_window, &size.x(), &size.y());
     return size;
 }
+
+
+void MxGlfwWindow::redraw() {
+
+    // TODO: get rid of GLFWApplication
+    MxSimulator_Redraw();
+
+}
+

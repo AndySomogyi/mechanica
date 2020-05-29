@@ -40,7 +40,7 @@ tstat = m.forces.berenderson_tstat(10)
 m.Universe.bind(tstat, A)
 m.Universe.bind(tstat, B)
 
-size = 25
+size = 10000
 
 # uniform random cube
 positions = np.random.uniform(low=0, high=10, size=(size, 6))

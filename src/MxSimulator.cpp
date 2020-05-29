@@ -360,7 +360,7 @@ static py::object ftest() {
 
 
 
-HRESULT MxSimulator_init(PyObject* m) {
+HRESULT _MxSimulator_init(PyObject* m) {
 
     std::cout << MX_FUNCTION << std::endl;
 
@@ -872,4 +872,62 @@ CAPI_FUNC(HRESULT) MxSimulator_Redraw()
 {
     SIMULATOR_CHECK();
     return Simulator->app->redraw();
+}
+
+CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf, const MxSimulator::GLConfig &glConf)
+{
+    if(Simulator) {
+        return mx_error(E_FAIL, "simulator already initialized");
+    }
+
+    MxSimulator *sim = new MxSimulator();
+
+    // init the engine first
+    /* Initialize scene particles */
+    universe_init(conf.universeConfig);
+
+    if(conf.example.compare("argon")==0) {
+        example_argon(conf.universeConfig);
+    }
+
+    if(conf.windowless()) {
+
+        /*
+
+
+
+        MxWindowlessApplication::Configuration windowlessConf;
+
+        MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
+
+        if(!windowlessApp->tryCreateContext(conf)) {
+            delete windowlessApp;
+
+            throw std::domain_error("could not create windowless gl context");
+        }
+        else {
+            sim->app = windowlessApp;
+        }
+        */
+    }
+    else {
+
+        std::cout << "creating GLFW app" << std::endl;
+
+        int argc = conf.argc;
+
+        MxGlfwApplication::Arguments args{argc, conf.argv};
+
+        MxGlfwApplication *glfwApp = new MxGlfwApplication(args);
+
+        glfwApp->createContext(conf);
+
+        sim->app = glfwApp;
+    }
+
+    std::cout << MX_FUNCTION << std::endl;
+
+    Simulator = sim;
+
+    return S_OK;
 }
