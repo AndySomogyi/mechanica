@@ -34,7 +34,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
     'sphinxcontrib.bibtex',
-    'sphinx.ext.ifconfig'
+    'sphinx.ext.ifconfig',
+    'sphinxemoji.sphinxemoji'
 ]
 
 numfig = True

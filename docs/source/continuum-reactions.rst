@@ -106,4 +106,13 @@ of CRK objects and the tree of Canvas objects.
 
 * NetViz listens for user events from the visual Canvas objects. NetViz can then
   *signal* a corresponding event in a CRK object. This enables end-user Python
-  code to recieve events from end-user mouse input. 
+  code to recieve events from end-user mouse input.
+
+
+Model Loading
+^^^^^^^^^^^^^
+
+End users typically create CRK models using the Python API, or the interactive
+NetViz component. We also support readign and writing both SBML and Antimony
+documents. CRK also supports it's own human-readable and writable (unlike XML
+|:smile:|) file format. 
