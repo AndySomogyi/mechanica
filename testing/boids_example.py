@@ -1,42 +1,46 @@
 import mechanica as m
 from random import *
+import numpy as np
 
 
-# create a boids system with a single particle type. 
-class MyBoid(m.VertexCell):
+# create a boids system with a single particle type.
+class MyBoid(m.Particle):
     pass
 
 
-# Flocking behavior: in addition to other applications, the separation, 
-# cohesion and alignment behaviors can be combined to produce the boids 
+# Flocking behavior: in addition to other applications, the separation,
+# cohesion and alignment behaviors can be combined to produce the boid
 # model of flocks, herds and schools
 
 # we can add these force processed to particle types
 
-# Separation steering behavior gives a agent the ability to maintain a 
-# certain separation distance from others nearby. This can be used to prevent 
-# agents from crowding together. Separation Pushes boids apart to keep them 
-# from crashing into each other by maintaining distance from nearby flock 
-# mates. Each boid considers its distance to other flock mates in its 
-# neighborhood and applies a repulsive force in the opposite direction, 
+# Separation steering behavior gives a agent the ability to maintain a
+# certain separation distance from others nearby. This can be used to prevent
+# agents from crowding together. Separation Pushes boids apart to keep them
+# from crashing into each other by maintaining distance from nearby flock
+# mates. Each boid considers its distance to other flock mates in its
+# neighborhood and applies a repulsive force in the opposite direction,
 # scaled by the inverse of the distance.
 
 # Implement the separation by adding a scaled Coulomb force to the particle type
-# The Colulomb is a 1/r potential with a k constant, set that constant here 
-# as 0.01. Calling the forces constructor, with a pair of types automaticaly 
-# registers this force with the runtime. 
+# The Colulomb is a 1/r potential with a k constant, set that constant here
+# as 0.01. Calling the forces constructor, with a pair of types automaticaly
+# registers this force with the runtime.
 #
-# The last argument here is the type of the object we want to attach to. The 
-# Coulomb is a two-body potential, and when only one type is given, the 
-# potential is applied to all pairs of this type. 
-m.forces.Coulomb(0.01, type(MyBoid))
+# The last argument here is the type of the object we want to attach to. The
+# Coulomb is a two-body potential, and when only one type is given, the
+# potential is applied to all pairs of this type.
 
-# Cohesion Keeps boids together as a group. Each boid moves in the 
-# direction of the average position of its neighbors. We Compute the direction 
+coulomb = m.forces.coulomb(0.01)
+m.Universe.bind(coulomb, MyBoid, MyBoid)
+
+# Cohesion Keeps boids together as a group. Each boid moves in the
+# direction of the average position of its neighbors. We Compute the direction
 # to the average position of local flock mates and steer in that direction.
-# The boids cohesion force is usally implemented as a Hookean force to the 
-# average position of all the boid's neighbors. We have a built-in force that 
-# implments this behavior. 
+# The boids cohesion force is usally implemented as a Hookean force to the
+# average position of all the boid's neighbors. We have a built-in force that
+# implments this behavior.
+
 m.forces.BoidsCohesion(cutoff=20, k=0.5, type(MyBoid))
 
 # Alignment Drives boids to head in the same direction with similar velocities 

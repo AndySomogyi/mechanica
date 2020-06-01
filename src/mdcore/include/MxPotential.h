@@ -180,6 +180,8 @@ CAPI_FUNC(double) potential_Coulomb_6p ( double r );
 CAPI_FUNC(double) potential_switch ( double r , double A , double B );
 CAPI_FUNC(double) potential_switch_p ( double r , double A , double B );
 
+
+
 /**
  * The type of each individual particle.
  */

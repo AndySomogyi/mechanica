@@ -17,7 +17,9 @@ Contents:
    quick_start
    status
    concepts
+   flux
    examples
+   continuum-reactions
    formalism
    api_reference
    building
