@@ -209,3 +209,14 @@ libgegl-dev
 libglfw3-dev
 
 libxi-dev
+
+
+Preparing a PyPi Release
+========================
+
+
+From the command line::
+
+  >>> python3 setup.py sdist bdist_wheel
+  >>> python3 -m twine upload dist/*
+
