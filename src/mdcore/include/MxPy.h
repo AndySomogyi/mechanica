@@ -235,8 +235,8 @@ PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
 
     };
 
-    result.doc = doc;
-    result.name = name;
+    result.doc = const_cast<char*>(doc);
+    result.name = const_cast<char*>(name);
     result.get = (getter)get;
     result.set = (setter)set;
     return result;

@@ -398,7 +398,7 @@ target_link_libraries(mechanica_py PRIVATE
   ${MX_JPEG_LIBRARIES}
   )
 
-if(WIN32 OR CYGWIN)
+if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
   # Link against the Python shared library on Windows
   target_link_libraries(mechanica_py PRIVATE ${PYTHON_LIBRARIES})
 
@@ -488,6 +488,7 @@ target_link_libraries(mechanica_shared
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools
+  ${MX_JPEG_LIBRARIES}
   )
 
 if(MX_ASSIMP)

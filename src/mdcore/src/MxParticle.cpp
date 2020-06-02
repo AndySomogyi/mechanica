@@ -497,14 +497,16 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
-    MxParticle part = {
-        .position = {},
-        .velocity = {},
-        .force = {},
-        .typeId = type->id,
-        .id = _Engine.s.nr_parts
-    };
-    
+    MxParticle part;
+    part.position = {};
+    part.velocity = {};
+    part.force = {};
+    part.q = 0;
+    part.volume = 0;
+    part.id = _Engine.s.nr_parts;
+    part.vid = 0;
+    part.typeId = type->id;
+    part.flags = 0;
     
     try {
         pybind11::detail::loader_life_support ls{};

@@ -24,4 +24,4 @@ if(MX_APPLE)
 endif()
 
 add_subdirectory(WindowlessTestApp)
-add_subdirectory(ApplicationTest)
+#add_subdirectory(ApplicationTest)

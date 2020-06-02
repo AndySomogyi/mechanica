@@ -82,9 +82,12 @@ struct MxParticle  {
 	/** individual particle charge, if needed. */
 	float q;
     
-    float volume;
+        float volume;
 
-	/** Particle id and type */
+	/** 
+	 * Particle id, virtual id 
+	 * TODO: not sure what virtual id is...
+	 */
 	int id, vid;
 
 	/** particle type. */
