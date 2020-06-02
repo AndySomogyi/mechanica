@@ -214,9 +214,16 @@ libxi-dev
 Preparing a PyPi Release
 ========================
 
+Currently, we copy dist files to a dropbox folder. Need to implement cleaner
+soltuion. 
+
 
 From the command line::
 
   >>> python3 setup.py sdist bdist_wheel
-  >>> python3 -m twine upload dist/*
+  >>> cp dist/* ~/Dropbox/dist/
+
+Then on upload computer::
+
+  >>> twine upload dist/*
 
