@@ -1,30 +1,37 @@
-# Mechanica
+Mechanica
+=========
+Mechanica is an interactive particle based physics, chemistry and biology
+simulation environment, with a heavy emphasis towards enabling users to model
+and simulate complex sub-cellular and cellular biological physics
+problems. Mechanica is part of the Tellurium
+`<http://tellurium.analogmachine.org>`_ project.
 
-Mechanica is a mechanistic model declaration language and simulation engine for physically motivated phenomena that couple mechanical and chemical processes
+Mechanica is designed first and foremost to enable users to work interactively
+with simulations -- so they can build, and run a simulation in real-time, and
+interact with that simulation whilst it's running. The goal is to create an
+SolidWorks type environment where users can create and explore virtual models of
+soft condensed matter physics, with a emphasis towards biological physics.
 
-Mechanica is designed to represent:
+Mechanica is a native compiled C++ shared library with a native and extensive
+Python API, that's designed to used from an ipython console (or via scripts of
+course). 
 
-* Deformable surfaces
-* Chemical fields
-* Particles and composite particles with local state
-* Transformation processes such as chemical reactions
-* Collision detection between hard and soft objects
-* Complex fluids
-* Continuous control systems
+History
+=======
 
-# Build Instructions
+Version Alpha 0.0.1 Dev 2
+-------------------------
+* First public release
 
-Mechanica uses git submodules for dependencies, you need recursively clone the repository initally: 
+Version Alpha 0.0.1 Dev 3
+-------------------------
 
-```
-git clone --recursive https://github.com/AndySomogyi/mechanica.git
-```
+* Refactoring of Particle python meta-types, simpler and cleaner
+* Upgrade to GLFW 3.3
+* New single body generalized force system
+* Berendsen thermostat as first example single body generalized forces
+* Per-type thermostat
+* Arc-ball user interaction
+* Simplify and eliminate redundency between C++ and Python apps. 
 
-Mechanica relies on a few external depencencies that are very standard and easy enough to get. You can grab these from brew:
 
-```
-brew install assimp
-brew install llvm
-brew install fftw
-brew install libpng
-```

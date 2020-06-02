@@ -19,7 +19,7 @@ def read(fname):
 
 setup(
     name = "mechanica",
-    version = "0.0.1.a1.dev3",
+    version = "0.0.1.a1.dev4",
     author = "Andy Somogyi",
     author_email = "andy.somogyi@gmail.com",
     description = ("Interactive physics simulation engine"),
