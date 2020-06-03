@@ -27,7 +27,7 @@ the particle type definition as::
 
 This automatically attaches instance variables ``S1``, ``S2`` and ``S3`` to the
 type ``A``, so that every instance of this type has the species attached to
-it. Internally Mechanica stores all species in a seperate memory block, and the
+it. Internally Mechanica stores all species in a separate memory block, and the
 species symbols are really just accessors. So with the above particle, we can
 easily access these values by::
 
@@ -41,8 +41,8 @@ and flux processes. We also allow other kinds species such as *boundary*, or
 have initial values, but we refer to these more advanced uses in the
 :ref:`Species` section. 
 
-Recall that the bulk or solvent particles dont't represent a single molecule,
-but rather a parcel of fluid. As such, disolved chemical solutes (cargo) in each
+Recall that the bulk or solvent particles don't represent a single molecule,
+but rather a parcel of fluid. As such, dissolved chemical solutes (cargo) in each
 parcel of fluid have natural tendency to *diffuse* to nearby locations.
 
 
@@ -52,7 +52,7 @@ parcel of fluid have natural tendency to *diffuse* to nearby locations.
     :alt: alternate text
     :figclass: align-center
 
-    Disolved solutes have a natural tendency to diffuse to nearby locations. 
+    Dissolved solutes have a natural tendency to diffuse to nearby locations. 
 
 This micro-scale diffusion of solutes results in mixing or mass transport
 without directed bulk motion of the solvent. We refer to the bulk motion, or
@@ -68,7 +68,7 @@ between all particles that match a specific type and are within a certain
 distance from each other. The only differences between a flux and a force, is
 that a flux is between the chemical cargo on particles, and modifies
 (transports) chemical cargo between particles, whereas a force modifies the net
-force acting on each paricle.
+force acting on each particle.
 
 We attach a flux between chemical cargo as::
 
@@ -86,7 +86,7 @@ We attach a flux between chemical cargo as::
 This creates a Fickian diffusive flux object ``q``, and binds it between species
 on two different particle types. Thus, whenever any pair of particles instances
 belonging to these types are near each other, the runtime will apply a Fickian
-diffusive fluxe between the species attached to these two particle instances. 
+diffusive flux between the species attached to these two particle instances. 
 
 In general, the time evolution of the chemical species at each particle are
 defined by:
@@ -108,7 +108,7 @@ random and reactive fluxes. These typically have the form:
    \end{eqnarray}
 
    
-where :math:`\kappa`, :math:`\epsilon` are constants, and :math:`\xi` is a gaussian
+where :math:`\kappa`, :math:`\epsilon` are constants, and :math:`\xi` is a Gaussian
 random number. These fluxes are available in the ``fluxes.fickian`` and
 ``fluxes.random`` packages. We provide more advanced functions, please refer to
 the ``fluxes`` package for details.
@@ -131,12 +131,12 @@ respectively, and :math:`\mathbf{F}_{ext}` is the external force on particle
 :math:`\mathbf{F}^R_{ij}` are the pairwise conservative, dissipative and random
 forces respectively.
 
-The conservative force represents the intertial forces in the fluid, and is
-typically a Lennard-Jones 12-6 type potential. The dissapative, or friction
-force :math:`\mathbf{F}^D` represents the dissapative forces, and the random
+The conservative force represents the inertial forces in the fluid, and is
+typically a Lennard-Jones 12-6 type potential. The dissipative, or friction
+force :math:`\mathbf{F}^D` represents the dissipative forces, and the random
 force :math:`\mathbf{F}^R` is a pair-wise random force between particles. Users
 are of course free to choose any forces they like, but these are the most
-comonlyh used DPD ones. 
+commonly used DPD ones. 
 
 
 The pairwise forces are commonly expressed as:
@@ -155,8 +155,9 @@ Here, :math:`r_{ij} = |\mathbf{r}_{ij}|`, :math:`\mathbf{r}_{ij} =
 r_{ij}`.  :math:`\mathbf{v}_{ij} = \mathbf{v}_i -
 \mathbf{v}_j`.
 
-All of these pairwise forces are conviently available in the ``forces`` package
-as the :any:`forces.dpd_conservative`,  
+All of these pairwise forces are conveniently  available in the ``forces`` package
+as the :any:`forces.dpd_conservative`, :any:`forces.dpd_dissipative` and
+:any:`forces.dpd_random` respectively. 
 
 
 
