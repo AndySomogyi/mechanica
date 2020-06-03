@@ -17,16 +17,15 @@
 #include <Corrade/Utility/DebugStl.h>
 
 using namespace Magnum;
-using namespace Magnum::Platform;
 
-class MyApplication: public WindowlessApplication {
+class MyApplication: public Platform::WindowlessApplication {
     public:
-        MyApplication(const Arguments& arguments);
+        MyApplication(const Platform::WindowlessApplication::Arguments& arguments);
 
         int exec() override;
 };
 
-MyApplication::MyApplication(const Arguments& arguments):
+MyApplication::MyApplication(const Platform::WindowlessApplication::Arguments& arguments):
     Platform::WindowlessApplication{arguments} {}
 
 int MyApplication::exec() {

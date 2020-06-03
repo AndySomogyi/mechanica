@@ -53,7 +53,6 @@
 #include <rendering/ArcBallCamera.h>
 
 using namespace Magnum;
-using namespace Magnum::Platform;
 
 using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;
 using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
@@ -164,12 +163,12 @@ struct MxUniverseRenderer : MxRenderer {
     void draw();
 
 
-    void viewportEvent(GlfwApplication::ViewportEvent& event);
-    void keyPressEvent(GlfwApplication::KeyEvent& event);
-    void mousePressEvent(GlfwApplication::MouseEvent& event);
-    void mouseReleaseEvent(GlfwApplication::MouseEvent& event);
-    void mouseMoveEvent(GlfwApplication::MouseMoveEvent& event);
-    void mouseScrollEvent(GlfwApplication::MouseScrollEvent& event);
+    void viewportEvent(Platform::GlfwApplication::ViewportEvent& event);
+    void keyPressEvent(Platform::GlfwApplication::KeyEvent& event);
+    void mousePressEvent(Platform::GlfwApplication::MouseEvent& event);
+    void mouseReleaseEvent(Platform::GlfwApplication::MouseEvent& event);
+    void mouseMoveEvent(Platform::GlfwApplication::MouseMoveEvent& event);
+    void mouseScrollEvent(Platform::GlfwApplication::MouseScrollEvent& event);
 
 
 

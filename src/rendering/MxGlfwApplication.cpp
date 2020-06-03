@@ -38,19 +38,19 @@
 }
 
 
-static GlfwApplication::Configuration confconf(const MxSimulator::Config &conf) {
-    GlfwApplication::Configuration res;
+static Platform::GlfwApplication::Configuration confconf(const MxSimulator::Config &conf) {
+    Platform::GlfwApplication::Configuration res;
 
     res.setSize(conf.windowSize(), conf.dpiScaling());
     res.setTitle(conf.title());
-    res.setWindowFlags(GlfwApplication::Configuration::WindowFlag::Resizable);
+    res.setWindowFlags(Platform::GlfwApplication::Configuration::WindowFlag::Resizable);
 
     return res;
 }
 
 
 MxGlfwApplication::MxGlfwApplication(const Arguments &args) :
-                GlfwApplication{args, NoCreate}
+        Platform::GlfwApplication{args, NoCreate}
 {
 }
 

@@ -18,7 +18,6 @@
 #include <rendering/MxUniverseRenderer.h>
 
 
-using namespace Magnum::Platform;
 using namespace Magnum;
 
 

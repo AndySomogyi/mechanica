@@ -45,5 +45,40 @@ force object.
    and larger values result in a slower acting thermostat.  
 
 
+.. function:: dpd_conservative(a, min = 0.1, cutoff=1)
 
-      
+   :param a:   interaction strength constant
+   :param min: The smallest radius for which the potential will be constructed.
+   :param cutoff: The largest radius for which the potential will be constructed.
+   :param tol: The tolerance to which the interpolation should match the exact
+
+   .. math::
+
+        \mathbf{F}^C_{ij} = a \left(1 - \frac{r_{ij}}{r_{cutoff}}\right)
+        \mathbf{e}_{ij}
+
+
+.. function:: dpd_dissipative(gamma, min = 0.1, cutoff=1)
+
+   :param gamma:   interaction strength constant
+   :param min: The smallest radius for which the potential will be constructed.
+   :param cutoff: The largest radius for which the potential will be constructed.
+   :param tol: The tolerance to which the interpolation should match the exact
+
+   .. math::
+
+      \mathbf{F}^D_{ij} = -\gamma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.41}(\mathbf{e}_{ij} \cdot
+      \mathbf{v}_{ij}) \mathbf{e}_{ij}
+
+.. function:: dpd_random(gamma, sigma, min, cutoff, tol)
+
+   :param gamma: interaction strength constant
+   :param sigma: standard deviation of the gaussian random noise 
+   :param min: The smallest radius for which the potential will be constructed.
+   :param cutoff: The largest radius for which the potential will be constructed.
+   :param tol: The tolerance to which the interpolation should match the exact
+
+   .. math::
+
+      \mathbf{F}^R_{ij} = \sigma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.2} \xi_{ij}\Delta t^{-1/2}\mathbf{e}_{ij}
+  

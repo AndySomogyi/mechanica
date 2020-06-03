@@ -406,7 +406,7 @@ void MxUniverseRenderer::setupCallbacks()
 }
 
 
-void MxUniverseRenderer::viewportEvent(GlfwApplication::ViewportEvent& event) {
+void MxUniverseRenderer::viewportEvent(Platform::GlfwApplication::ViewportEvent& event) {
     GL::defaultFramebuffer.setViewport({{}, event.framebufferSize()});
 
     _arcball->reshape(event.windowSize(), event.framebufferSize());
@@ -415,9 +415,9 @@ void MxUniverseRenderer::viewportEvent(GlfwApplication::ViewportEvent& event) {
     //_shader.setViewportSize(Vector2{framebufferSize()});
 }
 
-void MxUniverseRenderer::keyPressEvent(GlfwApplication::KeyEvent& event) {
+void MxUniverseRenderer::keyPressEvent(Platform::GlfwApplication::KeyEvent& event) {
     switch(event.key()) {
-        case GlfwApplication::KeyEvent::Key::L:
+        case Platform::GlfwApplication::KeyEvent::Key::L:
             if(_arcball->lagging() > 0.0f) {
                 Debug{} << "Lagging disabled";
                 _arcball->setLagging(0.0f);
@@ -426,7 +426,7 @@ void MxUniverseRenderer::keyPressEvent(GlfwApplication::KeyEvent& event) {
                 _arcball->setLagging(0.85f);
             }
             break;
-        case GlfwApplication::KeyEvent::Key::R:
+        case Platform::GlfwApplication::KeyEvent::Key::R:
             _arcball->reset();
             break;
 
@@ -437,7 +437,7 @@ void MxUniverseRenderer::keyPressEvent(GlfwApplication::KeyEvent& event) {
     window->redraw();
 }
 
-void MxUniverseRenderer::mousePressEvent(GlfwApplication::MouseEvent& event) {
+void MxUniverseRenderer::mousePressEvent(Platform::GlfwApplication::MouseEvent& event) {
     /* Enable mouse capture so the mouse can drag outside of the window */
     /** @todo replace once https://github.com/mosra/magnum/pull/419 is in */
     //SDL_CaptureMouse(SDL_TRUE);
@@ -449,14 +449,14 @@ void MxUniverseRenderer::mousePressEvent(GlfwApplication::MouseEvent& event) {
 
 }
 
-void MxUniverseRenderer::mouseReleaseEvent(GlfwApplication::MouseEvent& event) {
+void MxUniverseRenderer::mouseReleaseEvent(Platform::GlfwApplication::MouseEvent& event) {
 
 }
 
-void MxUniverseRenderer::mouseMoveEvent(GlfwApplication::MouseMoveEvent& event) {
+void MxUniverseRenderer::mouseMoveEvent(Platform::GlfwApplication::MouseMoveEvent& event) {
     if(!event.buttons()) return;
 
-    if(event.modifiers() & GlfwApplication::MouseMoveEvent::Modifier::Shift) {
+    if(event.modifiers() & Platform::GlfwApplication::MouseMoveEvent::Modifier::Shift) {
         _arcball->translate(event.position());
     }
     else {
@@ -467,7 +467,7 @@ void MxUniverseRenderer::mouseMoveEvent(GlfwApplication::MouseMoveEvent& event) 
     window->redraw(); /* camera has changed, redraw! */
 }
 
-void MxUniverseRenderer::mouseScrollEvent(GlfwApplication::MouseScrollEvent& event) {
+void MxUniverseRenderer::mouseScrollEvent(Platform::GlfwApplication::MouseScrollEvent& event) {
     const Float delta = event.offset().y();
     if(Math::abs(delta) < 1.0e-2f) return;
 
