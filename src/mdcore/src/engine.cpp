@@ -25,6 +25,7 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include <MxParticleEvent.h>
 
 /* Include conditional headers. */
 #include "mdcore_config.h"
@@ -2080,10 +2081,14 @@ int engine_step ( struct engine *e ) {
 
 	/* Stop the clock. */
 	e->timers[engine_timer_step] += getticks() - tic_step;
-
+    
+    // notify time listeners
+    if(!SUCCEEDED(CMulticastTimeEvent_Invoke(e->on_time, e->time * e->dt))) {
+        return error(engine_err);
+    }
+    
 	/* return quietly */
 	return engine_err_ok;
-
 }
 
 
@@ -2275,6 +2280,9 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     if ( e == NULL || origin == NULL || dim == NULL || L == NULL )
         return error(engine_err_null);
 
+    /* default Boltzmann constant to 1 */
+    e->K = 1.0;
+
     /* Check for bad flags. */
 #ifdef FPTYPE_DOUBLE
     if ( e->flags & engine_flag_cuda )
@@ -2395,6 +2403,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* Init the comm arrays. */
     e->send = NULL;
     e->recv = NULL;
+    
+    e->on_time = CMulticastTimeEvent_New();
 
     e->flags |= engine_flag_initialized;
 
@@ -2438,12 +2448,12 @@ double engine_kinetic_energy(struct engine *e)
     
     for(int i = 1; i < engine::nr_types; ++i) {
         engine::types[0].kinetic_energy += engine::types[i].kinetic_energy;
-        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].count);
+        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].nr_parts);
     }
     
     // TODO: super lame hack to work around bug with
     // not setting root particle count. FIX THIS. 
-    engine::types[0].kinetic_energy /= (2. * engine::types[0].count);
+    engine::types[0].kinetic_energy /= (2. * engine::types[0].nr_parts);
     return engine::types[0].kinetic_energy;
 }
 
@@ -2483,8 +2493,8 @@ int engine_addpart(struct engine *e, struct MxParticle *p, double *x,
         return error(engine_err_space);
     }
 
-    e->types[p->typeId].count++;
-
+    e->types[p->typeId].addpart(p->id);
+    
     return engine_err_ok;
 }
 

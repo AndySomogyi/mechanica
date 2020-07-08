@@ -1,3 +1,7 @@
+# need 3.12 for FindPython support
+cmake_minimum_required (VERSION 3.12)
+
+
 #
 #if(DEFINED ENV{VCPKG_ROOT})
 #  message("found vcpkg, using toolchain: ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
@@ -9,8 +13,6 @@
 
 project(Mechanica)
 
-# need 3.12 for FindPython support
-cmake_minimum_required (VERSION 3.12)
 
 
 # sets the target types
@@ -28,12 +30,6 @@ endif()
 
 # directory where we build the mechanica python package
 set(MX_PYPKG_DIR ${CMAKE_BINARY_DIR}/mechanica)
-
-if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
-  # hack to get eclipse C++ indexer to pick up python headers
-  message("setting eclipse include dirs")
-  include_directories(/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/include/python3.7m)
-endif()
 
 # using magnum, so whole project needs C++11
 set(CMAKE_CXX_STANDARD 17)
@@ -98,6 +94,7 @@ if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
   message("setting eclipse include dirs: ${Python_INCLUDE_DIRS}")
   include_directories(${Python_INCLUDE_DIRS})
 endif()
+
 
 
 # needed for jpeg image writer
@@ -251,6 +248,13 @@ find_package(Magnum REQUIRED
 add_subdirectory(apps)
 add_subdirectory(testing)
 add_subdirectory(magnum_examples)
+
+# try to make eclipse see the system python include dir.
+if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
+  # hack to get eclipse C++ indexer to pick up python headers
+  message("setting eclipse include dirs: ${Python_INCLUDE_DIRS}")
+  include_directories(${Python_INCLUDE_DIRS})
+endif()
 
 
 file(COPY README.md DESTINATION ${CMAKE_BINARY_DIR})

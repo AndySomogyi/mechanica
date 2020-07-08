@@ -36,6 +36,8 @@
 #include "space.h"
 #include "mx_runtime.h"
 
+#include <MxParticleEvent.h>
+
 
 
 
@@ -363,7 +365,7 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "position",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->part->id;
+            int id = ((MxPyParticle*)obj)->id;
             Magnum::Vector3 vec;
             space_getpos(&_Engine.s, id, vec.data());
             return pybind11::cast(vec).release().ptr();
@@ -371,7 +373,7 @@ PyGetSetDef particle_getsets[] = {
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int id = ((MxPyParticle*)obj)->part->id;
+                int id = ((MxPyParticle*)obj)->id;
                 Magnum::Vector3 vec = pybind11::cast<Magnum::Vector3>(val);
                 space_setpos(&_Engine.s, id, vec.data());
                 return 0;
@@ -387,12 +389,14 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "velocity",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->velocity;
+            int id = ((MxPyParticle*)obj)->id;
+            Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
             return pybind11::cast(vec).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->velocity;
+                int id = ((MxPyParticle*)obj)->id;
+                Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
                 *vec = pybind11::cast<Magnum::Vector3>(val);
                 return 0;
             }
@@ -407,12 +411,14 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "force",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->force;
+            int id = ((MxPyParticle*)obj)->id;
+            Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
             return pybind11::cast(vec).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                Magnum::Vector3 *vec = &((MxPyParticle*)obj)->part->force;
+                int id = ((MxPyParticle*)obj)->id;
+                Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
                 *vec = pybind11::cast<Magnum::Vector3>(val);
                 return 0;
             }
@@ -427,13 +433,12 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "id",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int x = ((MxPyParticle*)obj)->part->id;
+            int x = ((MxPyParticle*)obj)->id;
             return pybind11::cast(x).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int *x = &((MxPyParticle*)obj)->part->id;
-                *x = pybind11::cast<int>(val);
+                // TODO read only
                 return 0;
             }
             catch (const pybind11::builtin_exception &e) {
@@ -447,13 +452,13 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "type_id",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int x = ((MxPyParticle*)obj)->part->typeId;
+            int id = ((MxPyParticle*)obj)->id;
+            int x = _Engine.s.partlist[id]->typeId;
             return pybind11::cast(x).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                short *x = &((MxPyParticle*)obj)->part->typeId;
-                *x = pybind11::cast<short>(val);
+                // TODO read only
                 return 0;
             }
             catch (const pybind11::builtin_exception &e) {
@@ -467,12 +472,14 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "flags",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            unsigned short x = ((MxPyParticle*)obj)->part->flags;
+            int id = ((MxPyParticle*)obj)->id;
+            unsigned short x = _Engine.s.partlist[id]->flags;
             return pybind11::cast(x).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                unsigned short *x = &((MxPyParticle*)obj)->part->flags;
+                int id = ((MxPyParticle*)obj)->id;
+                unsigned short *x = &_Engine.s.partlist[id]->flags;
                 *x = pybind11::cast<unsigned short>(val);
                 return 0;
             }
@@ -485,6 +492,11 @@ PyGetSetDef particle_getsets[] = {
         .closure = NULL
     },
     {NULL}
+};
+
+static PyMethodDef particle_methods[] = {
+        { "fission", (PyCFunction)MxParticle_Fission, METH_VARARGS, NULL },
+        { NULL, NULL, 0, NULL }
 };
 
 static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
@@ -507,20 +519,42 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.vid = 0;
     part.typeId = type->id;
     part.flags = 0;
+    part.pyparticle = NULL;
     
     try {
         pybind11::detail::loader_life_support ls{};
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
-        part.position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), Magnum::Vector3{});
-        part.velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), Magnum::Vector3{});
+        // make a random initial position
+        std::uniform_real_distribution x(_Engine.s.origin[0], _Engine.s.dim[0]);
+        std::uniform_real_distribution y(_Engine.s.origin[1], _Engine.s.dim[1]);
+        std::uniform_real_distribution z(_Engine.s.origin[2], _Engine.s.dim[2]);
+        Magnum::Vector3 iniPos = {x(CRandom), y(CRandom), z(CRandom)};
+        
+        // initial velocity, chosen to fit target temperature
+        std::uniform_real_distribution v(-1.0, 1.0);
+        Magnum::Vector3 vel = {v(CRandom), v(CRandom), v(CRandom)};
+        float v2 = Magnum::Math::dot(vel, vel);
+        float x2 = (type->target_energy * 2. / (type->mass * v2));
+        vel *= std::sqrt(x2);
+        
+        part.position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), iniPos);
+        part.velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), vel);
         
         MxParticle *p = NULL;
         double pos[] = {part.position[0], part.position[1], part.position[2]};
         int result = engine_addpart (&_Engine, &part, pos, &p);
         
-        self->part = p;
+        if(result < 0) {
+            PyErr_SetString(PyExc_Exception, engine_err_msg[-engine_err]);
+            return result;
+        }
+        
+        self->id = p->id;
+        
+        Py_INCREF(self);
+        p->pyparticle = self;
         
         return 0;
     }
@@ -887,10 +921,15 @@ int MxParticleCheck(PyObject *o)
 
 MxPyParticle* MxPyParticle_New(MxParticle *data)
 {
-    PyTypeObject *type = (PyTypeObject*)&_Engine.types[data->typeId];
-    MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
-    part->part = data;
-    return part;
+    if(!data->pyparticle) {
+        PyTypeObject *type = (PyTypeObject*)&_Engine.types[data->typeId];
+        MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
+        part->id = data->id;
+        data->pyparticle = part;
+    }
+    
+    Py_INCREF(data->pyparticle);
+    return data->pyparticle;
 }
 
 
@@ -963,6 +1002,13 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             }
         }
         
+        if(CDict_ContainsItemString(_dict, "events")) {
+            MyParticleType_BindEvents(self, PyDict_GetItemString(_dict, "events"));
+        }
+
+        // bind all the events that are in the type dictionary
+        MyParticleType_BindEvents(self, PyDict_Values(_dict));
+
         return S_OK;
     }
     catch(const std::exception &e) {
@@ -1012,10 +1058,11 @@ HRESULT engine_particle_base_init(PyObject *m)
     //class mechanica.Particle will be of this type
     PyTypeObject *ob = (PyTypeObject*)&engine::types[0];
     
-    Py_TYPE(ob) = &MxParticleType_Type;
-    ob->tp_base = &PyBaseObject_Type;
-    ob->tp_getset = particle_getsets;
-    ob->tp_name =         "Particle";
+    Py_TYPE(ob) =          &MxParticleType_Type;
+    ob->tp_base =          &PyBaseObject_Type;
+    ob->tp_getset =        particle_getsets;
+    ob->tp_methods =       particle_methods;
+    ob->tp_name =          "Particle";
     ob->tp_basicsize =     sizeof(MxPyParticle);
     ob->tp_flags =         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
     ob->tp_doc =           "Custom objects";
@@ -1049,5 +1096,33 @@ HRESULT engine_particle_base_init(PyObject *m)
     
     engine::nr_types = 1;
     
+    return S_OK;
+}
+
+PyObject* MxParticle_Fission(MxParticle *part, PyObject *args)
+{
+    return PyLong_FromLong(10);
+}
+
+PyObject *MxParticle_BasicFission(MxParticle *part) {
+    Py_RETURN_NONE;
+
+}
+
+HRESULT MxParticleType::addpart(int32_t id)
+{
+    /* do we need to extend the partlist? */
+    if ( nr_parts == size_parts ) {
+        size_parts += space_partlist_incr;
+        int32_t* temp;
+        if ( ( temp = (int32_t*)malloc( sizeof(int32_t) * size_parts ) ) == NULL )
+            return c_error(E_FAIL, "could not allocate space for type particles");
+        memcpy( temp , part_ids , sizeof(int32_t) * nr_parts );
+        free( part_ids );
+        part_ids = temp;
+    }
+    
+    part_ids[nr_parts] = id;
+    nr_parts++;
     return S_OK;
 }

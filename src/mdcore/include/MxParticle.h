@@ -82,7 +82,7 @@ struct MxParticle  {
 	/** individual particle charge, if needed. */
 	float q;
     
-        float volume;
+    float volume;
 
 	/** 
 	 * Particle id, virtual id 
@@ -95,10 +95,29 @@ struct MxParticle  {
 
 	/** Particle flags */
 	unsigned short int flags;
+    
+    /**
+     * pointer to the python 'wrapper'. Need this because the particle data
+     * gets moved around between cells, and python can't hold onto that directly,
+     * so keep a pointer to the python object, and update that pointer
+     * when this object gets moved.
+     */
+    struct MxPyParticle *pyparticle;
 };
 
+
+/**
+ * Layout of the actual Python particle object.
+ *
+ * The engine allocates particle memory in blocks, and particle
+ * values get moved around all the time, so their addresses change.
+ *
+ * The partlist is always ordered  by id, i.e. partlist[id]  always
+ * points to the same particle, even though that particle may move
+ * from cell to cell.
+ */
 struct MxPyParticle : PyObject {
-    MxParticle *part;
+    int id;
 };
 
 /**
@@ -137,7 +156,17 @@ struct MxParticleType : PyHeapTypeObject {
     char name[MAX_NAME], name2[MAX_NAME];
     
     /** number of current particles of this type. Incremented in engine_addpart. */
-    unsigned count = 0;
+    uint32_t nr_parts = 0;
+    
+    /**
+     * list of particle ids that are of this type
+     */
+    int32_t *part_ids;
+    
+    // max size of the ids array. 
+    uint32_t size_parts;
+
+    HRESULT addpart(int32_t id);
 };
 
 typedef MxParticleType MxParticleData;
@@ -212,6 +241,8 @@ MxParticleType *MxParticleType_ForEngine(struct engine *e, double mass , double 
  */
 MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 
+
+PyObject *MxParticle_Fission(MxParticle *part, PyObject *args);
 
 
 

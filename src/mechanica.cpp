@@ -35,7 +35,7 @@
 #include "rendering/MxWindowHost.h"
 #include <rendering/MxUniverseRenderer.h>
 #include <MxForce.h>
-
+#include <MxParticleEvent.h>
 #include "MxPyTest.h"
 
 
@@ -56,6 +56,8 @@ static PyMethodDef methods[] = {
         { "createTestWindow", (PyCFunction)MxPyUI_CreateTestWindow, METH_VARARGS, NULL },
         { "testWin", (PyCFunction)PyTestWin, METH_VARARGS, NULL },
         { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
+        { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 

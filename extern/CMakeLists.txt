@@ -1,9 +1,9 @@
-# build core carbon lib
-add_subdirectory(carbon)
-
 # build glfw here, set up variables so magnum does not try to find it
+# glfw has to come before carbon (and libsbml)
 add_subdirectory(glfw)
 
+# build core carbon lib
+add_subdirectory(carbon)
 
 set(PYBIND11_CPP_STANDARD -std=c++14)
 add_subdirectory(pybind11)
@@ -168,6 +168,12 @@ add_library(Magnum_PyBind
   ${magnum_SRCS}
   )
 
+target_include_directories(Magnum_PyBind PUBLIC
+  ${Python_INCLUDE_DIRS}
+  ${PYBIND11_INCLUDE_DIR}
+  )
+
+
 set_target_properties(Magnum_PyBind PROPERTIES
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN 1
@@ -177,20 +183,19 @@ set_target_properties(Magnum_PyBind PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(Magnum_PyBind PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/magnum-bindings/src/python/
+)
+ 
+target_include_directories(Magnum_PyBind PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/magnum-bindings/src/
 )
 
 target_link_libraries(Magnum_PyBind PUBLIC
   Magnum::Magnum
-  )
+)
 
 target_link_libraries(Magnum_PyBind PRIVATE Magnum::Magnum ${magnum_LIBS})
 
 
-target_include_directories(Magnum_PyBind PUBLIC
-  ${Python_INCLUDE_DIRS}
-  ${PYBIND11_INCLUDE_DIR}
-  )
 
 #set_target_properties(Magnum_PyBind PROPERTIES
 #    FOLDER "lib"

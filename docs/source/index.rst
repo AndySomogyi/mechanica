@@ -20,6 +20,7 @@ Contents:
    flux
    examples
    continuum-reactions
+   network-object-model
    formalism
    api_reference
    building

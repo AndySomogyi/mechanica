@@ -148,6 +148,9 @@ typedef struct engine {
 
 	double temperature;
 
+	// Boltzmann constant
+	double K;
+
 	/** TODO, clean up this design for types and static engine. */
 	/** What is the maximum nr of types? */
 	static int max_type;
@@ -264,6 +267,8 @@ typedef struct engine {
 	/** Bonded sets. */
 	struct engine_set *sets;
 	int nr_sets;
+
+	struct CMulticastTimeEvent *on_time;
 } engine;
 
 

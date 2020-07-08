@@ -108,8 +108,8 @@ static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
 
 PyTypeObject MxUniverse_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "Universe",
-    .tp_basicsize = sizeof(MxUniverse),
+    .tp_name =           "Universe",
+    .tp_basicsize =      sizeof(MxUniverse),
     .tp_itemsize =       0, 
     .tp_dealloc =        0, 
     .tp_print =          0, 
@@ -126,7 +126,7 @@ PyTypeObject MxUniverse_Type = {
     .tp_getattro =       0, 
     .tp_setattro =       0, 
     .tp_as_buffer =      0, 
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, 
+    .tp_flags =          Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = "Custom objects",
     .tp_traverse =       0, 
     .tp_clear =          0, 
@@ -209,6 +209,13 @@ HRESULT _MxUniverse_init(PyObject* m)
         [](py::object self) -> double {
             UNIVERSE_CHECK();
             return _Engine.dt;
+        }
+    );
+
+    u.def_property_readonly_static("on_time",
+            [](py::object self) -> py::handle {
+                UNIVERSE_CHECK();
+                return (PyObject*)_Engine.on_time;
         }
     );
 
