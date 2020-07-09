@@ -1324,7 +1324,39 @@ int space_maketuples ( struct space *s ) {
 
 }
 
+CAPI_FUNC(HRESULT) space_del_particle(struct space *s, int pid)
+{
+    if(pid < 0 || pid >= s->size_parts) {
+        return c_error(E_FAIL, "pid out of range");
+    }
+    MxParticle *p = s->partlist[pid];
 
+    if(p == NULL) {
+        return c_error(E_FAIL, "particle is already null and deleted");
+    }
 
+    space_cell *cell = s->celllist[pid];
+    assert(cell && "space cell is null");
 
+    s->partlist[pid] = NULL;
+    s->celllist[pid] = NULL;
 
+    // index of cell in cell particle array.
+    size_t cid = p - cell->parts;
+
+    assert(p == &cell->parts[cid] && "pointer arithmetic error");
+    
+    // the particle will get overwritten, release the
+    // pyobject ptr now
+    Py_DecRef(p->pyparticle);
+
+    cell->count -= 1;
+    if ( cid < cell->count ) {
+        cell->parts[cid] = cell->parts[cell->count];
+        s->partlist[cell->parts[cid].id ] = &( cell->parts[cid] );
+    }
+
+    s->nr_parts -= 1;
+
+    return S_OK;
+}

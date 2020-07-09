@@ -452,6 +452,22 @@ CAPI_FUNC(int) engine_unload ( struct engine *e , double *x , double *v , int *t
 		double *charge , unsigned int *flags , double *epot , int N );
 CAPI_FUNC(int) engine_verlet_update ( struct engine *e );
 
+/**
+ * gets the next available particle id to use when creating a new particle.
+ */
+CAPI_FUNC(int) engine_next_partid(struct engine *e);
+
+
+/**
+ * Deletes a particle from the engine based on particle id.
+ *
+ * Afterwards, the particle id will point to a null entry in the partlist.
+ *
+ * Note, the next newly created particle will re-use this ID (assuming
+ * the engine_next_partid is used to determine the next id.)
+ */
+CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid);
+
 
 CAPI_FUNC(void) engine_dump();
 

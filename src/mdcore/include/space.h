@@ -269,6 +269,16 @@ CAPI_FUNC(int) space_shuffle_local ( struct space *s );
 CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,
         double *x, struct MxParticle **result );
 
+/**
+ * Deletes a particle from the space, and sets the partlist[pid] to null.
+ *
+ * this will decrement the python pointer in p, and overwrite the memeory
+ * pointed to by p. Any pointer to this will no longer be valid.
+ *
+ * Note, pid is the global particle id, and is the index in partlist of the
+ * particle.
+ */
+CAPI_FUNC(HRESULT) space_del_particle ( struct space *s ,  int pid);
 
 CAPI_FUNC(int) space_prepare ( struct space *s );
 CAPI_FUNC(int) space_getpos ( struct space *s , int id , FPTYPE *x );

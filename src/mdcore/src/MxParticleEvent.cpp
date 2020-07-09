@@ -30,7 +30,6 @@ PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
     }
     
     CMulticastTimeEvent_Add(_Engine.on_time, event);
-    
     return event;
 }
 
@@ -64,7 +63,7 @@ HRESULT MxParticleTimeEvent_BindParticleMethod(CTimeEvent *event,
 HRESULT MxParticleType_BindEvent(MxParticleType *type, PyObject *e) {
     
     if(PySequence_Check(e)) {
-        
+        // TODO: what here???
     }
     
     else if(PyObject_IsInstance(e, (PyObject*)&CTimeEvent_Type)) {
@@ -77,15 +76,14 @@ HRESULT MxParticleType_BindEvent(MxParticleType *type, PyObject *e) {
         
         timeEvent->target = (PyObject*)type;
         Py_INCREF(timeEvent->target);
-        
-        timeEvent->next_time = 10;
-        
+    
         timeEvent->flags |= EVENT_ACTIVE;
         
         timeEvent->te_invoke = (timeevent_invoke)particletimeevent_pyfunction_invoke;
         
         if(timeEvent->flags & EVENT_EXPONENTIAL) {
             timeEvent->te_setnexttime = particletimeevent_exponential_setnexttime;
+            timeEvent->te_setnexttime(timeEvent, _Engine.time * _Engine.dt);
         }
     }
     
@@ -110,26 +108,30 @@ HRESULT MyParticleType_BindEvents(struct MxParticleType *type, PyObject *events)
             return r;
         }
     }
-    
     return S_OK;
 }
 
 
 HRESULT particletimeevent_pyfunction_invoke(CTimeEvent *event, double time) {
     
-    if(event->next_time > time) {
+    MxParticleType *type = (MxParticleType*)event->target;
+    
+    if(type->nr_parts == 0) {
         return S_OK;
     }
     
-    
-    
-    MxParticleType *type = (MxParticleType*)event->target;
-    
     std::uniform_int_distribution<int> distribution(0,type->nr_parts-1);
     
+    // TODO: memory leak
     PyObject *args = PyTuple_New(2);
     
-    int pid = distribution(CRandom);
+    // index in the type's list of particles
+    int tid = distribution(CRandom);
+    
+    int pid = type->part_ids[tid];
+    
+    assert(_Engine.s.partlist[pid]);
+    assert(_Engine.s.partlist[pid]->pyparticle);
     
     PyObject *t = PyFloat_FromDouble(time);
     PyTuple_SET_ITEM(args, 0, _Engine.s.partlist[pid]->pyparticle);
@@ -140,8 +142,8 @@ HRESULT particletimeevent_pyfunction_invoke(CTimeEvent *event, double time) {
     //std::cout << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL) << std::endl;
     
     // time expired, so invoke the event.
+    // TODO: major memory leak, check result
     PyObject *result = PyObject_CallObject((PyObject*)event->method, args);
-    
     
     return S_OK;
 }
@@ -150,16 +152,18 @@ PyObject *MxInvokeTime(PyObject *module, PyObject *args, PyObject *kwargs) {
     
     double time = PyFloat_AsDouble(PyTuple_GetItem(args, 0));
     
+    // TODO: check return
     CMulticastTimeEvent_Invoke(_Engine.on_time, time);
-    
     
     Py_RETURN_NONE;
 }
 
 // need to scale period by number of particles.
+// TODO: need to update next time when particles are added or removed.
 HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, double time) {
     MxParticleType *type = (MxParticleType*)event->target;
-    std::exponential_distribution<> d(event->period / type->nr_parts);
+    uint32_t nr_parts = type->nr_parts > 0 ? type->nr_parts : 1;
+    std::exponential_distribution<> d(nr_parts / event->period);
     event->next_time = time + d(CRandom);
     return S_OK;
 }

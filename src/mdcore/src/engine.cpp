@@ -2505,3 +2505,41 @@ CAPI_FUNC(struct MxParticleType*) engine_type(int id)
     }
     return NULL;
 }
+
+int engine_next_partid(struct engine *e)
+{
+    // TODO: not the most effecient algorithm...
+    space *s = &e->s;
+    int i = 0;
+    
+    for(i; i < s->nr_parts; ++i) {
+        if(s->partlist[i] == NULL) {
+            return i;
+        }
+    }
+    return i;
+}
+
+CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
+{
+    std::cout << "time: " << e->time * e->dt << ", deleting particle id: " << pid << std::endl;
+    
+    if(pid < 0 || pid >= e->s.size_parts) {
+        return c_error(E_FAIL, "pid out of range");
+    }
+    
+    MxParticle *part = e->s.partlist[pid];
+    
+    if(part == NULL) {
+        return c_error(E_FAIL, "particle already null");
+    }
+    
+    MxParticleType *type = &e->types[part->typeId];
+    
+    HRESULT hr = type->del_part(pid);
+    if(!SUCCEEDED(hr)) {
+        return hr;
+    }
+    
+    return space_del_particle(&e->s, pid);
+}

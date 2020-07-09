@@ -166,7 +166,16 @@ struct MxParticleType : PyHeapTypeObject {
     // max size of the ids array. 
     uint32_t size_parts;
 
+    /**
+     * add a particle (id) to this type
+     */
     HRESULT addpart(int32_t id);
+    
+    
+    /**
+     * remove a particle id from this type
+     */
+    HRESULT del_part(int32_t id);
 };
 
 typedef MxParticleType MxParticleData;
@@ -243,6 +252,8 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 
 
 PyObject *MxParticle_Fission(MxParticle *part, PyObject *args);
+
+
 
 
 

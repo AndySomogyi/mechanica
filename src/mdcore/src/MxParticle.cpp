@@ -82,7 +82,7 @@ static void printTypeInfo(const char* name, PyTypeObject *p);
 
 
  
-
+static static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
 
 
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
@@ -496,6 +496,7 @@ PyGetSetDef particle_getsets[] = {
 
 static PyMethodDef particle_methods[] = {
         { "fission", (PyCFunction)MxParticle_Fission, METH_VARARGS, NULL },
+        { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -515,7 +516,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.force = {};
     part.q = 0;
     part.volume = 0;
-    part.id = _Engine.s.nr_parts;
+    part.id = engine_next_partid(&_Engine);
     part.vid = 0;
     part.typeId = type->id;
     part.flags = 0;
@@ -911,7 +912,7 @@ HRESULT _MxParticle_init(PyObject *m)
     //    return E_FAIL;
     //}
 
-    return  engine_particle_base_init(m);;
+    return  engine_particle_base_init(m);
 }
 
 int MxParticleCheck(PyObject *o)
@@ -1104,6 +1105,15 @@ PyObject* MxParticle_Fission(MxParticle *part, PyObject *args)
     return PyLong_FromLong(10);
 }
 
+PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
+{
+    if(SUCCEEDED(engine_del_particle(&_Engine, part->id))) {
+        Py_RETURN_NONE;
+    }
+    // c_error should set the python error
+    return NULL;
+}
+
 PyObject *MxParticle_BasicFission(MxParticle *part) {
     Py_RETURN_NONE;
 
@@ -1124,5 +1134,28 @@ HRESULT MxParticleType::addpart(int32_t id)
     
     part_ids[nr_parts] = id;
     nr_parts++;
+    return S_OK;
+}
+
+
+/**
+ * remove a particle id from this type
+ */
+HRESULT MxParticleType::del_part(int32_t id) {
+    int i = 0;
+    for(i; i < nr_parts; i++) {
+        if(part_ids[i] == id)
+            break;
+    }
+    
+    if(i == nr_parts) {
+        return c_error(E_FAIL, "type does not contain particle id");
+    }
+    
+    nr_parts--;
+    if(i < nr_parts) {
+        part_ids[i] = part_ids[nr_parts];
+    }
+    
     return S_OK;
 }
