@@ -187,6 +187,16 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("dim")) {
         conf.universeConfig.dim = py::cast<Vector3>(kwargs["dim"]);
     }
+    
+    if(kwargs.contains("cutoff")) {
+        conf.universeConfig.cutoff = py::cast<int>(kwargs["cutoff"]);
+    }
+    
+    if(kwargs.contains("cells")) {
+        conf.universeConfig.spaceGridSize = py::cast<Vector3i>(kwargs["cells"]);
+    }
+    
+    
 
 }
 
@@ -511,13 +521,13 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     Magnum::Vector3 tmp = conf.dim - conf.origin;
     Magnum::Vector3d length{tmp[0], tmp[1], tmp[2]};
-    Magnum::Vector3d spaceGridSize{conf.spaceGridSize[0], conf.spaceGridSize[2], conf.spaceGridSize[2]};
+    Magnum::Vector3d spaceGridSize{conf.spaceGridSize[0], conf.spaceGridSize[1], conf.spaceGridSize[2]};
 
     Magnum::Vector3d L = length / spaceGridSize;
 
     double x[3];
 
-    double   cutoff = 0.1 * length.sum() / 3.;
+    double   cutoff = conf.cutoff;
 
     int  k, cid, pid, nr_runners = conf.threads;
 

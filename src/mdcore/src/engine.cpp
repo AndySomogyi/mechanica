@@ -1834,9 +1834,19 @@ int engine_advance ( struct engine *e ) {
                 for ( pid = 0 ; pid < c->count ; pid++ ) {
                     p = &( c->parts[pid] );
                     w = dt * e->types[p->typeId].imass;
-                    for ( k = 0 ; k < 3 ; k++ ) {
-                        p->v[k] += p->f[k] * w;
-                        p->x[k] += dt * p->v[k];
+                    
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->v[k] += dt * p->f[k] * w;
+                            p->x[k] += dt * p->v[k];
+                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                        }
+                    }
+                    else {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] += dt * p->f[k] * w;
+                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                        }
                     }
                 }
             }
@@ -1861,11 +1871,21 @@ int engine_advance ( struct engine *e ) {
                 while ( pid < c->count ) {
                     p = &( c->parts[pid] );
                     w = dt * engine::types[p->typeId].imass;
-                    for ( k = 0 ; k < 3 ; k++ ) {
-                        p->v[k] += p->f[k] * w;
-                        p->x[k] += dt * p->v[k];
-                        delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                    
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->v[k] += dt * p->f[k] * w;
+                            p->x[k] += dt * p->v[k];
+                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                        }
                     }
+                    else {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] += dt * p->f[k] * w;
+                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                        }
+                    }
+   
                     
                     /* do we have to move this particle? */
                     if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {

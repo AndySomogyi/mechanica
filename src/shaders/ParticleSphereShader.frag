@@ -39,6 +39,8 @@ uniform float particleRadius;
 
 flat in vec3 viewCenter;
 flat in vec3 color;
+flat in float vertex_radius;
+
 layout(location = 0) out lowp vec4 fragmentColor;
 
 vec3 shadeLight(vec3 normal, vec3 fragPos, vec3 viewDir) {
@@ -59,7 +61,7 @@ void main() {
     if(mag > 1.0) discard; /* outside the sphere */
 
     normal.z = sqrt(1.0 - mag);
-    fragPos  = viewCenter + normal*particleRadius; /* correct fragment position */
+    fragPos  = viewCenter + normal*vertex_radius; /* correct fragment position */
 
     mat4 prjMatTransposed = transpose(projectionMatrix);
     float z = dot(vec4(fragPos, 1.0), prjMatTransposed[2]);

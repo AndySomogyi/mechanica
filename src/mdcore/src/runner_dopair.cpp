@@ -136,11 +136,11 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
         memcpy( parts_i , cell_i->parts , sizeof(struct MxParticle) * count_i );
         parts_j = (struct MxParticle *)alloca( sizeof(struct MxParticle) * count_j );
         memcpy( parts_j , cell_j->parts , sizeof(struct MxParticle) * count_j );
-        }
+    }
     else {
         parts_i = cell_i->parts;
         parts_j = cell_j->parts;
-        }
+    }
         
     /* Get the discretized shift norm. */
     nshift = sqrt( shift[0]*shift[0] + shift[1]*shift[1] + shift[2]*shift[2] );
@@ -181,7 +181,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
             r2 = fptype_r2( pix , part_j->x , dx );
 
             /* is this within cutoff? */
-            if ( r2 > cutoff2 )
+            if ( r2 > cutoff2 || r2 > (pot->b * pot->b ))
                 continue;
             // runner_rcount += 1;
 
@@ -238,9 +238,9 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
                 /* update the forces */
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];
-                    part_j->f[k] -= w;
-                    pif[k] += w;
-                    }
+                    pif[k] -= w;
+                    part_j->f[k] += w;
+                }
 
                 /* tabulate the energy */
                 epot += e;
@@ -422,14 +422,11 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             r2 = fptype_r2( pix , part_j->x , dx );
 
             /* is this within cutoff? */
-            if ( r2 > cutoff2 )
-                continue;
-
             /* potentials have cutoff also */
             // TODO move the square to the one-time potential init value.
-            if(r2 > (pot->b * pot->b) ) {
+            if ( r2 > cutoff2 || r2 > (pot->b * pot->b))
                 continue;
-            }
+
             // runner_rcount += 1;
 
             #if defined(VECTORIZE)
@@ -722,7 +719,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
                         w = f * dx[k];
                         part_i->f[k] -= w;
                         part_j->f[k] += w;
-                        }
+                    }
 
                     /* tabulate the energy */
                     epot += e;

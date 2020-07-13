@@ -40,9 +40,11 @@ uniform vec3 diffuseColor;
 
 layout(location=0) in highp vec3 position;
 layout(location=1) in highp int p_index;
+layout(location=2) in highp float in_radius;
 
 flat out vec3 viewCenter;
 flat out vec3 color;
+flat out float vertex_radius;
 
 const vec3 colorRamp[] = vec3[] (
     vec3(1.0, 0.0, 0.0),
@@ -87,7 +89,8 @@ void main() {
     /* output */
     viewCenter = posEye;
     color = generateVertexColor();
+    vertex_radius = in_radius;
 
-    gl_PointSize = particleRadius*pointSizeScale/length(posEye);
+    gl_PointSize = in_radius*pointSizeScale/length(posEye);
     gl_Position = projectionMatrix*eyeCoord;
 }

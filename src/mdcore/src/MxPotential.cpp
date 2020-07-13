@@ -24,6 +24,7 @@
 #include <math.h>
 #include <float.h>
 #include <MxPotential.h>
+#include <MxParticle.h>
 #include <MxPy.h>
 #include <string.h>
 
@@ -46,7 +47,8 @@ int potential_err = potential_err_ok;
 FPTYPE c_null[] = { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO };
 struct MxPotential potential_null = {
         PyObject_HEAD_INIT(&MxPotential_Type)
-        { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
+        NULL,
+        {FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
         .c = c_null ,
         .a = 0.0 ,
         .b = DBL_MAX,
@@ -954,6 +956,367 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 }
 
 
+
+#define Power(base, exp) std::pow(base, exp)
+
+static double potential_create_SS_e;
+static double potential_create_SS_k;
+static double potential_create_SS_r0;
+static double potential_create_SS_v0_r;
+
+static double potential_create_SS_linear_f(double eta, double r) {
+    return potential_create_SS_k - (Power(2,1/eta)*potential_create_SS_k*r)/potential_create_SS_r0;
+}
+
+static double potential_create_SS_linear_dfdr(double eta) {
+    return -((Power(2,1/eta)*potential_create_SS_k)/potential_create_SS_r0);
+}
+
+/* the potential functions */
+// {Solve[ff == 0, r][[1]], ff, D[ff, {r, 1}], D[ff, {r, 6}]} /. \[Eta] -> 1 // Simplify
+// {{r -> r0/2}, (e r0 (-2 r + r0))/r^2, (2 e (r - r0) r0)/r^3, -((720 e (2 r - 7 r0) r0)/r^8)}
+// List(List(Rule(r,r0/2.)),(e*r0*(-2*r + r0))/Power(r,2),(2*e*(r - r0)*r0)/Power(r,3),(-720*e*(2*r - 7*r0)*r0)/Power(r,8))
+
+static double potential_create_SS1_f ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_f(1, r);
+    }
+    else {
+        return (e*r0*(-2*r + r0))/Power(r,2);
+    }
+}
+
+static double potential_create_SS1_dfdr ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_dfdr(1);
+    }
+    else {
+        return (2*e*(r - r0)*r0)/Power(r,3);
+    }
+}
+
+static double potential_create_SS1_d6fdr6 ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return 0;
+    }
+    else {
+        return (-720*e*(2*r - 7*r0)*r0)/Power(r,8);
+    }
+}
+
+struct MxPotential *potential_create_SS1(double k, double e, double r0, double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    
+    potential_create_SS_e = e;
+    potential_create_SS_k = k;
+    potential_create_SS_r0 = r0;
+    potential_create_SS_v0_r = r0/2.;
+    
+    int err = 0;
+    
+    if((err = potential_init(p ,&potential_create_SS1_f,
+        &potential_create_SS1_dfdr , &potential_create_SS1_d6fdr6 , a , b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
+}
+
+
+/* the potential functions */
+// {Solve[ff == 0, r][[1]], ff, D[ff, {r, 1}], D[ff, {r, 6}]} /. \[Eta] -> 2 // Simplify
+// {{r -> r0/Sqrt[2]},
+// (e r0^2 (-2 r^2 + r0^2))/r^4,
+// (4 e r0^2 (r^2 - r0^2))/r^5,
+// -((10080 e r0^2 (r^2 - 6 r0^2))/r^10)}
+// Rule(r,r0/Sqrt(2)),
+// (e*Power(r0,2)*(-2*Power(r,2) + Power(r0,2)))/Power(r,4),
+// (4*e*Power(r0,2)*(Power(r,2) - Power(r0,2)))/Power(r,5),
+// (-10080*e*Power(r0,2)*(Power(r,2) - 6*Power(r0,2)))/Power(r,10))
+
+static double potential_create_SS2_f ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_f(2, r);
+    }
+    else {
+        return (e*Power(r0,2)*(-2*Power(r,2) + Power(r0,2)))/Power(r,4);
+    }
+}
+
+static double potential_create_SS2_dfdr ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_dfdr(2);
+    }
+    else {
+        return (4*e*Power(r0,2)*(Power(r,2) - Power(r0,2)))/Power(r,5);
+    }
+}
+
+static double potential_create_SS2_d6fdr6 ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return 0;
+    }
+    else {
+        // -((10080 e r0^2 (r^2 - 6 r0^2))/r^10)}
+        return (-10080*e*Power(r0,2)*(Power(r,2) - 6*Power(r0,2)))/Power(r,10);
+    }
+}
+
+struct MxPotential *potential_create_SS2(double k, double e, double r0, double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    
+    potential_create_SS_e = e;
+    potential_create_SS_k = k;
+    potential_create_SS_r0 = r0;
+    potential_create_SS_v0_r = r0/std::sqrt(2.);
+    
+    int err = 0;
+    
+    if((err = potential_init(p ,&potential_create_SS2_f,
+                             &potential_create_SS2_dfdr ,
+                             &potential_create_SS2_d6fdr6 , a , b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
+}
+
+/* the potential functions */
+// {Solve[ff == 0, r][[1]], ff, D[ff, {r, 1}],D[ff, {r, 6}]} /. \[Eta] -> 3 // Simplify
+// {{r -> r0/2^(1/3)},
+// (e r0^3 (-2 r^3 + r0^3))/r^6,
+// (6 e r0^3 (r^3 - r0^3))/r^7,
+// -((10080 e (4 r^3 r0^3 - 33 r0^6))/r^12)}
+// Rule(r,r0/Power(2,0.3333333333333333)),
+// (e*Power(r0,3)*(-2*Power(r,3) + Power(r0,3)))/Power(r,6),
+// (6*e*Power(r0,3)*(Power(r,3) - Power(r0,3)))/Power(r,7),
+// (-10080*e*(4*Power(r,3)*Power(r0,3) - 33*Power(r0,6)))/Power(r,12)
+
+
+static double potential_create_SS3_f ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_f(3, r);
+    }
+    else {
+        return (e*Power(r0,3)*(-2*Power(r,3) + Power(r0,3)))/Power(r,6);
+    }
+}
+
+static double potential_create_SS3_dfdr ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_dfdr(3);
+    }
+    else {
+        return (6*e*Power(r0,3)*(Power(r,3) - Power(r0,3)))/Power(r,7);
+    }
+}
+
+static double potential_create_SS3_d6fdr6 ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return 0;
+    }
+    else {
+        // -((10080 e (4 r^3 r0^3 - 33 r0^6))/r^12)
+        return (-10080*e*(4*Power(r,3)*Power(r0,3) - 33*Power(r0,6)))/Power(r,12);
+    }
+}
+
+struct MxPotential *potential_create_SS3(double k, double e, double r0, double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    
+    potential_create_SS_e = e;
+    potential_create_SS_k = k;
+    potential_create_SS_r0 = r0;
+    potential_create_SS_v0_r = r0/Power(2,0.3333333333333333);
+    
+    int err = 0;
+    
+    if((err = potential_init(p ,&potential_create_SS3_f,
+                             &potential_create_SS3_dfdr ,
+                             &potential_create_SS3_d6fdr6 , a , b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
+}
+
+
+
+/* the potential functions */
+// {Solve[ff == 0, r][[1]], ff, D[ff, {r, 1}], D[ff, {r, 6}]} /. \[Eta] -> 4 // Simplify
+// {r -> r0/2^(1/4)},
+// (e r0^4 (-2 r^4 + r0^4))/r^8,
+// (8 e r0^4 (r^4 - r0^4))/r^9, -((8640 e (14 r^4 r0^4 - 143 r0^8))/r^14)
+// List(Rule(r,r0/Power(2,0.25))),
+// (e*Power(r0,4)*(-2*Power(r,4) + Power(r0,4)))/Power(r,8),
+// (8*e*Power(r0,4)*(Power(r,4) - Power(r0,4)))/Power(r,9),
+// (-8640*e*(14*Power(r,4)*Power(r0,4) - 143*Power(r0,8)))/Power(r,14)
+
+
+static double potential_create_SS4_f ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_f(4, r);
+    }
+    else {
+        return (e*Power(r0,4)*(-2*Power(r,4) + Power(r0,4)))/Power(r,8);
+    }
+}
+
+static double potential_create_SS4_dfdr ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return potential_create_SS_linear_dfdr(4);
+    }
+    else {
+        return (8*e*Power(r0,4)*(Power(r,4) - Power(r0,4)))/Power(r,9);
+    }
+}
+
+static double potential_create_SS4_d6fdr6 ( double r ) {
+    double e =    potential_create_SS_e;
+    double r0 =   potential_create_SS_r0;
+    double v0_r = potential_create_SS_v0_r;
+    
+    if(r < v0_r) {
+        return 0;
+    }
+    else {
+        // (8 e r0^4 (r^4 - r0^4))/r^9, -((8640 e (14 r^4 r0^4 - 143 r0^8))/r^14)
+        return (-8640*e*(14*Power(r,4)*Power(r0,4) - 143*Power(r0,8)))/Power(r,14);
+    }
+}
+
+struct MxPotential *potential_create_SS4(double k, double e, double r0, double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    
+    potential_create_SS_e = e;
+    potential_create_SS_k = k;
+    potential_create_SS_r0 = r0;
+    potential_create_SS_v0_r = r0/Power(2,0.25);
+    
+    int err = 0;
+    
+    if((err = potential_init(p ,&potential_create_SS4_f,
+                             &potential_create_SS4_dfdr ,
+                             &potential_create_SS4_d6fdr6 , a , b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
+}
+
+
+struct MxPotential *potential_create_SS(int eta, double k, double e, double r0, double a , double b , double tol) {
+    if(eta == 1) {
+        return potential_create_SS1(k, e, r0, a, b, tol);
+    }
+    else if(eta == 2) {
+        return potential_create_SS2(k, e, r0, a, b, tol);
+    }
+    else if(eta == 3) {
+        return potential_create_SS3(k, e, r0, a, b, tol);
+    }
+    else if(eta == 4) {
+        return potential_create_SS4(k, e, r0, a, b, tol);
+    }
+    return NULL;
+}
+
 /**
  * @brief Free the memory associated with the given potential.
  * 
@@ -1000,7 +1363,11 @@ void potential_clear ( struct MxPotential *p ) {
  * The zeroth interval contains a linear extension of @c f for values < a.
  */
 
-int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp)( double ) , double (*f6p)( double ) , FPTYPE a , FPTYPE b , FPTYPE tol ) {
+int potential_init (struct MxPotential *p ,
+                    double (*f)( double ) ,
+                    double (*fp)( double ) ,
+                    double (*f6p)( double ) ,
+                    FPTYPE a , FPTYPE b , FPTYPE tol ) {
 
 	double alpha, w;
 	int l = potential_ivalsa, r = potential_ivalsb, m;
@@ -1018,6 +1385,9 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 	/* check if we have a user-specified 6th derivative or not. */
 	if ( f6p == NULL )
 		return error(potential_err_nyi);
+    
+    /* set the boundaries */
+    p->a = a; p->b = b;
 
 	/* Stretch the domain ever so slightly to accommodate for rounding
        error when computing the index. */
@@ -1025,8 +1395,7 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 	a -= fabs(a) * sqrt(FPTYPE_EPSILON);
 	// printf( "potential_init: setting a=%.16e, b=%.16e.\n" , a , b );
 
-	/* set the boundaries */
-	p->a = a; p->b = b;
+	
 
 	/* compute the optimal alpha for this potential */
 	alpha = potential_getalpha(f6p,a,b);
@@ -1096,7 +1465,9 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 
 		/* Clean up. */
 		free(xi_l);
-
+        
+        
+        assert(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])) < p->n);
 		return potential_err_ok;
 	}
 
@@ -1219,8 +1590,10 @@ int potential_init ( struct MxPotential *p , double (*f)( double ) , double (*fp
 	free(xi_l); free(c_l);
 
 	/* all is well that ends well... */
-	return potential_err_ok;
+    
 
+    assert(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])) < p->n+1);
+	return potential_err_ok;
 }
 
 
@@ -1644,13 +2017,13 @@ static MxPotential *potential_alloc(PyTypeObject *type) {
     if ( posix_memalign( (void **)&obj , 16 , type->tp_basicsize ) != 0 ) {
         return NULL;
     }
+    
+    ::memset(obj, NULL, sizeof(MxPotential));
 
     if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
         Py_INCREF(type);
 
-
-    (void)PyObject_INIT(obj, type);
-
+    PyObject_INIT(obj, type);
 
     if (PyType_IS_GC(type)) {
         assert(0 && "should not get here");
@@ -1728,6 +2101,29 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
         double q = arg<double>("q", 4, _args, _kwargs);
         double tol = arg<double>("tol", 5, _args, _kwargs, 0.001 * (max-min));
         return potential_create_LJ126_Coulomb( min, max, A, B, q, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double kappa = arg<double>("kappa", 0, _args, _kwargs);
+        double epsilon = arg<double>("epsilon", 1, _args, _kwargs);
+        double r0 = arg<double>("r0", 2, _args, _kwargs);
+        double eta = arg<double>("eta", 3, _args, _kwargs);
+        double min = arg<double>("min", 4, _args, _kwargs, 0);
+        double max = arg<double>("max", 5, _args, _kwargs, 2);
+        double tol = arg<double>("tol", 6, _args, _kwargs, 0.001 * (max-min));
+        return potential_create_SS(eta, kappa, epsilon, r0, min, max, tol);
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -1868,6 +2264,12 @@ static PyMethodDef potential_methods[] = {
     {
         "lennard_jones_12_6_coulomb",
         (PyCFunction)_lennard_jones_12_6_coulomb,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "soft_sphere",
+        (PyCFunction)_soft_sphere,
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         ""
     },
@@ -2043,4 +2445,61 @@ HRESULT MxPotential_init(PyObject *m)
     return S_OK;
 }
 
+MxPotential* potential_partial_create_particle_radius(
+    double epsilon, double min_rad, double max_rad, double tol)
+{
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  potential_flag_r2 | potential_flag_harmonic ;
+    p->a = min_rad;
+    p->b = max_rad;
+    p->alpha[0] = epsilon;
+    p->alpha[1] = tol;
+    p->create_func = potential_create_particle_radius;
+    
 
+    /* return it */
+    return p;
+}
+
+/**
+ * r is the distance of separation between both particles (measured from the
+ * center of one particle to the center of the other particle).
+ *
+ * * ϵis the well depth and a measure of how strongly the two particles attract each other.
+ *
+ * * σ is the distance at which the intermolecular potential between the two particles is zero
+ *
+ * * σ gives a measurement of how close two nonbonding particles can get and is thus referred
+ *   to as the van der Waals radius. It is equal to one-half of the internuclear distance
+ *   between nonbonding particles.
+ *
+ * * r is the distance of separation between both particles (measured from the center
+ *   of one particle to the center of the other particle).
+ *
+ * * Rmin is the distance where the potential reaches a minimum, i.e. the equilibrium
+ *   position of the two particles.
+ *
+ * The relationship between the σ and Rmin is Rmin = 2^{1/6} * σ, or
+ * σ = (Rmin) / (2^{1/6})
+ *
+ * A=4ϵσ^12
+ * B=4ϵσ^6
+ */
+MxPotential * potential_create_particle_radius(
+    MxPotential* partial_potential, MxParticleType* a, MxParticleType* b)
+{
+    double rmin = a->radius + b->radius;
+    double sigma = rmin / std::pow(2., (1./6.));
+    double A = 4. * partial_potential->alpha[0] * std::pow(sigma, 12);
+    double B = 4. * partial_potential->alpha[0] * std::pow(sigma, 6);
+    double tol = partial_potential->alpha[1];
+    
+    return potential_create_LJ126(partial_potential->a, partial_potential->b, A, B, tol);
+}

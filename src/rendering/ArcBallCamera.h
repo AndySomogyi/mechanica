@@ -35,6 +35,7 @@
 #include <Magnum/SceneGraph/AbstractTranslationRotation3D.h>
 #include <Magnum/SceneGraph/Object.h>
 #include <Magnum/SceneGraph/Scene.h>
+#include <limits>
 
 #include "ArcBall.h"
 
@@ -47,7 +48,8 @@ class ArcBallCamera: public ArcBall {
             SceneGraph::Scene<Transformation>& scene,
             const Vector3& cameraPosition, const Vector3& viewCenter,
             const Vector3& upDir, Deg fov, const Vector2i& windowSize,
-            const Vector2i& viewportSize):
+            const Vector2i& viewportSize,
+            float nearClip = 0.01f, float farClip = std::numeric_limits<float>::infinity()):
             ArcBall{cameraPosition, viewCenter, upDir, fov, windowSize}
         {
             /* Create a camera object of a concrete type */
@@ -55,7 +57,7 @@ class ArcBallCamera: public ArcBall {
             (*(_camera = new SceneGraph::Camera3D{*cameraObject}))
                 .setAspectRatioPolicy(SceneGraph::AspectRatioPolicy::Extend)
                 .setProjectionMatrix(Matrix4::perspectiveProjection(
-                    fov, Vector2{windowSize}.aspectRatio(), 0.01f, 100.0f))
+                    fov, Vector2{windowSize}.aspectRatio(), nearClip, farClip))
                 .setViewport(viewportSize);
 
             /* Save the abstract transformation interface and initialize the
@@ -70,6 +72,8 @@ class ArcBallCamera: public ArcBall {
             _windowSize = windowSize;
             _camera->setViewport(viewportSize);
         }
+
+
 
         /* Update the SceneGraph camera if arcball has been changed */
         bool update() {

@@ -34,11 +34,12 @@ public:
     struct Vertex {
         Magnum::Vector3 pos;
         Magnum::Int index;
+        Magnum::Float radius;
     };
 
     typedef Magnum::GL::Attribute<0, Magnum::Vector3> Position;
-
     typedef Magnum::GL::Attribute<1, Magnum::Int> Index;
+    typedef Magnum::GL::Attribute<2, Magnum::Float> Radius;
 
 
     enum ColorMode {

@@ -42,7 +42,7 @@ MDCORE_BEGIN_DECLS
 #define potential_ivalsb                    10
 #define potential_N                         100
 #define potential_align                     64
-#define potential_ivalsmax                  320
+#define potential_ivalsmax                  640
 
 #define potential_escale                    (0.079577471545947667882)
 // #define potential_escale                    1.0
@@ -86,9 +86,17 @@ MDCORE_BEGIN_DECLS
 /** ID of the last error. */
 CAPI_DATA(int) potential_err;
 
+typedef void (*MxPotentialEval) ( struct MxPotential *p , struct MxParticle *,
+    struct MxParticle *b, FPTYPE r2 , FPTYPE *e , FPTYPE *f );
+
+typedef struct MxPotential* (*MxPotentialCreate) (
+    struct MxPotential *partial_potential,
+    struct MxParticleType *a, struct MxParticleType *b );
+
 
 /** The #potential structure. */
 typedef struct MxPotential : PyObject {
+    MxPotentialEval eval;
 
 	/** Coefficients for the interval transform. */
 	FPTYPE alpha[4];
@@ -104,6 +112,8 @@ typedef struct MxPotential : PyObject {
 
 	/** Nr of intervals. */
 	int n;
+    
+    MxPotentialCreate create_func;
 
 } MxPotential;
 
@@ -153,6 +163,53 @@ CAPI_FUNC(struct MxPotential *) potential_create_harmonic_angle ( double a , dou
 																  double tol );
 CAPI_FUNC(struct MxPotential *) potential_create_harmonic_dihedral ( double K , int n ,
 																	 double delta , double tol );
+
+
+CAPI_FUNC(struct MxPotential *) potential_create_SS1(double k, double e, double r0, double a , double b ,double tol);
+
+CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e, double r0, double a , double b , double tol);
+
+CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
+
+
+/**
+ * @brief partially Creates a #potential representing a 12-6 Lennard-Jones potential
+ *
+ * squirrely design, but we want to partially create one of these based on just
+ * sigma, the interaction strength, and fully create them when we bind them to
+ * particles. We do this to keep the 'bind' idea consistent for the public API.
+ *
+ * the partial created potential has the epsilon, min max params, but we hold
+ * off with the particle radii untill we bind them.
+ */
+CAPI_FUNC(struct MxPotential *) potential_partial_create_particle_radius (
+    double sigma, double min_rad, double max_rad, double tol );
+
+
+/**
+ * @brief partially Creates a #potential representing a 12-6 Lennard-Jones potential
+ *
+ * squirrely design, but we want to partially create one of these based on just
+ * sigma, the interaction strength, and fully create them when we bind them to
+ * particles. We do this to keep the 'bind' idea consistent for the public API.
+ *
+ * @param a particle type a
+ * @param b particle type b
+ * @param sigma: strength of the interaction
+ * @param min_rad The smallest radius for which the potential will be constructed.
+ * @param max_rad The largest radius for which the potential will be constructed.
+ * @param tol The tolerance to which the interpolation should match the exact
+ *      potential.
+ *
+ * @return A newly-allocated #potential representing the potential
+ *      @f$ \left( \frac{A}{r^{12}} - \frac{B}{r^6} \right) @f$ in @f$[a,b]@f$
+ *      or @c NULL on error (see #potential_err).
+ */
+CAPI_FUNC(struct MxPotential *) potential_create_particle_radius (
+    struct MxPotential *partial_potential,
+    struct MxParticleType *a, struct MxParticleType *b );
+
+
 
 /* These functions are now all in potential_eval.h. */
 /*

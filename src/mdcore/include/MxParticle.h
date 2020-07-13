@@ -31,11 +31,23 @@
 #define PARTICLE_ERR_NULL              -1
 #define PARTICLE_ERR_MALLOC            -2
 
+typedef enum MxParticleTypeFlags {
+    PARTICLE_TYPE_NONE          = 0,
+    PARTICLE_TYPE_INERTIAL      = 1 << 0,
+    PARTICLE_TYPE_DISSAPATIVE   = 1 << 1,
+} MxParticleTypeFlags;
+
+typedef enum MxParticleDynamics {
+    PARTICLE_NEWTONIAN          = 0,
+    PARTICLE_OVERDAMPED           = 1,
+} MxParticleDynamics;
 
 /* particle flags */
-#define PARTICLE_FLAG_NONE              0
-#define PARTICLE_FLAG_FROZEN            1
-#define PARTICLE_FLAG_GHOST             2
+typedef enum MxParticleFlags {
+    PARTICLE_FLAG_NONE          = 0,
+    PARTICLE_FLAG_FROZEN        = 1 << 0,
+    PARTICLE_FLAG_GHOST         = 1 << 1,
+} MxParticleFlags;
 
 
 /* default values */
@@ -77,12 +89,18 @@ struct MxParticle  {
         FPTYPE f[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 force __attribute__ ((aligned (16))) = {0,0,0};
     };
+    
+    /** persistant force */
+    union {
+        FPTYPE pf[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 pforce __attribute__ ((aligned (16))) = {0,0,0};
+    };
 
 
 	/** individual particle charge, if needed. */
 	float q;
     
-    float volume;
+    float radius;
 
 	/** 
 	 * Particle id, virtual id 
@@ -136,8 +154,17 @@ struct MxParticleType : PyHeapTypeObject {
     /** ID of this type */
     int id;
     
+    /**
+     * particle type flags
+     */
+    uint32_t flags;
+    
+    
     /** Constant physical characteristics */
     double mass, imass, charge;
+    
+    /** default radius for particles that don't define their own radius */
+    double radius;
     
     /**
      * energy and potential energy of this type, this is updated by the engine
@@ -152,6 +179,11 @@ struct MxParticleType : PyHeapTypeObject {
     /** Nonbonded interaction parameters. */
     double eps, rmin;
     
+    /**
+     * what kind of propator does this particle type use?
+     */
+    unsigned char dynamics;
+    
     /** Name of this particle type. */
     char name[MAX_NAME], name2[MAX_NAME];
     
@@ -165,7 +197,7 @@ struct MxParticleType : PyHeapTypeObject {
     
     // max size of the ids array. 
     uint32_t size_parts;
-
+    
     /**
      * add a particle (id) to this type
      */

@@ -39,7 +39,10 @@ using namespace Magnum::Math::Literals;
 MxUniverseRendererOld::MxUniverseRendererOld(float particleRadius):
     _particleRadius(particleRadius),
     _mesh(GL::MeshPrimitive::Points) {
-    _mesh.addVertexBuffer(_vertexBuffer, 0, ParticleSphereShader::Position{}, ParticleSphereShader::Index{});
+    _mesh.addVertexBuffer(_vertexBuffer, 0,
+            ParticleSphereShader::Position{},
+            ParticleSphereShader::Index{},
+            ParticleSphereShader::Radius{});
     _shader.reset(new ParticleSphereShader);
 }
 

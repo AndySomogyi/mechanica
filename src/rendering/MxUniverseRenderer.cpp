@@ -75,22 +75,37 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     const auto viewportSize1 = GL::defaultFramebuffer.viewport().size();
 
 
-    _mesh.addVertexBuffer(_vertexBuffer, 0, ParticleSphereShader::Position{}, ParticleSphereShader::Index{});
+    _mesh.addVertexBuffer(_vertexBuffer, 0,
+            ParticleSphereShader::Position{},
+            ParticleSphereShader::Index{},
+            ParticleSphereShader::Radius{});
+
     _shader.reset(new ParticleSphereShader);
 
+    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance0);
+    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance1);
+    //GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
+    
+    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance2);
+    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance3);
+
+
+    //GL::Renderer::disable(GL::Renderer::Feature::DepthClamp);
 
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
+    
     GL::Renderer::setClearColor(Color3{0.35f});
 
     /* Loop at 60 Hz max */
     glfwSwapInterval(1);
-
 
     Vector3 origin = MxUniverse::origin();
     Vector3 dim = MxUniverse::dim();
 
     center = (dim + origin) / 2.;
 
+    // TODO: get the max value
+    float sideLength = dim[0];
 
     /* Setup scene objects and camera */
 
@@ -178,12 +193,12 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     int i = 0;
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+            MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
             vertexPtr[i].pos.x() = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
             vertexPtr[i].pos.y() = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
             vertexPtr[i].pos.z() = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
-            vertexPtr[i].index = _Engine.s.cells[cid].parts[pid].id;
-
-            MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
+            vertexPtr[i].index = p->id;
+            vertexPtr[i].radius = _Engine.types[p->typeId].radius;
             i++;
         }
     }
@@ -353,6 +368,8 @@ void MxUniverseRenderer::draw() {
            has not been changed. Otherwise, camera transformation will be
            propagated into the camera objects. */
     bool camChanged = _arcball->update();
+
+    //Magnum::Debug{} << _arcball->projectionMatrix();
 
     /* Draw objects */
 

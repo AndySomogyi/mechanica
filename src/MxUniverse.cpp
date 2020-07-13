@@ -298,11 +298,20 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a) {
 }
 
 
-static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b) {
+static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b) {
     if(PyObject_TypeCheck(a, &MxParticleType_Type) &&
        PyObject_TypeCheck(b, &MxParticleType_Type)) {
         MxParticleData *a_type = ((MxParticleType *)a);
         MxParticleData *b_type = ((MxParticleType *)b);
+        
+        MxPotential *pot = NULL;
+        
+        if(p->create_func) {
+            pot = p->create_func(p, (MxParticleType*)a, (MxParticleType*)b);
+        }
+        else {
+            pot = p;
+        }
         
         if(engine_addpot(&_Engine, pot, a_type->id, b_type->id) != engine_err_ok) {
             std::string msg = "failed to add potential to engine: error";

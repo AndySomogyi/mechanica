@@ -225,9 +225,6 @@ struct MxUniverseRenderer : MxRenderer {
 
     Vector3 center;
 
-    float sideLength = 10.0;
-
-
 
     MxGlfwWindow *window;
 
