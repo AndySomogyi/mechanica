@@ -80,10 +80,7 @@ static HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
 
 static void printTypeInfo(const char* name, PyTypeObject *p);
 
-
- 
-static static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
-
+static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
 
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     
@@ -609,13 +606,13 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
         // make a random initial position
-        std::uniform_real_distribution x(_Engine.s.origin[0], _Engine.s.dim[0]);
-        std::uniform_real_distribution y(_Engine.s.origin[1], _Engine.s.dim[1]);
-        std::uniform_real_distribution z(_Engine.s.origin[2], _Engine.s.dim[2]);
+        std::uniform_real_distribution<float> x(_Engine.s.origin[0], _Engine.s.dim[0]);
+        std::uniform_real_distribution<float> y(_Engine.s.origin[1], _Engine.s.dim[1]);
+        std::uniform_real_distribution<float> z(_Engine.s.origin[2], _Engine.s.dim[2]);
         Magnum::Vector3 iniPos = {x(CRandom), y(CRandom), z(CRandom)};
         
         // initial velocity, chosen to fit target temperature
-        std::uniform_real_distribution v(-1.0, 1.0);
+        std::uniform_real_distribution<float> v(-1.0, 1.0);
         Magnum::Vector3 vel = {v(CRandom), v(CRandom), v(CRandom)};
         float v2 = Magnum::Math::dot(vel, vel);
         float x2 = (type->target_energy * 2. / (type->mass * v2));
