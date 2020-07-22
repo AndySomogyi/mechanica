@@ -195,7 +195,7 @@ typedef struct engine {
 	struct engine_comm *send, *recv;
 
 	/** List of bonds. */
-	struct bond *bonds;
+	struct MxBond *bonds;
 
 	/** Nr. of bonds. */
 	int nr_bonds, bonds_size;
@@ -281,7 +281,7 @@ typedef struct engine_set {
 	int nr_bonds, nr_angles, nr_dihedrals, nr_exclusions, weight;
 
 	/* Lists of ID of the relevant bonded types. */
-	struct bond *bonds;
+	struct MxBond *bonds;
 	struct angle *angles;
 	struct dihedral *dihedrals;
 	struct exclusion *exclusions;
@@ -335,6 +335,10 @@ CAPI_FUNC(int) engine_flush ( struct engine *e );
 CAPI_FUNC(int) engine_gettype ( struct engine *e , char *name );
 CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 
+/**
+ * allocates a new bond, returns a pointer to it.
+ */
+int engine_bond_alloc (struct engine *e , struct _typeobject *type, struct MxBond **result );
 
 /**
  * External C apps should call this to get a particle type ptr.

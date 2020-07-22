@@ -24,7 +24,7 @@
 #include "fptype.h"
 #include "carbon.h"
 
-MDCORE_BEGIN_DECLS
+
 
 /* potential error codes */
 #define potential_err_ok                    0
@@ -48,39 +48,35 @@ MDCORE_BEGIN_DECLS
 // #define potential_escale                    1.0
 
 
+
 /* potential flags */
-#define potential_flag_none                  0
-#define potential_flag_LJ126                 1
-#define potential_flag_Ewald                 2
-#define potential_flag_Coulomb               4
-#define potential_flag_single                6
 
-/** flag defined for r^2 input */
-#define potential_flag_r2                    1 << 0
+enum PotentialFlags {
+    POTENTIAL_NONE            = 0,
+    POTENTIAL_LJ126           = 1 << 0,
+    POTENTIAL_EWALD           = 1 << 1,
+    POTENTIAL_COULOMB         = 1 << 2,
+    POTENTIAL_SINGLE          = 1 << 3,
 
-/** potential defined for r input (no sqrt) */
-#define potential_flag_r                     1 << 1
+    /** flag defined for r^2 input */
+    POTENTIAL_R2              = 1 << 4,
 
-/** potential has Coulomb component */
-#define potential_flag_coulomb               1 << 2
+    /** potential defined for r input (no sqrt) */
+    POTENTIAL_R               = 1 << 5,
 
-/** potential has LJ component */
-#define potential_flag_lennard_jones         1 << 3
+    /** potential defined for angle */
+    POTENTIAL_ANGLE           = 1 << 6,
 
-/** potential defined for angle */
-#define potential_flag_angle                 1 << 4
+    /** potential defined for harmonic */
+    POTENTIAL_HARMONIC        = 1 << 7,
 
-/** potential defined for harmonic */
-#define potential_flag_harmonic              1 << 5
+    POTENTIAL_DIHEDRAL        = 1 << 8,
 
-/** potential defined for harmonic */
-#define potential_flag_dihedral              1 << 6
+    /** potential defined for switch */
+    POTENTIAL_SWITCH          = 1 << 9,
 
-/** potential defined for harmonic */
-#define potential_flag_ewald                 1 << 7
-
-/** potential defined for switch */
-#define potential_flag_switch                1 << 8
+    POTENTIAL_REACTIVE        = 1 << 10,
+};
 
 
 /** ID of the last error. */
@@ -244,7 +240,7 @@ CAPI_FUNC(double) potential_switch_p ( double r , double A , double B );
  */
 CAPI_DATA(PyTypeObject) MxPotential_Type;
 
-HRESULT MxPotential_init(PyObject *m);
+HRESULT _MxPotential_init(PyObject *m);
 
-MDCORE_END_DECLS
+
 #endif // INCLUDE_POTENTIAL_H_

@@ -14,6 +14,9 @@
 struct  PyParticles {
 };
 
+struct PyBonds {
+};
+
 /**
  * Init and add to python module
  */

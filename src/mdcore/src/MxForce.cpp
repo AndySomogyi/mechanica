@@ -133,7 +133,7 @@ static struct PyModuleDef forces_moduledef = {
 
 static PyObject *forces_module;
 
-HRESULT MXForces_Init(PyObject *m)
+HRESULT _MxForces_init(PyObject *m)
 {
      if (PyType_Ready((PyTypeObject*)&MxForce_Type) < 0) {
          std::cout << "could not initialize MxForce_Type " << std::endl;

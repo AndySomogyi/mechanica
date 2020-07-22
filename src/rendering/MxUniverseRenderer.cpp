@@ -118,7 +118,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
 
 
     /* Set default camera parameters */
-    _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
+    _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
 
     _defaultCamTarget   = {0,0,0};
 
@@ -126,7 +126,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     /* Set up the camera */
     {
         /* Setup the arcball after the camera objects */
-        const Vector3 eye = Vector3(2*sideLength, 2*sideLength, 3 * sideLength);
+        const Vector3 eye = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
         const Vector3 center{};
         const Vector3 up = Vector3::yAxis();
 

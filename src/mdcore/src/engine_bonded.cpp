@@ -45,7 +45,7 @@
 #include "space.h"
 #include <MxPotential.h>
 #include "runner.h"
-#include "bond.h"
+#include <bond.h>
 #include "rigid.h"
 #include "angle.h"
 #include "dihedral.h"
@@ -963,7 +963,7 @@ int engine_bonded_sets ( struct engine *e , int max_sets ) {
 
 	/* Allocate the index lists. */
 	for ( k = 0 ; k < nr_sets ; k++ ) {
-		if ( ( e->sets[k].bonds = (struct bond *)malloc( sizeof(struct bond) * e->sets[k].nr_bonds ) ) == NULL ||
+		if ( ( e->sets[k].bonds = (struct MxBond *)malloc( sizeof(struct MxBond) * e->sets[k].nr_bonds ) ) == NULL ||
 				( e->sets[k].angles = (struct angle *)malloc( sizeof(struct angle) * e->sets[k].nr_angles ) ) == NULL ||
 				( e->sets[k].dihedrals = (struct dihedral *)malloc( sizeof(struct dihedral) * e->sets[k].nr_dihedrals ) ) == NULL ||
 				( e->sets[k].exclusions = (struct exclusion *)malloc( sizeof(struct exclusion) * e->sets[k].nr_exclusions ) ) == NULL ||
@@ -1284,7 +1284,7 @@ int engine_exclusion_add ( struct engine *e , int i , int j ) {
 
 int engine_bond_add ( struct engine *e , int i , int j ) {
 
-	struct bond *dummy;
+	struct MxBond *dummy;
 
 	/* Check inputs. */
 	if ( e == NULL )
@@ -1295,9 +1295,9 @@ int engine_bond_add ( struct engine *e , int i , int j ) {
 	/* Do we need to grow the bonds array? */
 	if ( e->nr_bonds == e->bonds_size ) {
 		e->bonds_size  *= 1.414;
-		if ( ( dummy = (struct bond *)malloc( sizeof(struct bond) * e->bonds_size ) ) == NULL )
+		if ( ( dummy = (struct MxBond *)malloc( sizeof(struct MxBond) * e->bonds_size ) ) == NULL )
 			return error(engine_err_malloc);
-		memcpy( dummy , e->bonds , sizeof(struct bond) * e->nr_bonds );
+		memcpy( dummy , e->bonds , sizeof(struct MxBond) * e->nr_bonds );
 		free( e->bonds );
 		e->bonds = dummy;
 	}
@@ -1310,6 +1310,52 @@ int engine_bond_add ( struct engine *e , int i , int j ) {
 	/* It's the end of the world as we know it. */
 	return engine_err_ok;
 
+}
+
+
+/**
+ * allocates a new bond, returns a pointer to it.
+ */
+
+int engine_bond_alloc (struct engine *e , struct _typeobject *type, MxBond **result ) {
+
+    struct MxBond *dummy;
+
+    /* Check inputs. */
+    if ( e == NULL )
+        return error(engine_err_null);
+    /* if ( i > e->s.nr_parts || j > e->s.nr_parts )
+        return error(engine_err_range); */
+
+    /* Do we need to grow the bonds array? */
+    if ( e->nr_bonds == e->bonds_size ) {
+        e->bonds_size  *= 1.414;
+        if ( ( dummy = (struct MxBond *)malloc( sizeof(struct MxBond) * e->bonds_size ) ) == NULL )
+            return error(engine_err_malloc);
+        memcpy( dummy , e->bonds , sizeof(struct MxBond) * e->nr_bonds );
+        free( e->bonds );
+        e->bonds = dummy;
+    }
+
+    ::memset(&e->bonds[e->nr_bonds], 0, sizeof(MxBond));
+
+
+    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
+        Py_INCREF(type);
+
+    PyObject_INIT(&e->bonds[e->nr_bonds], type);
+
+    if (PyType_IS_GC(type)) {
+        assert(0 && "should not get here");
+        //  _PyObject_GC_TRACK(obj);
+    }
+
+    *result = &e->bonds[e->nr_bonds];
+
+    e->nr_bonds += 1;
+
+    /* It's the end of the world as we know it. */
+    return engine_err_ok;
 }
 
 
@@ -1331,7 +1377,7 @@ int engine_bonded_eval ( struct engine *e ) {
 	struct space *s;
 	struct dihedral dtemp;
 	struct angle atemp;
-	struct bond btemp;
+	struct MxBond btemp;
 	struct exclusion etemp;
 	int nr_dihedrals = e->nr_dihedrals, nr_bonds = e->nr_bonds;
 	int nr_angles = e->nr_angles, nr_exclusions = e->nr_exclusions;
@@ -1817,7 +1863,7 @@ int engine_bond_eval ( struct engine *e ) {
 	double epot = 0.0;
 	struct space *s;
 	int nr_bonds = e->nr_bonds, i, j;
-	struct bond temp;
+	struct MxBond temp;
 #ifdef HAVE_OPENMP
 	FPTYPE *eff;
 	int nr_threads, cid, pid, gpid, k;

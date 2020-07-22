@@ -52,7 +52,7 @@ struct MxPotential potential_null = {
         .c = c_null ,
         .a = 0.0 ,
         .b = DBL_MAX,
-        potential_flag_none ,
+        POTENTIAL_NONE ,
         1
 };
 
@@ -322,7 +322,7 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_harmonic ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_HARMONIC ;
 
 	/* fill this potential */
 	potential_create_harmonic_K = K;
@@ -416,7 +416,7 @@ struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , doub
 		return NULL;
 	}
 
-    p->flags =   potential_flag_r | potential_flag_harmonic | potential_flag_dihedral;
+    p->flags =   POTENTIAL_R | POTENTIAL_HARMONIC | POTENTIAL_DIHEDRAL;
 
 	/* fill this potential */
 	potential_create_harmonic_dihedral_K = K;
@@ -482,7 +482,7 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r | potential_flag_angle | potential_flag_harmonic ;
+    p->flags =  POTENTIAL_R | POTENTIAL_ANGLE | POTENTIAL_HARMONIC ;
 
 	/* Adjust a and b accordingly. */
 	if ( a < 0.0 )
@@ -552,7 +552,7 @@ struct MxPotential *potential_create_Ewald ( double a , double b , double q , do
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_ewald ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_EWALD ;
 
 	/* fill this potential */
 	potential_create_Ewald_q = q;
@@ -618,7 +618,7 @@ struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double 
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones |  potential_flag_ewald ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 |  POTENTIAL_EWALD ;
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_A = A;
@@ -690,7 +690,7 @@ struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , 
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_ewald | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_EWALD | POTENTIAL_SWITCH ;
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_switch_A = A;
@@ -751,7 +751,7 @@ struct MxPotential *potential_create_Coulomb ( double a , double b , double q , 
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 |  potential_flag_coulomb ;
+    p->flags =  POTENTIAL_R2 |  POTENTIAL_COULOMB ;
 
 	/* fill this potential */
 	potential_create_Coulomb_q = q;
@@ -816,7 +816,7 @@ struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , doubl
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_coulomb | potential_flag_lennard_jones  ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_COULOMB | POTENTIAL_LJ126  ;
 
 	/* fill this potential */
 	potential_create_LJ126_Coulomb_q = q;
@@ -876,7 +876,7 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
 		return NULL;
  	}
 
-    p->flags =  potential_flag_r2  | potential_flag_lennard_jones ;
+    p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 ;
 
 	/* fill this potential */
 	potential_create_LJ126_A = A;
@@ -938,7 +938,7 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 		return NULL;
 	}
 
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
 
 	/* fill this potential */
 	potential_create_LJ126_switch_A = A;
@@ -1026,7 +1026,7 @@ struct MxPotential *potential_create_SS1(double k, double e, double r0, double a
         return NULL;
     }
     
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1109,7 +1109,7 @@ struct MxPotential *potential_create_SS2(double k, double e, double r0, double a
         return NULL;
     }
     
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1193,7 +1193,7 @@ struct MxPotential *potential_create_SS3(double k, double e, double r0, double a
         return NULL;
     }
     
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1278,7 +1278,7 @@ struct MxPotential *potential_create_SS4(double k, double e, double r0, double a
         return NULL;
     }
     
-    p->flags =  potential_flag_r2 | potential_flag_lennard_jones | potential_flag_switch ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1330,7 +1330,7 @@ void potential_clear ( struct MxPotential *p ) {
 		return;
 
 	/* Clear the flags. */
-	p->flags = potential_flag_none;
+	p->flags = POTENTIAL_NONE;
 
 	/* Clear the coefficients. */
 	free( p->c );
@@ -1466,8 +1466,14 @@ int potential_init (struct MxPotential *p ,
 		/* Clean up. */
 		free(xi_l);
         
+        double test_n = p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]);
         
-        assert(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])) < p->n);
+        int ttn = test_n;
+        
+        int tttn = int(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])));
+        
+        
+        assert(int(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]))) < p->n + 1);
 		return potential_err_ok;
 	}
 
@@ -2018,7 +2024,7 @@ static MxPotential *potential_alloc(PyTypeObject *type) {
         return NULL;
     }
     
-    ::memset(obj, NULL, sizeof(MxPotential));
+    ::memset(obj, NULL, type->tp_basicsize);
 
     if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
         Py_INCREF(type);
@@ -2047,7 +2053,7 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
 
         float r = py::cast<float>(args[0]);
         
-        if(self->flags & potential_flag_r2) {
+        if(self->flags & POTENTIAL_R2) {
             r = r * r;
         }
 
@@ -2182,11 +2188,14 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double K = arg<double>("K", 2, _args, _kwargs);
         double r0 = arg<double>("r0", 3, _args, _kwargs);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001);
+        
+        double range = r0 / 2;
+        double min = arg<double>("min", 0, _args, _kwargs, r0 - range);
+        double max = arg<double>("max", 1, _args, _kwargs, r0 + range);
+        double K = arg<double>("K", 2, _args, _kwargs);
+
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.0001 * (max-min));
         return potential_create_harmonic( min, max, K, r0, tol);
     }
     catch (const std::exception &e) {
@@ -2430,7 +2439,7 @@ PyTypeObject MxPotential_Type = {
 };
 
 
-HRESULT MxPotential_init(PyObject *m)
+HRESULT _MxPotential_init(PyObject *m)
 {
     if (PyType_Ready((PyTypeObject*)&MxPotential_Type) < 0) {
         return E_FAIL;
@@ -2456,7 +2465,7 @@ MxPotential* potential_partial_create_particle_radius(
         return NULL;
     }
     
-    p->flags =  potential_flag_r2 | potential_flag_harmonic ;
+    p->flags =  POTENTIAL_R2 | POTENTIAL_HARMONIC ;
     p->a = min_rad;
     p->b = max_rad;
     p->alpha[0] = epsilon;

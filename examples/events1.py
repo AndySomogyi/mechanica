@@ -13,6 +13,16 @@ m.Simulator(example="", dim=dim)
 
 # create a particle type, all new Particle derived types
 # are automatically registered with the universe
+
+        
+class Receptor(m.Particle):
+    mass = 0.1
+    
+    
+class Virus(m.Particle):
+    mass = 0.2
+    
+    
 class MyCell(m.Particle):
 
     mass = 39.4
@@ -21,6 +31,43 @@ class MyCell(m.Particle):
     def __init__(self, *args):
         super().__init__(*args)
         print("creating new particle, my id is: ", self.id)
+        
+# create a new cell instance
+cell = MyCell(center)
+    
+harmonic = m.Harmonic(k=300, r0=MyCell.radius)
+    
+# create new receptors on the surface of the cell,
+# bind them to the cell with explicit harmonic potential
+for p in m.random_points(m.Sphere, 300) * MyCell.radius + center:
+    r = Receptor(p)
+    m.bind(harmonic, cell, r)
+    
+
+ss = Potential.soft_sphere(kappa=10, epsilon=50, r0=3, eta=3, tol = 0.1, min=0.1, max=9)
+
+# create a bond creation event
+r = ReactivePotential(potential=ss, reaction=Bond)
+
+# can bind any operator to a reactive potential
+r = ReactivePotential(potential=ss, reaction=Fission)
+
+
+# stable explicit bond, can use arbitrary potential function
+b = Bond(potential=Harmonic(k=50, r0=2.0))
+
+# optional half-life
+b = Bond(potential=Harmonic(k=50, r0=2.0) 
+         half-life = 30)
+
+# optional bond-strength breaking strength
+b = Bond(potential=Harmonic(k=50, r0=2.0) 
+         bond-strength = 15)
+    
+    
+    
+    
+
 
 
 # create a potential representing a 12-6 Lennard-Jones potential

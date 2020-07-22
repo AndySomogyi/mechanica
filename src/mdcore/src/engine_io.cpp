@@ -45,7 +45,7 @@
 #include "space.h"
 #include <MxPotential.h>
 #include "runner.h"
-#include "bond.h"
+#include <bond.h>
 #include "rigid.h"
 #include "angle.h"
 #include "dihedral.h"

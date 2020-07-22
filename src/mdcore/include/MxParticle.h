@@ -50,10 +50,6 @@ typedef enum MxParticleFlags {
 } MxParticleFlags;
 
 
-/* default values */
-
-MDCORE_BEGIN_DECLS
-
 
 /** ID of the last error. */
 CAPI_DATA(int) particle_err;
@@ -76,6 +72,11 @@ struct MxParticle  {
     union {
         FPTYPE x[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 position __attribute__ ((aligned (16))) = {0,0,0};
+
+        struct {
+            float __dummy[3];
+            uint32_t creation_time;
+        };
     };
 
 	/** Particle velocity */
@@ -283,9 +284,17 @@ MxParticleType *MxParticleType_ForEngine(struct engine *e, double mass , double 
 MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 
 
-PyObject *MxParticle_Fission(MxParticle *part, PyObject *args);
-
-
+/**
+ * simple fission,
+ *
+ * divides a particle into two, and creates a new daughter particle in the
+ * universe.
+ *
+ * Vector of numbers indicate how to split the attached chemical cargo.
+ */
+CAPI_FUNC(PyObject*) MxParticle_FissionSimple(MxParticle *part,
+        MxParticleType *a, MxParticleType *b,
+        int nPartitionRatios, float *partitionRations);
 
 
 
@@ -294,5 +303,4 @@ PyObject *MxParticle_Fission(MxParticle *part, PyObject *args);
  */
 HRESULT _MxParticle_init(PyObject *m);
 
-MDCORE_END_DECLS
 #endif // INCLUDE_PARTICLE_H_

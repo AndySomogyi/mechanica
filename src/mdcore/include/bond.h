@@ -32,21 +32,53 @@
 CAPI_DATA(int) bond_err;
 
 
+typedef enum MxBondFlags {
+    BOND_NONE                   = 0,
+    BOND_ACTIVE                 = 1 << 0,
+    BOND_FOO   = 1 << 1,
+} MxBondFlags;
+
+
 /** The bond structure */
-typedef struct bond {
+typedef struct MxBond : PyObject {
+
+    uint32_t flags;
 
 	/* ids of particles involved */
-	int i, j;
+	int32_t i, j;
 
-} bond;
+    uint64_t creation_time;
+
+	/**
+	 * half life decay time for this bond.
+	 */
+	double half_life;
+
+	/* potential energy required to break this bond */
+	double bond_energy;
+
+	struct MxPotential *potential;
+
+} MxBond;
 
 
-MDCORE_BEGIN_DECLS
+
+/**
+ * The type of each individual bond.
+ */
+CAPI_DATA(PyTypeObject) MxBond_Type;
+
+HRESULT _MxBond_init(PyObject *m);
+
+CAPI_FUNC(MxBond*) MxBond_New(uint32_t flags,
+        int32_t i, int32_t j,
+        double half_life,
+        double bond_energy,
+        struct MxPotential* potential);
 
 /* associated functions */
-int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out );
-int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double *epot_out );
+CAPI_FUNC(int) bond_eval ( struct MxBond *b , int N , struct engine *e , double *epot_out );
+CAPI_FUNC(int) bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , double *epot_out );
 
-MDCORE_END_DECLS
 
 #endif // INCLUDE_BOND_H_

@@ -180,7 +180,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_expl ( struct MxPoten
     FPTYPE ee = 0.0, eff = 0.0;
 
     /* Do we have a Lennard-Jones interaction? */
-    if ( p->flags & potential_flag_LJ126 ) {
+    if ( p->flags & POTENTIAL_LJ126 ) {
     
         /* init some variables */
         ir4 = ir2 * ir2; ir6 = ir4 * ir2; ir12 = ir6 * ir6;
@@ -192,7 +192,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_expl ( struct MxPoten
         }
         
     /* Do we have an Ewald short-range part? */
-    if ( p->flags & potential_flag_Ewald ) {
+    if ( p->flags & POTENTIAL_EWALD ) {
     
         /* get some values we will re-use */
         t2 = r * kappa;
@@ -205,7 +205,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_expl ( struct MxPoten
         }
     
     /* Do we have a Coulomb interaction? */
-    if ( p->flags & potential_flag_Coulomb ) {
+    if ( p->flags & POTENTIAL_COULOMB ) {
     
         /* compute the energy and the force */
         ee += potential_escale * p->alpha[2] * ir;

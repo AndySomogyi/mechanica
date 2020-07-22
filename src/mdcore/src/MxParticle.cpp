@@ -82,6 +82,8 @@ static void printTypeInfo(const char* name, PyTypeObject *p);
 
 static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
 
+static PyObject* particle_fission(MxPyParticle *part, PyObject *args, PyObject *kwargs);
+
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     
     PyObject *s = PyObject_Str(name);
@@ -267,6 +269,21 @@ PyGetSetDef gs_mass = {
     .closure = NULL
 };
 
+PyGetSetDef gs_age = {
+    .name = "age",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        MxPyParticle *part = (MxPyParticle*)obj;
+        double age = _Engine.s.partlist[part->id]->creation_time * _Engine.dt;
+        return pybind11::cast(age).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        PyErr_SetString(PyExc_PermissionError, "read only");
+        return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
 PyGetSetDef gs_dynamics = {
     .name = "dynamics",
     .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -438,6 +455,7 @@ PyGetSetDef particle_getsets[] = {
     gs_name2,
     gs_dynamics,
     gsd,
+    gs_age, 
     {
         .name = "position",
         .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -572,7 +590,7 @@ PyGetSetDef particle_getsets[] = {
 };
 
 static PyMethodDef particle_methods[] = {
-        { "fission", (PyCFunction)MxParticle_Fission, METH_VARARGS, NULL },
+        { "fission", (PyCFunction)particle_fission, METH_VARARGS, NULL },
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { NULL, NULL, 0, NULL }
 };
@@ -599,6 +617,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.typeId = type->id;
     part.flags = 0;
     part.pyparticle = NULL;
+    part.creation_time = _Engine.time;
     
     try {
         pybind11::detail::loader_life_support ls{};
@@ -1211,10 +1230,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     return S_OK;
 }
 
-PyObject* MxParticle_Fission(MxParticle *part, PyObject *args)
-{
-    return PyLong_FromLong(10);
-}
+
 
 PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
 {
@@ -1254,7 +1270,7 @@ HRESULT MxParticleType::addpart(int32_t id)
  */
 HRESULT MxParticleType::del_part(int32_t id) {
     int i = 0;
-    for(i; i < nr_parts; i++) {
+    for(; i < nr_parts; i++) {
         if(part_ids[i] == id)
             break;
     }
@@ -1269,4 +1285,94 @@ HRESULT MxParticleType::del_part(int32_t id) {
     }
     
     return S_OK;
+}
+
+PyObject* MxParticle_FissionSimple(MxParticle *self,
+        MxParticleType *a, MxParticleType *b, int nPartitionRatios,
+        float *partitionRations)
+{
+    int self_id = self->id;
+
+    MxParticleType *type = &_Engine.types[self->typeId];
+
+    MxParticle part;
+    part.position = self->position;
+    part.velocity = self->velocity;
+    part.force = {};
+    part.pforce = {};
+    part.q = self->q;
+    part.radius = self->radius;
+    part.id = engine_next_partid(&_Engine);
+    part.vid = 0;
+    part.typeId = type->id;
+    part.flags = self->flags;
+    part.pyparticle = NULL;
+    part.creation_time = _Engine.time;
+
+    std::uniform_real_distribution<float> x(-1, 1);
+
+    Magnum::Vector3 sep = {x(CRandom), x(CRandom), x(CRandom)};
+    sep = sep.normalized();
+    sep = sep * type->radius / 2.;
+
+    try {
+        MxParticle *p = NULL;
+        Magnum::Vector3 vec;
+        space_getpos(&_Engine.s, self->id, vec.data());
+        double pos[] = {vec[0], vec[1], vec[2]};
+        int result = engine_addpart (&_Engine, &part, pos, &p);
+
+        if(result < 0) {
+            PyErr_SetString(PyExc_Exception, engine_err_msg[-engine_err]);
+            return NULL;
+        }
+        
+        // pointers after engine_addpart could change...
+        self = _Engine.s.partlist[self_id];
+        self->position += sep;
+        
+        // p is valid, because that's the result of the addpart
+        p->position -= sep;
+
+        // new python handle
+        MxPyParticle *py = (MxPyParticle*)particle_new((PyTypeObject*)type, NULL, NULL);
+        py->id = p->id;
+        Py_INCREF(py);
+        p->pyparticle = py;
+        
+        assert(py->id == _Engine.s.partlist[p->id]->id);
+
+        return py;
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return NULL;
+    }
+
+}
+
+PyObject* particle_fission(MxPyParticle *part, PyObject *args,
+        PyObject *kwargs)
+{
+    try {
+        //double min = arg<double>("min", 0, args, _kwargs);
+        //double max = arg<double>("max", 1, args, _kwargs);
+        //double A = arg<double>("A", 2, _args, _kwargs);
+        //double B = arg<double>("B", 3, _args, _kwargs);
+        //double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        //return potential_create_LJ126( min, max, A, B, tol);
+        
+
+        assert(part->id == _Engine.s.partlist[part->id]->id);        
+        MxParticle *p = _Engine.s.partlist[part->id];
+        return MxParticle_FissionSimple(p, NULL, NULL, 0, NULL);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
 }

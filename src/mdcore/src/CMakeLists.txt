@@ -48,6 +48,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/MxPy.h"
   "${MDCORE_SOURCE_DIR}/include/MxForce.h"
   "${MDCORE_SOURCE_DIR}/include/MxParticleEvent.h"
+  "${MDCORE_SOURCE_DIR}/include/MxReactivePotential.h"
   )
 
 set(PRIVATE_HEADERS
@@ -91,6 +92,7 @@ SET(SOURCES
   MxPy.cpp
   MxForce.cpp
   MxParticleEvent.cpp
+  MxReactivePotential.cpp
   )
 
 if(MDCORE_USE_MPI)

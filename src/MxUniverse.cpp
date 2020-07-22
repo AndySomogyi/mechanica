@@ -11,6 +11,7 @@
 #include <MxForce.h>
 #include <MxPy.h>
 #include <MxSimulator.h>
+#include <limits>
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
 
@@ -65,7 +66,7 @@ CAPI_FUNC(struct engine*) engine_get()
 MxUniverseConfig::MxUniverseConfig() :
     origin {0, 0, 0},
     dim {10, 10, 10},
-    spaceGridSize {2, 2, 2},
+    spaceGridSize {3, 3, 3},
     boundaryConditions{1, 1, 1},
     cutoff{1},
     flags{0},
@@ -226,6 +227,13 @@ HRESULT _MxUniverse_init(PyObject* m)
             }
         );
     
+    u.def_property_readonly_static("bonds",
+            [](py::object self) -> py::handle {
+                static PyBonds bonds;
+                return py::cast(bonds).release();
+            }
+        );
+
     u.def_static("bind", [](py::args args, py::kwargs kwargs) -> void {
             UNIVERSE_CHECK();
             PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr()));
@@ -322,7 +330,27 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b)
         }
         return S_OK;
     }
-    return mx_error(E_FAIL, "can only add potential to particle types");
+
+    if(PyObject_IsInstance(a, (PyObject*)MxParticle_GetType()) &&
+       PyObject_IsInstance(b, (PyObject*)MxParticle_GetType())) {
+        MxPyParticle *a_part = ((MxPyParticle *)a);
+        MxPyParticle *b_part = ((MxPyParticle *)b);
+
+        //MxBond_New(uint32_t flags,
+        //        int32_t i, int32_t j,
+        //        double half_life,
+        //        double bond_energy,
+        //        struct MxPotential* potential);
+
+        MxBond_New(0, a_part->id, b_part->id,
+                std::numeric_limits<double>::max(),
+                std::numeric_limits<double>::max(),
+                p);
+
+        return S_OK;
+    }
+
+    return mx_error(E_FAIL, "can only add potential to particle types or instances");
 }
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a) {

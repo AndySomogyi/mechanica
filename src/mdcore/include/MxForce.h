@@ -87,5 +87,5 @@ CAPI_DATA(PyTypeObject) MxForce_Type;
 /**
  * internal method, init the Force type, and the forces module and add it to the main module.
  */
-HRESULT MXForces_Init(PyObject *m);
+HRESULT _MxForces_init(PyObject *m);
 

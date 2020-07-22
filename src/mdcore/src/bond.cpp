@@ -28,6 +28,8 @@
 #include <float.h>
 #include <string.h>
 #include <limits.h>
+#include <iostream>
+
 
 /* Include some conditional headers. */
 #include "mdcore_config.h"
@@ -49,7 +51,9 @@
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"
-#include "bond.h"
+#include <bond.h>
+
+#include <MxPy.h>
 
 
 /* Global variables. */
@@ -78,7 +82,7 @@ const char *bond_err_msg[2] = {
  * @return #bond_err_ok or <0 on error (see #bond_err)
  */
  
-int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
+int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_out ) {
 
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
@@ -86,6 +90,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
     struct MxPotential *pot, **pots;
+    struct MxBond *b;
     FPTYPE r2, w;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
@@ -102,7 +107,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
 #endif
     
     /* Check inputs. */
-    if ( b == NULL || e == NULL )
+    if ( bonds == NULL || e == NULL )
         return error(bond_err_null);
         
     /* Get local copies of some variables. */
@@ -117,9 +122,14 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
         
     /* Loop over the bonds. */
     for ( bid = 0 ; bid < N ; bid++ ) {
+
+        b = &bonds[bid];
+
+        if(!(b->flags & BOND_ACTIVE))
+            continue;
     
         /* Get the particles involved. */
-        pid = b[bid].i; pjd = b[bid].j;
+        pid = bonds[bid].i; pjd = bonds[bid].j;
         if ( ( pi = partlist[ pid ] ) == NULL )
             continue;
         if ( ( pj = partlist[ pjd ] ) == NULL )
@@ -131,8 +141,13 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
+        pot = b->potential;
+        if(!pot) {
+            pot = pots[ pj->typeId*ld_pots + pi->typeId ];
+        }
+        if (!pot) {
             continue;
+        }
     
         /* get the distance between both particles */
         loci = celllist[ pid ]->loc; locj = celllist[ pjd ]->loc;
@@ -279,7 +294,7 @@ int bond_eval ( struct bond *b , int N , struct engine *e , double *epot_out ) {
  * @return #bond_err_ok or <0 on error (see #bond_err)
  */
  
-int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double *epot_out ) {
+int bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , double *epot_out ) {
 
     int bid, pid, pjd, k, *loci, *locj, shift[3], ld_pots;
     double h[3], epot = 0.0;
@@ -463,4 +478,155 @@ int bond_evalf ( struct bond *b , int N , struct engine *e , FPTYPE *f , double 
     }
 
 
+static int _bond_init(MxBond *bond, uint32_t flags, int32_t i, int32_t j,
+        double half_life, double bond_energy, struct MxPotential *potential) {
 
+    bond->flags = flags;
+    bond->i = i;
+    bond->j = j;
+    bond->half_life = half_life;
+    bond->bond_energy = bond_energy;
+    
+    if(bond->i >= 0 && bond->j >= 0) {
+        bond->flags = bond->flags | BOND_ACTIVE;
+    }
+
+    if(potential) {
+        Py_INCREF(potential);
+        bond->potential = potential;
+    }
+
+    return 0;
+}
+
+static MxBond *bond_alloc(struct _typeobject *type, Py_ssize_t) {
+
+    MxBond *bond;
+
+    int result =  engine_bond_alloc (&_Engine, type, &bond );
+
+    return bond;
+}
+
+static int bond_init(MxBond *self, PyObject *args, PyObject *kwargs) {
+
+    std::cout << MX_FUNCTION << std::endl;
+
+    try {
+        PyObject *p1  = arg<PyObject*>("p1", 0, args, kwargs);
+
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+
+
+    return 0;
+
+}
+
+PyTypeObject MxBond_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "Bond",
+    .tp_basicsize = sizeof(MxBond),
+    .tp_itemsize =       0,
+    .tp_dealloc =        0,
+    .tp_print =          0,
+    .tp_getattr =        0,
+    .tp_setattr =        0,
+    .tp_as_async =       0,
+    .tp_repr =           0,
+    .tp_as_number =      0,
+    .tp_as_sequence =    0,
+    .tp_as_mapping =     0,
+    .tp_hash =           0,
+    .tp_call =           0,
+    .tp_str =            0,
+    .tp_getattro =       0,
+    .tp_setattro =       0,
+    .tp_as_buffer =      0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = "Custom objects",
+    .tp_traverse =       0,
+    .tp_clear =          0,
+    .tp_richcompare =    0,
+    .tp_weaklistoffset = 0,
+    .tp_iter =           0,
+    .tp_iternext =       0,
+    .tp_methods =        0,
+    .tp_members =        0,
+    .tp_getset =         0,
+    .tp_base =           0,
+    .tp_dict =           0,
+    .tp_descr_get =      0,
+    .tp_descr_set =      0,
+    .tp_dictoffset =     0,
+    .tp_init =           (initproc)bond_init,
+    .tp_alloc =          (allocfunc)bond_alloc,
+    .tp_new =            PyType_GenericNew,
+    .tp_free =           0,
+    .tp_is_gc =          0,
+    .tp_bases =          0,
+    .tp_mro =            0,
+    .tp_cache =          0,
+    .tp_subclasses =     0,
+    .tp_weaklist =       0,
+    .tp_del =            0,
+    .tp_version_tag =    0,
+    .tp_finalize =       0,
+};
+
+
+static PyMethodDef methods[] = {
+    { NULL, NULL, 0, NULL }
+};
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "bonds",   /* name of module */
+        NULL, /* module documentation, may be NULL */
+        -1,       /* size of per-interpreter state of the module,
+                 or -1 if the module keeps state in global variables. */
+        methods
+};
+
+static PyObject *module;
+
+HRESULT _MxBond_init(PyObject *m)
+{
+    if (PyType_Ready((PyTypeObject*)&MxBond_Type) < 0) {
+        std::cout << "could not initialize MxBond_Type " << std::endl;
+        return E_FAIL;
+    }
+
+    module = PyModule_Create(&moduledef);
+
+    Py_INCREF(&MxBond_Type);
+    if (PyModule_AddObject(m, "Bond", (PyObject *)&MxBond_Type) < 0) {
+        Py_DECREF(&MxBond_Type);
+        return E_FAIL;
+    }
+
+    if (PyModule_AddObject(m, "bonds", (PyObject *)module) < 0) {
+        Py_DECREF(&MxBond_Type);
+        Py_DECREF(&module);
+        return E_FAIL;
+    }
+
+    return S_OK;
+}
+
+CAPI_FUNC(MxBond*) MxBond_New(uint32_t flags, int32_t i, int32_t j,
+        double half_life, double bond_energy, struct MxPotential *potential)
+{
+    MxBond *bond = bond_alloc(&MxBond_Type, 0);
+
+    _bond_init(bond, flags, i, j, half_life, bond_energy, potential);
+
+    return bond;
+}

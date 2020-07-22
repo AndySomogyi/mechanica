@@ -58,7 +58,7 @@
 #include "space.h"
 #include <MxPotential.h>
 #include "runner.h"
-#include "bond.h"
+#include <bond.h>
 #include "rigid.h"
 #include "angle.h"
 #include "dihedral.h"
@@ -2341,7 +2341,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 
     /* Init the bonds array. */
     e->bonds_size = 100;
-    if ( ( e->bonds = (struct bond *)malloc( sizeof( struct bond ) * e->bonds_size ) ) == NULL )
+    if ( ( e->bonds = (struct MxBond *)malloc( sizeof( struct MxBond ) * e->bonds_size ) ) == NULL )
         return error(engine_err_malloc);
     e->nr_bonds = 0;
 
