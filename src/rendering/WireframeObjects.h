@@ -82,7 +82,7 @@ class CAPI_EXPORT WireframeGrid: public WireframeObject {
 
             _mesh = MeshTools::compile(Primitives::grid3DWireframe({ 20, 20 }));
             _obj3D->scale(Vector3(10.0f));
-            _obj3D->rotateX(90.0_degf);
+            //_obj3D->rotateX(90.0_degf);
     }
 };
 

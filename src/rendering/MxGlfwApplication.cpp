@@ -227,7 +227,12 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
-    return exec();
+    while(GlfwApplication::mainLoopIteration())
+    {
+
+    }
+
+    return S_OK;
 }
 
 HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {

@@ -15,11 +15,20 @@
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
 
+static void print_performance_counters();
+
 namespace py = pybind11;
 
 using Magnum::Vector3;
 
-MxUniverse Universe;
+MxUniverse Universe = {
+    .performance_info_display_interval = 100,
+    .performance_info_flags =
+        ENGINE_TIMER_STEP |
+        ENGINE_TIMER_NONBOND |
+        ENGINE_TIMER_BONDED |
+        ENGINE_TIMER_ADVANCE
+};
 
 static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b);
 
@@ -66,7 +75,7 @@ CAPI_FUNC(struct engine*) engine_get()
 MxUniverseConfig::MxUniverseConfig() :
     origin {0, 0, 0},
     dim {10, 10, 10},
-    spaceGridSize {3, 3, 3},
+    spaceGridSize {4, 4, 4},
     boundaryConditions{1, 1, 1},
     cutoff{1},
     flags{0},
@@ -404,6 +413,8 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
     toc_temp = getticks();
 
     MxSimulator_Redraw();
+    
+    print_performance_counters();
 
     return S_OK;
 }
@@ -441,4 +452,24 @@ CAPI_FUNC(HRESULT) MxUniverse_SetFlag(MxUniverse_Flags flag, int value)
     }
 
     return MxSimulator_Redraw();
+}
+
+
+double ms(ticks tks)
+{
+    return (double)tks / (_Engine.time * CLOCKS_PER_SEC);
+}
+
+
+void print_performance_counters() {
+    if(_Engine.time % Universe.performance_info_display_interval) {
+        return;
+    }
+    
+    std::cout << "performance_timers : { " << std::endl;
+    std::cout << "\t engine_step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
+    std::cout << "\t engine_nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
+    std::cout << "\t engine_bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
+    std::cout << "\t engine_advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
+    std::cout << "}" << std::endl;
 }

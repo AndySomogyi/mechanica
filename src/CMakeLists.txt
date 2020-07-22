@@ -98,6 +98,8 @@ set(SRC
 
   MxPyTest.cpp
 
+  MxUtil.cpp
+
   rendering/ArcBallInteractor.cpp
   rendering/MxGlfwApplication.cpp
   rendering/MxWindowlessApplication.cpp
@@ -182,6 +184,7 @@ set(HEADERS
   MxUniverseIterators.h
 
   MxPyTest.h
+  MxUtil.h
 
   rendering/ArcBallInteractor.h
   rendering/MxGlfwApplication.h

@@ -119,6 +119,30 @@ enum {
 };
 
 
+/** Timmer IDs. */
+enum {
+    ENGINE_TIMER_STEP           = 1 << 0,
+    ENGINE_TIMER_PREPARE        = 1 << 1,
+    ENGINE_TIMER_VERLET         = 1 << 2,
+    ENGINE_TIMER_EXCHANGE1      = 1 << 3,
+    ENGINE_TIMER_NONBOND        = 1 << 4,
+    ENGINE_TIMER_BONDED         = 1 << 5,
+    ENGINE_TIMER_BONDED_SORT    = 1 << 6,
+    ENGINE_TIMER_BONDS          = 1 << 7,
+    ENGINE_TIMER_ANGLES         = 1 << 8,
+    ENGINE_TIMER_DIHEDRALS      = 1 << 9,
+    ENGINE_TIMER_EXCLUSIONS     = 1 << 10,
+    ENGINE_TIMER_ADVANCE        = 1 << 11,
+    ENGINE_TIMER_RIGID          = 1 << 12,
+    ENGINE_TIMER_EXCHANGE2      = 1 << 13,
+    ENGINE_TIMER_SHUFFLE        = 1 << 14,
+    ENGINE_TIMER_CUDA_LOAD      = 1 << 15,
+    ENGINE_TIMER_CUDA_UNLOAD    = 1 << 16,
+    ENGINE_TIMER_CUDA_DOPAIRS   = 1 << 17,
+    ENGINE_TIMER_LAST           = 1 << 18
+};
+
+
 /** ID of the last error. */
 CAPI_DATA(int) engine_err;
 

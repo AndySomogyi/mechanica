@@ -21,6 +21,9 @@ struct CAPI_EXPORT MxUniverse  {
 
     bool isRunning;
 
+    unsigned performance_info_display_interval;
+
+    uint32_t performance_info_flags;
 };
 
 /**

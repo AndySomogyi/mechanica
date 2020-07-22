@@ -15,15 +15,15 @@ Contents:
    introduction
    getting
    quick_start
-   status
+   examples
    concepts
    flux
-   examples
    continuum-reactions
    network-object-model
    formalism
    api_reference
    building
+   status
    references
    acknowledgements
 

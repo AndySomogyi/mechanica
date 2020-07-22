@@ -35,4 +35,4 @@
 #include "angle.h"
 #include "exclusion.h"
 #include "dihedral.h"
-#include "MxReactiveBond.h"
+#include "MxReactivePotential.h"

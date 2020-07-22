@@ -126,9 +126,9 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     /* Set up the camera */
     {
         /* Setup the arcball after the camera objects */
-        const Vector3 eye = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
+        const Vector3 eye = Vector3(2*sideLength, 1.1*sideLength, sideLength);
         const Vector3 center{};
-        const Vector3 up = Vector3::yAxis();
+        const Vector3 up = Vector3::zAxis();
 
         //template<class Transformation> ArcBallCamera(
         // SceneGraph::Scene<Transformation>& scene,

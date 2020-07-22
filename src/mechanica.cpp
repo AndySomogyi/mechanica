@@ -38,6 +38,7 @@
 #include <MxParticleEvent.h>
 #include <MxReactivePotential.h>
 #include "MxPyTest.h"
+#include "MxUtil.h"
 
 #include <c_util.h>
 
@@ -49,57 +50,13 @@
 
 #include <magnum/bootstrap.h>
 
-#include <MxPy.h>
+
 
 #include <string>
+#include <MxPy.h>
 
 
 
-static PyObject* random_point_sphere(PyObject *m, PyObject *args, PyObject *kwargs) {
-
-    try {
-        std::string reg = arg<std::string>("reg", 0, args, kwargs, "sphere");
-        double radius = arg<double>("r", 1, args, kwargs, 1.);
-        int n  = arg<int>("n", 2, args, kwargs, 1);
-
-
-        std::uniform_real_distribution<double> uniform01(0.0, 1.0);
-
-        int nd = 2;
-
-        int typenum = NPY_DOUBLE;
-
-        npy_intp dims[] = {n,3};
-
-
-        PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
-
-        double *data = (double*)PyArray_DATA(array);
-
-        for(int i = 0; i < n; ++i) {
-            double theta = 2 * M_PI * uniform01(CRandom);
-            double phi = acos(1 - 2 * uniform01(CRandom));
-            double x = radius * sin(phi) * cos(theta);
-            double y = radius * sin(phi) * sin(theta);
-            double z = radius * cos(phi);
-
-            data[i * 3 + 0] = x;
-            data[i * 3 + 1] = y;
-            data[i * 3 + 2] = z;
-        }
-
-        return (PyObject*)array;
-
-    }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
-    }
-}
 
 static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
 
@@ -159,7 +116,7 @@ static PyMethodDef methods[] = {
         { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
         { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "random_point", (PyCFunction)random_point_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "random_point", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bind", (PyCFunction)bind, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
@@ -252,9 +209,7 @@ static PyObject * moduleinit(void)
 
     magnum::math(rootModule, math);
 
-
-
-
+    _MxUtil_init(m);
     MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);
