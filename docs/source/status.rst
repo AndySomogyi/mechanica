@@ -1,5 +1,8 @@
 .. _status:
 
+.. role:: strike
+    :class: strike
+
 Status
 ======
 
@@ -9,19 +12,72 @@ feature-incomplete, unstable, and will almost certainly crash.
 However, as such, this is YOUR chance to try it out, and let us know what kind
 of features you'd like to see.
 
+
+History
+=======
+
+Version Alpha 0.0.2 Dev 5
+-------------------------
+
+* lots of new documentation
+* reorganize utility stuff to utily file
+* add performance timing info to particle engine
+* add examples (multi-size particles, random force, epiboly, 
+  events with creation, destruction, mitosis, ...)
+* new dynamcis options, include both Newtonian (Velocity-Verlet) and
+  overdamped. 
+* new defaults to set space cell size, better threading
+* New explicit bond object
+* add creation time / age to particle
+* particle fission (mitosis) method (simple)
+* clean up potential flags
+* harmonic potential
+* new reactive potential to trigger (partial implementation)
+* random points function to create points for geometric regions
+* prime number generator
+* Fixed major bug in cell pair force calculation (was in wrong direction)
+* major bug fix in not making sure potenal distance does not go past end of
+  interpolation segments.
+* new random force
+* new soft-sphere interaction potential
+* add radius to particle type def
+* update renderer to draw different sized particles
+* add number of space cells to simulator constructor
+* configurable dynamics (Newtonain, Overdamped), more to come
+  particle delete functionality, and fix particle events
+* examples bind events to destory, creation and mitosis methods
+* new event model 
+
+Version Alpha 0.0.1 Dev 3
+-------------------------
+
+* Refactoring of Particle python meta-types, simpler and cleaner
+* Upgrade to GLFW 3.3
+* New single body generalized force system
+* Berendsen thermostat as first example single body generalized forces
+* Per-type thermostat
+* Arc-ball user interaction
+* Simplify and eliminate redundency between C++ and Python apps. 
+
+
+Version Alpha 0.0.1 Dev 2
+-------------------------
+* First public release
+
+
 Features to be implemented
 --------------------------
 
 * Linux binaries
-* mouse interction -- rotate, zoom simulation
+* :strike:`mouse interction -- rotate, zoom simulation`
 * Documentation
-* Event system to hook up simulation events to user objects
+* :strike:`Event system to hook up simulation events to user objects`
 * User definable visualization style
-* Nosé–Hoover thermostat
-* Destroying particles
+* :strike:`Nosé–Hoover thermostat`
+* :strike:`Destroying particles`
 * Collision reactions (when particles collide, they react, and can create and
   destroy particles)
-* Particle mitois
+* :strike:`Particle mitois`
 * attach chemical cargo to particles
 * inter-particle flux of chemical cargo
 * reaction-kinetics network at each particle
