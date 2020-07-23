@@ -1,0 +1,21 @@
+PyPi install:
+
+* the cmake copies all the bits to the 'mechanica' output folder
+
+in the output dir:
+
+python3 setup.py bdist_wheel
+
+then have to rename the genrated wheel from
+
+mechanica-0.0.2.dev4-cp37-cp37m-macosx_10_14_x86_64.whl
+
+to
+
+mechanica-0.0.2.dev4-cp37-cp37m-macosx_10_13_x86_64.whl
+
+this makes it compatible with Mac 10.13. I build on Mac 10.13, no idea why it
+insists on makeing a 10.14 named file, but works fine to rename it.
+
+python3 -m twine upload dist/*
+

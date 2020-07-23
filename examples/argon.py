@@ -21,6 +21,7 @@ pot = m.Potential.lennard_jones_12_6(0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1
 # all new Particle derived types are automatically
 # registered with the universe
 class Argon(m.Particle):
+    radius=0.1
     mass = 39.4
 
 # bind the potential with the *TYPES* of the particles
