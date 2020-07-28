@@ -110,6 +110,11 @@ elseif(UNIX AND NOT APPLE)
   set(WITH_WINDOWLESSGLXAPPLICATION ON CACHE BOOL
     "Build WindowlessGlxApplication library" FORCE)
 
+elseif(WIN32)
+
+  set(WITH_WINDOWLESSWGLAPPLICATION ON CACHE BOOL
+    "Build WindowlessWglApplication library" FORCE)
+
 endif()
 
 set(WITH_TGAIMAGECONVERTER ON CACHE BOOL "Build TGA Image Converter" FORCE)
@@ -167,6 +172,11 @@ add_library(Magnum_PyBind
   OBJECT
   ${magnum_SRCS}
   )
+
+if(WIN32)
+#  target_compile_definitions(Magnum_PyBind PUBLIC /bigobj)
+endif()
+
 
 target_include_directories(Magnum_PyBind PUBLIC
   ${Python_INCLUDE_DIRS}

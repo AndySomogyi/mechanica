@@ -7,6 +7,7 @@
 
 #include <MxEdge.h>
 #include "MeshRelationships.h"
+#include <string>
 
 
 

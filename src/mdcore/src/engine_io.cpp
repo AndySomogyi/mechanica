@@ -22,9 +22,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <math.h>
 #include <float.h>
 #include <string.h>
+
+
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+#include <math.h>
 
 /* Include conditional headers. */
 #include "mdcore_config.h"

@@ -177,7 +177,7 @@ function(add_mdcore_single)
 
 target_link_libraries(mdcore_single PUBLIC
   Carbon::Carbon
-  DirectXMath
+  Threads::Threads
   Magnum::Magnum
   )
 

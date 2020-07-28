@@ -50,7 +50,6 @@
 // include some standard headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <math.h>
 #include <float.h>
 #include <pthread.h>
@@ -87,7 +86,7 @@ static const double BOUNDARY_SCALE = 1.05;
 static std::vector<Vector3> createCubicLattice(float length, float spacing) {
 
     if(spacing > length) {
-        return {Vector3{length / 2.,length / 2., length / 2.}};
+        return {Vector3{(float)(length / 2.), (float)(length / 2.), (float)(length / 2.)}};
     }
 
     std::vector<Vector3> result;

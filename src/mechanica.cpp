@@ -92,7 +92,7 @@ static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
 
 }
 
-static PyObject* bind(PyObject *m, PyObject *args, PyObject *kwargs) {
+static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
     HRESULT result = MxUniverse_Bind(args, kwargs);
 
     if(SUCCEEDED(result)) {
@@ -117,7 +117,7 @@ static PyMethodDef methods[] = {
         { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { "random_point", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "bind", (PyCFunction)bind, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };

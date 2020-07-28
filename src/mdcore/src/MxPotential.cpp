@@ -17,11 +17,13 @@
  * 
  ******************************************************************************/
 
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#endif
 
 /* include some standard header files */
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <float.h>
 #include <MxPotential.h>
 #include <MxParticle.h>
@@ -35,6 +37,7 @@
 #include "potential_eval.h"
 
 #include <iostream>
+#include <cmath>
 
 /** Macro to easily define vector types. */
 #define simd_vector(elcount, type)  __attribute__((vector_size((elcount)*sizeof(type)))) type

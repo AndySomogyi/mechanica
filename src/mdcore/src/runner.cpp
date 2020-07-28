@@ -29,6 +29,8 @@
 #include <string.h>
 #include <limits.h>
 
+#include <random>
+
 /* Include some conditional headers. */
 #include "mdcore_config.h"
 #ifdef __SSE__
@@ -246,8 +248,10 @@ int runner_run ( struct runner *r ) {
     int k, err = 0, acc = 0, naq, qid, myqid = e->nr_queues * r->id / e->nr_runners;
     struct task *t = NULL;
     struct queue *myq = &e->queues[ myqid ], *queues[ e->nr_queues ];
-    unsigned int myseed = rand() + r->id;
+    //unsigned int myseed = rand() + r->id;
     int count;
+
+    std::default_random_engine randeng;
 
     /* give a hoot */
     printf( "runner_run: runner %i is up and running on queue %i (tasks)...\n" , r->id , myqid ); fflush(stdout);
@@ -290,7 +294,7 @@ int runner_run ( struct runner *r ) {
                     continue;
 
                 /* Otherwise, try to grab something from a random queue. */
-                qid = rand_r( &myseed ) % naq;
+                qid = randeng() % naq;
                 if ( ( t = queue_get( queues[qid] , r->id , 1 ) ) != NULL ) {
 
                     /* Add this task to my own queue. */
@@ -321,7 +325,7 @@ int runner_run ( struct runner *r ) {
                             queues[k--] = queues[--naq];
                     }
                     if ( naq != 0 ) {
-                        qid = rand_r( &myseed ) % naq;
+                        qid = randeng() % naq;
                         if ( ( t = queue_get( queues[qid] , r->id , 1 ) ) != NULL ) {
                             if ( !queue_insert( myq , t ) )
                                 queue_insert( queues[qid] , t );
@@ -592,7 +596,7 @@ int runner_run_verlet ( struct runner *r ) {
                 }
 
             /* Reset the force vector. */
-            bzero( eff , sizeof(FPTYPE) * s->nr_parts * 4 );
+            memset(eff, 0, sizeof(FPTYPE) * s->nr_parts * 4);
 
             /* Re-set the potential energy. */
             r->epot = 0.0;

@@ -32,7 +32,6 @@
 #include <Magnum/PixelFormat.h>
 #include <Corrade/Utility/Debug.h>
 #include <rendering/MxImageConverters.h>
-#include <alloca.h>
 #include <string.h>
 #include <tuple>
 

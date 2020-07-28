@@ -22,8 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
-#include <alloca.h>
 #include <pthread.h>
 #include <math.h>
 

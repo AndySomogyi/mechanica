@@ -1,18 +1,15 @@
 # need 3.12 for FindPython support
 cmake_minimum_required (VERSION 3.12)
 
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    CACHE STRING "")
+    message(" [INFO] VCPKG CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
+endif()
 
-#
-#if(DEFINED ENV{VCPKG_ROOT})
-#  message("found vcpkg, using toolchain: ${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-#  set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-#    CACHE STRING "")
-#else()
-#  message("NOT using vcpkg")
-#endif()
+message("VCPKG CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
 
 project(Mechanica)
-
 
 
 # sets the target types
@@ -59,8 +56,38 @@ message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 message("CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
 
 
-#find_package(GLFW REQUIRED)
+if(WIN32)
 
+  find_package(unofficial-cairo CONFIG REQUIRED)
+  # add_library(<name> ALIAS <target>)
+
+  # have to set this to create an alias, don't know why...
+  set_property(TARGET unofficial::cairo::cairo PROPERTY	IMPORTED_GLOBAL TRUE)
+  add_library(Cairo::Cairo ALIAS unofficial::cairo::cairo)
+
+  #find_package(PThreads4W REQUIRED)
+
+  find_package(pthreads CONFIG REQUIRED)	
+
+  set_target_properties(PThreads4W::PThreads4W PROPERTIES IMPORTED_GLOBAL TRUE)
+  add_library(Threads::Threads ALIAS PThreads4W::PThreads4W)
+
+  #The package pthreads provides CMake targets:
+
+  #find_package(pthreads CONFIG REQUIRED)
+
+  #target_link_libraries(main PRIVATE PThreads4W::PThreads4W)
+  #or
+  #target_link_libraries(main PRIVATE PThreads4W::PThreads4W_CXXEXC)
+  #or
+  #target_link_libraries(main PRIVATE PThreads4W::PThreads4W_STRUCTEXC)
+
+else()
+  #set(CMAKE_THREAD_PREFER_PTHREAD)
+  #set(THREADS_PREFER_PTHREAD_FLAG)
+  #set(THREADS_USE_PTHREADS_WIN32 true)
+  #find_package(Threads REQUIRED)
+endif()
 
 find_package(Python 3.5 COMPONENTS Development NumPy)
 

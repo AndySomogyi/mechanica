@@ -98,7 +98,7 @@ struct PyUniverse {
 
 static Vector3 universe_dim(py::object /* self */) {
     UNIVERSE_CHECK();
-    return Magnum::Vector3{_Engine.s.dim[0], _Engine.s.dim[1], _Engine.s.dim[2]};
+    return Magnum::Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
 
 static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
@@ -172,12 +172,12 @@ PyTypeObject MxUniverse_Type = {
 
 Magnum::Vector3 MxUniverse::origin()
 {
-    return Vector3{_Engine.s.origin[0], _Engine.s.origin[1], _Engine.s.origin[2]};
+    return Vector3{(float)_Engine.s.origin[0], (float)_Engine.s.origin[1], (float)_Engine.s.origin[2]};
 }
 
 Magnum::Vector3 MxUniverse::dim()
 {
-    return Vector3{_Engine.s.dim[0], _Engine.s.dim[1], _Engine.s.dim[2]};
+    return Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
 
 

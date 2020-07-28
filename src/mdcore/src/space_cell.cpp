@@ -27,6 +27,10 @@
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
+#ifdef _WIN32
+#define posix_memalign(p, a, s)  (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
+#endif
+
 
 
 /* macro to algin memory sizes to a multiple of cell_partalign. */

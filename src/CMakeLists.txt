@@ -401,9 +401,14 @@ target_link_libraries(mechanica_py PRIVATE
   ${MX_JPEG_LIBRARIES}
   )
 
+
 if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
+
+  # weird bug with CMake / clang on windows, need to add link dir here
+  target_link_directories(mechanica_py PUBLIC ${Python_LIBRARY_DIRS})
+
   # Link against the Python shared library on Windows
-  target_link_libraries(mechanica_py PRIVATE ${PYTHON_LIBRARIES})
+  target_link_libraries(mechanica_py PRIVATE Python::Python)
 
 elseif(APPLE)
   # It's quite common to have multiple copies of the same Python version
@@ -443,7 +448,12 @@ endif()
 
 set_target_properties(mechanica_py PROPERTIES PREFIX "")
 set_target_properties(mechanica_py PROPERTIES OUTPUT_NAME "_mechanica")
-set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
+
+if(MX_WINDOWS)
+  set_target_properties(mechanica_py PROPERTIES SUFFIX ".pyd")
+else()
+  set_target_properties(mechanica_py PROPERTIES SUFFIX ".so")
+endif()
 
 
 #add_custom_command(

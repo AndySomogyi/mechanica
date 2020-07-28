@@ -20,11 +20,9 @@
 
 /* include some standard header files */
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
-#include <alloca.h>
+
 
 /* include local headers */
 #include "mdcore_config.h"
