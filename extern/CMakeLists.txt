@@ -1,5 +1,8 @@
 # build glfw here, set up variables so magnum does not try to find it
 # glfw has to come before carbon (and libsbml)
+
+set(WITH_PNGIMPORTER       OFF CACHE BOOL "build PNG importer"    FORCE)
+
 add_subdirectory(glfw)
 
 # build core carbon lib
@@ -49,7 +52,7 @@ else()
   message("glfw is NOT a target")
 endif()
 
-add_subdirectory(soil)
+#add_subdirectory(soil)
 
 #set(MDCORE_USE_FFTW3 ON CACHE BOOL "Override option" FORCE)
 #option(MDCORE_USE_FFTW3 "use FFTW" YES)
@@ -69,11 +72,17 @@ add_subdirectory(soil)
 
 add_subdirectory(Voroxx)
 
-#add_subdirectory(assimp)
 
-# set magnum options
+
+# magnum / corrade want this
+if(WIN32)
+  set(BUILD_STATIC_UNIQUE_GLOBALS ON CACHE BOOL
+    "Do somethign with symbols to make them work on Windows" FORCE)
+endif()
+
 add_subdirectory(corrade)
 
+# set magnum options
 set(WITH_GLFWAPPLICATION ON CACHE BOOL "build magnum with glfw" FORCE)
 set(BUILD_STATIC ON CACHE BOOL "build as static libraries for now..." FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as static libraries for now..." FORCE)
@@ -99,14 +108,13 @@ if(APPLE)
   set(WITH_WINDOWLESSCGLAPPLICATION ON CACHE BOOL
     "Build WindowlessCglApplication library" FORCE)
 
-
 elseif(UNIX AND NOT APPLE)
   # for Linux, BSD, Solaris, Minix
   message("building on linux")
-    
+
   set(WITH_WINDOWLESSEGLAPPLICATION ON CACHE BOOL
     "Build WindowlessEglApplication library" FORCE)
-   
+
   set(WITH_WINDOWLESSGLXAPPLICATION ON CACHE BOOL
     "Build WindowlessGlxApplication library" FORCE)
 
@@ -114,6 +122,9 @@ elseif(WIN32)
 
   set(WITH_WINDOWLESSWGLAPPLICATION ON CACHE BOOL
     "Build WindowlessWglApplication library" FORCE)
+
+  set(BUILD_STATIC_UNIQUE_GLOBALS ON CACHE BOOL
+    "Do somethign with symbols to make them work on Windows" FORCE)
 
 endif()
 

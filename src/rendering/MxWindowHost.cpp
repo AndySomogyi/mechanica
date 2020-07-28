@@ -9,4 +9,5 @@
 
 HRESULT MxWindowHost_init(PyObject *m)
 {
+	return S_OK;
 }

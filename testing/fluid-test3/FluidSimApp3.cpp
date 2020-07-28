@@ -26,8 +26,12 @@
 #include <MxSimulator.h>
 
 
-
+#ifdef _WIN32
+INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PSTR lpCmdLine, INT nCmdShow) {
+#else
 int main(int argc, char** argv) {
+#endif
 
     Mx_Initialize(0);
     MxSimulator::Config conf;

@@ -33,7 +33,7 @@
 #define _INCLUDED_CAYMAN_PRIVATE_H_
 
 
-#include <Python.h>
+#include <c_port.h>
 
 #ifdef CType
 #error CType is macro

@@ -9,4 +9,5 @@
 
 HRESULT MxWindowProxy_init(PyObject *m)
 {
+	return S_OK;
 }

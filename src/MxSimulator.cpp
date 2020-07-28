@@ -805,6 +805,9 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
         return 1;
     }
 
+    // TODO: total hack, fix engine_add_type to include radius. 
+    _Engine.types[pAr.typeId].radius = 0.5;
+
     // register these potentials.
     if ( engine_addpot( &_Engine , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
         printf("main: call to engine_addpot failed.\n");
@@ -829,6 +832,8 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
     float totV2 = 0;
 
     float vscale = 10.0;
+
+    pAr.radius = 0.5;
 
     for(int i = 0; i < pos.size(); ++i) {
         pAr.id = i;

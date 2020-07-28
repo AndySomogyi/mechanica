@@ -29,6 +29,7 @@
 #include <MxParticle.h>
 #include <MxPy.h>
 #include <string.h>
+#include <carbon.h>
 
 
 /* include local headers */
@@ -331,7 +332,7 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 	potential_create_harmonic_K = K;
 	potential_create_harmonic_r0 = r0;
 	if ( potential_init( p , &potential_create_harmonic_f , NULL , &potential_create_harmonic_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -426,7 +427,7 @@ struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , doub
 	potential_create_harmonic_dihedral_n = n;
 	potential_create_harmonic_dihedral_delta = delta;
 	if ( potential_init( p , &potential_create_harmonic_dihedral_f , NULL , &potential_create_harmonic_dihedral_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -503,7 +504,7 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 	potential_create_harmonic_angle_K = K;
 	potential_create_harmonic_angle_theta0 = theta0;
 	if ( potential_init( p , &potential_create_harmonic_angle_f , NULL , &potential_create_harmonic_angle_d6fdr6 , left , right , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -561,7 +562,7 @@ struct MxPotential *potential_create_Ewald ( double a , double b , double q , do
 	potential_create_Ewald_q = q;
 	potential_create_Ewald_kappa = kappa;
 	if ( potential_init( p , &potential_create_Ewald_f , &potential_create_Ewald_dfdr , &potential_create_Ewald_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -629,7 +630,7 @@ struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double 
 	potential_create_LJ126_Ewald_kappa = kappa;
 	potential_create_LJ126_Ewald_q = q;
 	if ( potential_init( p , &potential_create_LJ126_Ewald_f , &potential_create_LJ126_Ewald_dfdr , &potential_create_LJ126_Ewald_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -703,7 +704,7 @@ struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , 
 	potential_create_LJ126_Ewald_switch_s = s;
 	potential_create_LJ126_Ewald_switch_cutoff = b;
 	if ( potential_init( p , &potential_create_LJ126_Ewald_switch_f , &potential_create_LJ126_Ewald_switch_dfdr , &potential_create_LJ126_Ewald_switch_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -760,7 +761,7 @@ struct MxPotential *potential_create_Coulomb ( double a , double b , double q , 
 	potential_create_Coulomb_q = q;
 	potential_create_Coulomb_b = b;
 	if ( potential_init( p , &potential_create_Coulomb_f , &potential_create_Coulomb_dfdr , &potential_create_Coulomb_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -827,7 +828,7 @@ struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , doubl
 	potential_create_LJ126_Coulomb_A = A;
 	potential_create_LJ126_Coulomb_B = B;
 	if ( potential_init( p , &potential_create_LJ126_Coulomb_f , &potential_create_LJ126_Coulomb_dfdr , &potential_create_LJ126_Coulomb_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -885,7 +886,7 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
 	potential_create_LJ126_A = A;
 	potential_create_LJ126_B = B;
 	if ( potential_init( p , &potential_create_LJ126_f , &potential_create_LJ126_dfdr , &potential_create_LJ126_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -949,7 +950,7 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 	potential_create_LJ126_switch_s = s;
 	potential_create_LJ126_switch_cutoff = b;
 	if ( potential_init( p , &potential_create_LJ126_switch_f , &potential_create_LJ126_switch_dfdr , &potential_create_LJ126_switch_d6fdr6 , a , b , tol ) < 0 ) {
-		free(p);
+		CAligned_Free(p);
 		return NULL;
 	}
 
@@ -1042,7 +1043,7 @@ struct MxPotential *potential_create_SS1(double k, double e, double r0, double a
         &potential_create_SS1_dfdr , &potential_create_SS1_d6fdr6 , a , b , tol )) < 0 ) {
         
         std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
-        free(p);
+		CAligned_Free(p);
         return NULL;
     }
     
@@ -1126,7 +1127,7 @@ struct MxPotential *potential_create_SS2(double k, double e, double r0, double a
                              &potential_create_SS2_d6fdr6 , a , b , tol )) < 0 ) {
         
         std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
-        free(p);
+		CAligned_Free(p);
         return NULL;
     }
     
@@ -1210,7 +1211,7 @@ struct MxPotential *potential_create_SS3(double k, double e, double r0, double a
                              &potential_create_SS3_d6fdr6 , a , b , tol )) < 0 ) {
         
         std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
-        free(p);
+		CAligned_Free(p);
         return NULL;
     }
     
@@ -1295,7 +1296,7 @@ struct MxPotential *potential_create_SS4(double k, double e, double r0, double a
                              &potential_create_SS4_d6fdr6 , a , b , tol )) < 0 ) {
         
         std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
-        free(p);
+		CAligned_Free(p);
         return NULL;
     }
     
@@ -1336,7 +1337,7 @@ void potential_clear ( struct MxPotential *p ) {
 	p->flags = POTENTIAL_NONE;
 
 	/* Clear the coefficients. */
-	free( p->c );
+	CAligned_Free( p->c );
 	p->c = NULL;
 
 }
@@ -1418,10 +1419,9 @@ int potential_init (struct MxPotential *p ,
 
 	/* compute the smallest interpolation... */
 	/* printf("potential_init: trying l=%i...\n",l); fflush(stdout); */
-	xi_l = (FPTYPE *)malloc( sizeof(FPTYPE) * (l + 1) );
-	c_l = (FPTYPE *)malloc( sizeof(FPTYPE) * (l+1) * potential_chunk );
-	if (( posix_memalign( (void **)&c_l , potential_align , sizeof(FPTYPE) * (l+1) * potential_chunk ) < 0 )
-        || c_l == NULL) {
+	xi_l = (FPTYPE *)CAligned_Malloc( sizeof(FPTYPE) * (l + 1), potential_align );
+	c_l = (FPTYPE *)CAligned_Malloc( sizeof(FPTYPE) * (l+1) * potential_chunk, potential_align);
+	if (xi_l == NULL || c_l == NULL) {
 		return error(potential_err_malloc);
     }
 	xi_l[0] = a; xi_l[l] = b;
@@ -1467,7 +1467,7 @@ int potential_init (struct MxPotential *p ,
 			p->c[potential_chunk-1-k] = 0.0;
 
 		/* Clean up. */
-		free(xi_l);
+		CAligned_Free(xi_l);
         
         double test_n = p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]);
         
@@ -1485,8 +1485,9 @@ int potential_init (struct MxPotential *p ,
 
 		/* compute the larger interpolation... */
 		/* printf("potential_init: trying r=%i...\n",r); fflush(stdout); */
-		xi_r = (FPTYPE *)malloc( sizeof(FPTYPE) * (r + 1) );
-        if ( posix_memalign( (void **)&c_r , potential_align , sizeof(FPTYPE) * (r+1) * potential_chunk ) != 0 ) {
+		xi_r = (FPTYPE*)CAligned_Malloc(sizeof(FPTYPE) * (r + 1),  potential_align );
+		c_r =  (FPTYPE*)CAligned_Malloc(sizeof(FPTYPE) * (r + 1) * potential_chunk, potential_align);
+        if ( xi_r == NULL || c_r == NULL) {
 			return error(potential_err_malloc);
         }
 		xi_r[0] = a; xi_r[r] = b;
@@ -1519,8 +1520,8 @@ int potential_init (struct MxPotential *p ,
 		/* otherwise, l=r and r = 2*r */
 		else {
 			l = r; err_l = err_r;
-			free(xi_l); xi_l = xi_r;
-			free(c_l); c_l = c_r;
+			CAligned_Free(xi_l); xi_l = xi_r;
+			CAligned_Free(c_l); c_l = c_r;
 			r *= 2;
 		}
 
@@ -1534,8 +1535,10 @@ int potential_init (struct MxPotential *p ,
 
 		/* construct that interpolation */
 		/* printf("potential_init: trying m=%i...\n",m); fflush(stdout); */
-		xi_m = (FPTYPE *)malloc( sizeof(FPTYPE) * (m + 1) );
-        if ( posix_memalign( (void **)&c_m , potential_align , sizeof(FPTYPE) * (m+1) * potential_chunk ) != 0 ) {
+		xi_m = (FPTYPE*)CAligned_Malloc(sizeof(FPTYPE) * (m + 1), potential_align);
+		c_m =  (FPTYPE*)CAligned_Malloc(sizeof(FPTYPE) * (m + 1) * potential_chunk, potential_align);
+
+        if ( xi_m == NULL || c_m == NULL ) {
 			return error(potential_err_malloc);
         }
 		xi_m[0] = a; xi_m[m] = b;
@@ -1555,15 +1558,15 @@ int potential_init (struct MxPotential *p ,
 		/* go left? */
 				if ( err_m > tol ) {
 					l = m; err_l = err_m;
-					free(xi_l); xi_l = xi_m;
-					free(c_l); c_l = c_m;
+					CAligned_Free(xi_l); xi_l = xi_m;
+					CAligned_Free(c_l); c_l = c_m;
 				}
 
 				/* otherwise, go right... */
 				else {
 					r = m; err_r = err_m;
-					free(xi_r); xi_r = xi_m;
-					free(c_r); c_r = c_m;
+					CAligned_Free(xi_r); xi_r = xi_m;
+					CAligned_Free(c_r); c_r = c_m;
 				}
 
 	} /* binary search */
@@ -1595,8 +1598,9 @@ int potential_init (struct MxPotential *p ,
 		p->c[potential_chunk-1-k] = 0.0;
 
 	/* Clean up. */
-	free(xi_r);
-	free(xi_l); free(c_l);
+	CAligned_Free(xi_r);
+	CAligned_Free(xi_l);
+	CAligned_Free(c_l);
 
 	/* all is well that ends well... */
     
@@ -2023,7 +2027,7 @@ static MxPotential *potential_alloc(PyTypeObject *type) {
     struct MxPotential *obj = NULL;
 
     /* allocate the potential */
-    if ( posix_memalign( (void **)&obj , 16 , type->tp_basicsize ) != 0 ) {
+    if ((obj = (MxPotential * )CAligned_Malloc(type->tp_basicsize, 16 )) == NULL ) {
         return NULL;
     }
     
@@ -2042,9 +2046,9 @@ static MxPotential *potential_alloc(PyTypeObject *type) {
     return obj;
 }
 
-static void potential_dealloc(PyObject *obj) {
-    std::cout << MX_FUNCTION << std::endl;
-
+static void potential_dealloc(PyObject* obj) {
+	std::cout << MX_FUNCTION << std::endl;
+	CAligned_Free(obj);
 }
 
 static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwargs) {

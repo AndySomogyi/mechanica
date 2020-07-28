@@ -8,8 +8,7 @@
 #ifndef SRC_MDCORE_SRC_MXPY_H_
 #define SRC_MDCORE_SRC_MXPY_H_
 
-#include "Python.h"
-
+#include <c_port.h>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
 

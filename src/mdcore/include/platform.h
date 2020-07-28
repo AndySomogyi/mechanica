@@ -27,8 +27,10 @@
 #ifdef _WIN32
 #define _USE_MATH_DEFINES
 #define bzero(b,len) memset((b), '\0', (len))
-#define posix_memalign(p, a, s)  (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
+#else
+#define algined_free(x) free(x)
 #endif
+
 
 
 #endif /* INCLUDE_PLATFORM_H_ */

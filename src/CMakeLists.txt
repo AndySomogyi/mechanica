@@ -366,10 +366,12 @@ set_target_properties(mechanica_py PROPERTIES
 
 # copy the mechanica py lib to the package dir
 set_target_properties(mechanica_py PROPERTIES
-  ARCHIVE_OUTPUT_DIRECTORY ${MX_PYPKG_DIR}
-  LIBRARY_OUTPUT_DIRECTORY ${MX_PYPKG_DIR}
-  LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MX_PYPKG_DIR}
-  LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MX_PYPKG_DIR}
+  ARCHIVE_OUTPUT_DIRECTORY          ${MX_PYPKG_DIR}
+  ARCHIVE_OUTPUT_DIRECTORY_DEBUG    ${MX_PYPKG_DIR}
+  ARCHIVE_OUTPUT_DIRECTORY_RELEASE  ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY          ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY_DEBUG    ${MX_PYPKG_DIR}
+  LIBRARY_OUTPUT_DIRECTORY_RELEASE  ${MX_PYPKG_DIR}
   )
 
 
@@ -408,7 +410,8 @@ if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
   target_link_directories(mechanica_py PUBLIC ${Python_LIBRARY_DIRS})
 
   # Link against the Python shared library on Windows
-  target_link_libraries(mechanica_py PRIVATE Python::Python)
+  # target_link_libraries(mechanica_py PRIVATE Python::Python)
+  target_link_libraries(mechanica_py PRIVATE ${Python_LIBRARY_RELEASE})
 
 elseif(APPLE)
   # It's quite common to have multiple copies of the same Python version
@@ -482,12 +485,10 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${MX_PYPKG_DIR}/__init__.py
   )
 
-
 file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
 
 target_link_libraries(mechanica_shared
   Carbon::Static
-  Python::Python
   Python::NumPy
   mdcore_single
   glfw

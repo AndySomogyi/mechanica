@@ -27,11 +27,6 @@
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
-#ifdef _WIN32
-#define posix_memalign(p, a, s)  (((*(p)) = _aligned_malloc((s), (a))), *(p) ?0 :errno)
-#endif
-
-
 
 /* macro to algin memory sizes to a multiple of cell_partalign. */
 #define align_ceil(v) (((v) + (cell_partalign-1) ) & ~(cell_partalign-1))
@@ -171,10 +166,10 @@ int space_cell_load ( struct space_cell *c , struct MxParticle *parts , int nr_p
 		size_new = c->count + nr_parts;
 		if ( size_new < c->size + cell_incr )
 			size_new = c->size + cell_incr;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * size_new ) ) != 0 )
+		if ((temp = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * size_new),  cell_partalign)) == 0 )
 			return error(cell_err_malloc);
 		memcpy( temp , c->parts , sizeof(struct MxParticle) * c->count );
-		free( c->parts );
+		CAligned_Free( c->parts );
 		c->parts = temp;
 		c->size = size_new;
 		if ( partlist != NULL )
@@ -274,12 +269,12 @@ struct MxParticle *space_cell_add_incomming ( struct space_cell *c , struct MxPa
 
 	/* is there room for this particle? */
 	if ( c->incomming_count == c->incomming_size ) {
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * ( c->incomming_size + cell_incr ) ) ) != 0 ) {
+		if ((temp = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * (c->incomming_size + cell_incr)),  cell_partalign)) == 0 ) {
 			error(cell_err_malloc);
 			return NULL;
 		}
 		memcpy( temp , c->incomming , sizeof(struct MxParticle) * c->incomming_count );
-		free( c->incomming );
+		CAligned_Free( c->incomming );
 		c->incomming = temp;
 		c->incomming_size += cell_incr;
 	}
@@ -318,10 +313,10 @@ int space_cell_add_incomming_multiple ( struct space_cell *c , struct MxParticle
 	if ( c->incomming_count + count > c->incomming_size ) {
 		if ( c->incomming_size + incr < c->incomming_count + count )
 			incr = c->incomming_count + count - c->incomming_size;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * ( c->incomming_size + incr ) ) ) != 0 )
+		if ((temp = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * (c->incomming_size + incr)), cell_partalign)) == 0)
 			return error(cell_err_malloc);
 		memcpy( temp , c->incomming , sizeof(struct MxParticle) * c->incomming_count );
-		free( c->incomming );
+		CAligned_Free( c->incomming );
 		c->incomming = temp;
 		c->incomming_size += incr;
 	}
@@ -361,12 +356,12 @@ struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p 
 	/* is there room for this particle? */
 	if ( c->count == c->size ) {
 		c->size *= 1.414;
-		if ( posix_memalign( (void **)&temp , cell_partalign , align_ceil( sizeof(struct MxParticle) * c->size ) ) != 0 ) {
+		if ((temp = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * c->size), cell_partalign)) == 0 ) {
 			error(cell_err_malloc);
 			return NULL;
 		}
 		memcpy( temp , c->parts , sizeof(struct MxParticle) * c->count );
-		free( c->parts );
+		CAligned_Free( c->parts );
 		c->parts = temp;
 		if ( partlist != NULL )
 			for ( k = 0 ; k < c->count ; k++ )
@@ -434,7 +429,7 @@ int space_cell_init ( struct space_cell *c , int *loc , double *origin , double 
 	}
 
 	/* allocate the particle pointers */
-	if ( posix_memalign( (void **)&(c->parts) , cell_partalign , align_ceil( sizeof(struct MxParticle) * cell_default_size ) ) != 0 )
+	if ((c->parts = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * cell_default_size), cell_partalign)) == 0 )
 		return error(cell_err_malloc);
 	c->size = cell_default_size;
 	c->count = 0;
@@ -444,7 +439,7 @@ int space_cell_init ( struct space_cell *c , int *loc , double *origin , double 
 		return error(cell_err_malloc);
 
 	/* allocate the incomming part buffer. */
-	if ( posix_memalign( (void **)&(c->incomming) , cell_partalign , align_ceil( sizeof(struct MxParticle) * cell_incr ) ) != 0 )
+	if ((c->incomming = (MxParticle*)CAligned_Malloc(align_ceil(sizeof(struct MxParticle) * cell_incr), cell_partalign)) == 0 )
 		return error(cell_err_malloc);
 	c->incomming_size = cell_incr;
 	c->incomming_count = 0;
