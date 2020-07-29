@@ -37,10 +37,10 @@ setup(
         "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
         "Programming Language :: Python :: 3.6",
     ],
-    package_data = { '' : ['*.so'], 'mechanica' : ['examples/*.*']},
-    python_requires='>=3.6.0',
+    package_data = { '' : ['*.so', '*.dll', '*.pyd'], 'mechanica' : ['examples/*.*']},
+    python_requires='>=3.7.7',
     install_requires=[
-        'numpy>=1.18.4'
+        'numpy>=1.19.1'
     ],
     distclass=BinaryDistribution
 )
