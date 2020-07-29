@@ -38,7 +38,7 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
     package_data = { '' : ['*.so', '*.dll', '*.pyd'], 'mechanica' : ['examples/*.*']},
-    python_requires='>=3.7.7',
+    python_requires='>=3.7.3',
     install_requires=[
         'numpy>=1.19.1'
     ],
