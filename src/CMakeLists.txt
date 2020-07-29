@@ -403,6 +403,9 @@ target_link_libraries(mechanica_py PRIVATE
   ${MX_JPEG_LIBRARIES}
   )
 
+target_link_libraries(mechanica_py PUBLIC
+  Carbon::Static
+  )
 
 if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
 

@@ -1375,7 +1375,7 @@ int potential_init (struct MxPotential *p ,
 
 	double alpha, w;
 	int l = potential_ivalsa, r = potential_ivalsb, m;
-	FPTYPE err_l, err_r, err_m;
+	FPTYPE err_l = 0, err_r = 0, err_m = 0;
 	FPTYPE *xi_l = NULL, *xi_r = NULL, *xi_m = NULL;
 	FPTYPE *c_l = NULL, *c_r = NULL, *c_m = NULL;
 	int i = 0, k = 0;

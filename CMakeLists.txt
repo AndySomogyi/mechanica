@@ -58,20 +58,14 @@ message("CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}")
 
 if(WIN32)
 
-  find_package(unofficial-cairo CONFIG REQUIRED)
-  # add_library(<name> ALIAS <target>)
+  find_package(pthreads CONFIG REQUIRED)
 
   # have to set this to create an alias, don't know why...
-  set_property(TARGET unofficial::cairo::cairo PROPERTY	IMPORTED_GLOBAL TRUE)
-  add_library(Cairo::Cairo ALIAS unofficial::cairo::cairo)
-
-  #find_package(PThreads4W REQUIRED)
-
-  find_package(pthreads CONFIG REQUIRED)	
-
   set_target_properties(PThreads4W::PThreads4W PROPERTIES IMPORTED_GLOBAL TRUE)
   add_library(Threads::Threads ALIAS PThreads4W::PThreads4W)
 
+
+  #Use the PThreads4W vcpkg package, called pthreads
   #The package pthreads provides CMake targets:
 
   #find_package(pthreads CONFIG REQUIRED)
@@ -83,10 +77,8 @@ if(WIN32)
   #target_link_libraries(main PRIVATE PThreads4W::PThreads4W_STRUCTEXC)
 
 else()
-  #set(CMAKE_THREAD_PREFER_PTHREAD)
-  #set(THREADS_PREFER_PTHREAD_FLAG)
-  #set(THREADS_USE_PTHREADS_WIN32 true)
-  #find_package(Threads REQUIRED)
+  # use standard unix pthreads, creatates Threads::Threads target
+  find_package(Threads REQUIRED)
 endif()
 
 find_package(Python 3.5 COMPONENTS Development NumPy)

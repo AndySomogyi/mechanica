@@ -49,10 +49,22 @@ add_executable(
 
 target_include_directories(mx-pyrun PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+if(WIN32 OR CYGWIN)
+
+  # weird bug with CMake / clang on windows, need to add link dir here
+  target_link_directories(mx-pyrun PUBLIC ${Python_LIBRARY_DIRS})
+
+  # Link against the Python shared library on Windows
+  # target_link_libraries(mechanica_py PRIVATE Python::Python)
+  target_link_libraries(mx-pyrun  ${Python_LIBRARY_RELEASE})
+else()
+  target_link_libraries(mx-pyrun Python::Python)
+endif()
+
 target_link_libraries(mx-pyrun
-  Python::Python
   Mechanica::PythonLib
   )
+
 
 ################################################################################
 ####  mx-glinfo  ###############################################################
