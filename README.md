@@ -19,6 +19,12 @@ course).
 History
 =======
 
+Version Alpha 0.0.3 Dev 1
+-------------------------
+* Windows Build! 
+* lots of portability updates
+* some memleak fixes
+
 Version Alpha 0.0.2 Dev 5
 -------------------------
 
