@@ -112,7 +112,6 @@ MxUniverseRendererOld& MxUniverseRendererOld::draw(Containers::Pointer<SceneGrap
     (*_shader)
                 /* particle data */
                 .setNumParticles(_Engine.s.nr_parts)
-                .setParticleRadius(_particleRadius)
                 /* sphere render data */
                 .setPointSizeScale(static_cast<float>(viewportSize.x())/
                         Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/

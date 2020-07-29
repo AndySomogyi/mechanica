@@ -78,13 +78,6 @@ struct MxUniverseRenderer : MxRenderer {
         return *this;
     }
 
-    Float& particleRadius() { return _particleRadius; }
-
-    MxUniverseRenderer& setParticleRadius(Float radius) {
-        _particleRadius = radius;
-        return *this;
-    }
-
     ParticleSphereShader::ColorMode& colorMode() { return _colorMode; }
 
     MxUniverseRenderer& setColorMode(ParticleSphereShader::ColorMode colorMode) {
@@ -175,8 +168,6 @@ struct MxUniverseRenderer : MxRenderer {
 
 
     bool _dirty = false;
-
-    Float _particleRadius = 1.0f;
     ParticleSphereShader::ColorMode _colorMode = ParticleSphereShader::ColorMode::ConsistentRandom;
     Color3 _ambientColor{0.1f};
     Color3 _diffuseColor{0.0f, 0.5f, 0.9f};

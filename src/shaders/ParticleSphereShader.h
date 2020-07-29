@@ -51,7 +51,6 @@ public:
     explicit ParticleSphereShader();
 
     ParticleSphereShader& setNumParticles(Int numParticles);
-    ParticleSphereShader& setParticleRadius(Float radius);
 
     ParticleSphereShader& setPointSizeScale(Float scale);
     ParticleSphereShader& setColorMode(Int colorMode);
@@ -67,7 +66,6 @@ public:
 
 private:
     Int _uNumParticles,
-    _uParticleRadius,
     _uPointSizeScale,
     _uColorMode,
     _uAmbientColor,

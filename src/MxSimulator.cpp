@@ -225,7 +225,6 @@ struct PySimulator  {
     };
     
     ~PySimulator() {
-        std::cout << MX_FUNCTION << std::endl;
     }
 };
 
@@ -459,13 +458,6 @@ HRESULT _MxSimulator_init(PyObject* m) {
     gc.def_property("stencil_buffer_size", &MxSimulator::GLConfig::stencilBufferSize, &MxSimulator::GLConfig::setStencilBufferSize);
     gc.def_property("sample_count", &MxSimulator::GLConfig::sampleCount, &MxSimulator::GLConfig::setSampleCount);
     gc.def_property("srgb_capable", &MxSimulator::GLConfig::isSrgbCapable, &MxSimulator::GLConfig::setSrgbCapable);
-
-
-
-    foo(m);
-
-
-
 
     return 0;
 }

@@ -8,6 +8,7 @@
 #ifndef SRC_MXWINDOW_H_
 #define SRC_MXWINDOW_H_
 
+#include <carbon.h>
 #include <mechanica_private.h>
 
 struct MxWindow : PyObject

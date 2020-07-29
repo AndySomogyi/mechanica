@@ -370,9 +370,6 @@ PyTypeObject *MxCylinderModel_Type = &_type;
 
 HRESULT MxCylinderModel_init(PyObject* m) {
 
-    std::cout << MX_FUNCTION << std::endl;
-
-
     if (PyType_Ready((PyTypeObject *)MxCylinderModel_Type) < 0)
         return E_FAIL;
 

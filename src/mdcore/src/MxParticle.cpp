@@ -938,24 +938,11 @@ static void printTypeInfo(const char* name, PyTypeObject *p) {
 
 HRESULT _MxParticle_init(PyObject *m)
 {
-    f<>(&MxParticle::q);
-    
-    f<>(&MxParticle::position);
-    
-    f<>(&MxParticle::x);
-    
-    uint32_t def = Py_TPFLAGS_DEFAULT & Py_TPFLAGS_HAVE_GC;
-    
-    uint32_t base = Py_TPFLAGS_BASETYPE & Py_TPFLAGS_HAVE_GC;
-    
-    std::cout << "default: " << def << ", basetype: " << base << std::endl;
-    
     /*************************************************
      *
      * Metaclasses first
      */
-    
-   std::cout << "MxParticleType_Type have gc: " << std::to_string((bool)PyType_IS_GC(&MxParticleType_Type)) << std::endl;
+
 
     //PyCStructType_Type.tp_base = &PyType_Type;
     // if (PyType_Ready(&PyCStructType_Type) < 0)
@@ -972,10 +959,6 @@ HRESULT _MxParticle_init(PyObject *m)
     MxParticleType_Type.tp_flags &= ~(Py_TPFLAGS_HAVE_GC);
     MxParticleType_Type.tp_clear = NULL;
     MxParticleType_Type.tp_traverse = NULL;
-    
-    printTypeInfo("MxParticleType_Type", &MxParticleType_Type);
-    
-
     
 
     /*************************************************
@@ -998,7 +981,6 @@ HRESULT _MxParticle_init(PyObject *m)
         MxParticleType_Type.tp_getattro = particle_type_getattro;
     }
     
-
     Py_INCREF(&MxParticleType_Type);
     if (PyModule_AddObject(m, "ParticleType", (PyObject *)&MxParticleType_Type) < 0) {
         Py_DECREF(&MxParticleType_Type);

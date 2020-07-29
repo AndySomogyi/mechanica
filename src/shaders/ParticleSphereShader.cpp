@@ -52,7 +52,6 @@ ParticleSphereShader::ParticleSphereShader() {
     CORRADE_INTERNAL_ASSERT(link());
 
     _uNumParticles = uniformLocation("numParticles");
-    _uParticleRadius = uniformLocation("particleRadius");
 
     _uPointSizeScale = uniformLocation("pointSizeScale");
     _uColorMode = uniformLocation("colorMode");
@@ -71,10 +70,6 @@ ParticleSphereShader& ParticleSphereShader::setNumParticles(Int numParticles) {
     return *this;
 }
 
-ParticleSphereShader& ParticleSphereShader::setParticleRadius(Float radius) {
-    setUniform(_uParticleRadius, radius);
-    return *this;
-}
 
 ParticleSphereShader& ParticleSphereShader::setPointSizeScale(Float scale) {
     setUniform(_uPointSizeScale, scale);

@@ -123,6 +123,7 @@ set(SRC
   rendering/MxUniverseRendererOld.cpp
   rendering/FluidSimTest.cpp
   rendering/ArcBall.cpp
+  rendering/NOMStyle.cpp
 
   shaders/ParticleSphereShader.cpp
 
@@ -212,6 +213,7 @@ set(HEADERS
   rendering/FluidSimTest.h
   rendering/ArcBallCamera.h
   rendering/ArcBall.h
+  rendering/NOMStyle.hpp
 
   shaders/ParticleSphereShader.h
   )

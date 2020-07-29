@@ -39,6 +39,7 @@
 #include <MxReactivePotential.h>
 #include "MxPyTest.h"
 #include "MxUtil.h"
+#include <rendering/NOMStyle.hpp>
 
 #include <c_util.h>
 
@@ -141,17 +142,14 @@ void test_sequences(PyObject *_m);
 
 static PyObject * moduleinit(void)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    std::cout << "Mechanica " << MX_FUNCTION << ", initializing numpy... " << std::endl;
     
     /* Load all of the `numpy` functionality. */
     import_array();
     
-    
     PyObject *m;
 
     PyObject *carbonModule = PyInit_carbon();
-
-
 
 
     if(carbonModule == NULL) {
@@ -231,6 +229,8 @@ static PyObject * moduleinit(void)
     MxWindowHost_init(m);
     MyUniverseRenderer_Init(m);
     
+    NOMStyle_init(m);
+
     MxPyTest_init(m);
 
     test_sequences(m);
@@ -248,7 +248,6 @@ static PyObject * moduleinit(void)
 
 CAPI_FUNC(PyObject*) PyInit__mechanica(void)
 {
-    std::cout << MX_FUNCTION << std::endl;
     return moduleinit();
 }
 

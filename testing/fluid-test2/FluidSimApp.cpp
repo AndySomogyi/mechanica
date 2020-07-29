@@ -63,7 +63,7 @@ static const double BOUNDARY_SCALE = 1.05;
 static std::vector<Vector3> createCubicLattice(float length, float spacing) {
 
     if(spacing > length) {
-        return {Vector3{length / 2.,length / 2., length / 2.}};
+        return {Vector3{(float)(length / 2.),(float)(length / 2.), (float)(length / 2.)}};
     }
 
     std::vector<Vector3> result;
@@ -95,9 +95,9 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
 
     std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> disx(corner1[0], corner2[0]);
-    std::uniform_real_distribution<> disy(corner1[1], corner2[1]);
-    std::uniform_real_distribution<> disz(corner1[2], corner2[2]);
+    std::uniform_real_distribution<float> disx(corner1[0], corner2[0]);
+    std::uniform_real_distribution<float> disy(corner1[1], corner2[1]);
+    std::uniform_real_distribution<float> disz(corner1[2], corner2[2]);
 
     for(int i = 0; i < nParticles; ++i) {
         result.push_back(Vector3{disx(gen), disy(gen), disz(gen)});

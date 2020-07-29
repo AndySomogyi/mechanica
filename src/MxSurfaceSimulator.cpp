@@ -186,9 +186,6 @@ MxSurfaceSimulator* MxSurfaceSimulator_New(
 
 HRESULT MxSurfaceSimulator_init(PyObject* m) {
 
-    std::cout << MX_FUNCTION << std::endl;
-
-
     if (PyType_Ready((PyTypeObject *)MxSurfaceSimuator_Type) < 0)
         return E_FAIL;
 

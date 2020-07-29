@@ -62,7 +62,6 @@
 using namespace Magnum::Math::Literals;
 
 MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
-    _particleRadius(particleRadius),
     _mesh(GL::MeshPrimitive::Points),
     window{win}
 {
@@ -215,7 +214,6 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     (*_shader)
         /* particle data */
         .setNumParticles(_Engine.s.nr_parts)
-        .setParticleRadius(_particleRadius)
         /* sphere render data */
         .setPointSizeScale(static_cast<float>(viewportSize.x())/
                            Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
