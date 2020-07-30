@@ -15,7 +15,7 @@
 #add_subdirectory(twave)
 add_subdirectory(fluid-test2)
 add_subdirectory(fluid-test3)
-
+add_subdirectory(octree)
 
 if(MX_APPLE)
 # add_subdirectory(MeshTest)
