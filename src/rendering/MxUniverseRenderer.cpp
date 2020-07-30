@@ -45,16 +45,14 @@
 #include <Magnum/SceneGraph/Drawable.h>
 #include <Magnum/Math/FunctionsBatch.h>
 
+#include <Magnum/MeshTools/Compile.h>
+#include <Magnum/Primitives/Cube.h>
+#include <Magnum/Primitives/Icosphere.h>
 
 
 #include <rendering/WireframeObjects.h>
 
 #include <assert.h>
-
-
-
-
-
 #include <iostream>
 
 
@@ -79,7 +77,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
             ParticleSphereShader::Index{},
             ParticleSphereShader::Radius{});
 
-    _shader.reset(new ParticleSphereShader);
+    //_shader.reset(new ParticleSphereShader);
 
     //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance0);
     //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance1);
@@ -146,8 +144,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _grid->transform(Matrix4::scaling(Vector3(1.f))  );
 
 
-
-
     /* Simulation domain box */
     /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
     _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
@@ -156,8 +152,21 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _drawableBox->transform(Matrix4::scaling(Vector3(sideLength / 2)) );
     _drawableBox->setColor(Color3(1, 1, 0));
 
-
     setModelViewTransform(Matrix4::translation(-center));
+    
+    // set up the sphere rendering...
+    sphereShader = Shaders::Phong{
+        Shaders::Phong::Flag::VertexColor|
+        Shaders::Phong::Flag::InstancedTransformation};
+    sphereInstanceBuffer = GL::Buffer{};
+    sphereMesh = MeshTools::compile(Primitives::icosphereSolid(2));
+    sphereMesh.addVertexBufferInstanced(sphereInstanceBuffer, 1, 0,
+        Shaders::Phong::TransformationMatrix{},
+        Shaders::Phong::NormalMatrix{},
+        Shaders::Phong::Color3{});
+    
+    // we resize instances all the time.
+    sphereMesh.setInstanceCount(0);
 }
 
 template<typename T>
@@ -178,55 +187,96 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
 
 
     // invalidate / resize the buffer
-    _vertexBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex)},
-            GL::BufferUsage::DynamicDraw);
+//    _vertexBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex)},
+//            GL::BufferUsage::DynamicDraw);
+//
+//    // get pointer to data
+//    void* tmp = _vertexBuffer.map(0,
+//            _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex),
+//            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+//
+//    ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
+//
+//
+//    int i = 0;
+//    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
+//        for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
+//            MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
+//            vertexPtr[i].pos.x() = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
+//            vertexPtr[i].pos.y() = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
+//            vertexPtr[i].pos.z() = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
+//            vertexPtr[i].index = p->id;
+//            vertexPtr[i].radius = _Engine.types[p->typeId].radius;
+//            i++;
+//        }
+//    }
+//
+//    _vertexBuffer.unmap();
+
+
+    //_mesh.setCount(_Engine.s.nr_parts);
+    _dirty = false;
+
+
+//    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+//
+//    (*_shader)
+//        /* particle data */
+//        .setNumParticles(_Engine.s.nr_parts)
+//        /* sphere render data */
+//        .setPointSizeScale(static_cast<float>(viewportSize.x())/
+//                           Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
+//        .setColorMode(_colorMode)
+//        .setAmbientColor(_ambientColor)
+//        .setDiffuseColor(_diffuseColor)
+//        .setSpecularColor(_specularColor)
+//        .setShininess(_shininess)
+//        /* view/prj matrices and light */
+//        .setViewMatrix(camera->cameraMatrix() * modelViewMat)
+//        .setProjectionMatrix(camera->projectionMatrix())
+//        .setLightDirection(_lightDir)
+//        .draw(_mesh);
+    
+
+    sphereMesh.setInstanceCount(_Engine.s.nr_parts);
+
+    // invalidate / resize the buffer
+    sphereInstanceBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(SphereInstanceData)},
+                GL::BufferUsage::DynamicDraw);
 
     // get pointer to data
-    void* tmp = _vertexBuffer.map(0,
-            _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex),
-            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
-
-    ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
-
+    SphereInstanceData* pData = (SphereInstanceData*)(void*)sphereInstanceBuffer.map(0,
+            _Engine.s.nr_parts * sizeof(SphereInstanceData),
+                GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+    
+    
 
     int i = 0;
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
             MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
-            vertexPtr[i].pos.x() = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
-            vertexPtr[i].pos.y() = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
-            vertexPtr[i].pos.z() = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
-            vertexPtr[i].index = p->id;
-            vertexPtr[i].radius = _Engine.types[p->typeId].radius;
+            Magnum::Vector3 position = {
+            _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0],
+            _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1],
+            _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2]
+            };
+            pData[i].transformationMatrix =
+                    Matrix4::translation(position) *
+            Matrix4::scaling(Vector3{1.0});
+            pData[i].normalMatrix =
+                    pData[i].transformationMatrix.normalMatrix();
+            pData[i].color = Magnum::Color3::red();
             i++;
         }
     }
 
-    _vertexBuffer.unmap();
-
-
-    _mesh.setCount(_Engine.s.nr_parts);
-    _dirty = false;
-
-
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-    (*_shader)
-        /* particle data */
-        .setNumParticles(_Engine.s.nr_parts)
-        /* sphere render data */
-        .setPointSizeScale(static_cast<float>(viewportSize.x())/
-                           Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
-        .setColorMode(_colorMode)
-        .setAmbientColor(_ambientColor)
-        .setDiffuseColor(_diffuseColor)
-        .setSpecularColor(_specularColor)
-        .setShininess(_shininess)
-        /* view/prj matrices and light */
-        .setViewMatrix(camera->cameraMatrix() * modelViewMat)
+    sphereInstanceBuffer.unmap();
+    
+    sphereShader
         .setProjectionMatrix(camera->projectionMatrix())
-        .setLightDirection(_lightDir)
-        .draw(_mesh);
+        .setTransformationMatrix(camera->cameraMatrix() * modelViewMat)
+        .setNormalMatrix(camera->viewMatrix().normalMatrix())
+        .draw(sphereMesh);
 
     return *this;
 }

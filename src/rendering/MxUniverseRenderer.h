@@ -43,6 +43,9 @@
 #include <Magnum/Platform/GlfwApplication.h>
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
 #include <Magnum/Timeline.h>
+
+#include <Magnum/Shaders/Phong.h>
+
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/MxGlfwWindow.h>
 
@@ -61,6 +64,11 @@ class WireframeGrid;
 class WireframeBox;
 
 
+struct SphereInstanceData {
+    Magnum::Matrix4 transformationMatrix;
+    Magnum::Matrix3x3 normalMatrix;
+    Magnum::Color3 color;
+};
 
 struct MxUniverseRenderer : MxRenderer {
 
@@ -178,6 +186,12 @@ struct MxUniverseRenderer : MxRenderer {
     GL::Buffer _vertexBuffer;
     GL::Mesh _mesh;
     Containers::Pointer<ParticleSphereShader> _shader;
+    
+    
+    /* Spheres rendering */
+    GL::Mesh sphereMesh{NoCreate};
+    GL::Buffer sphereInstanceBuffer{NoCreate};
+    Shaders::Phong sphereShader{NoCreate};
 
     /**
      * Only set a single combined matrix in the shader, this way,

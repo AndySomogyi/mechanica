@@ -493,6 +493,7 @@ add_custom_command(
 file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
 
 target_link_libraries(mechanica_shared
+  PUBLIC
   Carbon::Static
   Python::NumPy
   mdcore_single
@@ -510,18 +511,37 @@ target_link_libraries(mechanica_shared
   ${MX_JPEG_LIBRARIES}
   )
 
+
+target_link_libraries(mechanica_shared PUBLIC
+  Carbon::Static
+  )
+
+
+# weird bug with CMake / clang on windows, need to add link dir here
+target_link_directories(mechanica_shared   PUBLIC ${Python_LIBRARY_DIRS})
+
+# Link against the Python shared library on Windows
+# target_link_libraries(mechanica_py PRIVATE Python::Python)
+target_link_libraries(mechanica_shared  PUBLIC ${Python_LIBRARY_RELEASE})
+
+if(APPLE)
+  if(ARG_SHARED)
+    # Suppress CMake >= 3.0 warning for shared libraries
+    set_target_properties(mechanica_shared PROPERTIES MACOSX_RPATH ON)
+  endif()
+endif()
+
 if(MX_ASSIMP)
-	target_link_libraries(mechanica_shared   Assimp::Assimp)
+  target_link_libraries(mechanica_shared   PUBLIC Assimp::Assimp)
 endif()
 
 if(MX_APPLE)
-  target_link_libraries(mechanica_shared MagnumWindowlessCglApplication)
+  target_link_libraries(mechanica_shared PRIVATE MagnumWindowlessCglApplication)
 elseif(MX_LINUX)
-  target_link_libraries(mechanica_shared MagnumWindowlessEglApplication)
+  target_link_libraries(mechanica_shared PRIVATE MagnumWindowlessEglApplication)
 elseif(MX_WINDOWS)
-  target_link_libraries(mechanica_shared MagnumWindowlessWglApplication)
+  target_link_libraries(mechanica_shared PRIVATE MagnumWindowlessWglApplication)
 endif()
-
 
 
 #add_library(mechanica_static STATIC
