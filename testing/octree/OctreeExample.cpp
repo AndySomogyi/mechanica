@@ -88,6 +88,7 @@ class OctreeExample: public Platform::GlfwApplication {
         /* Points data as spheres with size */
         Containers::Array<Vector3> _spherePositions;
         Containers::Array<Vector3> _sphereVelocities;
+        Containers::Array<Color3> _sphereColors;
         Float _sphereRadius, _sphereVelocity;
         bool _animation = true;
         bool _collisionDetectionByOctree = true;
@@ -104,7 +105,6 @@ class OctreeExample: public Platform::GlfwApplication {
         GL::Mesh _sphereMesh{NoCreate};
         GL::Buffer _sphereInstanceBuffer{NoCreate};
         Shaders::Phong _sphereShader{NoCreate};
-        Containers::Array<SphereInstanceData> _sphereInstanceData;
 
         /* Treenode bounding boxes rendering */
         GL::Mesh _boxMesh{NoCreate};
@@ -171,8 +171,8 @@ OctreeExample::OctreeExample(const Arguments& arguments) : Platform::GlfwApplica
             numSpheres};
         _sphereVelocities = Containers::Array<Vector3>{Containers::NoInit,
             numSpheres};
-        _sphereInstanceData = Containers::Array<SphereInstanceData>{
-            Containers::NoInit, numSpheres};
+        _sphereColors = Containers::Array<Color3>{Containers::NoInit,
+            numSpheres};
 
         for(std::size_t i = 0; i < numSpheres; ++i) {
             const Vector3 tmpPos = Vector3(std::rand(), std::rand(), std::rand())/
@@ -182,15 +182,7 @@ OctreeExample::OctreeExample(const Arguments& arguments) : Platform::GlfwApplica
             _spherePositions[i] = tmpPos*2.0f - Vector3{1.0f};
             _spherePositions[i].y() *= 0.5f;
             _sphereVelocities[i] = (tmpVel*2.0f - Vector3{1.0f}).resized(_sphereVelocity);
-
-            /* Fill in the instance data. Most of this stays the same, except
-               for the translation */
-            _sphereInstanceData[i].transformationMatrix =
-                Matrix4::translation(_spherePositions[i])*
-                Matrix4::scaling(Vector3{_sphereRadius});
-            _sphereInstanceData[i].normalMatrix =
-                _sphereInstanceData[i].transformationMatrix.normalMatrix();
-            _sphereInstanceData[i].color = Color3{tmpPos};
+            _sphereColors[i] = Color3{tmpPos};
         }
 
         _sphereShader = Shaders::Phong{
@@ -202,7 +194,7 @@ OctreeExample::OctreeExample(const Arguments& arguments) : Platform::GlfwApplica
             Shaders::Phong::TransformationMatrix{},
             Shaders::Phong::NormalMatrix{},
             Shaders::Phong::Color3{});
-        _sphereMesh.setInstanceCount(_sphereInstanceData.size());
+        _sphereMesh.setInstanceCount(numSpheres);
     }
 
     /* Setup octree */
@@ -345,11 +337,29 @@ void OctreeExample::movePoints() {
 }
 
 void OctreeExample::drawSpheres() {
-    for(std::size_t i = 0; i != _spherePositions.size(); ++i)
-        _sphereInstanceData[i].transformationMatrix.translation() =
-            _spherePositions[i];
 
-    _sphereInstanceBuffer.setData(_sphereInstanceData, GL::BufferUsage::DynamicDraw);
+    _sphereMesh.setInstanceCount(_spherePositions.size());
+
+    // invalidate / resize the buffer
+    _sphereInstanceBuffer.setData({NULL, _spherePositions.size() * sizeof(SphereInstanceData)},
+                GL::BufferUsage::DynamicDraw);
+
+    // get pointer to data
+    SphereInstanceData* pData = (SphereInstanceData*)(void*)_sphereInstanceBuffer.map(0,
+            _spherePositions.size() * sizeof(SphereInstanceData),
+                GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+
+    for(std::size_t i = 0; i != _spherePositions.size(); ++i) {
+        pData[i].transformationMatrix =
+                Matrix4::translation(_spherePositions[i])*
+                Matrix4::scaling(Vector3{_sphereRadius});
+        pData[i].normalMatrix =
+                pData[i].transformationMatrix.normalMatrix();
+        pData[i].color = _sphereColors[i];
+    }
+
+    _sphereInstanceBuffer.unmap();
+
     _sphereShader
         .setProjectionMatrix(_projectionMatrix)
         .setTransformationMatrix(_arcballCamera->viewMatrix())
