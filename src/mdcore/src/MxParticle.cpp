@@ -44,17 +44,25 @@ struct Foo {
 };
 
 static unsigned colors [] = {
-    0x2F4F4F,
-    0x1E90FF,
-    0x8A2BE2,
-    0x3CB371,
-    0x4B0082,
-    0xDC143C,
-    0x3CB371,
-    0xF08080,
-    0xFF8C00,
-    0xFFDAB9,
-    0x228B22,
+    0xCCCCCC,
+    0x6D99D3, // Rust Oleum Spa Blue
+    0xF65917, // Rust Oleum Pumpkin
+    0xF9CB20, // rust oleum yellow
+    0x3CB371, // green
+    0x6353BB, // SGI purple
+    0xf4AC21, // gold
+    0xC4A5DF, // light purple
+    0xDC143C, // dark red
+    0x1E90FF, // blue
+    0xFFFF00, // yellow
+    0x8A2BE2, // purple
+    0x76D7C4, // light green
+    0xF08080, // salmon
+    0xFF00FF, // fuscia
+    0xFF8C00, // orange
+    0xFFDAB9, // tan / peach
+    0x7F8C8D, // gray
+    0x884EA0, // purple
     0x6B8E23,
     0x00FFFF,
     0xAFEEEE,
@@ -806,9 +814,11 @@ static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
 PyObject *particle_type_alloc(PyTypeObject *type, Py_ssize_t nitems)
 {
     printTypeInfo("particle_type_alloc", type);
+    
+    assert(nitems == 0);
 
     MxParticleType *obj;
-    const size_t size = _PyObject_VAR_SIZE(type, nitems+1);
+    const size_t size = sizeof(MxParticleType);
     /* note that we need to add one, for the sentinel */
 
     if (PyType_IS_GC(type)) {
@@ -1145,8 +1155,9 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             self->style = NOMStyle_Clone(((MxParticleType*)self->ht_type.tp_base)->style);
             Py_INCREF(self->style);
             // cycle the colors
-            unsigned index = _Engine.nr_types % (sizeof(colors)/sizeof(unsigned));
-            self->style->color = Magnum::Color3::fromSrgb(colors[_Engine.nr_types % (sizeof(colors)/sizeof(unsigned))]);
+            // nr_types is one more that the type id, so dec by one.
+            self->style->color = Magnum::Color3::fromSrgb(
+                colors[(_Engine.nr_types - 1) % (sizeof(colors)/sizeof(unsigned))]);
         }
         
         // pybind does not seem to wrap deleting item from dict, WTF?!?
