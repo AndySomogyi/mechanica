@@ -25,6 +25,8 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
 
+CAPI_STRUCT(NOMStyle);
+
 
 /* error codes */
 #define PARTICLE_ERR_OK                 0
@@ -122,6 +124,12 @@ struct MxParticle  {
      * when this object gets moved.
      */
     struct MxPyParticle *pyparticle;
+    
+    
+    // style pointer, set at object construction time.
+    // may be re-set by users later.
+    // the base particle type has a default style. 
+    NOMStyle *style;
 };
 
 
@@ -198,6 +206,10 @@ struct MxParticleType : PyHeapTypeObject {
     
     // max size of the ids array. 
     uint32_t size_parts;
+    
+    
+    // style pointer, optional.
+    NOMStyle *style;
     
     /**
      * add a particle (id) to this type

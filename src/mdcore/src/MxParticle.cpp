@@ -37,12 +37,40 @@
 #include "mx_runtime.h"
 
 #include <MxParticleEvent.h>
-
-
-
+#include "../../rendering/NOMStyle.hpp"
 
 struct Foo {
     int x; int y; int z;
+};
+
+static unsigned colors [] = {
+    0x2F4F4F,
+    0x1E90FF,
+    0x8A2BE2,
+    0x3CB371,
+    0x4B0082,
+    0xDC143C,
+    0x3CB371,
+    0xF08080,
+    0xFF8C00,
+    0xFFDAB9,
+    0x228B22,
+    0x6B8E23,
+    0x00FFFF,
+    0xAFEEEE,
+    0x008080,
+    0xB0E0E6,
+    0x6495ED,
+    0x191970,
+    0x0000CD,
+    0xD8BFD8,
+    0xFF1493,
+    0xF0FFF0,
+    0xFFFFF0,
+    0xFFE4E1,
+    0xDCDCDC,
+    0x778899,
+    0x000000
 };
 
 
@@ -269,6 +297,32 @@ PyGetSetDef gs_mass = {
     .closure = NULL
 };
 
+PyGetSetDef gs_style = {
+    .name = "style",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
+        NOMStyle *style = NULL;
+        if(isParticle) {
+            MxPyParticle *pyp = (MxPyParticle*)obj;
+            style = _Engine.s.partlist[pyp->id]->style;
+        }
+        else {
+            style =  ((MxParticleType*)obj)->style;
+        }
+        if(style) {
+            Py_INCREF(style);
+            return (PyObject*)style;
+        }
+        Py_RETURN_NONE;
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        PyErr_SetString(PyExc_PermissionError, "read only");
+        return -1;
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
 PyGetSetDef gs_age = {
     .name = "age",
     .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -455,7 +509,8 @@ PyGetSetDef particle_getsets[] = {
     gs_name2,
     gs_dynamics,
     gsd,
-    gs_age, 
+    gs_age,
+    gs_style,
     {
         .name = "position",
         .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -618,6 +673,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.flags = 0;
     part.pyparticle = NULL;
     part.creation_time = _Engine.time;
+    part.style = NULL;
     
     try {
         pybind11::detail::loader_life_support ls{};
@@ -806,13 +862,13 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
  *   ID of this type
     int id;
 
-    /** Constant physical characteristics
+    * Constant physical characteristics
     double mass, imass, charge;
 
-    /** Nonbonded interaction parameters.
+    *Nonbonded interaction parameters.
     double eps, rmin;
 
-    /** Name of this paritcle type.
+    * Name of this paritcle type.
     char name[64], name2[64];
  */
 
@@ -827,6 +883,7 @@ static PyGetSetDef particle_type_getset[] = {
     gs_dynamics,
     gs_type_temperature,
     gs_type_target_temperature,
+    gs_style,
     {NULL},
 };
 
@@ -1080,6 +1137,18 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             self->dynamics = dict["dynamics"].cast<MxParticleDynamics>();
         }
         
+        if(dict.contains("style")) {
+            self->style = NOMStyle_New(NULL, dict["style"].ptr());
+        }
+        else {
+            // copy base class style
+            self->style = NOMStyle_Clone(((MxParticleType*)self->ht_type.tp_base)->style);
+            Py_INCREF(self->style);
+            // cycle the colors
+            unsigned index = _Engine.nr_types % (sizeof(colors)/sizeof(unsigned));
+            self->style->color = Magnum::Color3::fromSrgb(colors[_Engine.nr_types % (sizeof(colors)/sizeof(unsigned))]);
+        }
+        
         // pybind does not seem to wrap deleting item from dict, WTF?!?
         if(self->ht_type.tp_dict) {
             
@@ -1106,6 +1175,10 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 PyDict_DelItem(_dict, key.ptr());
             }
             key = pybind11::cast("dynamics");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+            key = pybind11::cast("style");
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
@@ -1196,6 +1269,10 @@ HRESULT engine_particle_base_init(PyObject *m)
     pt->charge = 0.0;
     pt->id = 0;
     pt->dynamics = PARTICLE_NEWTONIAN;
+    
+    // TODO: default particle style...
+    pt->style = NOMStyle_New(NULL, NULL);
+    pt->style->color = Magnum::Color3::fromSrgb(colors[0]);
 
     ::strncpy(pt->name, "Particle", MxParticleType::MAX_NAME);
     ::strncpy(pt->name2, "Particle", MxParticleType::MAX_NAME);

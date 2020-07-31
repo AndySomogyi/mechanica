@@ -52,6 +52,7 @@ set (_PUBLIC_HEADERS
   mx_propagator.h
   mx_lattice.h
   mx_ui.h
+  NOMStyle.h
   ${AST_HEADERS}
   ${X3D_HEADERS}
   )

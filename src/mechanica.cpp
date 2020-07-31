@@ -208,6 +208,9 @@ static PyObject * moduleinit(void)
     magnum::math(rootModule, math);
 
     _MxUtil_init(m);
+    
+    // needs to be before other stuff like particles that depend on style. 
+    _NOMStyle_init(m);
     MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);
@@ -229,7 +232,7 @@ static PyObject * moduleinit(void)
     MxWindowHost_init(m);
     MyUniverseRenderer_Init(m);
     
-    NOMStyle_init(m);
+    
 
     MxPyTest_init(m);
 

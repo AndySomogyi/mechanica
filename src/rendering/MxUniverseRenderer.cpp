@@ -51,6 +51,7 @@
 
 
 #include <rendering/WireframeObjects.h>
+#include <rendering/NOMStyle.hpp>
 
 #include <assert.h>
 #include <iostream>
@@ -60,7 +61,6 @@
 using namespace Magnum::Math::Literals;
 
 MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
-    _mesh(GL::MeshPrimitive::Points),
     window{win}
 {
     // py init
@@ -68,26 +68,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     ob_refcnt = 1;
 
     setupCallbacks();
-
-    const auto viewportSize1 = GL::defaultFramebuffer.viewport().size();
-
-
-    _mesh.addVertexBuffer(_vertexBuffer, 0,
-            ParticleSphereShader::Position{},
-            ParticleSphereShader::Index{},
-            ParticleSphereShader::Radius{});
-
-    //_shader.reset(new ParticleSphereShader);
-
-    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance0);
-    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance1);
-    //GL::Renderer::disable(GL::Renderer::Feature::DepthTest);
-    
-    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance2);
-    //GL::Renderer::disable(GL::Renderer::Feature::ClipDistance3);
-
-
-    //GL::Renderer::disable(GL::Renderer::Feature::DepthClamp);
 
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     
@@ -110,10 +90,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _scene.reset(new Scene3D{});
     _drawableGroup.reset(new SceneGraph::DrawableGroup3D{});
 
-
-    const auto viewportSize = GL::defaultFramebuffer.viewport().size();
-
-
     /* Set default camera parameters */
     _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
 
@@ -127,11 +103,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
         const Vector3 center{};
         const Vector3 up = Vector3::zAxis();
 
-        //template<class Transformation> ArcBallCamera(
-        // SceneGraph::Scene<Transformation>& scene,
-        // const Vector3& cameraPosition, const Vector3& viewCenter,
-        // const Vector3& upDir, Deg fov, const Vector2i& windowSize,
-        // const Vector2i& viewportSize):
         _arcball = new Magnum::Mechanica::ArcBallCamera(*_scene, eye, center, up, 45.0_degf,
             win->windowSize(), win->framebufferSize());
     }
@@ -178,65 +149,7 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     //Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&_points[0]), _points.size() * 3);
     //_bufferParticles.setData(data);
 
-
-    // slightly more sensible way of doing things
-    //_bufferParticles.setData({&_points[0], _points.size() * 3 * sizeof(float)},
-    //                         GL::BufferUsage::DynamicDraw);
-
-    // give me the damned bytes...
-
-
-    // invalidate / resize the buffer
-//    _vertexBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex)},
-//            GL::BufferUsage::DynamicDraw);
-//
-//    // get pointer to data
-//    void* tmp = _vertexBuffer.map(0,
-//            _Engine.s.nr_parts * sizeof(ParticleSphereShader::Vertex),
-//            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
-//
-//    ParticleSphereShader::Vertex* vertexPtr = (ParticleSphereShader::Vertex*)tmp;
-//
-//
-//    int i = 0;
-//    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
-//        for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
-//            MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
-//            vertexPtr[i].pos.x() = _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0];
-//            vertexPtr[i].pos.y() = _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1];
-//            vertexPtr[i].pos.z() = _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2];
-//            vertexPtr[i].index = p->id;
-//            vertexPtr[i].radius = _Engine.types[p->typeId].radius;
-//            i++;
-//        }
-//    }
-//
-//    _vertexBuffer.unmap();
-
-
-    //_mesh.setCount(_Engine.s.nr_parts);
     _dirty = false;
-
-
-//    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-//
-//    (*_shader)
-//        /* particle data */
-//        .setNumParticles(_Engine.s.nr_parts)
-//        /* sphere render data */
-//        .setPointSizeScale(static_cast<float>(viewportSize.x())/
-//                           Math::tan(22.5_degf)) /* tan(half field-of-view angle (45_deg)*/
-//        .setColorMode(_colorMode)
-//        .setAmbientColor(_ambientColor)
-//        .setDiffuseColor(_diffuseColor)
-//        .setSpecularColor(_specularColor)
-//        .setShininess(_shininess)
-//        /* view/prj matrices and light */
-//        .setViewMatrix(camera->cameraMatrix() * modelViewMat)
-//        .setProjectionMatrix(camera->projectionMatrix())
-//        .setLightDirection(_lightDir)
-//        .draw(_mesh);
-    
 
     sphereMesh.setInstanceCount(_Engine.s.nr_parts);
 
@@ -244,7 +157,7 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     sphereInstanceBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(SphereInstanceData)},
                 GL::BufferUsage::DynamicDraw);
 
-    // get pointer to data
+    // get pointer to data, give me the damned bytes
     SphereInstanceData* pData = (SphereInstanceData*)(void*)sphereInstanceBuffer.map(0,
             _Engine.s.nr_parts * sizeof(SphereInstanceData),
                 GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
@@ -255,6 +168,7 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
             MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
+            MxParticleType *type = &_Engine.types[p->typeId];
             Magnum::Vector3 position = {
             _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0],
             _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1],
@@ -262,10 +176,12 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             };
             pData[i].transformationMatrix =
                     Matrix4::translation(position) *
-            Matrix4::scaling(Vector3{1.0});
+            Matrix4::scaling(Vector3{type->radius});
             pData[i].normalMatrix =
                     pData[i].transformationMatrix.normalMatrix();
-            pData[i].color = Magnum::Color3::red();
+            
+            NOMStyle *style = p->style ? p->style : type->style;
+            pData[i].color = style->color;
             i++;
         }
     }

@@ -130,13 +130,11 @@ struct MxUniverseRenderer : MxRenderer {
 
     MxUniverseRenderer& setModelViewTransform(const Magnum::Matrix4& mat) {
         modelViewMat = mat;
-        _shader->setViewMatrix(modelViewMat);
         return *this;
     }
 
     MxUniverseRenderer& setProjectionTransform(const Magnum::Matrix4& mat) {
         projMat = mat;
-        _shader->setProjectionMatrix(projMat);
         return *this;
     }
 
@@ -182,11 +180,6 @@ struct MxUniverseRenderer : MxRenderer {
     Color3 _specularColor{ 1.0f};
     Float _shininess = 150.0f;
     Vector3 _lightDir{1.0f, 1.0f, 2.0f};
-
-    GL::Buffer _vertexBuffer;
-    GL::Mesh _mesh;
-    Containers::Pointer<ParticleSphereShader> _shader;
-    
     
     /* Spheres rendering */
     GL::Mesh sphereMesh{NoCreate};

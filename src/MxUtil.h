@@ -10,11 +10,16 @@
 
 #include "mechanica_private.h"
 
+#include <Magnum/Magnum.h>
+#include <Magnum/Math/Color.h>
+
 enum MxPointsType {
     Sphere,
     SolidSphere,
     Disk
 };
+
+Magnum::Color3 Color3_Parse(const std::string &str);
 
 
 
