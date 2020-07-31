@@ -170,13 +170,13 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
             MxParticleType *type = &_Engine.types[p->typeId];
             Magnum::Vector3 position = {
-            _Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0],
-            _Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1],
-            _Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2]
+                (float)(_Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0]),
+                (float)(_Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1]),
+                (float)(_Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2])
             };
             pData[i].transformationMatrix =
                     Matrix4::translation(position) *
-            Matrix4::scaling(Vector3{type->radius});
+            Matrix4::scaling(Vector3{(float)type->radius});
             pData[i].normalMatrix =
                     pData[i].transformationMatrix.normalMatrix();
             
