@@ -70,7 +70,7 @@ int main ( int argc , char *argv[] ) {
     double epot, ekin, v2, temp, cutoff = 1.0, cellwidth;
     // FPTYPE ee, eff;
     struct engine& e = _Engine;
-    struct MxParticle pAr;
+    struct MxParticle pAr = {};
     struct MxPotential *pot_ArAr;
     // struct potential *pot_ee;
     int i, j, k, cid, pid, nr_runners = 1, nr_steps = 1000;

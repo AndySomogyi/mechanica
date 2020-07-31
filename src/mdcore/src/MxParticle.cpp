@@ -660,7 +660,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
-    MxParticle part;
+    MxParticle part = {};
     part.position = {};
     part.velocity = {};
     part.force = {};
@@ -1354,7 +1354,7 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
 
     MxParticleType *type = &_Engine.types[self->typeId];
 
-    MxParticle part;
+    MxParticle part = {};
     part.position = self->position;
     part.velocity = self->velocity;
     part.force = {};

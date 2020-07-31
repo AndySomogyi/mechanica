@@ -618,7 +618,7 @@ int initArgon (const Vector3 &origin, const Vector3 &dim,
 
     double   cutoff = 0.1 * length;
 
-    struct MxParticle pAr;
+    struct MxParticle pAr = {};
     struct MxPotential *pot_ArAr;
 
     int  k, cid, pid, nr_runners = 8;

@@ -1243,7 +1243,7 @@ int engine_read_psf ( struct engine *e , int psf , int pdb ) {
     char type[100], typeName[100], buff[100], *endptr;
     int pid, pjd, pkd, pld, j, k, n, id, *resids, *typeids, typelen, bufflen;
     double q, m, x[3];
-    struct MxParticle p;
+    struct MxParticle p = {};
     
     /* Check inputs. */
     if ( e == NULL )

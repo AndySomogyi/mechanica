@@ -1355,7 +1355,7 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 
 int engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , int N ) {
 
-	struct MxParticle p;
+    struct MxParticle p = {};
 	struct space *s;
 	int j, k;
 
@@ -1424,7 +1424,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 
 int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , int N ) {
 
-	struct MxParticle p;
+    struct MxParticle p = {};
 	struct space *s;
 	int j, k;
 

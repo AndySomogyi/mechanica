@@ -75,7 +75,7 @@ int main ( int argc , char *argv[] ) {
 
     struct engine& e = _Engine;
 
-    struct MxParticle pO, pH;
+    struct MxParticle pO = {}, pH = {};
 
     // three kinds of interaction potentials
     struct MxPotential *pot_OO, *pot_OH, *pot_HH;

@@ -762,7 +762,7 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
 
     double   cutoff = 0.1 * length;
 
-    struct MxParticle pAr;
+    struct MxParticle pAr = {};
     struct MxPotential *pot_ArAr;
 
     auto pos = fillCubeRandom(conf.origin, conf.dim, conf.nParticles);
