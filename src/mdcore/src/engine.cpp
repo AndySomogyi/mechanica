@@ -78,7 +78,7 @@ int engine_err = engine_err_ok;
 
 /** TODO, clean up this design for types and static engine. */
 /** What is the maximum nr of types? */
-int engine::max_type = 101;
+int engine::max_type = 128;
 int engine::nr_types = 0;
 
 /**

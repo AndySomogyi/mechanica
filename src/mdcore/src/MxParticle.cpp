@@ -812,10 +812,9 @@ static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
  * the object in the engine's static array of types.
  */
 PyObject *particle_type_alloc(PyTypeObject *type, Py_ssize_t nitems)
-{
-    printTypeInfo("particle_type_alloc", type);
-    
+{    
     assert(nitems == 0);
+    assert(type->tp_basicsize == sizeof(MxParticleType));
 
     MxParticleType *obj;
     const size_t size = sizeof(MxParticleType);
@@ -826,9 +825,12 @@ PyObject *particle_type_alloc(PyTypeObject *type, Py_ssize_t nitems)
         return NULL;
     }
     else if(engine::nr_types >= engine::max_type) {
+        std::cout << "out of memory for new type " << engine::nr_types << std::endl;
         PyErr_SetString(PyExc_MemoryError, "out of memory for new particle type");
         return NULL;
     }
+
+    std::cout << "Creating new particle type " << engine::nr_types << std::endl;
 
     obj = &engine::types[engine::nr_types];
     memset(obj, '\0', size);
