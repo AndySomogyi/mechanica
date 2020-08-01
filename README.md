@@ -19,6 +19,18 @@ course).
 History
 =======
 
+Version Alpha 0.0.4 Dev 1
+-------------------------
+* All new particle rendering based on instanced meshes. Rendering qualtiy is
+  dramtatically improved. Now in a position to do all sorts of discrete elements
+  like elipsids, bonds, rigid particles, etc... 
+* Implement NOMStyle objects. This is essentially the css model, but for 3D
+  applications. Each object has a 'style' property that's a collection of all
+  sorts of style attributes. The renderer looks at the corrent object, and chain
+  of parent objects to find style attributes. Basically the css approach. 
+* More demo applications. 
+* Memory bugs resolved. 
+
 Version Alpha 0.0.3 Dev 1
 -------------------------
 * Windows Build! 
