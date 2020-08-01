@@ -114,7 +114,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _grid.reset(new WireframeGrid(_scene.get(), _drawableGroup.get()));
     _grid->transform(Matrix4::scaling(Vector3(1.f))  );
 
-
     /* Simulation domain box */
     /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
     _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
@@ -128,13 +127,22 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     // set up the sphere rendering...
     sphereShader = Shaders::Phong{
         Shaders::Phong::Flag::VertexColor|
-        Shaders::Phong::Flag::InstancedTransformation};
+        Shaders::Phong::Flag::InstancedTransformation, 1};
     sphereInstanceBuffer = GL::Buffer{};
     sphereMesh = MeshTools::compile(Primitives::icosphereSolid(2));
     sphereMesh.addVertexBufferInstanced(sphereInstanceBuffer, 1, 0,
         Shaders::Phong::TransformationMatrix{},
         Shaders::Phong::NormalMatrix{},
         Shaders::Phong::Color3{});
+    
+    // setup up lighting properties. TODO: move these to style
+    sphereShader.setShininess(2000.0f)
+    .setLightPositions({{-20, 40, 20}})
+    .setLightColor({0.9, 0.9, 0.9, 1})
+    .setShininess(100)
+    .setAmbientColor({0.4, 0.4, 0.4, 1})
+    .setDiffuseColor({1, 1, 1, 1})
+    .setSpecularColor({0.2, 0.2, 0.2, 1});
     
     // we resize instances all the time.
     sphereMesh.setInstanceCount(0);
