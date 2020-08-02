@@ -22,6 +22,7 @@ namespace py = pybind11;
 using Magnum::Vector3;
 
 MxUniverse Universe = {
+    .isRunning = false,
     .performance_info_display_interval = 100,
     .performance_info_flags =
         ENGINE_TIMER_STEP |
