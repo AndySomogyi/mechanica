@@ -16,7 +16,9 @@
 enum MxPointsType {
     Sphere,
     SolidSphere,
-    Disk
+    Disk,
+    SolidCube,
+    Cube
 };
 
 Magnum::Color3 Color3_Parse(const std::string &str);
