@@ -10,7 +10,6 @@ dim=[10., 10., 10.]
 # new simulator, don't load any example
 m.Simulator(example="", dim=dim)
 
-    
 class MyCell(m.Particle):
 
     mass = 39.4
@@ -20,9 +19,9 @@ class MyCell(m.Particle):
     def __init__(self, *args):
         super().__init__(*args)
         print("creating new particle, my id is: ", self.id)
-        
 
-# create a potential representing a 12-6 Lennard-Jones potential
+
+        # create a potential representing a 12-6 Lennard-Jones potential
 # A The first parameter of the Lennard-Jones potential.
 # B The second parameter of the Lennard-Jones potential.
 # cutoff
@@ -44,6 +43,15 @@ m.Universe.bind(tstat, MyCell)
 # calls at periodic intervals based on the exponential distribution,
 # so the mean time between particle creation is 0.05
 m.on_time(MyCell, period=0.05, distribution="exponential")
+
+
+def write_data(time):
+    print("time is now: ", time)
+
+# bind the write_data function that we wrote with the on_time event.
+# we can attach any functions we like to any time intervals.
+m.on_time(write_data, period=0.05)
+
 
 # run the simulator interactive
 m.Simulator.run()
