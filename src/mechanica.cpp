@@ -158,7 +158,11 @@ static PyObject * moduleinit(void)
     }
 
     m = PyModule_Create(&mechanica_module);
-
+    
+    if(PyModule_AddObject(m, "version", PyUnicode_FromString(MX_VERSION)) != 0) {
+        std::cout << "could not add version"  << std::endl;
+        return NULL;
+    }
 
     if (m == NULL) {
         std::cout << "could not create mechanica module: "  << std::endl;

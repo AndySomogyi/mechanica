@@ -1,5 +1,5 @@
-Key Concepts
-============
+Concepts
+========
 
 
 Running a Simulation

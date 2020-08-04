@@ -2,6 +2,7 @@ import os
 from setuptools import setup
 from setuptools import Extension
 from setuptools.dist import Distribution
+import re
 
 # Tested with wheel v0.29.0
 class BinaryDistribution(Distribution):
@@ -16,10 +17,27 @@ class BinaryDistribution(Distribution):
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+# get the version info
+def version():
+    s = open("VERSION.txt").read()
+    major = re.search("VERSION_MAJOR\s+([0-9]*)", s).groups()[0]
+    minor = re.search("VERSION_MINOR\s+([0-9]*)", s).groups()[0]
+    patch = re.search("VERSION_PATCH\s+([0-9]*)", s).groups()[0]
+    dev =   re.search("VERSION_DEV\s+([0-9]*)", s).groups()[0]
+
+    ver = major + "." + minor + "." + patch
+    if len(dev) > 0:
+        ver = ver + ".dev" + dev
+
+    print("making version: ", ver)
+    return ver
+
+
+
 
 setup(
     name = "mechanica",
-    version = "0.0.4.dev1",
+    version = version(),
     author = "Andy Somogyi",
     author_email = "andy.somogyi@gmail.com",
     description = ("Interactive physics simulation engine"),

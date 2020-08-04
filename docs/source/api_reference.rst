@@ -22,3 +22,4 @@ This is the API Reference page for the module: :mod:`mechanica`
 
 .. include:: api_forces.rst
 
+.. include:: api_events.rst

@@ -19,15 +19,23 @@ course).
 History
 =======
 
+Version Alpha 0.0.5 Dev 1
+-------------------------
+
+* Add documentation to event handlers, and example programs
+* fix bugs in creating event events 
+* add version info to build system and make available as API. 
+
+
 Version Alpha 0.0.4 Dev 1
 -------------------------
-* All new particle rendering based on instanced meshes. Rendering qualtiy is
-  dramtatically improved. Now in a position to do all sorts of discrete elements
-  like elipsids, bonds, rigid particles, etc... 
-* Implement NOMStyle objects. This is essentially the css model, but for 3D
+* All new particle rendering based on instanced meshes. Rendering quality is
+  dramatically improved. Now in a position to do all sorts of discrete elements
+  like ellipsoids, bonds, rigid particles, etc... 
+* Implement NOMStyle objects. This is essentially the CSS model, but for 3D
   applications. Each object has a 'style' property that's a collection of all
-  sorts of style attributes. The renderer looks at the corrent object, and chain
-  of parent objects to find style attributes. Basically the css approach. 
+  sorts of style attributes. The renderer looks at the current object, and chain
+  of parent objects to find style attributes. Basically the CSS approach. 
 * More demo applications. 
 * Memory bugs resolved. 
 
@@ -45,8 +53,8 @@ Version Alpha 0.0.2 Dev 5
 * add performance timing info to particle engine
 * add examples (multi-size particles, random force, epiboly, 
   events with creation, destruction, mitosis, ...)
-* new dynamcis options, include both Newtonian (Velocity-Verlet) and
-  overdamped. 
+* new dynamics options, include both Newtonian (Velocity-Verlet) and
+  over-damped. 
 * new defaults to set space cell size, better threading
 * New explicit bond object
 * add creation time / age to particle
@@ -57,16 +65,16 @@ Version Alpha 0.0.2 Dev 5
 * random points function to create points for geometric regions
 * prime number generator
 * Fixed major bug in cell pair force calculation (was in wrong direction)
-* major bug fix in not making sure potenal distance does not go past end of
+* major bug fix in not making sure potential distance does not go past end of
   interpolation segments.
 * new random force
 * new soft-sphere interaction potential
 * add radius to particle type def
 * update renderer to draw different sized particles
 * add number of space cells to simulator constructor
-* configurable dynamics (Newtonain, Overdamped), more to come
+* configurable dynamics (Newtonian, Over-damped), more to come
   particle delete functionality, and fix particle events
-* examples bind events to destory, creation and mitosis methods
+* examples bind events to destroy, creation and mitosis methods
 * new event model 
 
 Version Alpha 0.0.1 Dev 3
@@ -78,7 +86,7 @@ Version Alpha 0.0.1 Dev 3
 * Berendsen thermostat as first example single body generalized forces
 * Per-type thermostat
 * Arc-ball user interaction
-* Simplify and eliminate redundency between C++ and Python apps. 
+* Simplify and eliminate redundancy between C++ and Python apps. 
 
 
 Version Alpha 0.0.1 Dev 2
