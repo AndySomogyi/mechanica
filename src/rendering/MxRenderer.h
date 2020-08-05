@@ -10,7 +10,7 @@
 
 #include <mechanica_private.h>
 
-struct MxRenderer : PyObject
+struct MxRenderer 
 {
 };
 

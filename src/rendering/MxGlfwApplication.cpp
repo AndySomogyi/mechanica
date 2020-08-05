@@ -24,6 +24,10 @@
 #include <Magnum/GL/Version.h>
 #include <Magnum/Animation/Easing.h>
 
+#include <Magnum/SceneGraph/Scene.h>
+#include <Magnum/SceneGraph/Camera.h>
+#include <Magnum/SceneGraph/Drawable.h>
+
 
 #define MXGLFW_ERROR() { \
         const char* glfwErrorDesc = NULL; \
@@ -112,7 +116,7 @@ void MxGlfwApplication::drawEvent() {
         if(Math::abs(newSubsteps - _substeps) > 1) _substeps = newSubsteps;
 
         // TODO: move substeps to universe step.
-        if(MxUniverse_Flag(MxUniverse_Flags::MXU_RUNNING)) {
+        if(MxUniverse_Flag(MxUniverse_Flags::MX_RUNNING)) {
             for(Int i = 0; i < _substeps; ++i) {
                 MxUniverse_Step(0, 0);
             }
@@ -227,16 +231,19 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
-    while(GlfwApplication::mainLoopIteration())
+    show();
+    while(GlfwApplication::mainLoopIteration() &&
+        glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE))
     {
-
     }
 
     return S_OK;
 }
 
 HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
-    GlfwApplication::mainLoopIteration();
+    if(GlfwApplication::window()) {
+        GlfwApplication::mainLoopIteration();
+    }
     return S_OK;
 }
 
@@ -274,4 +281,56 @@ void MxGlfwApplication::mouseMoveEvent(MouseMoveEvent &event)
 void MxGlfwApplication::mouseScrollEvent(MouseScrollEvent &event)
 {
     _ren->mouseScrollEvent(event);
+}
+
+void MxGlfwApplication::exitEvent(ExitEvent &event)
+{
+    std::cout << MX_FUNCTION << std::endl;
+
+    // stop the window from getting (getting destroyed)
+    glfwSetWindowShouldClose(window(), false);
+
+
+    // "close", actually hide the window.
+    close();
+
+    event.setAccepted();
+}
+
+HRESULT MxGlfwApplication::destroy()
+{
+    std::cout << MX_FUNCTION << std::endl;
+
+    GLFWwindow *window = GlfwApplication::window();
+
+    glfwSetWindowShouldClose(window, true);
+
+    return S_OK;
+
+}
+
+HRESULT MxGlfwApplication::close()
+{
+    std::cout << MX_FUNCTION << std::endl;
+    
+    glfwHideWindow(window());
+    
+    return S_OK;
+}
+
+int MxGlfwApplication::windowAttribute(MxWindowAttributes attr)
+{
+    return glfwGetWindowAttrib(window(), attr);
+}
+
+HRESULT MxGlfwApplication::setWindowAttribute(MxWindowAttributes attr, int val)
+{
+    glfwSetWindowAttrib(window(), attr, val);
+    MXGLFW_CHECK();
+}
+
+HRESULT MxGlfwApplication::show()
+{
+    glfwShowWindow(window());
+    MXGLFW_CHECK();
 }

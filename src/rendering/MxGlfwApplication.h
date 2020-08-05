@@ -143,6 +143,17 @@ public:
     void mouseReleaseEvent(MouseEvent& event) override;
     void mouseMoveEvent(MouseMoveEvent& event) override;
     void mouseScrollEvent(MouseScrollEvent& event) override;
+    void exitEvent(ExitEvent& event) override;
+
+    int windowAttribute(MxWindowAttributes attr) override;
+
+    HRESULT setWindowAttribute(MxWindowAttributes attr, int val) override;
+
+    HRESULT destroy() override;
+
+    HRESULT close() override;
+
+    HRESULT show() override;
 };
 
 

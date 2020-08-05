@@ -383,13 +383,14 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("ftest", &ftest);
     sim.def_static("irun", &simulator_interactive_run);
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
+    sim.def_static("close", [] () { PY_CHECK(MxSimulator_Close()); });
 
 
-    sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
-            PYSIMULATOR_CHECK();
-            return py::handle(Simulator->app->getRenderer());
-        }
-    );
+    //sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
+    //        PYSIMULATOR_CHECK();
+    //        return py::handle(Simulator->app->getRenderer());
+    //    }
+    //);
 
     sim.def_property_readonly_static("window", [](py::object) -> py::handle {
             PYSIMULATOR_CHECK();
@@ -459,7 +460,69 @@ HRESULT _MxSimulator_init(PyObject* m) {
     gc.def_property("sample_count", &MxSimulator::GLConfig::sampleCount, &MxSimulator::GLConfig::setSampleCount);
     gc.def_property("srgb_capable", &MxSimulator::GLConfig::isSrgbCapable, &MxSimulator::GLConfig::setSrgbCapable);
 
-    return 0;
+
+    py::enum_<MxWindowAttributes>(m, "WindowAttributes", py::arithmetic())
+        .value("FOCUSED", MxWindowAttributes::MX_FOCUSED)
+        .value("ICONIFIED", MxWindowAttributes::MX_ICONIFIED)
+        .value("RESIZABLE", MxWindowAttributes::MX_RESIZABLE)
+        .value("VISIBLE", MxWindowAttributes::MX_VISIBLE)
+        .value("DECORATED", MxWindowAttributes::MX_DECORATED)
+        .value("AUTO_ICONIFY", MxWindowAttributes::MX_AUTO_ICONIFY)
+        .value("FLOATING", MxWindowAttributes::MX_FLOATING)
+        .value("MAXIMIZED", MxWindowAttributes::MX_MAXIMIZED)
+        .value("CENTER_CURSOR", MxWindowAttributes::MX_CENTER_CURSOR)
+        .value("TRANSPARENT_FRAMEBUFFER", MxWindowAttributes::MX_TRANSPARENT_FRAMEBUFFER)
+        .value("HOVERED", MxWindowAttributes::MX_HOVERED)
+        .value("FOCUS_ON_SHOW", MxWindowAttributes::MX_FOCUS_ON_SHOW)
+        .value("RED_BITS", MxWindowAttributes::MX_RED_BITS)
+        .value("GREEN_BITS", MxWindowAttributes::MX_GREEN_BITS)
+        .value("BLUE_BITS", MxWindowAttributes::MX_BLUE_BITS)
+        .value("ALPHA_BITS", MxWindowAttributes::MX_ALPHA_BITS)
+        .value("DEPTH_BITS", MxWindowAttributes::MX_DEPTH_BITS)
+        .value("STENCIL_BITS", MxWindowAttributes::MX_STENCIL_BITS)
+        .value("ACCUM_RED_BITS", MxWindowAttributes::MX_ACCUM_RED_BITS)
+        .value("ACCUM_GREEN_BITS", MxWindowAttributes::MX_ACCUM_GREEN_BITS)
+        .value("ACCUM_BLUE_BITS", MxWindowAttributes::MX_ACCUM_BLUE_BITS)
+        .value("ACCUM_ALPHA_BITS", MxWindowAttributes::MX_ACCUM_ALPHA_BITS)
+        .value("AUX_BUFFERS", MxWindowAttributes::MX_AUX_BUFFERS)
+        .value("STEREO", MxWindowAttributes::MX_STEREO)
+        .value("SAMPLES", MxWindowAttributes::MX_SAMPLES)
+        .value("SRGB_CAPABLE", MxWindowAttributes::MX_SRGB_CAPABLE)
+        .value("REFRESH_RATE", MxWindowAttributes::MX_REFRESH_RATE)
+        .value("DOUBLEBUFFER", MxWindowAttributes::MX_DOUBLEBUFFER)
+        .value("CLIENT_API", MxWindowAttributes::MX_CLIENT_API)
+        .value("CONTEXT_VERSION_MAJOR", MxWindowAttributes::MX_CONTEXT_VERSION_MAJOR)
+        .value("CONTEXT_VERSION_MINOR", MxWindowAttributes::MX_CONTEXT_VERSION_MINOR)
+        .value("CONTEXT_REVISION", MxWindowAttributes::MX_CONTEXT_REVISION)
+        .value("CONTEXT_ROBUSTNESS", MxWindowAttributes::MX_CONTEXT_ROBUSTNESS)
+        .value("OPENGL_FORWARD_COMPAT", MxWindowAttributes::MX_OPENGL_FORWARD_COMPAT)
+        .value("OPENGL_DEBUG_CONTEXT", MxWindowAttributes::MX_OPENGL_DEBUG_CONTEXT)
+        .value("OPENGL_PROFILE", MxWindowAttributes::MX_OPENGL_PROFILE)
+        .value("CONTEXT_RELEASE_BEHAVIOR", MxWindowAttributes::MX_CONTEXT_RELEASE_BEHAVIOR)
+        .value("CONTEXT_NO_ERROR", MxWindowAttributes::MX_CONTEXT_NO_ERROR)
+        .value("CONTEXT_CREATION_API", MxWindowAttributes::MX_CONTEXT_CREATION_API)
+        .value("SCALE_TO_MONITOR", MxWindowAttributes::MX_SCALE_TO_MONITOR)
+        .value("COCOA_RETINA_FRAMEBUFFER", MxWindowAttributes::MX_COCOA_RETINA_FRAMEBUFFER)
+        .value("COCOA_FRAME_NAME", MxWindowAttributes::MX_COCOA_FRAME_NAME)
+        .value("COCOA_GRAPHICS_SWITCHING", MxWindowAttributes::MX_COCOA_GRAPHICS_SWITCHING)
+        .value("X11_CLASS_NAME", MxWindowAttributes::MX_X11_CLASS_NAME)
+        .value("X11_INSTANCE_NAME", MxWindowAttributes::MX_X11_INSTANCE_NAME)
+        .export_values();
+
+    sim.def_static("window_attrbute", [](MxWindowAttributes attr) -> int {
+            SIMULATOR_CHECK();
+            return Simulator->app->windowAttribute(attr);
+        }
+    );
+
+    sim.def_static("set_window_attrbute", [](MxWindowAttributes attr, int val) -> int {
+            SIMULATOR_CHECK();
+            return Simulator->app->setWindowAttribute(attr, val);
+        }
+    );
+
+
+    return S_OK;
 }
 
 CAPI_FUNC(MxSimulator*) MxSimulator_New(PyObject *_args, PyObject *_kw_args)
@@ -695,11 +758,12 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
 }
 
 
-
-
 static void simulator_interactive_run() {
     std::cout << "entering " << MX_FUNCTION << std::endl;
     PYSIMULATOR_CHECK();
+
+    Simulator->app->show();
+
     // Try to import ipython
 
     /**
@@ -865,12 +929,14 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
 {
     SIMULATOR_CHECK();
 
-    if(Simulator->flags & MxSimulator::Flags::Running) {
+    Simulator->app->show();
+
+    if(MxUniverse_Flag(MxUniverse_Flags::MX_RUNNING)) {
         // TODO: add something to application to show window
         return S_OK;
     }
 
-    MxUniverse_SetFlag(MxUniverse_Flags::MXU_RUNNING, false);
+    MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, false);
 
     simulator_interactive_run();
 
@@ -939,4 +1005,16 @@ CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf, const
     Simulator = sim;
 
     return S_OK;
+}
+
+CAPI_FUNC(HRESULT) MxSimulator_Close()
+{
+    SIMULATOR_CHECK();
+    return Simulator->app->close();
+}
+
+CAPI_FUNC(HRESULT) MxSimulator_Destroy()
+{
+    SIMULATOR_CHECK();
+    return Simulator->app->destroy();
 }

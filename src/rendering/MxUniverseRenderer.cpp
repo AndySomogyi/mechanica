@@ -64,8 +64,8 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     window{win}
 {
     // py init
-    ob_type = &MxUniverseRenderer_Type;
-    ob_refcnt = 1;
+    //ob_type = &MxUniverseRenderer_Type;
+    //ob_refcnt = 1;
 
     setupCallbacks();
 
@@ -128,8 +128,11 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     sphereShader = Shaders::Phong{
         Shaders::Phong::Flag::VertexColor|
         Shaders::Phong::Flag::InstancedTransformation, 1};
+    
     sphereInstanceBuffer = GL::Buffer{};
+    
     sphereMesh = MeshTools::compile(Primitives::icosphereSolid(2));
+    
     sphereMesh.addVertexBufferInstanced(sphereInstanceBuffer, 1, 0,
         Shaders::Phong::TransformationMatrix{},
         Shaders::Phong::NormalMatrix{},
@@ -203,6 +206,10 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         .draw(sphereMesh);
 
     return *this;
+}
+
+MxUniverseRenderer::~MxUniverseRenderer() {
+    std::cout << MX_FUNCTION << std::endl;
 }
 
 PyTypeObject MxUniverseRenderer_Type = {

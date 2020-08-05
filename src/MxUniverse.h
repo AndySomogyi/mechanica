@@ -95,7 +95,9 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt);
  * tells the simulator to perform the time evolution.
  */
 enum MxUniverse_Flags {
-    MXU_RUNNING = 1 << 0,
+    MX_RUNNING = 1 << 0,
+
+    MX_SHOW_PERF_STATS = 1 << 1,
 };
 
 /**

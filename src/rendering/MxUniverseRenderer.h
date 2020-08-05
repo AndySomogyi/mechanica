@@ -181,11 +181,6 @@ struct MxUniverseRenderer : MxRenderer {
     Float _shininess = 150.0f;
     Vector3 _lightDir{1.0f, 1.0f, 2.0f};
     
-    /* Spheres rendering */
-    GL::Mesh sphereMesh{NoCreate};
-    GL::Buffer sphereInstanceBuffer{NoCreate};
-    Shaders::Phong sphereShader{NoCreate};
-
     /**
      * Only set a single combined matrix in the shader, this way,
      * the shader only performs a single matrix multiply of the vertices, update the
@@ -205,6 +200,7 @@ struct MxUniverseRenderer : MxRenderer {
     /* Scene and drawable group must be constructed before camera and other
     scene objects */
     Containers::Pointer<Scene3D> _scene;
+    
     Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
 
 
@@ -214,12 +210,20 @@ struct MxUniverseRenderer : MxRenderer {
     /* Ground grid */
      Containers::Pointer<WireframeGrid> _grid;
 
-     /* Fluid simulation system */
-     Containers::Pointer<WireframeBox> _drawableBox;
+    /* Fluid simulation system */
+    Containers::Pointer<WireframeBox> _drawableBox;
 
     /* Camera helpers */
     Vector3 _defaultCamPosition{0.0f, 1.5f, 8.0f};
     Vector3 _defaultCamTarget{0.0f, 0.0f, 0.0f};
+    
+    /* Spheres rendering */
+    
+    Shaders::Phong sphereShader{NoCreate};
+    
+    GL::Buffer sphereInstanceBuffer{NoCreate};
+    
+    GL::Mesh sphereMesh{NoCreate};
 
     Vector3 center;
 
@@ -230,6 +234,8 @@ struct MxUniverseRenderer : MxRenderer {
 
 
     void setupCallbacks();
+    
+    ~MxUniverseRenderer();
 
 
 };

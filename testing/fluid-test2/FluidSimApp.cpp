@@ -58,33 +58,6 @@ static void engineStep();
 static int initArgon (const Vector3 &origin, const Vector3 &dim,
         int nParticles, double dt = 0.005, float temp = 100 );
 
-static const double BOUNDARY_SCALE = 1.05;
-
-static std::vector<Vector3> createCubicLattice(float length, float spacing) {
-
-    if(spacing > length) {
-        return {Vector3{(float)(length / 2.),(float)(length / 2.), (float)(length / 2.)}};
-    }
-
-    std::vector<Vector3> result;
-    int n = ceil(length / spacing);
-    float s = length / (n - 1);
-    //float l2 = length / 2;
-
-    for(int i = 0; i < n; ++i) {
-        for(int j = 0; j < n; ++j) {
-            for(int k = 0; k < n; ++k) {
-                float x = i * s;
-                float y = j * s;
-                float z = k * s;
-                //std::cout << "{" << x << ", " << y << ", " << z << "}\n";
-                result.push_back(Vector3{x, y, z});
-            }
-        }
-    }
-
-    return result;
-}
 
 #include <random>
 #include <iostream>

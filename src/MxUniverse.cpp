@@ -45,7 +45,7 @@ engine _Engine = {
 };
 
 // default to running universe.
-static uint32_t universe_flags = MxUniverse_Flags::MXU_RUNNING;
+static uint32_t universe_flags = MxUniverse_Flags::MX_RUNNING;
 
 
 CAPI_FUNC(struct engine*) engine_get()
@@ -253,13 +253,13 @@ HRESULT _MxUniverse_init(PyObject* m)
 
     u.def_static("start", []() -> void {
             UNIVERSE_CHECK();
-            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MXU_RUNNING, true));
+            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, true));
             return;
         }
     );
 
     u.def_static("stop", []() -> void {
-            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MXU_RUNNING, false));
+            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, false));
             return;
         }
     );
@@ -415,7 +415,9 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
 
     MxSimulator_Redraw();
     
-    print_performance_counters();
+    if(universe_flags & MxUniverse_Flags::MX_SHOW_PERF_STATS ) {
+        print_performance_counters();
+    }
 
     return S_OK;
 }

@@ -68,8 +68,6 @@ enum MxSimulator_Options {
 
 
 
-
-
 CAPI_DATA(PyTypeObject) MxSimulator_Type;
 
 struct CAPI_EXPORT MxSimulator {
@@ -334,7 +332,7 @@ struct CAPI_EXPORT MxSimulator {
     };
 
 
-    uint32_t flags = 0;
+    //uint32_t flags = 0;
 };
 
 
@@ -429,6 +427,10 @@ CAPI_FUNC(HRESULT) MxSimulator_Run();
 CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun();
 
 CAPI_FUNC(HRESULT) MxSimulator_Show();
+
+CAPI_FUNC(HRESULT) MxSimulator_Close();
+
+CAPI_FUNC(HRESULT) MxSimulator_Destroy();
 
 CAPI_FUNC(HRESULT) MxSimulator_Redraw();
 
