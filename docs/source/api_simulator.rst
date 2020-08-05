@@ -1,6 +1,11 @@
 Simulator
 ---------
 
+.. data:: version(str)
+
+   The current Mechanica version, as a string.
+
+
 .. class:: Simulator(object)
 
    The Simulator is the entry point to simulation, this is the very first object
@@ -37,10 +42,11 @@ Simulator
       universe time propagation.
       
 
-   .. staticmethod:: quit()
+   .. staticmethod:: close()
 
-      Terminates the message loop. The message loop is automatically terminated
-      when all the active windows close.
+      Closes the main window, but the application / simulation will continue to
+      run. 
+
 
    .. staticmethod:: show()
 

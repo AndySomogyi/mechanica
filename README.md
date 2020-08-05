@@ -19,6 +19,11 @@ course).
 History
 =======
 
+Version Alpha 0.0.6
+-------------------
+* lots of changes to simulation running / showing windows / closing windows, etc..
+* documentation updates
+
 Version Alpha 0.0.5 Dev 1
 -------------------------
 

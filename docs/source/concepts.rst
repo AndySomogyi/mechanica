@@ -20,10 +20,28 @@ the window, and start the operating system message loop, you can call the
 it displays the windows, but does not time step the simulation. The
 :meth:`Universe.start`, :meth:`Universe.step`, :meth:`Universe.stop` methods
 start the universe time evolution, perform a single time step, and stop the time
-evolution. If the universe is stopped, you can simplly call the
+evolution. If the universe is stopped, you can simply call the
 :meth:`Universe.start` method to continue where it was stopped. All methods to build
 and manipulate the universe are available either with the universe stopped or
 running.
+
+With ``run()``, the function will open the main window, run the simulation, and
+will return when the window closes. With ``irun()``, it will open the window,
+run the simulation, and return right away, and users can then interact with
+simulation objects whilst the simulation is running. Note, only works in the
+command line ``ipython``. 
+
+For convince, all the the running / showing / closing methods are aliased as
+top-level methods, i.e.::
+
+  >>> import mechanica as m  # import the package
+  >>> m.Simulator()          # initialize the simulator
+  >>> # create the model here
+  >>> ...
+  >>> m.irun()               # run in interactive mode (only for ipython console)
+  >>> m.run()                # display the window and run
+  >>> m.close()              # close the main window
+  >>> m.show()               # display the window
 
 
 
@@ -49,7 +67,7 @@ Making Things Move
 
 Newton's first law states that an object either remains at rest or continues to
 move at a constant velocity, unless acted upon by a force. That is true
-regaurdless if we are considering atoms or galaxies. In order make any object in
+regardless if we are considering atoms or galaxies. In order make any object in
 Mechanica move, we must apply a force to it. To make objects move, Mechanica
 sums up all of the forces that act on an object, and uses that to calculte the
 object's velocity and position. 
@@ -60,7 +78,7 @@ variety of built-in forces to enable common behaviors.
 Conservative forces are usually a kind of :class:`Potential` object, where the
 force is described in terms of it's potential energy function. Long-range,
 fluid, and most bonded interactions are examples of conservative potential
-energy fuction based forces. All potential based forces contibute to the total
+energy function based forces. All potential based forces contribute to the total
 potential energy of the system, and we can read the total potential energy
 either via the :attr:`Universe.potential_energy` attribute, or we can also read
 the potential energy of all objects of a type, via the type's
@@ -86,7 +104,7 @@ Controlling Temperature
 
 
 
-Right now, I have the concept of a ‘Potential’, these are objects that are specified in terms of potential function, and internally, the integrator does a bit of magic with them, and uses them calculate the conservative force that gets added to the total force. Things like bonds, angles, long-range non-bonded forces are all specified in terms of potentials. This works great for conservative forces, and is numerically actually faster then specifying a force function directly. Also, but specifying conservative forces as a potential, that lets me have both a ‘potential_energy’ and a ‘kinetic_energy’ attributes on the universe (and also the object type, i.e. if a user creates a ‘MyParticleType’, they can call MyParticleType.kinetic_energy and this returns the total kinetic energy of all objets of this type).  
+Right now, I have the concept of a ‘Potential’, these are objects that are specified in terms of potential function, and internally, the integrator does a bit of magic with them, and uses them calculate the conservative force that gets added to the total force. Things like bonds, angles, long-range non-bonded forces are all specified in terms of potentials. This works great for conservative forces, and is numerically actually faster then specifying a force function directly. Also, but specifying conservative forces as a potential, that lets me have both a ‘potential_energy’ and a ‘kinetic_energy’ attributes on the universe (and also the object type, i.e. if a user creates a ‘MyParticleType’, they can call MyParticleType.kinetic_energy and this returns the total kinetic energy of all objects of this type).  
 
 However, for non-conservative forces, like temperature, friction, etc, these are almost always defined as forces. We can associate a potential energy with a conservative force, but not a non-conservative (or random) force.
 
