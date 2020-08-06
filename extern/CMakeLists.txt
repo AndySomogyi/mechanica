@@ -75,10 +75,9 @@ add_subdirectory(Voroxx)
 
 
 # magnum / corrade want this
-if(WIN32)
-  set(BUILD_STATIC_UNIQUE_GLOBALS ON CACHE BOOL
+# stop it squawkign about global weak symbol thing. 
+set(BUILD_STATIC_UNIQUE_GLOBALS OFF CACHE BOOL
     "Do somethign with symbols to make them work on Windows" FORCE)
-endif()
 
 add_subdirectory(corrade)
 
@@ -98,7 +97,6 @@ set(WITH_ANYIMAGECONVERTER OFF CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_AUDIO             OFF CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_ANYSCENEIMPORTER  OFF CACHE BOOL "build Assimp importer" FORCE)
 set(WITH_PNGIMPORTER       OFF CACHE BOOL "build PNG importer"    FORCE)
-
 
 if(APPLE)
   message("building on apple")
@@ -122,9 +120,6 @@ elseif(WIN32)
 
   set(WITH_WINDOWLESSWGLAPPLICATION ON CACHE BOOL
     "Build WindowlessWglApplication library" FORCE)
-
-  set(BUILD_STATIC_UNIQUE_GLOBALS ON CACHE BOOL
-    "Do somethign with symbols to make them work on Windows" FORCE)
 
 endif()
 
