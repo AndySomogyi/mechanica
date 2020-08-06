@@ -23,8 +23,8 @@ a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_.
    You can run a Mechanica script in Spyder, just be aware that closing the
    window, followed by a ``m.show()`` will crash Python.
 
-   We reccomend the Jupyter Console ``ipython`` command line console until we
-   can resolve this bug. 
+   We reccomend the Jupyter Console *Qt Console* or *ipython* command line
+   console, or straight python  until we can resolve this bug. 
    
 
     
