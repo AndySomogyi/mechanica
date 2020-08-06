@@ -19,6 +19,15 @@ course).
 History
 =======
 
+
+Version Alpha 0.0.7
+-------------------
+* lots of changes related to running in Spyder. 
+* force windows of background process to forground
+* detect if running in IPython connsole -- use different message loop
+* fix re-entrancy bugs in ipython message loop. 
+* Spyder on Windows tested. 
+
 Version Alpha 0.0.6
 -------------------
 * lots of changes to simulation running / showing windows / closing windows, etc..
