@@ -28,6 +28,10 @@
 #include <Magnum/SceneGraph/Camera.h>
 #include <Magnum/SceneGraph/Drawable.h>
 
+#if defined(_WIN32)
+  #define GLFW_EXPOSE_NATIVE_WIN32
+  #include <GLFW/glfw3native.h>
+#endif
 
 #define MXGLFW_ERROR() { \
         const char* glfwErrorDesc = NULL; \
@@ -231,7 +235,26 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
+    // process initial messages.
+    GlfwApplication::mainLoopIteration();
+
+    // show the window
     show();
+
+    // process initial messages.
+    GlfwApplication::mainLoopIteration();
+
+#if defined(_WIN32)
+
+    std::fprintf(stderr, "set forground window \n");
+    GLFWwindow* wnd = window();
+    HWND hwnd = glfwGetWin32Window(wnd);
+    SetForegroundWindow(hwnd);
+#endif
+
+
+
+    // run while it's visible 
     while(GlfwApplication::mainLoopIteration() &&
         glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE))
     {
@@ -329,8 +352,114 @@ HRESULT MxGlfwApplication::setWindowAttribute(MxWindowAttributes attr, int val)
     MXGLFW_CHECK();
 }
 
+#ifdef _WIN32
+
+HRESULT ForceForgoundWindow1(GLFWwindow *wnd) {
+
+    std::fprintf(stderr, "ForceForgoundWindow1 \n");
+
+    HWND window = glfwGetWin32Window(wnd);
+
+    // This implementation registers a hot key (F22) and then
+    // triggers the hot key.  When receiving the hot key, we'll
+    // be in the foreground and allowed to move the target window
+    // into the foreground too.
+
+    //set_window_style(WS_POPUP);
+    //Init(NULL, gfx::Rect());
+
+    static const int kHotKeyId = 0x0000baba;
+    static const int kHotKeyWaitTimeout = 2000;
+
+    // Store the target window into our USERDATA for use in our
+    // HotKey handler.
+    RegisterHotKey(window, kHotKeyId, 0, VK_F22);
+
+    // If the calling thread is not yet a UI thread, call PeekMessage
+    // to ensure creation of its message queue.
+    MSG msg = { 0 };
+    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+
+    // Send the Hotkey.
+    INPUT hotkey = { 0 };
+    hotkey.type = INPUT_KEYBOARD;
+    hotkey.ki.wVk = VK_F22;
+    if (1 != SendInput(1, &hotkey, sizeof(hotkey))) {
+        std::cerr << "Failed to send input; GetLastError(): " << GetLastError();
+        return E_FAIL;
+    }
+
+    // There are scenarios where the WM_HOTKEY is not dispatched by the
+ // the corresponding foreground thread. To prevent us from indefinitely
+ // waiting for the hotkey, we set a timer and exit the loop.
+    SetTimer(window, kHotKeyId, kHotKeyWaitTimeout, NULL);
+
+    // Loop until we get the key or the timer fires.
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+
+        if (WM_HOTKEY == msg.message)
+            break;
+        if (WM_TIMER == msg.message) {
+            SetForegroundWindow(window);
+            break;
+        }
+    }
+
+    UnregisterHotKey(window, kHotKeyId);
+    KillTimer(window, kHotKeyId);
+
+    return S_OK;
+}
+
+
+void ForceForgoundWindow2(GLFWwindow* wnd)
+{
+    std::fprintf(stderr, "ForceForgoundWindow2 \n");
+
+    HWND hWnd = glfwGetWin32Window(wnd);
+
+    if (!::IsWindow(hWnd)) return;
+
+    //relation time of SetForegroundWindow lock
+    DWORD lockTimeOut = 0;
+    HWND  hCurrWnd = ::GetForegroundWindow();
+    DWORD dwThisTID = ::GetCurrentThreadId(),
+        dwCurrTID = ::GetWindowThreadProcessId(hCurrWnd, 0);
+
+    //we need to bypass some limitations from Microsoft :)
+    if (dwThisTID != dwCurrTID)
+    {
+        ::AttachThreadInput(dwThisTID, dwCurrTID, TRUE);
+
+        ::SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lockTimeOut, 0);
+        ::SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, 0, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+
+        ::AllowSetForegroundWindow(ASFW_ANY);
+    }
+
+    ::SetForegroundWindow(hWnd);
+
+    if (dwThisTID != dwCurrTID)
+    {
+        ::SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, (PVOID)lockTimeOut, SPIF_SENDWININICHANGE | SPIF_UPDATEINIFILE);
+        ::AttachThreadInput(dwThisTID, dwCurrTID, FALSE);
+    }
+}
+
+#endif
+
+
 HRESULT MxGlfwApplication::show()
 {
     glfwShowWindow(window());
+
+#ifdef _WIN32
+    if (!Mx_IsIpython()) {
+        ForceForgoundWindow1(window());
+    }
+#endif
+
     MXGLFW_CHECK();
 }

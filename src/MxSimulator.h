@@ -668,5 +668,7 @@ CAPI_FUNC(int) universe_init(const MxUniverseConfig &conf);
 
 CAPI_FUNC(HRESULT) example_argon(const MxUniverseConfig &conf);
 
+CAPI_FUNC(bool) Mx_IsIpython();
+
 
 #endif /* SRC_MXSIMULATOR_H_ */

@@ -42,10 +42,12 @@ MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
             _dpiScalingPolicy{DpiScalingPolicy::Default},
-            _windowless{false},
             threads{4},
-            queues{4} {
-    _windowFlags = MxSimulator::WindowFlags::Resizable | MxSimulator::WindowFlags::Focused;
+            queues{4},
+           _windowless{ false } {
+    _windowFlags = MxSimulator::WindowFlags::Resizable | 
+                   MxSimulator::WindowFlags::Focused   | 
+                   MxSimulator::WindowFlags::Hidden;  // make the window initially hidden 
 }
 
 
@@ -761,14 +763,20 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
 static void simulator_interactive_run() {
     std::cout << "entering " << MX_FUNCTION << std::endl;
     PYSIMULATOR_CHECK();
+
+    if (MxUniverse_Flag(MxUniverse_Flags::MX_POLLING_MSGLOOP)) {
+        return;
+    }
     
     // interactive run only works in terminal ipytythn.
     PyObject *ipy = CIPython_Get();
     const char* ipyname = ipy ? ipy->ob_type->tp_name : "NULL";
-    std::cout << "ipy type: " << ipyname << std::endl;
+    std::cerr << "ipy type: " << ipyname << std::endl;
     
     if(ipy && strcmp("TerminalInteractiveShell", ipy->ob_type->tp_name) == 0) {
         
+        std::cerr << "calling python interactive loop" << std::endl;
+
         // Try to import ipython
 
         /**
@@ -805,6 +813,8 @@ static void simulator_interactive_run() {
         py::object enable_gui = ip.attr("enable_gui");
 
         enable_gui("mechanica");
+
+        MxUniverse_SetFlag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP, true);
         
         // show the app
         Simulator->app->show();
@@ -816,7 +826,7 @@ static void simulator_interactive_run() {
     }
     
     Py_XDECREF(ipy);
-    std::cout << "leaving " << MX_FUNCTION << std::endl;
+    std::cerr << "leaving " << MX_FUNCTION << std::endl;
 }
 
 static void ipythonInputHook(py::args args) {
@@ -943,18 +953,24 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
 {
     SIMULATOR_CHECK();
 
-    Simulator->app->show();
+    std::fprintf(stderr, "checking for ipython \n");
+    if (Mx_IsIpython()) {
 
-    if(MxUniverse_Flag(MxUniverse_Flags::MX_RUNNING)) {
-        // TODO: add something to application to show window
+        if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
+            // ipython message loop, this exits right away
+            simulator_interactive_run(); 
+        }
+
+        std::fprintf(stderr, "in ipython, calling interactive \n");
+
+        Simulator->app->show();
+
         return S_OK;
+    } 
+    else {
+        std::fprintf(stderr, "not ipython, returning MxSimulator_Run \n");
+        return MxSimulator_Run();
     }
-
-    MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, false);
-
-    simulator_interactive_run();
-
-    return S_OK;
 }
 
 CAPI_FUNC(HRESULT) MxSimulator_Redraw()
@@ -1031,4 +1047,17 @@ CAPI_FUNC(HRESULT) MxSimulator_Destroy()
 {
     SIMULATOR_CHECK();
     return Simulator->app->destroy();
+}
+
+
+CAPI_FUNC(bool) Mx_IsIpython() {
+    PyObject* ipy = CIPython_Get();
+    bool result = false;
+
+    if (ipy && strcmp("TerminalInteractiveShell", ipy->ob_type->tp_name) == 0) {
+        result = true;
+    }
+
+    Py_XDECREF(ipy);
+    return result;
 }

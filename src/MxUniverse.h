@@ -98,6 +98,12 @@ enum MxUniverse_Flags {
     MX_RUNNING = 1 << 0,
 
     MX_SHOW_PERF_STATS = 1 << 1,
+
+    // in ipython message loop, monitor console
+    MX_IPYTHON_MSGLOOP = 1 << 2,
+
+    // standard polling message loop
+    MX_POLLING_MSGLOOP = 1 << 3,
 };
 
 /**
@@ -106,7 +112,7 @@ enum MxUniverse_Flags {
 CAPI_FUNC(int) MxUniverse_Flag(MxUniverse_Flags flag);
 
 /**
- * sets a flag value
+ * sets / clears a flag value
  */
 CAPI_FUNC(HRESULT) MxUniverse_SetFlag(MxUniverse_Flags flag, int value);
 
