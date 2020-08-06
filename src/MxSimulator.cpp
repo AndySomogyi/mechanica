@@ -761,47 +761,61 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
 static void simulator_interactive_run() {
     std::cout << "entering " << MX_FUNCTION << std::endl;
     PYSIMULATOR_CHECK();
+    
+    // interactive run only works in terminal ipytythn.
+    PyObject *ipy = CIPython_Get();
+    const char* ipyname = ipy ? ipy->ob_type->tp_name : "NULL";
+    std::cout << "ipy type: " << ipyname << std::endl;
+    
+    if(ipy && strcmp("TerminalInteractiveShell", ipy->ob_type->tp_name) == 0) {
+        
+        // Try to import ipython
 
-    Simulator->app->show();
+        /**
+         *        """
+            Registers the mechanica input hook with the ipython pt_inputhooks
+            class.
 
-    // Try to import ipython
+            The ipython TerminalInteractiveShell.enable_gui('name') method
+            looks in the registered input hooks in pt_inputhooks, and if it
+            finds one, it activtes that hook.
 
-    /**
-     *        """
-        Registers the mechanica input hook with the ipython pt_inputhooks
-        class.
+            To acrtivate the gui mode, call:
 
-        The ipython TerminalInteractiveShell.enable_gui('name') method
-        looks in the registered input hooks in pt_inputhooks, and if it
-        finds one, it activtes that hook.
+            ip = IPython.get_ipython()
+            ip.
+            """
+            import IPython.terminal.pt_inputhooks as pt_inputhooks
+            pt_inputhooks.register("mechanica", inputhook)
+         *
+         */
+        
+        py::object pt_inputhooks = py::module::import("IPython.terminal.pt_inputhooks");
+        py::object reg = pt_inputhooks.attr("register");
 
-        To acrtivate the gui mode, call:
+        py::cpp_function ih(ipythonInputHook);
+        reg("mechanica", ih);
 
-        ip = IPython.get_ipython()
-        ip.
-        """
-        import IPython.terminal.pt_inputhooks as pt_inputhooks
-        pt_inputhooks.register("mechanica", inputhook)
-     *
-     */
+        // import IPython
+        // ip = IPython.get_ipython()
+        py::object ipython = py::module::import("IPython");
+        py::object get_ipython = ipython.attr("get_ipython");
+        py::object ip = get_ipython();
 
+        py::object enable_gui = ip.attr("enable_gui");
 
-    py::object pt_inputhooks = py::module::import("IPython.terminal.pt_inputhooks");
-    py::object reg = pt_inputhooks.attr("register");
-
-    py::cpp_function ih(ipythonInputHook);
-    reg("mechanica", ih);
-
-    // import IPython
-    // ip = IPython.get_ipython()
-    py::object ipython = py::module::import("IPython");
-    py::object get_ipython = ipython.attr("get_ipython");
-    py::object ip = get_ipython();
-
-    py::object enable_gui = ip.attr("enable_gui");
-
-    enable_gui("mechanica");
-
+        enable_gui("mechanica");
+        
+        // show the app
+        Simulator->app->show();
+    }
+    else {
+        // not in ipython, so run regular run.
+        MxSimulator_Run();
+        return;
+    }
+    
+    Py_XDECREF(ipy);
     std::cout << "leaving " << MX_FUNCTION << std::endl;
 }
 
