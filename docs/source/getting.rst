@@ -13,19 +13,9 @@ a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_.
 
 
 .. warning::
-   Mechanica DOES NOT WORK CORRECTLY IN SPYDER ON WINDOWS. Spyder uses a
-   multi-process architecture, where user code is in a separate process, and
-   there is a bug with trying to re-show a Mechanica window after it has been
-   closed.
 
-   This bug has only been seen in Spyder.
-
-   You can run a Mechanica script in Spyder, just be aware that closing the
-   window, followed by a ``m.show()`` will crash Python.
-
-   We reccomend the Jupyter Console *Qt Console* or *ipython* command line
-   console, or straight python  until we can resolve this bug. 
-   
+   DO NOT CALL ``m.show()`` in Spyder, this will crash Python. If you close the
+   window and you want to re-dipslay it, call ``m.run()``. 
 
     
 .. _pip-install:
