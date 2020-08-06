@@ -12,11 +12,12 @@ Mechanica requires at least Python version 3.7.0, on Mac you can install Python
 a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_.
 
 
-.. warning::
+.. note::
 
-   DO NOT CALL ``m.show()`` in Spyder, this will crash Python. If you close the
-   window and you want to re-dipslay it, call ``m.run()``. 
-
+   Spyder has a pretty complex architecture, and Spyder support is new. We've
+   tried to test as best as we can, but this is alpha code, you may encounter
+   issues. 
+   
     
 .. _pip-install:
 
