@@ -9,13 +9,29 @@ available on GitHub, but these are not on PyPi because they are not
 "manylinux" compatible. 
 
 Mechanica requires at least Python version 3.7.0, on Mac you can install Python
-a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_. 
+a variety of ways, but we typicaly use Brew, `<https://brew.sh>`_.
 
+
+.. warning::
+   Mechanica DOES NOT WORK CORRECTLY IN SPYDER ON WINDOWS. Spyder uses a
+   multi-process architecture, where user code is in a separate process, and
+   there is a bug with trying to re-show a Mechanica window after it has been
+   closed.
+
+   This bug has only been seen in Spyder.
+
+   You can run a Mechanica script in Spyder, just be aware that closing the
+   window, followed by a ``m.show()`` will crash Python.
+
+   We reccomend the Jupyter Console ``ipython`` command line console until we
+   can resolve this bug. 
+   
+
+    
 .. _pip-install:
 
 Installing via pip for Mac and Windows
 --------------------------------------
-
 
 *Note*, we presently only have Windows and Mac PyPi packages. 
 
