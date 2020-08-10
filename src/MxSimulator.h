@@ -301,8 +301,6 @@ struct CAPI_EXPORT MxSimulator {
         
         std::string example;
         
-        int threads;
-
         int queues;
 
         int argc = 0;

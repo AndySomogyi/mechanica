@@ -42,7 +42,6 @@ MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
             _dpiScalingPolicy{DpiScalingPolicy::Default},
-            threads{4},
             queues{4},
            _windowless{ false } {
     _windowFlags = MxSimulator::WindowFlags::Resizable | 
@@ -198,8 +197,9 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
         conf.universeConfig.spaceGridSize = py::cast<Vector3i>(kwargs["cells"]);
     }
     
-    
-
+    if(kwargs.contains("threads")) {
+        conf.universeConfig.threads = py::cast<unsigned>(kwargs["threads"]);
+    }
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs);
@@ -584,13 +584,11 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     Magnum::Vector3d L = length / spaceGridSize;
 
-    double x[3];
-
     double   cutoff = conf.cutoff;
 
-    int  k, cid, pid, nr_runners = conf.threads;
+    int  nr_runners = conf.threads;
 
-    ticks tic, toc;
+    ticks tic;
 
     tic = getticks();
 
