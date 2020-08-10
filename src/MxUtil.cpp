@@ -247,6 +247,49 @@ static PyObject* random_point_sphere(int n) {
     }
 }
 
+static PyObject* random_point_solidsphere(int n) {
+
+    try {
+
+        std::uniform_real_distribution<double> uniform01(0.0, 1.0);
+
+        int nd = 2;
+
+        int typenum = NPY_DOUBLE;
+
+        npy_intp dims[] = {n,3};
+
+
+        PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+
+        double *data = (double*)PyArray_DATA(array);
+
+        for(int i = 0; i < n; ++i) {
+            double theta = 2 * M_PI * uniform01(CRandom);
+            double phi = acos(1 - 2 * uniform01(CRandom));
+            double r = std::cbrt(uniform01(CRandom));
+            double x = r * sin(phi) * cos(theta);
+            double y = r * sin(phi) * sin(theta);
+            double z = r * cos(phi);
+
+            data[i * 3 + 0] = x;
+            data[i * 3 + 1] = y;
+            data[i * 3 + 2] = z;
+        }
+
+        return (PyObject*)array;
+
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 static PyObject* random_point_solidcube(int n) {
 
     try {
@@ -301,6 +344,8 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
             return random_point_disk(n);
         case MxPointsType::SolidCube:
             return random_point_solidcube(n);
+        case MxPointsType::SolidSphere:
+            return random_point_solidsphere(n);
         default:
             PyErr_SetString(PyExc_ValueError, "invalid kind");
             return NULL;
