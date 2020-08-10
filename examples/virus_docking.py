@@ -55,7 +55,7 @@ b=Big(position=center, velocity=[0., 0., 0.])
 
 Virus(position=center+[0, 0, Big.radius + 0.75])
 
-harmonic = m.Potential.harmonic(K=500, r0=Big.radius)
+harmonic = m.Potential.harmonic(k=500, r0=Big.radius)
 
 for p in receptor_pts:
     r=Receptor(p)

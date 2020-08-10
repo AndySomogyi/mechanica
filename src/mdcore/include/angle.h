@@ -21,7 +21,10 @@
 #define INCLUDE_ANGLE_H
 #include "platform.h"
 
-MDCORE_BEGIN_DECLS
+/* Include configuration header */
+#include "mdcore_config.h"
+
+
 
 /* angle error codes */
 #define angle_err_ok                     0
@@ -33,21 +36,66 @@ MDCORE_BEGIN_DECLS
 CAPI_DATA(int) angle_err;
 
 
+typedef enum MxAngleFlags {
+
+    // none type angles are initial state, and can be
+    // re-assigned if ref count is 1 (only owned by engine).
+    ANGLE_NONE                   = 0,
+    ANGLE_ACTIVE                 = 1 << 0,
+    ANGLE_FOO   = 1 << 1,
+} MxAngleFlags;
+
+
 /** The angle structure */
-typedef struct angle {
+typedef struct MxAngle : PyObject {
+
+    uint32_t flags;
 
 	/* ids of particles involved */
 	int i, j, k;
 
 	/* id of the potential. */
-	int pid;
+	struct MxPotential *potential;
 
-} angle;
+} MxAngle;
+
+
+/**
+ * @brief Add a angle interaction to the engine.
+ *
+ * @param i The ID of the first #part.
+ * @param j The ID of the second #part.
+ * @param k The ID of the third #part.
+ * @param pid Index of the #potential for this bond.
+ *
+ * Note, the potential (pid) has to be previously added by engine_angle_addpot.
+ */
+CAPI_FUNC(MxAngle*) MxAngle_NewFromIds(int i , int j , int k , int pid );
+
+/**
+ * @brief Add a angle interaction to the engine.
+ *
+ * @param i The ID of the first #part.
+ * @param j The ID of the second #part.
+ * @param k The ID of the third #part.
+ * @param pot An existing potential.
+ *
+ * This checks if the potential is already in the engine, and if so, uses it,
+ * otherwise, adds the potential to the engine.
+ */
+CAPI_FUNC(MxAngle*) MxAngle_NewFromIdsAndPotential(int i , int j , int k , struct MxPotential *pot);
+
+
+/**
+ * Internal function to initialize the angle Python api.
+ */
+HRESULT _MxAngle_init(PyObject *module);
+
 
 
 /* associated functions */
-int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out );
-int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , double *epot_out );
+int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out );
+int angle_evalf ( struct MxAngle *a , int N , struct engine *e , FPTYPE *f , double *epot_out );
 
-MDCORE_END_DECLS
+
 #endif // INCLUDE_ANGLE_H

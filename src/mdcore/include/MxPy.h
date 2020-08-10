@@ -124,6 +124,9 @@ T arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
     }
 };
 
+template<>
+PyObject* arg<PyObject*>(const char* name, int index, PyObject *_args, PyObject *_kwargs);
+
 template<typename T>
 T arg(const char* name, int index, PyObject *_args, PyObject *_kwargs, T deflt) {
     try {

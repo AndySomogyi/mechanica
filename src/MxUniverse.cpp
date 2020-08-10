@@ -341,8 +341,7 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b)
         return S_OK;
     }
 
-    if(PyObject_IsInstance(a, (PyObject*)MxParticle_GetType()) &&
-       PyObject_IsInstance(b, (PyObject*)MxParticle_GetType())) {
+    if(MxParticle_Check(a) && MxParticle_Check(b)) {
         MxPyParticle *a_part = ((MxPyParticle *)a);
         MxPyParticle *b_part = ((MxPyParticle *)b);
 

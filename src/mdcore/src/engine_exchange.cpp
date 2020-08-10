@@ -45,9 +45,9 @@
 #include "space.h"
 #include <MxPotential.h>
 #include "runner.h"
-#include <MxBond.h>
+#include <bond.h>
 #include "rigid.h"
-#include "angle.h"
+#include <angle.h>
 #include "dihedral.h"
 #include "exclusion.h"
 #include "reader.h"

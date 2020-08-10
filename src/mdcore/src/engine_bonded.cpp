@@ -47,7 +47,7 @@
 #include "runner.h"
 #include <bond.h>
 #include "rigid.h"
-#include "angle.h"
+#include <angle.h>
 #include "dihedral.h"
 #include "exclusion.h"
 #include "reader.h"
@@ -964,7 +964,7 @@ int engine_bonded_sets ( struct engine *e , int max_sets ) {
 	/* Allocate the index lists. */
 	for ( k = 0 ; k < nr_sets ; k++ ) {
 		if ( ( e->sets[k].bonds = (struct MxBond *)malloc( sizeof(struct MxBond) * e->sets[k].nr_bonds ) ) == NULL ||
-				( e->sets[k].angles = (struct angle *)malloc( sizeof(struct angle) * e->sets[k].nr_angles ) ) == NULL ||
+				( e->sets[k].angles = (struct MxAngle *)malloc( sizeof(struct MxAngle) * e->sets[k].nr_angles ) ) == NULL ||
 				( e->sets[k].dihedrals = (struct dihedral *)malloc( sizeof(struct dihedral) * e->sets[k].nr_dihedrals ) ) == NULL ||
 				( e->sets[k].exclusions = (struct exclusion *)malloc( sizeof(struct exclusion) * e->sets[k].nr_exclusions ) ) == NULL ||
 				( e->sets[k].confl = (int *)malloc( sizeof(int) * bs.nconfl[k] ) ) == NULL )
@@ -1080,22 +1080,59 @@ int engine_dihedral_add ( struct engine *e , int i , int j , int k , int l , int
 
 }
 
-
 /**
- * @brief Add a angle interaction to the engine.
- *
- * @param e The #engine.
- * @param i The ID of the first #part.
- * @param j The ID of the second #part.
- * @param k The ID of the third #part.
- * @param pid Index of the #potential for this bond.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
+ * allocates a new angle, returns a pointer to it.
  */
+int engine_angle_alloc (struct engine *e , PyTypeObject *type, MxAngle **result ) {
+    
+    struct MxAngle *dummy;
+    
+    /* Check inputs. */
+    if ( e == NULL )
+    return error(engine_err_null);
+    /* if ( i > e->s.nr_parts || j > e->s.nr_parts )
+     return error(engine_err_range);
+     if ( pid > e->nr_anglepots )
+     return error(engine_err_range); */
+    
+    /* Do we need to grow the angles array? */
+    if ( e->nr_angles == e->angles_size ) {
+        e->angles_size *= 1.414;
+        if ( ( dummy = (struct MxAngle *)malloc( sizeof(struct MxAngle) * e->angles_size ) ) == NULL )
+        return error(engine_err_malloc);
+        memcpy( dummy , e->angles , sizeof(struct MxAngle) * e->nr_angles );
+        free( e->angles );
+        e->angles = dummy;
+    }
+    
+    ::memset(&e->angles[e->nr_angles], 0, sizeof(MxAngle));
+    
+    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
+    Py_INCREF(type);
+    
+    PyObject_INIT(&e->angles[e->nr_angles], type);
+    
+    if (PyType_IS_GC(type)) {
+        assert(0 && "should not get here");
+        //  _PyObject_GC_TRACK(obj);
+    }
+    
+    *result = &e->angles[e->nr_angles];
+    
+    // increase the ref count, as the engine owns it.
+    Py_INCREF(&e->angles[e->nr_angles]);
+    
+    e->nr_angles += 1;
+    
+    /* It's the end of the world as we know it. */
+    return engine_err_ok;
+}
 
+
+#if 0
 int engine_angle_add ( struct engine *e , int i , int j , int k , int pid ) {
 
-	struct angle *dummy;
+	struct MxAngle *dummy;
 
 	/* Check inputs. */
 	if ( e == NULL )
@@ -1108,9 +1145,9 @@ int engine_angle_add ( struct engine *e , int i , int j , int k , int pid ) {
 	/* Do we need to grow the angles array? */
 	if ( e->nr_angles == e->angles_size ) {
 		e->angles_size *= 1.414;
-		if ( ( dummy = (struct angle *)malloc( sizeof(struct angle) * e->angles_size ) ) == NULL )
+		if ( ( dummy = (struct MxAngle *)malloc( sizeof(struct MxAngle) * e->angles_size ) ) == NULL )
 			return error(engine_err_malloc);
-		memcpy( dummy , e->angles , sizeof(struct angle) * e->nr_angles );
+		memcpy( dummy , e->angles , sizeof(struct MxAngle) * e->nr_angles );
 		free( e->angles );
 		e->angles = dummy;
 	}
@@ -1119,13 +1156,14 @@ int engine_angle_add ( struct engine *e , int i , int j , int k , int pid ) {
 	e->angles[ e->nr_angles ].i = i;
 	e->angles[ e->nr_angles ].j = j;
 	e->angles[ e->nr_angles ].k = k;
-	e->angles[ e->nr_angles ].pid = pid;
+	//e->angles[ e->nr_angles ].pid = pid;
 	e->nr_angles += 1;
 
 	/* It's the end of the world as we know it. */
 	return engine_err_ok;
 
 }
+#endif
 
 /* Recursive quicksort for the exclusions. */
 static void exclusion_qsort (struct engine *e,  int l , int r ) {
@@ -1273,50 +1311,8 @@ int engine_exclusion_add ( struct engine *e , int i , int j ) {
 
 
 /**
- * @brief Add a bonded interaction to the engine.
- *
- * @param e The #engine.
- * @param i The ID of the first #part.
- * @param j The ID of the second #part.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
- */
-
-int engine_bond_add ( struct engine *e , int i , int j ) {
-
-	struct MxBond *dummy;
-
-	/* Check inputs. */
-	if ( e == NULL )
-		return error(engine_err_null);
-	/* if ( i > e->s.nr_parts || j > e->s.nr_parts )
-        return error(engine_err_range); */
-
-	/* Do we need to grow the bonds array? */
-	if ( e->nr_bonds == e->bonds_size ) {
-		e->bonds_size  *= 1.414;
-		if ( ( dummy = (struct MxBond *)malloc( sizeof(struct MxBond) * e->bonds_size ) ) == NULL )
-			return error(engine_err_malloc);
-		memcpy( dummy , e->bonds , sizeof(struct MxBond) * e->nr_bonds );
-		free( e->bonds );
-		e->bonds = dummy;
-	}
-
-	/* Store this bond. */
-	e->bonds[ e->nr_bonds ].i = i;
-	e->bonds[ e->nr_bonds ].j = j;
-	e->nr_bonds += 1;
-
-	/* It's the end of the world as we know it. */
-	return engine_err_ok;
-
-}
-
-
-/**
  * allocates a new bond, returns a pointer to it.
  */
-
 int engine_bond_alloc (struct engine *e , struct _typeobject *type, MxBond **result ) {
 
     struct MxBond *dummy;
@@ -1351,7 +1347,10 @@ int engine_bond_alloc (struct engine *e , struct _typeobject *type, MxBond **res
     }
 
     *result = &e->bonds[e->nr_bonds];
-
+    
+    // increase the ref count, as the engine owns it.
+    Py_INCREF(&e->bonds[e->nr_bonds]);
+    
     e->nr_bonds += 1;
 
     /* It's the end of the world as we know it. */
@@ -1376,7 +1375,7 @@ int engine_bonded_eval ( struct engine *e ) {
 	double epot_bond = 0.0, epot_angle = 0.0, epot_dihedral = 0.0, epot_exclusion = 0.0;
 	struct space *s;
 	struct dihedral dtemp;
-	struct angle atemp;
+	struct MxAngle atemp;
 	struct MxBond btemp;
 	struct exclusion etemp;
 	int nr_dihedrals = e->nr_dihedrals, nr_bonds = e->nr_bonds;
@@ -1654,7 +1653,7 @@ int engine_angle_eval ( struct engine *e ) {
 
 	double epot = 0.0;
 	struct space *s;
-	struct angle temp;
+	struct MxAngle temp;
 	int nr_angles = e->nr_angles, i, j;
 #ifdef HAVE_OPENMP
 	FPTYPE *eff;
@@ -1953,37 +1952,7 @@ int engine_bond_eval ( struct engine *e ) {
 }
 
 
-/**
- * @brief Add a bond potential.
- *
- * @param e The #engine.
- * @param p The #potential to add to the #engine.
- * @param i ID of particle type for this interaction.
- * @param j ID of second particle type for this interaction.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
- *
- * Adds the given bonded potential for pairs of particles of type @c i and @c j,
- * where @c i and @c j may be the same type ID.
- */
 
-int engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
-
-	/* check for nonsense. */
-	if ( e == NULL )
-		return error(engine_err_null);
-	if ( i < 0 || i >= e->max_type || j < 0 || j >= e->max_type )
-		return error(engine_err_range);
-
-	/* store the potential. */
-	e->p_bond[ i * e->max_type + j ] = p;
-	if ( i != j )
-		e->p_bond[ j * e->max_type + i ] = p;
-
-	/* end on a good note. */
-	return engine_err_ok;
-
-}
 
 
 /**
@@ -2023,40 +1992,7 @@ int engine_dihedral_addpot ( struct engine *e , struct MxPotential *p ) {
 }
 
 
-/**
- * @brief Add a angle potential.
- *
- * @param e The #engine.
- * @param p The #potential to add to the #engine.
- *
- * @return The ID of the added angle potential or < 0 on error (see #engine_err).
- */
 
-int engine_angle_addpot ( struct engine *e , struct MxPotential *p ) {
 
-	struct MxPotential **dummy;
-
-	/* check for nonsense. */
-	if ( e == NULL )
-		return error(engine_err_null);
-
-	/* Is there enough room in p_angle? */
-	if ( e->nr_anglepots == e->anglepots_size ) {
-		e->anglepots_size += 100;
-		if ( ( dummy = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size ) ) == NULL )
-			return engine_err_malloc;
-		memcpy( dummy , e->p_angle , sizeof(struct MxPotential *) * e->nr_anglepots );
-		free( e->p_angle );
-		e->p_angle = dummy;
-	}
-
-	/* store the potential. */
-	e->p_angle[ e->nr_anglepots ] = p;
-	e->nr_anglepots += 1;
-
-	/* end on a good note. */
-	return e->nr_anglepots - 1;
-
-}
 
 

@@ -33,6 +33,9 @@ CAPI_DATA(int) bond_err;
 
 
 typedef enum MxBondFlags {
+
+    // none type bonds are initial state, and can be
+    // re-assigned if ref count is 1 (only owned by engine).
     BOND_NONE                   = 0,
     BOND_ACTIVE                 = 1 << 0,
     BOND_FOO   = 1 << 1,

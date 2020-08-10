@@ -54,7 +54,7 @@
 #include "runner.h"
 #include <bond.h>
 #include "rigid.h"
-#include "angle.h"
+#include <angle.h>
 #include "dihedral.h"
 #include "exclusion.h"
 #include "reader.h"
@@ -84,7 +84,7 @@
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  */
-
+#if 0
 int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol , int rigidH ) {
 
     struct reader r;
@@ -614,6 +614,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
     return engine_err_ok;
         
     }
+#endif
 
 
 /**
@@ -633,6 +634,7 @@ int engine_read_xplor ( struct engine *e , int xplor , double kappa , double tol
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  */
 
+#if 0
 int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , int rigidH ) {
 
     struct reader r;
@@ -858,7 +860,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
                     }
                 
                 /* Add the potential to the angle. */
-                e->angles[k].pid = potid;
+                //e->angles[k].pid = potid;
                 
                 }
         
@@ -1225,6 +1227,7 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
     return engine_err_ok;
         
     }
+#endif
 
 
 /**
@@ -1236,6 +1239,8 @@ int engine_read_cpf ( struct engine *e , int cpf , double kappa , double tol , i
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  */
+
+#if 0
  
 int engine_read_psf ( struct engine *e , int psf , int pdb ) {
 
@@ -1608,7 +1613,7 @@ int engine_read_psf ( struct engine *e , int psf , int pdb ) {
     return engine_err_ok;
 
     }
-    
+#endif
 
 /**
  * @brief Dump the contents of the enginge to a PSF and PDB file.

@@ -326,7 +326,7 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 		return NULL;
 	}
 
-    p->flags =  POTENTIAL_R2 | POTENTIAL_HARMONIC ;
+    p->flags = POTENTIAL_HARMONIC & POTENTIAL_R2 ;
 
 	/* fill this potential */
 	potential_create_harmonic_K = K;
@@ -486,7 +486,7 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 		return NULL;
 	}
 
-    p->flags =  POTENTIAL_R | POTENTIAL_ANGLE | POTENTIAL_HARMONIC ;
+    p->flags = POTENTIAL_ANGLE | POTENTIAL_HARMONIC ;
 
 	/* Adjust a and b accordingly. */
 	if ( a < 0.0 )
@@ -495,10 +495,12 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 		b = M_PI;
 	left = cos(b);
 	right = cos(a);
-	if ( left - fabs(left)*sqrt(FPTYPE_EPSILON) < -1.0 )
-		left = -1.0 / ( 1.0 + sqrt(FPTYPE_EPSILON) );
-	if ( right + fabs(right)*sqrt(FPTYPE_EPSILON) > 1.0 )
-		right = 1.0 / ( 1.0 + sqrt(FPTYPE_EPSILON) );
+	
+    // the potential_init will automatically padd these already.
+    //if ( left - fabs(left)*sqrt(FPTYPE_EPSILON) < -1.0 )
+	//	left = -1.0 / ( 1.0 + sqrt(FPTYPE_EPSILON) );
+	//if ( right + fabs(right)*sqrt(FPTYPE_EPSILON) > 1.0 )
+	//	right = 1.0 / ( 1.0 + sqrt(FPTYPE_EPSILON) );
 
 	/* fill this potential */
 	potential_create_harmonic_angle_K = K;
@@ -509,7 +511,7 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 	}
 
 	/* return it */
-			return p;
+	return p;
 
 }
 
@@ -2060,15 +2062,16 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
 
         float r = py::cast<float>(args[0]);
         
+        float e = 0;
+        float f = 0;
+        
         if(self->flags & POTENTIAL_R2) {
-            r = r * r;
+            potential_eval (self , r*r, &e, &f);
         }
-
-        float e;
-        float f;
-
-        potential_eval (self , r, &e, &f);
-
+        else {
+            potential_eval_r(self, r, &e, &f);
+        }
+        
         return py::cast(e).release().ptr();
     }
     catch (const pybind11::builtin_exception &e) {
@@ -2193,17 +2196,15 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 
 static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
     std::cout << MX_FUNCTION << std::endl;
-    
-    try {
-        double r0 = arg<double>("r0", 3, _args, _kwargs);
-        
-        double range = r0 / 2;
-        double min = arg<double>("min", 0, _args, _kwargs, r0 - range);
-        double max = arg<double>("max", 1, _args, _kwargs, r0 + range);
-        double K = arg<double>("K", 2, _args, _kwargs);
 
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.0001 * (max-min));
-        return potential_create_harmonic( min, max, K, r0, tol);
+    try {
+        double k =     arg<double>("k", 0, _args, _kwargs);
+        double r0 =    arg<double>("r0", 1, _args, _kwargs);
+        double range = r0;
+        double min =   arg<double>("min", 2, _args, _kwargs, r0 - range);
+        double max =   arg<double>("max", 3, _args, _kwargs, r0 + range);
+        double tol =   arg<double>("tol", 4, _args, _kwargs, 0.01 * (max-min));
+        return potential_create_harmonic(min, max, k, r0, tol);
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2217,14 +2218,15 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
 
 static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
-    
+
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double K = arg<double>("K", 2, _args, _kwargs);
-        double theta0 = arg<double>("theta0", 3, _args, _kwargs);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 );
-        return potential_create_harmonic_angle( min, max, K, theta0, tol);
+        double k = arg<double>("k", 0, _args, _kwargs);
+        double theta0 = arg<double>("theta0", 1, _args, _kwargs);
+        double min = arg<double>("min", 2, _args, _kwargs, 0.0);
+        double max = arg<double>("max", 3, _args, _kwargs, M_PI);
+        double tol = arg<double>("tol", 4, _args, _kwargs, 0.005 * std::abs(max-min));
+
+        return potential_create_harmonic_angle( min, max, k, theta0, tol);
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2246,6 +2248,31 @@ static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *
         double delta = arg<double>("delta", 2, _args, _kwargs);
         double tol = arg<double>("tol", 3, _args, _kwargs, 0.001);
         return potential_create_harmonic_dihedral( k, n, delta, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+// potential_create_well(double k, double n, double r0, double tol, double min, double max)
+
+static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+
+    try {
+        double k =   arg<double>("k",   0, _args, _kwargs);
+        double n =   arg<double>("n",   1, _args, _kwargs);
+        double r0 =  arg<double>("r0",  2, _args, _kwargs);
+        double min = arg<double>("min", 3, _args, _kwargs, 0.0);
+        double max = arg<double>("max", 4, _args, _kwargs, 0.99 * r0);
+        double tol = arg<double>("tol", 5, _args, _kwargs, 0.01 * std::abs(min - max));
+
+        return potential_create_well(k, n, r0, tol, min, max);
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2318,6 +2345,12 @@ static PyMethodDef potential_methods[] = {
         (PyCFunction)_harmonic_dihedral,
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         ""
+    },
+    {
+        "well",
+        (PyCFunction)_well,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "Square well potential"
     },
     {NULL}
 };
@@ -2461,61 +2494,57 @@ HRESULT _MxPotential_init(PyObject *m)
     return S_OK;
 }
 
-MxPotential* potential_partial_create_particle_radius(
-    double epsilon, double min_rad, double max_rad, double tol)
+
+static double potential_create_well_k;
+static double potential_create_well_r0;
+static double potential_create_well_n;
+
+
+/* the potential functions */
+static double potential_create_well_f ( double r ) {
+    return potential_create_well_k/Power(-r + potential_create_well_r0,potential_create_well_n);
+}
+
+static double potential_create_well_dfdr ( double r ) {
+    return potential_create_well_k * potential_create_well_n *
+            Power(-r + potential_create_well_r0,-1 - potential_create_well_n);
+}
+
+static double potential_create_well_d6fdr6 ( double r ) {
+    return -(potential_create_well_k*(-5 - potential_create_well_n)*
+            (-4 - potential_create_well_n)*(-3 - potential_create_well_n)*
+            (-2 - potential_create_well_n)*(-1 - potential_create_well_n)*
+            potential_create_well_n*
+            Power(-r + potential_create_well_r0,-6 - potential_create_well_n));
+}
+
+
+MxPotential *potential_create_well(double k, double n, double r0, double tol, double min, double max)
 {
-    struct MxPotential *p;
-    
+    MxPotential *p = NULL;
+
     /* allocate the potential */
     if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
         error(potential_err_malloc);
         return NULL;
     }
-    
-    p->flags =  POTENTIAL_R2 | POTENTIAL_HARMONIC ;
-    p->a = min_rad;
-    p->b = max_rad;
-    p->alpha[0] = epsilon;
-    p->alpha[1] = tol;
-    p->create_func = potential_create_particle_radius;
-    
+
+    p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 ;
+
+    /* fill this potential */
+    potential_create_well_k = k;
+    potential_create_well_r0 = r0;
+    potential_create_well_n = n;
+
+    if (potential_init( p ,
+            &potential_create_well_f ,
+            &potential_create_well_dfdr ,
+            &potential_create_well_d6fdr6 ,
+            min , max , tol ) < 0 ) {
+        CAligned_Free(p);
+        return NULL;
+    }
 
     /* return it */
     return p;
-}
-
-/**
- * r is the distance of separation between both particles (measured from the
- * center of one particle to the center of the other particle).
- *
- * * ϵis the well depth and a measure of how strongly the two particles attract each other.
- *
- * * σ is the distance at which the intermolecular potential between the two particles is zero
- *
- * * σ gives a measurement of how close two nonbonding particles can get and is thus referred
- *   to as the van der Waals radius. It is equal to one-half of the internuclear distance
- *   between nonbonding particles.
- *
- * * r is the distance of separation between both particles (measured from the center
- *   of one particle to the center of the other particle).
- *
- * * Rmin is the distance where the potential reaches a minimum, i.e. the equilibrium
- *   position of the two particles.
- *
- * The relationship between the σ and Rmin is Rmin = 2^{1/6} * σ, or
- * σ = (Rmin) / (2^{1/6})
- *
- * A=4ϵσ^12
- * B=4ϵσ^6
- */
-MxPotential * potential_create_particle_radius(
-    MxPotential* partial_potential, MxParticleType* a, MxParticleType* b)
-{
-    double rmin = a->radius + b->radius;
-    double sigma = rmin / std::pow(2., (1./6.));
-    double A = 4. * partial_potential->alpha[0] * std::pow(sigma, 12);
-    double B = 4. * partial_potential->alpha[0] * std::pow(sigma, 6);
-    double tol = partial_potential->alpha[1];
-    
-    return potential_create_LJ126(partial_potential->a, partial_potential->b, A, B, tol);
 }

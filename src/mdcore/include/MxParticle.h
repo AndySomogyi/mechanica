@@ -249,7 +249,7 @@ CAPI_DATA(PyTypeObject) MxParticleType_Type;
  * Determines if this object is a particle type.
  * @returns TRUE if a symbol, FALSE otherwise.
  */
-CAPI_FUNC(int) MxParticleCheck(PyObject *o);
+CAPI_FUNC(int) MxParticle_Check(PyObject *o);
 
 
 /**

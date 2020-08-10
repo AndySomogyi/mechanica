@@ -51,14 +51,14 @@
 #include "errs.h"
 #include "fptype.h"
 #include "lock.h"
-#include <MxParticle.h>
-#include <space_cell.h>
+#include "MxParticle.h"
+#include "space_cell.h"
 #include "task.h"
 #include "queue.h"
 #include "space.h"
-#include <MxPotential.h>
+#include "MxPotential.h"
 #include "runner.h"
-#include <bond.h>
+#include "bond.h"
 #include "rigid.h"
 #include "angle.h"
 #include "dihedral.h"
@@ -2237,19 +2237,13 @@ int engine_finalize ( struct engine *e ) {
 			for ( k = j ; k < e->nr_types ; k++ ) {
 				if ( e->p[ j*e->max_type + k ] != NULL )
 					potential_clear( e->p[ j*e->max_type + k ] );
-				if ( e->p_bond[ j*e->max_type + k ] != NULL )
-					potential_clear( e->p_bond[ j*e->max_type + k ] );
 			}
-		for ( k = 0 ; k < e->nr_anglepots ; k++ )
-			potential_clear( e->p_angle[k] );
+
 		for ( k = 0 ; k < e->nr_dihedralpots ; k++ )
 			potential_clear( e->p_dihedral[k] );
 		free( e->p );
 	}
-	if ( e->p_bond != NULL )
-		free( e->p_bond );
-	if ( e->p_angle != NULL )
-		free( e->p_angle );
+
 	if ( e->p_dihedral != NULL )
 		free( e->p_dihedral );
 
@@ -2362,7 +2356,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 
     /* Init the angles array. */
     e->angles_size = 100;
-    if ( ( e->angles = (struct angle *)malloc( sizeof( struct angle ) * e->angles_size ) ) == NULL )
+    if ( ( e->angles = (struct MxAngle *)malloc( sizeof( struct MxAngle ) * e->angles_size ) ) == NULL )
         return error(engine_err_malloc);
     e->nr_angles = 0;
 
@@ -2381,14 +2375,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
     bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
-    if ( (e->p_bond = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->max_type * e->max_type )) == NULL)
-        return error(engine_err_malloc);
-    bzero( e->p_bond , sizeof(struct MxPotential *) * e->max_type * e->max_type );
-    e->anglepots_size = 100;
-    if ( (e->p_angle = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->anglepots_size )) == NULL)
-        return error(engine_err_malloc);
-    bzero( e->p_angle , sizeof(struct MxPotential *) * e->anglepots_size );
-    e->nr_anglepots = 0;
+
+
     e->dihedralpots_size = 100;
     if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)
         return error(engine_err_malloc);

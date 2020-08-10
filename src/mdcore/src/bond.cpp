@@ -69,7 +69,6 @@ const char *bond_err_msg[2] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered."
 	};
-    
 
 /**
  * @brief Evaluate a list of bonded interactoins
@@ -89,7 +88,7 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct MxPotential *pot, **pots;
+    struct MxPotential *pot;
     struct MxBond *b;
     FPTYPE r2, w;
 #if defined(VECTORIZE)
@@ -112,7 +111,6 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
         
     /* Get local copies of some variables. */
     s = &e->s;
-    pots = e->p_bond;
     partlist = s->partlist;
     celllist = s->celllist;
     ld_pots = e->max_type;
@@ -142,9 +140,6 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
             
         /* Get the potential. */
         pot = b->potential;
-        if(!pot) {
-            pot = pots[ pj->typeId*ld_pots + pi->typeId ];
-        }
         if (!pot) {
             continue;
         }
@@ -301,7 +296,7 @@ int bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , doubl
     struct space *s;
     struct MxParticle *pi, *pj, **partlist;
     struct space_cell **celllist;
-    struct MxPotential *pot, **pots;
+    struct MxPotential *pot;
     FPTYPE r2, w;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
@@ -323,7 +318,6 @@ int bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , doubl
         
     /* Get local copies of some variables. */
     s = &e->s;
-    pots = e->p_bond;
     partlist = s->partlist;
     celllist = s->celllist;
     ld_pots = e->max_type;
@@ -346,7 +340,7 @@ int bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , doubl
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ pj->typeId*ld_pots + pi->typeId ] ) == NULL )
+        if ( ( pot = b[bid].potential ) == NULL )
             continue;
     
         /* get the distance between both particles */
@@ -513,21 +507,42 @@ static int bond_init(MxBond *self, PyObject *args, PyObject *kwargs) {
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        PyObject *p1  = arg<PyObject*>("p1", 0, args, kwargs);
+        PyObject *pot  = arg<PyObject*>("potential", 0, args, kwargs);
+        PyObject *p1  = arg<PyObject*>("p1", 1, args, kwargs);
+        PyObject *p2  = arg<PyObject*>("p2", 2, args, kwargs);
+        
+        double half_life = arg<double>("half_life", 3, args, kwargs, std::numeric_limits<double>::max());
+        double bond_energy = arg<double>("bond_energy", 4, args, kwargs, std::numeric_limits<double>::max());
+        uint32_t flags = arg<uint32_t>("flags", 5, args, kwargs, 0);
+        
+        if(PyObject_IsInstance(pot, (PyObject*)&MxPotential_Type) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "potential is not a instance of Potential");
+            return -1;
+        }
+        
+        if(MxParticle_Check(p1) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "p1 is not a instance of Particle");
+            return -1;
+        }
+        
+        if(MxParticle_Check(p2) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "p2 is not a instance Particle");
+            return -1;
+        }
+        
+        return _bond_init(self, flags, ((MxPyParticle*)p1)->id, ((MxPyParticle*)p2)->id,
+                   half_life, bond_energy, (MxPotential*)pot);
 
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
+        return -1;
     }
     catch(pybind11::error_already_set &e){
         e.restore();
-        return NULL;
+        return -1;
     }
-
-
     return 0;
-
 }
 
 PyTypeObject MxBond_Type = {
@@ -630,3 +645,4 @@ CAPI_FUNC(MxBond*) MxBond_New(uint32_t flags, int32_t i, int32_t j,
 
     return bond;
 }
+

@@ -17,6 +17,8 @@
  * 
  ******************************************************************************/
 
+#include <angle.h>
+
 /* Include configuration header */
 #include "mdcore_config.h"
 
@@ -49,7 +51,10 @@
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"
-#include "angle.h"
+#include "MxPy.h"
+
+#include <iostream>
+
 
 
 /* Global variables. */
@@ -65,6 +70,12 @@ const char *angle_err_msg[2] = {
 	"Nothing bad happened.",
     "An unexpected NULL pointer was encountered."
 	};
+
+
+static int angle_init(MxAngle*, PyObject *, PyObject *);
+
+static MxAngle *angle_alloc(PyTypeObject *type, Py_ssize_t);
+
     
 
 /**
@@ -78,9 +89,9 @@ const char *angle_err_msg[2] = {
  * @return #angle_err_ok or <0 on error (see #angle_err)
  */
  
-int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out ) {
+int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out ) {
 
-    int aid, pid, pjd, pkd, k, l, *loci, *locj, *lock, shift;
+    int aid, pid, pjd, pkd, k, *loci, *locj, *lock, shift;
     double h[3], epot = 0.0;
     struct space *s;
     struct MxParticle *pi, *pj, *pk, **partlist;
@@ -88,7 +99,6 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
     struct MxPotential *pot;
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
     FPTYPE rji[3], rjk[3], inji, injk, dprod;
-    struct MxPotential **pots;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
     int icount = 0;
@@ -107,7 +117,6 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
         
     /* Get local copies of some variables. */
     s = &e->s;
-    pots = e->p_angle;
     partlist = s->partlist;
     celllist = s->celllist;
     for ( k = 0 ; k < 3 ; k++ )
@@ -130,7 +139,7 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ a[aid].pid ] ) == NULL )
+        if ( ( pot = a[aid].potential) == NULL )
             continue;
     
         /* get the particle positions relative to pj's cell. */
@@ -323,7 +332,7 @@ int angle_eval ( struct angle *a , int N , struct engine *e , double *epot_out )
  * @return #angle_err_ok or <0 on error (see #angle_err)
  */
  
-int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , double *epot_out ) {
+int angle_evalf ( struct MxAngle *a , int N , struct engine *e , FPTYPE *f , double *epot_out ) {
 
     int aid, pid, pjd, pkd, k, *loci, *locj, *lock, shift;
     double h[3], epot = 0.0;
@@ -334,7 +343,7 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
     FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
     FPTYPE t1, t10, t11, t12, t13, t21, t22, t23, t24, t25, t26, t27, t3,
         t5, t6, t7, t8, t9, t4, t14, t2;
-    struct MxPotential **pots;
+
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
@@ -353,7 +362,6 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
         
     /* Get local copies of some variables. */
     s = &e->s;
-    pots = e->p_angle;
     partlist = s->partlist;
     celllist = s->celllist;
     for ( k = 0 ; k < 3 ; k++ )
@@ -376,7 +384,7 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
             continue;
             
         /* Get the potential. */
-        if ( ( pot = pots[ a[aid].pid ] ) == NULL )
+        if ( ( pot = a[aid].potential ) == NULL )
             continue;
     
         /* get the particle positions relative to pj's cell. */
@@ -547,7 +555,138 @@ int angle_evalf ( struct angle *a , int N , struct engine *e , FPTYPE *f , doubl
     /* We're done here. */
     return angle_err_ok;
     
+}
+
+MxAngle* MxAngle_NewFromIds(int i, int j, int k, int pid)
+{
+}
+
+MxAngle* MxAngle_NewFromIdsAndPotential(int i, int j, int k,
+        struct MxPotential *pot)
+{
+}
+
+
+
+PyTypeObject MxAngle_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "Angle",
+    .tp_basicsize = sizeof(MxAngle),
+    .tp_itemsize =       0,
+    .tp_dealloc =        0,
+    .tp_print =          0,
+    .tp_getattr =        0,
+    .tp_setattr =        0,
+    .tp_as_async =       0,
+    .tp_repr =           0,
+    .tp_as_number =      0,
+    .tp_as_sequence =    0,
+    .tp_as_mapping =     0,
+    .tp_hash =           0,
+    .tp_call =           0,
+    .tp_str =            0,
+    .tp_getattro =       0,
+    .tp_setattro =       0,
+    .tp_as_buffer =      0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = "Custom objects",
+    .tp_traverse =       0,
+    .tp_clear =          0,
+    .tp_richcompare =    0,
+    .tp_weaklistoffset = 0,
+    .tp_iter =           0,
+    .tp_iternext =       0,
+    .tp_methods =        0,
+    .tp_members =        0,
+    .tp_getset =         0,
+    .tp_base =           0,
+    .tp_dict =           0,
+    .tp_descr_get =      0,
+    .tp_descr_set =      0,
+    .tp_dictoffset =     0,
+    .tp_init =           (initproc)angle_init,
+    .tp_alloc =          (allocfunc)angle_alloc,
+    .tp_new =            PyType_GenericNew,
+    .tp_free =           0,
+    .tp_is_gc =          0,
+    .tp_bases =          0,
+    .tp_mro =            0,
+    .tp_cache =          0,
+    .tp_subclasses =     0,
+    .tp_weaklist =       0,
+    .tp_del =            0,
+    .tp_version_tag =    0,
+    .tp_finalize =       0,
+};
+
+HRESULT _MxAngle_init(PyObject *module)
+{
+    if (PyType_Ready((PyTypeObject*)&MxAngle_Type) < 0) {
+        std::cout << "could not initialize MxAngle_Type " << std::endl;
+        return E_FAIL;
     }
 
 
+    Py_INCREF(&MxAngle_Type);
+    if (PyModule_AddObject(module, "Angle", (PyObject *)&MxAngle_Type) < 0) {
+        Py_DECREF(&MxAngle_Type);
+        return E_FAIL;
+    }
 
+    return S_OK;
+}
+
+int angle_init(MxAngle *self, PyObject *args, PyObject *kwargs) {
+    
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        PyObject *pot  = arg<PyObject*>("potential", 0, args, kwargs);
+        PyObject *p1  = arg<PyObject*>("p1", 1, args, kwargs);
+        PyObject *p2  = arg<PyObject*>("p2", 2, args, kwargs);
+        PyObject *p3  = arg<PyObject*>("p3", 3, args, kwargs);
+        
+        
+        if(PyObject_IsInstance(pot, (PyObject*)&MxPotential_Type) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "potential is not a instance of Potential");
+            return -1;
+        }
+        
+        if(MxParticle_Check(p1) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "p1 is not a instance of Particle");
+            return -1;
+        }
+        
+        if(MxParticle_Check(p2) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "p2 is not a instance Particle");
+            return -1;
+        }
+        
+        if(MxParticle_Check(p3) <= 0) {
+            PyErr_SetString(PyExc_TypeError, "p3 is not a instance Particle");
+            return -1;
+        }
+        
+        self->potential = (MxPotential*)pot;
+        self->i = ((MxPyParticle*)p1)->id;
+        self->j = ((MxPyParticle*)p2)->id;
+        self->k = ((MxPyParticle*)p3)->id;
+        
+        Py_XINCREF(pot);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return -1;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return -1;
+    }
+    return 0;
+}
+
+MxAngle *angle_alloc(PyTypeObject *type, Py_ssize_t) {
+    MxAngle *result = NULL;
+    uint32_t err = engine_angle_alloc(&_Engine, type, &result);
+    return result;
+}

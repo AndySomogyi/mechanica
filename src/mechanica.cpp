@@ -207,9 +207,28 @@ static PyObject * moduleinit(void)
     //pybind11::module math = rootModule.def_submodule("math");
 
 
-    //magnum::math(m, math);
-
+    // Create the Magnum math objects and put them in the top-level Mechanica
+    // module
     magnum::math(rootModule, math);
+    
+    // grab the Magnum color3 and color4 pybind types, and add some new constructors
+    // to them, to make colors based on name.
+
+    pybind11::object o = (pybind11::object)rootModule.attr("Color3");
+    
+    pybind11::class_<Magnum::Color3> color3(o);
+    
+    color3.def(pybind11::init([](std::string arg) -> Magnum::Color3 {
+        return Color3_Parse(arg);
+    }));
+    
+    
+    pybind11::class_<Magnum::Color4> color4((pybind11::object)rootModule.attr("Color4"));
+
+    color4.def(pybind11::init([](std::string arg) -> Magnum::Color4 {
+        return Magnum::Color4(Color3_Parse(arg));
+    }));
+
 
     _MxUtil_init(m);
     
@@ -246,6 +265,8 @@ static PyObject * moduleinit(void)
     _MxForces_init(m);
 
     _MxBond_init(m);
+    
+    _MxAngle_init(m);
 
     mechanicaModule = m;
 

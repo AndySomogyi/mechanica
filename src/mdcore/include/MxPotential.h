@@ -167,45 +167,20 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e,
 
 CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
 
-
 /**
- * @brief partially Creates a #potential representing a 12-6 Lennard-Jones potential
+ * Creates a square well potential of the form:
  *
- * squirrely design, but we want to partially create one of these based on just
- * sigma, the interaction strength, and fully create them when we bind them to
- * particles. We do this to keep the 'bind' idea consistent for the public API.
+ * k/(r0 - r)^n
  *
- * the partial created potential has the epsilon, min max params, but we hold
- * off with the particle radii untill we bind them.
+ * @param double k
+ * @param double n,
+ * @param double r0 ,
+ * @param double tol,
+ * @param double min,
+ * @param double max
  */
-CAPI_FUNC(struct MxPotential *) potential_partial_create_particle_radius (
-    double sigma, double min_rad, double max_rad, double tol );
-
-
-/**
- * @brief partially Creates a #potential representing a 12-6 Lennard-Jones potential
- *
- * squirrely design, but we want to partially create one of these based on just
- * sigma, the interaction strength, and fully create them when we bind them to
- * particles. We do this to keep the 'bind' idea consistent for the public API.
- *
- * @param a particle type a
- * @param b particle type b
- * @param sigma: strength of the interaction
- * @param min_rad The smallest radius for which the potential will be constructed.
- * @param max_rad The largest radius for which the potential will be constructed.
- * @param tol The tolerance to which the interpolation should match the exact
- *      potential.
- *
- * @return A newly-allocated #potential representing the potential
- *      @f$ \left( \frac{A}{r^{12}} - \frac{B}{r^6} \right) @f$ in @f$[a,b]@f$
- *      or @c NULL on error (see #potential_err).
- */
-CAPI_FUNC(struct MxPotential *) potential_create_particle_radius (
-    struct MxPotential *partial_potential,
-    struct MxParticleType *a, struct MxParticleType *b );
-
-
+CAPI_FUNC(struct MxPotential *) potential_create_well ( double k , double n, double r0 ,
+        double tol, double min, double max);
 
 /* These functions are now all in potential_eval.h. */
 /*

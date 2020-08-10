@@ -1070,9 +1070,9 @@ HRESULT _MxParticle_init(PyObject *m)
     return  engine_particle_base_init(m);
 }
 
-int MxParticleCheck(PyObject *o)
+int MxParticle_Check(PyObject *o)
 {
-    return -1;
+    return PyObject_IsInstance(o, (PyObject*)MxParticle_GetType());
 }
 
 MxPyParticle* MxPyParticle_New(MxParticle *data)

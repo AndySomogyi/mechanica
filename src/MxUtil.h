@@ -28,6 +28,8 @@ Magnum::Color3 Color3_Parse(const std::string &str);
 
 PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs);
 
+extern const char* MxColor3Names[];
+
 
 HRESULT _MxUtil_init(PyObject *m);
 

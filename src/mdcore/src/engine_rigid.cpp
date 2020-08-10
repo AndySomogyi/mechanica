@@ -47,7 +47,7 @@
 #include "runner.h"
 #include <bond.h>
 #include "rigid.h"
-#include "angle.h"
+#include <angle.h>
 #include "dihedral.h"
 #include "exclusion.h"
 #include "reader.h"

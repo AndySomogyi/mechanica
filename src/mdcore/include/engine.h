@@ -184,7 +184,7 @@ typedef struct engine {
     static struct MxParticleType *types;
 
 	/** The interaction matrix */
-	struct MxPotential **p, **p_bond, **p_angle, **p_dihedral;
+	struct MxPotential **p, **p_dihedral;
 
 	/** The explicit electrostatic potential. */
 	struct MxPotential *ep;
@@ -243,10 +243,10 @@ typedef struct engine {
 	double tol_rigid;
 
 	/** List of angles. */
-	struct angle *angles;
+	struct MxAngle *angles;
 
 	/** Nr. of angles. */
-	int nr_angles, angles_size, nr_anglepots, anglepots_size;
+	int nr_angles, angles_size;
 
 	/** List of dihedrals. */
 	struct dihedral *dihedrals;
@@ -306,7 +306,7 @@ typedef struct engine_set {
 
 	/* Lists of ID of the relevant bonded types. */
 	struct MxBond *bonds;
-	struct angle *angles;
+	struct MxAngle *angles;
 	struct dihedral *dihedrals;
 	struct exclusion *exclusions;
 
@@ -336,12 +336,43 @@ typedef struct engine_comm {
 CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
 CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i );
 CAPI_FUNC(int) engine_advance ( struct engine *e );
-CAPI_FUNC(int) engine_angle_addpot ( struct engine *e , struct MxPotential *p );
+
+
+/**
+ * allocates a new angle, returns a pointer to it.
+ */
+CAPI_FUNC(int) engine_angle_alloc (struct engine *e , PyTypeObject *type, struct MxAngle **result );
+
+/**
+ * @brief Add a angle potential.
+ *
+ * @param e The #engine.
+ * @param p The #potential to add to the #engine.
+ *
+ * @return The ID of the added angle potential or < 0 on error (see #engine_err).
+ */
+//CAPI_FUNC(int) engine_angle_addpot ( struct engine *e , struct MxPotential *p );
+
+/**
+ * @brief Add a angle interaction to the engine.
+ *
+ * @param e The #engine.
+ * @param i The ID of the first #part.
+ * @param j The ID of the second #part.
+ * @param k The ID of the third #part.
+ * @param pid Index of the #potential for this bond.
+ *
+ * Note, the potential (pid) has to be previously added by engine_angle_addpot.
+ *
+ * @return #engine_err_ok or < 0 on error (see #engine_err).
+ */
 CAPI_FUNC(int) engine_angle_add ( struct engine *e , int i , int j , int k , int pid );
+
+
 CAPI_FUNC(int) engine_angle_eval ( struct engine *e );
 CAPI_FUNC(int) engine_barrier ( struct engine *e );
-CAPI_FUNC(int) engine_bond_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
-CAPI_FUNC(int) engine_bond_add ( struct engine *e , int i , int j );
+
+
 CAPI_FUNC(int) engine_bond_eval ( struct engine *e );
 CAPI_FUNC(int) engine_bonded_eval ( struct engine *e );
 CAPI_FUNC(int) engine_bonded_eval_sets ( struct engine *e );
