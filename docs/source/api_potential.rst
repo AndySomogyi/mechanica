@@ -82,7 +82,7 @@ A potential can be treated just like any python callable object to evaluate it::
 
 
 
-      .. staticmethod:: wall(k, n, r0, [min], [max], [tol])
+      .. staticmethod:: well(k, n, r0, [min], [max], [tol])
 
          Creates a continuous square well potential. Usefull for binding a
          particle to a region.
@@ -117,7 +117,7 @@ A potential can be treated just like any python callable object to evaluate it::
         ...           fontsize=16, color='black')
 
 
-      .. figure:: square_well.png
+      .. figure:: square_well_plot.png
          :width: 500px
          :align: center
          :alt: alternate text
