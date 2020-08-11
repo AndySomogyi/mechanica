@@ -18,6 +18,13 @@ course).
 
 History
 =======
+Version Alpha 0.0.8
+-------------------
+* explicit Bond and Angle objects 
+* new example apps 
+* new square well potential to model constrained particles
+* bug fixes in potential
+* thread count in Simulator init
 
 
 Version Alpha 0.0.7
