@@ -2177,10 +2177,10 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double q = arg<double>("q", 2, _args, _kwargs);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        double q = arg<double>("q", 0, _args, _kwargs);
+        double min = arg<double>("min", 1, _args, _kwargs, 0.01);
+        double max = arg<double>("max", 2, _args, _kwargs, 2);
+        double tol = arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
         return potential_create_Coulomb( min, max, q, tol);
     }
     catch (const std::exception &e) {

@@ -4,30 +4,30 @@ import numpy as np
 # potential cutoff distance
 cutoff = 8
 
-receptor_count = 5000
+receptor_count = 10000
 
 # dimensions of universe
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator, don't load any example
-m.Simulator(example="", dim=dim, cutoff=cutoff, cells=[4, 4, 4])
+m.Simulator(example="", dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
 
 class Nucleus(m.Particle):
     mass = 500000
     radius = 1
 
 class Receptor(m.Particle):
-    mass = 0.5
-    radius = 0.1
+    mass = 0.2
+    radius = 0.05
     target_temperature=1
-    #xsdynamics = m.Overdamped
+    #dynamics = m.Overdamped
 
 # locations of initial receptor positions
 receptor_pts = m.random_point(m.SolidSphere, receptor_count) * 5  + center
 
-pot_nr = m.Potential.well(k=10, n=3, r0=7)
-pot_rr = m.Potential.soft_sphere(kappa=2, epsilon=0, r0=0.5, eta=2, tol=0.05, min=0.01, max=4)
+pot_nr = m.Potential.well(k=15, n=3, r0=7)
+pot_rr = m.Potential.soft_sphere(kappa=15, epsilon=0, r0=0.3, eta=2, tol=0.05, min=0.01, max=1)
 
 # bind the potential with the *TYPES* of the particles
 m.bind(pot_rr, Receptor, Receptor)
