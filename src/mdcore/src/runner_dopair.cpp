@@ -232,7 +232,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-                    potential_eval( pot , r2 , &e , &f );
+                    potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f );
                 #endif
 
                 /* update the forces */
@@ -477,7 +477,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-                    potential_eval( pot , r2 , &e , &f );
+                    potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f );
                 #endif
 
                 /* update the forces */

@@ -48,6 +48,8 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
 # endif
 #endif
 
+#include <iostream>
+
     
 /** 
  * @brief Evaluates the given potential at the given point (interpolated).
@@ -65,7 +67,7 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
  */
 
 __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
-
+    
     int ind, k;
     FPTYPE x, ee, eff, *c, r;
     
@@ -74,21 +76,21 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     
     /* is r in the house? */
     /* if ( r < p->a || r > p->b )
-        printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
+     printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
     
     /* compute the index */
     ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
     
     /* if ( ind > p->n ) {
-        printf("potential_eval: r=%.18e.\n",r);
-        fflush(stdout);
-        } */
-            
+     printf("potential_eval: r=%.18e.\n",r);
+     fflush(stdout);
+     } */
+    
     /* get the table offset */
     c = &(p->c[ind * potential_chunk]);
     
     /* adjust x to the interval */
-    x = (r - c[0]) * c[1];     
+    x = (r - c[0]) * c[1];
     
     /* compute the potential and its derivative */
     ee = c[2] * x + c[3];
@@ -96,12 +98,58 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     for ( k = 4 ; k < potential_chunk ; k++ ) {
         eff = eff * x + ee;
         ee = ee * x + c[k];
-        }
-
+    }
+    
     /* store the result */
     *e = ee; *f = eff * c[1] / r;
-        
+    
+}
+
+__attribute__ ((always_inline)) INLINE void potential_eval_scaled(
+    struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
+    
+    unsigned ind, k;
+    FPTYPE x, ee, eff, *c, r;
+    
+    /* Get r for the right type. */
+    r = FPTYPE_SQRT(r2);
+    
+    if(p->flags & POTENTIAL_SCALED) {
+        r = r / (ri + rj);
     }
+    
+    /* is r in the house? */
+    /* if ( r < p->a || r > p->b )
+     printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
+    
+    /* compute the index */
+    ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
+    
+    if ( ind > p->n ) {
+        std::cerr << "potential_eval particle out of range, scaled r: " <<
+           r << ", min: " << p->a << ", max: " << p->b << std::endl;
+        return;
+    }
+    
+    /* get the table offset */
+    c = &(p->c[ind * potential_chunk]);
+    
+    /* adjust x to the interval */
+    x = (r - c[0]) * c[1];
+    
+    /* compute the potential and its derivative */
+    ee = c[2] * x + c[3];
+    eff = c[2];
+    for ( k = 4 ; k < potential_chunk ; k++ ) {
+        eff = eff * x + ee;
+        ee = ee * x + c[k];
+    }
+    
+    /* store the result */
+    *e = ee; *f = eff * c[1] / r;
+    
+}
+
 
 
 /** 
@@ -119,7 +167,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
  * of the #potential @c p.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_r ( struct MxPotential *p , FPTYPE r , FPTYPE *e , FPTYPE *f ) {
+__attribute__ ((always_inline)) INLINE void potential_eval_r (struct MxPotential *p , FPTYPE r , FPTYPE *e , FPTYPE *f ) {
 
     int ind, k;
     FPTYPE x, ee, eff, *c;

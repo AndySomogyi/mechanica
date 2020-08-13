@@ -149,7 +149,8 @@ function(add_mdcore_single)
   message("SINGLE_HEADERS: ${SINGLE_HEADERS}")
 
   source_group("Public Headers Files" FILES ${PUBLIC_HEADERS})
-  source_group("Source Files" FILES ${SOURCES} ${PRIVATE_HEADERS})
+  source_group("Source Files" FILES ${SOURCES})
+  source_group("Header Files" FILES ${SINGLE_HEADERS})
 
   add_library(mdcore_single OBJECT ${SOURCES} ${SINGLE_HEADERS})
 

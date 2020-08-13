@@ -42,7 +42,7 @@
 #define potential_ivalsb                    10
 #define potential_N                         100
 #define potential_align                     64
-#define potential_ivalsmax                  640
+#define potential_ivalsmax                  1024
 
 #define potential_escale                    (0.079577471545947667882)
 // #define potential_escale                    1.0
@@ -76,6 +76,13 @@ enum PotentialFlags {
     POTENTIAL_SWITCH          = 1 << 9,
 
     POTENTIAL_REACTIVE        = 1 << 10,
+    
+    /**
+     * Scaled functions take a (r0/r)^2 argument instead of an r^2,
+     * they include the rest length r0, such that r0/r yields a
+     * force = 0.
+     */
+    POTENTIAL_SCALED          = 1 << 11,
 };
 
 
@@ -166,6 +173,9 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS1(double k, double e, double 
 CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e, double r0, double a , double b , double tol);
 
 CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
+
+
+CAPI_FUNC(struct MxPotential *) potential_create_glj(double e, int m, int n, double min, double max, double tol);
 
 /**
  * Creates a square well potential of the form:

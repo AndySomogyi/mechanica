@@ -187,7 +187,7 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             };
             pData[i].transformationMatrix =
                     Matrix4::translation(position) *
-            Matrix4::scaling(Vector3{(float)type->radius});
+            Matrix4::scaling(Vector3{(float)p->radius});
             pData[i].normalMatrix =
                     pData[i].transformationMatrix.normalMatrix();
             

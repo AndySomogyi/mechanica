@@ -2059,13 +2059,24 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
     try {
         py::args args = py::reinterpret_borrow<py::args>(_args);
         py::kwargs kwargs = py::reinterpret_borrow<py::kwargs>(_kwargs);
+        
 
         float r = py::cast<float>(args[0]);
+        
+        double ri, rj;
+        if(self->flags & POTENTIAL_SCALED) {
+            ri = pybind11::cast<double>(args[1]);
+            rj = pybind11::cast<double>(args[2]);
+        }
+
         
         float e = 0;
         float f = 0;
         
-        if(self->flags & POTENTIAL_R2) {
+        if(self->flags & POTENTIAL_SCALED) {
+            potential_eval_scaled(self, ri, rj, r*r, &e, &f);
+        }
+        else if(self->flags & POTENTIAL_R2) {
             potential_eval (self , r*r, &e, &f);
         }
         else {
@@ -2285,6 +2296,30 @@ static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 }
 
 
+static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double e =   arg<double>("e",   0, _args, _kwargs);
+        int m =   arg<int>("m",   1, _args, _kwargs, 6);
+        int n =  arg<int>("n",  2, _args, _kwargs, 2*m);
+        double min = arg<double>("min", 3, _args, _kwargs, 0.1);
+        double max = arg<double>("max", 4, _args, _kwargs, 10);
+        double tol = arg<double>("tol", 5, _args, _kwargs, 0.001);
+        
+        return potential_create_glj(e, n, m, min, max, tol);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
 
 static PyMethodDef potential_methods[] = {
     {
@@ -2352,6 +2387,12 @@ static PyMethodDef potential_methods[] = {
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "Square well potential"
     },
+    {
+        "glj",
+        (PyCFunction)_glj,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "Generalized Lennard-Joned potential"
+    },
     {NULL}
 };
 
@@ -2406,6 +2447,20 @@ static PyGetSetDef potential_getset[] = {
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
             return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "flags",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return pybind11::cast(obj->flags).release().ptr();
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            MxPotential *obj = (MxPotential*)_obj;
+            obj->flags = pybind11::cast<uint32_t>(val);
+            return 0;
         },
         .doc = "test doc",
         .closure = NULL
@@ -2490,6 +2545,23 @@ HRESULT _MxPotential_init(PyObject *m)
         Py_DECREF(&MxPotential_Type);
         return E_FAIL;
     }
+    
+
+    py::enum_<PotentialFlags>(m, "PotentialFlags", py::arithmetic())
+        .value("POTENTIAL_NONE", PotentialFlags::POTENTIAL_NONE)
+        .value("POTENTIAL_LJ126", PotentialFlags::POTENTIAL_LJ126)
+        .value("POTENTIAL_EWALD", PotentialFlags::POTENTIAL_EWALD)
+        .value("POTENTIAL_COULOMB", PotentialFlags::POTENTIAL_COULOMB)
+        .value("POTENTIAL_SINGLE", PotentialFlags::POTENTIAL_SINGLE)
+        .value("POTENTIAL_R2", PotentialFlags::POTENTIAL_R2)
+        .value("POTENTIAL_R", PotentialFlags::POTENTIAL_R)
+        .value("POTENTIAL_ANGLE", PotentialFlags::POTENTIAL_ANGLE)
+        .value("POTENTIAL_HARMONIC", PotentialFlags::POTENTIAL_HARMONIC)
+        .value("POTENTIAL_DIHEDRAL", PotentialFlags::POTENTIAL_DIHEDRAL)
+        .value("POTENTIAL_SWITCH", PotentialFlags::POTENTIAL_SWITCH)
+        .value("POTENTIAL_REACTIVE", PotentialFlags::POTENTIAL_REACTIVE)
+        .value("POTENTIAL_SCALED", PotentialFlags::POTENTIAL_SCALED)
+        .export_values();
 
     return S_OK;
 }
@@ -2545,6 +2617,67 @@ MxPotential *potential_create_well(double k, double n, double r0, double tol, do
         return NULL;
     }
 
+    /* return it */
+    return p;
+}
+
+
+static double potential_create_glj_e;
+static double potential_create_glj_m;
+static double potential_create_glj_n;
+
+
+/* the potential functions */
+static double potential_create_glj_f ( double r ) {
+    double e = potential_create_glj_e;
+    double n = potential_create_glj_n;
+    double m = potential_create_glj_m;
+    return (e*(-(n/Power(r,m)) + m/Power(r,n)))/(-m + n);
+}
+
+static double potential_create_glj_dfdr ( double r ) {
+    double e = potential_create_glj_e;
+    double n = potential_create_glj_n;
+    double m = potential_create_glj_m;
+    return (e*(m*n*Power(r,-1 - m) - m*n*Power(r,-1 - n)))/(-m + n);
+}
+
+static double potential_create_glj_d6fdr6 ( double r ) {
+    double e = potential_create_glj_e;
+    double n = potential_create_glj_n;
+    double m = potential_create_glj_m;
+    return (e*((-5 - m)*(-4 - m)*(-3 - m)*(-2 - m)*(-1 - m)*m*n*Power(r,-6 - m) -
+               m*(-5 - n)*(-4 - n)*(-3 - n)*(-2 - n)*(-1 - n)*n*Power(r,-6 - n)))/(-m + n);
+    
+}
+
+
+MxPotential *potential_create_glj(double e, int m, int n, double min, double max, double tol)
+{
+    MxPotential *p = NULL;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 | POTENTIAL_SCALED;
+    
+    /* fill this potential */
+    potential_create_glj_e = e;
+    potential_create_glj_n = n;
+    potential_create_glj_m = m;
+    
+    if (potential_init( p ,
+                       &potential_create_glj_f ,
+                       &potential_create_glj_dfdr ,
+                       &potential_create_glj_d6fdr6 ,
+                       min , max , tol ) < 0 ) {
+        CAligned_Free(p);
+        return NULL;
+    }
+    
     /* return it */
     return p;
 }

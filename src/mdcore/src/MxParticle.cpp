@@ -674,7 +674,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.force = {};
     part.pforce = {};
     part.q = 0;
-    part.radius = 0;
+    part.radius = type->radius;
     part.id = engine_next_partid(&_Engine);
     part.vid = 0;
     part.typeId = type->id;
