@@ -110,7 +110,7 @@ public:
 
     MxUniverseRenderer *getRenderer() override;
 
-    void simulationStep();
+    HRESULT simulationStep();
 
     HRESULT run() override;
             

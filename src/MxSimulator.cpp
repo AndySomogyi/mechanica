@@ -590,7 +590,6 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     ticks tic;
 
-    tic = getticks();
 
     double _origin[3];
     double _dim[3];
@@ -841,8 +840,6 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
     std::cout << "loading argon example" << std::endl;
 
     double length = conf.dim[0] - conf.origin[0];
-
-    double L[] = { 0.1 * length , 0.1* length , 0.1*  length  };
 
     double x[3];
 

@@ -67,6 +67,8 @@
 #include "engine.h"
 #include "MxForce.h"
 
+#include <sstream>
+
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -93,7 +95,7 @@ MxParticleData *engine::types = NULL;
 #define error(id)				( engine_err = errs_register( id , engine_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
-const char *engine_err_msg[29] = {
+const char *engine_err_msg[30] = {
 		"Nothing bad happened.",
 		"An unexpected NULL pointer was encountered.",
 		"A call to malloc failed, probably due to insufficient memory.",
@@ -123,6 +125,7 @@ const char *engine_err_msg[29] = {
 		"An error occured when evaluating a rigid constraint.",
 		"Cell cutoff size doesn't work with METIS",
 		"METIS library undefined",
+        "Particles moving too fast",
 };
 
 
@@ -1794,6 +1797,26 @@ int engine_nonbond_eval ( struct engine *e ) {
 }
 
 
+
+
+static int _toofast_error(MxParticle *p, int line, const char* func) {
+    //CErr_Set(HRESULT code, const char* msg, int line, const char* file, const char* func);
+    std::stringstream ss;
+    ss << "ERROR, particle moving too fast, p: {" << std::endl;
+    ss << "\tid: " << p->id << ", " << std::endl;
+    ss << "\ttype: " << _Engine.types[p->typeId].name << "," << std::endl;
+    ss << "\tx: [" << p->x[0] << ", " << p->x[1] << ", " << p->x[2] << "], " << std::endl;
+    ss << "\tv: [" << p->v[0] << ", " << p->v[1] << ", " << p->v[2] << "], " << std::endl;
+    ss << "\tf: [" << p->f[0] << ", " << p->f[1] << ", " << p->f[2] << "], " << std::endl;
+    ss << "}";
+    
+    CErr_Set(E_FAIL, ss.str().c_str(), line, __FILE__, func);
+    return error(engine_err_toofast);
+}
+
+#define toofast_error(p) _toofast_error(p, __LINE__, MX_FUNCTION)
+
+
 /**
  * @brief Update the particle velocities and positions, re-shuffle if
  *      appropriate.
@@ -1808,14 +1831,17 @@ int engine_advance ( struct engine *e ) {
     struct space_cell *c, *c_dest;
     struct MxParticle *p;
     struct space *s;
-    FPTYPE dt, w, h[3];
+    FPTYPE dt, w, h[3], h2[3]; // h, h2: edge length of space cells.
     double epot = 0.0, epot_local;
+    int toofast;
     
     /* Get a grip on the space. */
     s = &(e->s);
     dt = e->dt;
-    for ( k = 0 ; k < 3 ; k++ )
+    for ( k = 0 ; k < 3 ; k++ ) {
         h[k] = s->h[k];
+        h2[k] = 2. * s->h[k];
+    }
 
     /* update the particle velocities and positions */
     if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi)) {
@@ -1835,17 +1861,20 @@ int engine_advance ( struct engine *e ) {
                     p = &( c->parts[pid] );
                     w = dt * e->types[p->typeId].imass;
                     
+                    toofast = 0;
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
                             p->v[k] += dt * p->f[k] * w;
                             p->x[k] += dt * p->v[k];
-                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                            delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
                     else {
                         for ( k = 0 ; k < 3 ; k++ ) {
                             p->x[k] += dt * p->f[k] * w;
-                            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                            delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
                 }
@@ -1871,22 +1900,28 @@ int engine_advance ( struct engine *e ) {
                 while ( pid < c->count ) {
                     p = &( c->parts[pid] );
                     w = dt * engine::types[p->typeId].imass;
+                    toofast = 0;
                     
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
                             p->v[k] += dt * p->f[k] * w;
                             p->x[k] += dt * p->v[k];
                             delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
                     else {
                         for ( k = 0 ; k < 3 ; k++ ) {
                             p->x[k] += dt * p->f[k] * w;
                             delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
-   
                     
+                    if(toofast) {
+                        return toofast_error(p);
+                    }
+   
                     /* do we have to move this particle? */
                     if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
                         for ( k = 0 ; k < 3 ; k++ ) {
@@ -2054,7 +2089,8 @@ int engine_step ( struct engine *e ) {
 
     /* update the particle velocities and positions. */
     tic = getticks();
-    if ( engine_advance( e ) < 0 ) {
+    
+    if (engine_advance( e ) < 0 ) {
         return error(engine_err);
     }
 

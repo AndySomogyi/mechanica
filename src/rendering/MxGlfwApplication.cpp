@@ -88,33 +88,14 @@ HRESULT MxGlfwApplication::postEmptyEvent()
     MXGLFW_CHECK();
 }
 
-void MxGlfwApplication::simulationStep() {
-    static Float offset = 0.0f;
-    if(_dynamicBoundary) {
-        /* Change fluid boundary */
-        static Float step = 2.0e-3f;
-        if(_boundaryOffset > 1.0f || _boundaryOffset < 0.0f) {
-            step *= -1.0f;
-        }
-        _boundaryOffset += step;
-        offset = Math::lerp(0.0f, 0.5f, Animation::Easing::quadraticInOut(_boundaryOffset));
-    }
-
-    // TODO: get rid of this
-    MxUniverse_Step(0,0);
-
-    currentStep += 1;
-}
-
-void MxGlfwApplication::drawEvent() {
-    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
-
-
+HRESULT MxGlfwApplication::simulationStep() {
+    
     /* Pause simulation if the mouse was pressed (camera is moving around).
        This avoid freezing GUI while running the simulation */
     
+    /*
     if(!_pausedSimulation && !_mousePressed) {
-        /* Adjust the substep number to maximize CPU usage each frame */
+        // Adjust the substep number to maximize CPU usage each frame
         const Float lastAvgStepTime = _timeline.previousFrameDuration()/Float(_substeps);
         const Int newSubsteps = lastAvgStepTime > 0 ? Int(1.0f/60.0f/lastAvgStepTime) + 1 : 1;
         if(Math::abs(newSubsteps - _substeps) > 1) _substeps = newSubsteps;
@@ -126,6 +107,28 @@ void MxGlfwApplication::drawEvent() {
             }
         }
     }
+    */
+    
+    static Float offset = 0.0f;
+    if(_dynamicBoundary) {
+        /* Change fluid boundary */
+        static Float step = 2.0e-3f;
+        if(_boundaryOffset > 1.0f || _boundaryOffset < 0.0f) {
+            step *= -1.0f;
+        }
+        _boundaryOffset += step;
+        offset = Math::lerp(0.0f, 0.5f, Animation::Easing::quadraticInOut(_boundaryOffset));
+    }
+    
+    currentStep += 1;
+
+    // TODO: get rid of this
+    return  MxUniverse_Step(0,0);
+}
+
+void MxGlfwApplication::drawEvent() {
+    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
+
 
     /* Draw particles */
     _ren->draw();
@@ -251,22 +254,42 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
     HWND hwnd = glfwGetWin32Window(wnd);
     SetForegroundWindow(hwnd);
 #endif
+    
+    HRESULT hr;
 
-
-
-    // run while it's visible 
+    // run while it's visible, process window messages
     while(GlfwApplication::mainLoopIteration() &&
         glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE))
     {
+        // keep processing messages until window closes.
+        if(engine_err == 0) {
+            if(!SUCCEEDED((hr = simulationStep()))) {
+                close();
+            }
+            GlfwApplication::redraw();
+        }
     }
 
     return S_OK;
 }
 
 HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
-    if(GlfwApplication::window()) {
-        GlfwApplication::mainLoopIteration();
+    HRESULT hr;
+    if(engine_err == 0) {
+        if(FAILED((hr = simulationStep()))) {
+            // window close message
+            close();
+            
+            // process messages until window closes
+            while(GlfwApplication::window() &&
+                  glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
+                GlfwApplication::mainLoopIteration();
+            }
+            return hr;
+        }
     }
+    // process messages
+    GlfwApplication::mainLoopIteration();
     return S_OK;
 }
 

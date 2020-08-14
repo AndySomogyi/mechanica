@@ -389,16 +389,9 @@ static void universe_step(py::args args, py::kwargs kwargs) {
 
 CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
     
-    ticks tic, toc_step, toc_temp;
-    
-    double epot, ekin, v2, temp;
-    
-    int   k, cid, pid;
-    
-    double w;
-    
-    // take a step
-    tic = getticks();
+    if(engine_err != 0) {
+        return E_FAIL;
+    }
     
     if ( engine_step( &_Engine ) != 0 ) {
         printf("main: engine_step failed with engine_err=%i.\n",engine_err);
@@ -407,11 +400,6 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
         return E_FAIL;
     }
     
-    toc_step = getticks();
-    
-    
-    toc_temp = getticks();
-
     MxSimulator_Redraw();
     
     if(universe_flags & MxUniverse_Flags::MX_SHOW_PERF_STATS ) {

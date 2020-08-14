@@ -57,27 +57,31 @@
 #define engine_err_rigid                 -26
 #define engine_err_cutoff		 		 -27
 #define engine_err_nometis				 -28
+#define engine_err_toofast               -29
 
 
 /* some constants */
-#define engine_flag_none                 0
-#define engine_flag_static               1
-#define engine_flag_localparts           2
-#define engine_flag_cuda                 4
-#define engine_flag_explepot             8
-#define engine_flag_verlet               16
-#define engine_flag_verlet_pairwise      32
-#define engine_flag_affinity             64
-#define engine_flag_prefetch             128
-#define engine_flag_verlet_pseudo        256
-#define engine_flag_unsorted             512
-#define engine_flag_shake                1024
-#define engine_flag_mpi                  2048
-#define engine_flag_parbonded            4096
-#define engine_flag_async                8192
-#define engine_flag_sets                 16384
-#define engine_flag_nullpart             32768
-#define engine_flag_initialized          65536
+enum EngineFlags {
+    engine_flag_none                 = 0,
+    engine_flag_static               = 1 << 0,
+    engine_flag_localparts           = 1 << 1,
+    engine_flag_cuda                 = 1 << 2,
+    engine_flag_explepot             = 1 << 3,
+    engine_flag_verlet               = 1 << 4,
+    engine_flag_verlet_pairwise      = 1 << 5,
+    engine_flag_affinity             = 1 << 6,
+    engine_flag_prefetch             = 1 << 7,
+    engine_flag_verlet_pseudo        = 1 << 8,
+    engine_flag_unsorted             = 1 << 9,
+    engine_flag_shake                = 1 << 10,
+    engine_flag_mpi                  = 1 << 11,
+    engine_flag_parbonded            = 1 << 12,
+    engine_flag_async                = 1 << 13,
+    engine_flag_sets                 = 1 << 14,
+    engine_flag_nullpart             = 1 << 15,
+    engine_flag_initialized          = 1 << 16,
+    engine_flag_velocity_clamp       = 1 << 17,
+};
 
 #define engine_bonds_chunk               100
 #define engine_angles_chunk              100
