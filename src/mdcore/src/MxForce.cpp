@@ -185,23 +185,17 @@ static void gaussian_force(struct Gaussian* t, struct MxParticle *p, FPTYPE*f) {
     // values near the mean are the most likely
     // standard deviation affects the dispersion of generated values from the mean
     
-    if((_Engine.time + p->id) % 100 == 0) {
+    if((_Engine.integrator_flags & INTEGRATOR_UPDATE_PERSISTENTFORCE) &&
+            (_Engine.time + p->id) % 100 == 0) {
         std::normal_distribution<> dist{t->mean,t->std};
-        p->pf[0] = dist(CRandom);
-        p->pf[1] = dist(CRandom);
-        p->pf[2] = dist(CRandom);
+        p->persistent_force[0] = _Engine.dt * dist(CRandom);
+        p->persistent_force[1] = _Engine.dt * dist(CRandom);
+        p->persistent_force[2] = _Engine.dt * dist(CRandom);
     }
     
-    // TODO: not thread safe
-    f[0] += p->pf[0];
-    f[1] += p->pf[1];
-    f[2] += p->pf[2];
-    
-    //float scale = -0.2;
-    
-    //f[0] += scale * p->v[0];
-    //f[1] += scale * p->v[1];
-    //f[2] += scale * p->v[2];
+    f[0] += p->persistent_force[0];
+    f[1] += p->persistent_force[1];
+    f[2] += p->persistent_force[2];
 }
 
 PyObject *berenderson_create(float tau) {

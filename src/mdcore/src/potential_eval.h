@@ -105,7 +105,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     
 }
 
-__attribute__ ((always_inline)) INLINE void potential_eval_scaled(
+__attribute__ ((always_inline)) INLINE bool potential_eval_scaled(
     struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
     
     unsigned ind, k;
@@ -125,10 +125,12 @@ __attribute__ ((always_inline)) INLINE void potential_eval_scaled(
     /* compute the index */
     ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
     
-    if ( ind > p->n ) {
-        std::cerr << "potential_eval particle out of range, scaled r: " <<
-           r << ", min: " << p->a << ", max: " << p->b << std::endl;
-        return;
+    if(r < p->a || r >= p->b || ind < 0 || ind > p->n) {
+        //*e = 0;
+        //*f = 0;
+        //std::cerr << "potential_eval particle out of range, scaled r: " <<
+        //r << ", min: " << p->a << ", max: " << p->b << std::endl;
+        return false;
     }
     
     /* get the table offset */
@@ -148,6 +150,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_scaled(
     /* store the result */
     *e = ee; *f = eff * c[1] / r;
     
+    return true;
 }
 
 

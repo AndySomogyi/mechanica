@@ -97,8 +97,10 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
     struct MxParticle *pi, *pj, *pk, **partlist;
     struct space_cell **celllist;
     struct MxPotential *pot;
-    FPTYPE xi[3], xj[3], xk[3], dxi[3] , dxk[3], ctheta, wi, wk;
-    FPTYPE rji[3], rjk[3], inji, injk, dprod;
+    Magnum::Vector3 xi, xj, xk, dxi, dxk;
+    FPTYPE ctheta, wi, wk;
+    Magnum::Vector3 rji, rjk;
+    FPTYPE inji, injk, dprod;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
     int icount = 0;
@@ -160,13 +162,13 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
             else if ( shift < -1 )
                 shift = 1;
             xk[k] = pk->x[k] + shift*h[k];
-            }
+        }
             
         /* Get the angle rays. */
         for ( k = 0 ; k < 3 ; k++ ) {
             rji[k] = xi[k] - xj[k];
             rjk[k] = xk[k] - xj[k];
-            }
+        }
             
         /* Compute some quantities we will re-use. */
         dprod = rji[0]*rjk[0] + rji[1]*rjk[1] + rji[2]*rjk[2];
@@ -176,11 +178,28 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
         /* Compute the cosine. */
         ctheta = FPTYPE_FMAX( -FPTYPE_ONE , FPTYPE_FMIN( FPTYPE_ONE , dprod * inji * injk ) );
         
-        /* Set the derivatives. */
-        for ( k = 0 ; k < 3 ; k++ ) {
-            dxi[k] = ( rjk[k]*injk - ctheta * rji[k]*inji ) * inji;
-            dxk[k] = ( rji[k]*inji - ctheta * rjk[k]*injk ) * injk;
+        // Set the derivatives.
+        // particles could be perpenducular, then plan is undefined, so
+        // choose a random orientation plane
+        if(ctheta == 0 || ctheta == -1) {
+            std::uniform_real_distribution<float> dist{-1, 1};
+            // make a random vector
+            Magnum::Vector3 x{dist(CRandom), dist(CRandom), dist(CRandom)};
+            
+            // vector between outer particles
+            Magnum::Vector3 vik = xi - xk;
+            
+            // make it orthogonal to rji
+            x = x - Magnum::Math::dot(x, vik) * vik;
+            
+            // normalize it.
+            dxi = dxk = x.normalized();
+        } else {
+            for ( k = 0 ; k < 3 ; k++ ) {
+                dxi[k] = ( rjk[k]*injk - ctheta * rji[k]*inji ) * inji;
+                dxk[k] = ( rji[k]*inji - ctheta * rjk[k]*injk ) * injk;
             }
+        }
         
         /* printf( "angle_eval: cos of angle %i (%s-%s-%s) is %e.\n" , aid ,
             e->types[pi->type].name , e->types[pj->type].name , e->types[pk->type].name , ctheta ); */
@@ -201,7 +220,7 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
             printf( "angle_eval[%i]: angle %i (%s-%s-%s) out of range [%e,%e], ctheta=%e.\n" ,
                 e->nodeID , aid , e->types[pi->typeId].name , e->types[pj->typeId].name , e->types[pk->typeId].name , pot->a , pot->b , ctheta );
             ctheta = FPTYPE_FMAX( pot->a , FPTYPE_FMIN( pot->b , ctheta ) );
-            }
+        }
 
         #ifdef VECTORIZE
             /* add this angle to the interaction queue. */
@@ -262,7 +281,7 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
                 pi->f[k] -= ( wi = eff * dxi[k] );
                 pk->f[k] -= ( wk = eff * dxk[k] );
                 pj->f[k] += wi + wk;
-                }
+            }
 
             /* tabulate the energy */
             epot += ee;

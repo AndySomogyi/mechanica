@@ -190,7 +190,7 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     }
     
     if(kwargs.contains("cutoff")) {
-        conf.universeConfig.cutoff = py::cast<int>(kwargs["cutoff"]);
+        conf.universeConfig.cutoff = py::cast<double>(kwargs["cutoff"]);
     }
     
     if(kwargs.contains("cells")) {
@@ -200,6 +200,16 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("threads")) {
         conf.universeConfig.threads = py::cast<unsigned>(kwargs["threads"]);
     }
+
+    if(kwargs.contains("integrator")) {
+        conf.universeConfig.integrator = py::cast<EngineIntegrator>(kwargs["integrator"]);
+    }
+
+    if(kwargs.contains("dt")) {
+        conf.universeConfig.dt = py::cast<double>(kwargs["dt"]);
+    }
+
+
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs);
@@ -400,8 +410,6 @@ HRESULT _MxSimulator_init(PyObject* m) {
         }
     );
 
-
-
     py::enum_<MxSimulator::WindowFlags>(sim, "WindowFlags", py::arithmetic())
             .value("Fullscreen", MxSimulator::WindowFlags::Fullscreen)
             .value("Resizable", MxSimulator::WindowFlags::Resizable)
@@ -412,6 +420,11 @@ HRESULT _MxSimulator_init(PyObject* m) {
             .value("AutoIconify", MxSimulator::WindowFlags::AutoIconify)
             .value("Focused", MxSimulator::WindowFlags::Focused)
             .value("Contextless", MxSimulator::WindowFlags::Contextless)
+            .export_values();
+
+    py::enum_<EngineIntegrator>(m, "Integrator")
+            .value("FORWARD_EULER", EngineIntegrator::FORWARD_EULER)
+            .value("RUNGE_KUTTA_4", EngineIntegrator::RUNGE_KUTTA_4)
             .export_values();
 
     py::class_<MxSimulator::Config> sc(sim, "Config");
@@ -451,7 +464,8 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sc.def_property("threads", [](const MxSimulator::Config &conf) { return conf.universeConfig.threads; },
                     [](MxSimulator::Config &conf, int v) {conf.universeConfig.threads = v;});
     
-
+    sc.def_property("integrator", [](const MxSimulator::Config &conf) { return conf.universeConfig.integrator; },
+                    [](MxSimulator::Config &conf, EngineIntegrator v) {conf.universeConfig.integrator = v;});
 
 
     py::class_<MxSimulator::GLConfig> gc(sim, "GLConfig");
@@ -588,8 +602,6 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     int  nr_runners = conf.threads;
 
-    ticks tic;
-
 
     double _origin[3];
     double _dim[3];
@@ -599,12 +611,12 @@ int universe_init (const MxUniverseConfig &conf ) {
     }
 
     // initialize the engine
-    printf("main: initializing the engine... ");
-    printf("main: requesting origin = [ %f , %f , %f ].\n", _origin[0], _origin[1], _origin[2] );
-    printf("main: requesting dimensions = [ %f , %f , %f ].\n", _dim[0], _dim[1], _dim[2] );
-    printf("main: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
-    printf("main: requesting cutoff = %22.16e.\n", cutoff);
-    fflush(stdout);
+    printf("engine: initializing the engine... ");
+    printf("engine: requesting origin = [ %f , %f , %f ].\n", _origin[0], _origin[1], _origin[2] );
+    printf("engine: requesting dimensions = [ %f , %f , %f ].\n", _dim[0], _dim[1], _dim[2] );
+    printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
+    printf("engine: requesting cutoff = %22.16e.\n", cutoff);
+    
 
     printf("main: initializing the engine... "); fflush(stdout);
     if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , space_periodic_full ,
@@ -616,17 +628,27 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     _Engine.dt = conf.dt;
     _Engine.temperature = conf.temp;
+    _Engine.integrator = conf.integrator;
 
-    printf("main: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
+    const char* inte = NULL;
 
-    printf("done.\n"); fflush(stdout);
+    switch(_Engine.integrator) {
+    case EngineIntegrator::FORWARD_EULER:
+        inte = "Forward Euler";
+        break;
+    case EngineIntegrator::RUNGE_KUTTA_4:
+        inte = "Ruge-Kutta-4";
+        break;
+    }
 
-    // set the interaction cutoff
-    printf("main: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
-    printf("main: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
-    printf("main: cutoff set to %22.16e.\n", cutoff);
-    printf("main: nr tasks: %i.\n",_Engine.s.nr_tasks);
-
+    printf("engine integrator: %s \n", inte);
+    printf("engine: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
+    printf("engine: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
+    printf("engine: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
+    printf("engine: cutoff set to %22.16e.\n", cutoff);
+    printf("engine: nr tasks: %i.\n",_Engine.s.nr_tasks);
+    printf("engine: dt: %22.16e.\n",_Engine.dt);
+    
     // start the engine
 
     if ( engine_start( &_Engine , nr_runners , nr_runners ) != 0 ) {
@@ -634,6 +656,8 @@ int universe_init (const MxUniverseConfig &conf ) {
         errs_dump(stdout);
         return 1;
     }
+    
+    fflush(stdout);
 
     return 0;
 }

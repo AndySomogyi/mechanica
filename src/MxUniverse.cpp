@@ -84,7 +84,8 @@ MxUniverseConfig::MxUniverseConfig() :
     dt{0.01},
     temp{1},
     nParticles{100},
-    threads{4}
+    threads{4},
+    integrator{EngineIntegrator::FORWARD_EULER}
 {
 }
 

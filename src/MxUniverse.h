@@ -66,6 +66,7 @@ struct CAPI_EXPORT MxUniverseConfig {
     double temp;
     int nParticles;
     int threads;
+    EngineIntegrator integrator;
     MxUniverseConfig();
 };
 

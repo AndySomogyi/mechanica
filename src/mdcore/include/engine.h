@@ -83,6 +83,11 @@ enum EngineFlags {
     engine_flag_velocity_clamp       = 1 << 17,
 };
 
+enum EngineIntegrator {
+    FORWARD_EULER,
+    RUNGE_KUTTA_4
+};
+
 #define engine_bonds_chunk               100
 #define engine_angles_chunk              100
 #define engine_rigids_chunk              50
@@ -146,6 +151,14 @@ enum {
     ENGINE_TIMER_LAST           = 1 << 18
 };
 
+enum {
+    // forces that set the persistent_force should
+    // update values now. Otherwise, the integrator is
+    // probably in a multi-step and should use the saved
+    // value
+    INTEGRATOR_UPDATE_PERSISTENTFORCE    = 1 << 0
+};
+
 
 /** ID of the last error. */
 CAPI_DATA(int) engine_err;
@@ -161,6 +174,11 @@ typedef struct engine {
 
 	/** Some flags controlling how this engine works. */
 	unsigned int flags;
+
+	/**
+	 * Internal flags related to multi-step integrators,
+	 */
+	unsigned int integrator_flags;
 
 #ifdef WITH_CUDA
 	/** Some flags controlling which cuda scheduling we use. */
@@ -297,6 +315,8 @@ typedef struct engine {
 	int nr_sets;
 
 	struct CMulticastTimeEvent *on_time;
+
+	EngineIntegrator integrator;
 } engine;
 
 

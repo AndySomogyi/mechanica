@@ -232,19 +232,19 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-                    potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f );
-                #endif
-
-                /* update the forces */
+            /* update the forces if part in range */
+            if (potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];
                     pif[k] -= w;
                     part_j->f[k] += w;
                 }
-
                 /* tabulate the energy */
                 epot += e;
-            #endif
+            }
+                #endif // EXPLICIT_POTENTIALS
+            #endif // VECTORIZE
 
             }
 
@@ -379,18 +379,10 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         parts = c->parts;
     }
 
-    // Because of loop indexing over all particles starting at one,
-    // do the first single-body force calculation here.
-    part_i = &(parts[0]);
-    psb = psbs[part_i->typeId];
-    if(psb) {
-        psb->func(psb, part_i, part_i->f);
-    }
 
-        
     // loop over all particles , indexing here only calculates pairwise
     // interactions, and avoids self-interactions.
-    for ( i = 1 ; i < count ; i++ ) {
+    for ( i = 0 ; i < count ; i++ ) {
 
         /* get the particle */
         part_i = &(parts[i]);
@@ -407,7 +399,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         }
 
         /* loop over all other particles */
-        for ( j = 0 ; j < i ; j++ ) {
+        for ( j = i + 1 ; j < count ; j++ ) {
 
             /* get the other particle */
             part_j = &(parts[j]);
@@ -424,7 +416,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             /* is this within cutoff? */
             /* potentials have cutoff also */
             // TODO move the square to the one-time potential init value.
-            if ( r2 > cutoff2 || r2 > (pot->b * pot->b))
+            if ( r2 > cutoff2)
                 continue;
 
             // runner_rcount += 1;
@@ -477,19 +469,19 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-                    potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f );
-                #endif
-
-                /* update the forces */
+            /* update the forces if part in range */
+            if (potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];
                     pif[k] -= w;
                     part_j->f[k] += w;
                 }
-
                 /* tabulate the energy */
                 epot += e;
-            #endif
+            }
+                #endif // EXPLICIT_POTENTIALS
+            #endif // VECTORIZE
 
             } /* loop over all other particles */
 

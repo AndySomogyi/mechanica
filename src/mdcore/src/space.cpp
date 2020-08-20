@@ -257,8 +257,11 @@ int space_shuffle ( struct space *s ) {
 
             /* do we have to move this particle? */
             if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
-                for ( k = 0 ; k < 3 ; k++ )
+                for ( k = 0 ; k < 3 ; k++ ) {
                     p->x[k] -= delta[k] * h[k];
+                    p->p0[k] -= delta[k] *h[k];
+                }
+
                 c_dest = &( s->cells[ space_cellid( s ,
                         (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
                         (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
@@ -330,8 +333,11 @@ int space_shuffle_local ( struct space *s ) {
             /* do we have to move this particle? */
             if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
 
-                for ( k = 0 ; k < 3 ; k++ )
+                for ( k = 0 ; k < 3 ; k++ ) {
                     p->x[k] -= delta[k] * h[k];
+                    p->p0[k] -= delta[k] * h[k];
+                }
+
                 c_dest = &( s->cells[ space_cellid( s ,
                         (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
                         (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,

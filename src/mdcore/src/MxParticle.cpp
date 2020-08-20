@@ -388,30 +388,62 @@ PyGetSetDef gs_radius = {
     .name = "radius",
     .get = [](PyObject *obj, void *p) -> PyObject* {
         bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
-        MxParticleType *type = NULL;
+        float radius = 0;
         if(isParticle) {
-            type = (MxParticleType*)obj->ob_type;
+            MxPyParticle *pobj = (MxPyParticle*)obj;
+            radius = _Engine.s.partlist[pobj->id]->radius;
         }
         else {
-            type = (MxParticleType*)obj;
+            MxParticleType *type = (MxParticleType*)obj;
+            assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+            radius = type->radius;
+            
         }
-        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->radius).release().ptr();
+        return pybind11::cast(radius).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
         bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
-        MxParticleType *type = NULL;
-        if(isParticle) {
-            type = (MxParticleType*)obj->ob_type;
-        }
-        else {
-            type = (MxParticleType*)obj;
-        }
-        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
         
         try {
-            double *x = &type->radius;
-            *x = pybind11::cast<double>(val);
+            if(isParticle) {
+                float *pradius = nullptr;
+                MxPyParticle *pobj = (MxPyParticle*)obj;
+                pradius = &(_Engine.s.partlist[pobj->id]->radius);
+                *pradius = pybind11::cast<float>(val);
+                return 0;
+            }
+            else {
+                double *pradius;
+                MxParticleType *type = (MxParticleType*)obj;
+                assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+                pradius = &(type->radius);
+                *pradius = pybind11::cast<double>(val);
+                return 0;
+            }
+        }
+        catch (const pybind11::builtin_exception &e) {
+            e.set_error();
+            return -1;
+        }
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
+// only valid on type
+PyGetSetDef gs_minimum_radius = {
+    .name = "minimum_radius",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        MxParticleType *type = (MxParticleType*)obj;
+        assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+        return pybind11::cast(type->minumum_radius).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        try {
+            MxParticleType *type = (MxParticleType*)obj;
+            assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+            double* pradius = &(type->minumum_radius);
+            *pradius = pybind11::cast<double>(val);
             return 0;
         }
         catch (const pybind11::builtin_exception &e) {
@@ -672,9 +704,11 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.position = {};
     part.velocity = {};
     part.force = {};
-    part.pforce = {};
+    part.persistent_force = {};
     part.q = 0;
     part.radius = type->radius;
+    part.mass = type->mass;
+    part.imass = type->imass;
     part.id = engine_next_partid(&_Engine);
     part.vid = 0;
     part.typeId = type->id;
@@ -890,6 +924,7 @@ static PyGetSetDef particle_type_getset[] = {
     gs_charge,
     gs_mass,
     gs_radius,
+    gs_minimum_radius,
     gs_name,
     gs_name2,
     gs_dynamics,
@@ -1117,6 +1152,7 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
     self->target_energy = base->target_energy;
     self->radius = base->radius;
     self->dynamics = base->dynamics;
+    self->minumum_radius = base->minumum_radius;
 
     std::strncpy(self->name, self->ht_type.tp_name, MxParticleType::MAX_NAME);
     
@@ -1138,6 +1174,10 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
         
         if(dict.contains("radius")) {
             self->radius = dict["radius"].cast<double>();
+        }
+        
+        if(dict.contains("minumum_radius")) {
+            self->minumum_radius = dict["minumum_radius"].cast<double>();
         }
         
         if(dict.contains("name2")) {
@@ -1176,6 +1216,10 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 PyDict_DelItem(_dict, key.ptr());
             }
             key = pybind11::cast("radius");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+            key = pybind11::cast("minumum_radius");
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
@@ -1277,7 +1321,9 @@ HRESULT engine_particle_base_init(PyObject *m)
     }
     
     MxParticleType *pt = (MxParticleType*)ob;
-
+    
+    pt->radius = 1.0;
+    pt->minumum_radius = 1.0;
     pt->mass = 1.0;
     pt->charge = 0.0;
     pt->id = 0;
@@ -1301,8 +1347,6 @@ HRESULT engine_particle_base_init(PyObject *m)
     
     return S_OK;
 }
-
-
 
 PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
 {
@@ -1366,12 +1410,19 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
     int self_id = self->id;
 
     MxParticleType *type = &_Engine.types[self->typeId];
+    
+    // volume preserving radius
+    float r2 = self->radius / std::pow(2., 1/3.);
+    
+    if(r2 < type->minumum_radius) {
+        Py_RETURN_NONE;
+    }
 
     MxParticle part = {};
     part.position = self->position;
     part.velocity = self->velocity;
     part.force = {};
-    part.pforce = {};
+    part.persistent_force = {};
     part.q = self->q;
     part.radius = self->radius;
     part.id = engine_next_partid(&_Engine);
@@ -1385,9 +1436,11 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
 
     Magnum::Vector3 sep = {x(CRandom), x(CRandom), x(CRandom)};
     sep = sep.normalized();
-    sep = sep * type->radius / 2.;
+    sep = sep * r2;
 
     try {
+
+        // create a new particle at the same location as the original particle.
         MxParticle *p = NULL;
         Magnum::Vector3 vec;
         space_getpos(&_Engine.s, self->id, vec.data());
@@ -1413,6 +1466,12 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
         p->pyparticle = py;
         
         assert(py->id == _Engine.s.partlist[p->id]->id);
+        
+        // all is good, set the new radii
+        self->radius = r2;
+        p->radius = r2;
+        self->mass = p->mass = self->mass / 2.;
+        self->imass = p->imass = 1. / self->mass;
 
         return py;
     }
@@ -1420,7 +1479,6 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
         e.set_error();
         return NULL;
     }
-
 }
 
 PyObject* particle_fission(MxPyParticle *part, PyObject *args,

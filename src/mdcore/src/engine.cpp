@@ -74,6 +74,9 @@
 
 #include <iostream>
 
+static int engine_advance_forward_euler ( struct engine *e );
+static int engine_advance_runge_kutta_4 ( struct engine *e );
+static int engine_force(struct engine *e);
 
 /** ID of the last error. */
 int engine_err = engine_err_ok;
@@ -399,7 +402,7 @@ int engine_split ( struct engine *e ) {
 
 		/* Make cj the ghost cell and bail if both are real. */
 		if ( ci->flags & cell_flag_ghost ) {
-			ct = ci; ci = cj; cj = ct;
+			ct = ci; cj = ct;
 			k = cid; cid = cjd; cjd = k;
 		}
 		else if ( !( cj->flags & cell_flag_ghost ) )
@@ -1359,15 +1362,11 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 int engine_load ( struct engine *e , double *x , double *v , int *type , int *pid , int *vid , double *q , unsigned int *flags , int N ) {
 
     struct MxParticle p = {};
-	struct space *s;
 	int j, k;
 
 	/* check the inputs. */
 	if ( e == NULL || x == NULL || type == NULL )
 		return error(engine_err_null);
-
-	/* Get a handle on the space. */
-	s = &(e->s);
 
 	/* init the velocity and charge in case not specified. */
 	p.v[0] = 0.0; p.v[1] = 0.0; p.v[2] = 0.0;
@@ -1826,6 +1825,31 @@ static int _toofast_error(MxParticle *p, int line, const char* func) {
  */
 
 int engine_advance ( struct engine *e ) {
+    if(e->integrator == EngineIntegrator::FORWARD_EULER) {
+        return engine_advance_forward_euler(e);
+    }
+    else {
+        return engine_advance_runge_kutta_4(e);
+    }
+}
+
+/**
+ * @brief Update the particle velocities and positions, re-shuffle if
+ *      appropriate.
+ * @param e The #engine on which to run.
+ *
+ * @return #engine_err_ok or < 0 on error (see #engine_err).
+ */
+
+int engine_advance_forward_euler ( struct engine *e ) {
+
+    // set the integrator flag to set any persistent forces
+    // forward euler is a single step, so alwasy set this flag
+    e->integrator_flags |= INTEGRATOR_UPDATE_PERSISTENTFORCE;
+
+    if (engine_force( e ) < 0 ) {
+        return error(engine_err);
+    }
 
     int cid, pid, k, delta[3], step;
     struct space_cell *c, *c_dest;
@@ -1834,7 +1858,7 @@ int engine_advance ( struct engine *e ) {
     FPTYPE dt, w, h[3], h2[3]; // h, h2: edge length of space cells.
     double epot = 0.0, epot_local;
     int toofast;
-    
+
     /* Get a grip on the space. */
     s = &(e->s);
     dt = e->dt;
@@ -1859,8 +1883,8 @@ int engine_advance ( struct engine *e ) {
                 epot_local += c->epot;
                 for ( pid = 0 ; pid < c->count ; pid++ ) {
                     p = &( c->parts[pid] );
-                    w = dt * e->types[p->typeId].imass;
-                    
+                    w = dt * p->imass;
+
                     toofast = 0;
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
@@ -1883,7 +1907,7 @@ int engine_advance ( struct engine *e ) {
             epot += epot_local;
         }
     }
-    else {
+    else { // NOT if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi)) {
 
         /* Collect potential energy from ghosts. */
         for ( cid = 0 ; cid < s->nr_ghost ; cid++ ) {
@@ -1899,9 +1923,9 @@ int engine_advance ( struct engine *e ) {
                 pid = 0;
                 while ( pid < c->count ) {
                     p = &( c->parts[pid] );
-                    w = dt * engine::types[p->typeId].imass;
+                    w = dt * p->imass;
                     toofast = 0;
-                    
+
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
                             p->v[k] += dt * p->f[k] * w;
@@ -1917,11 +1941,282 @@ int engine_advance ( struct engine *e ) {
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
-                    
+
                     if(toofast) {
                         return toofast_error(p);
                     }
-   
+
+                    /* do we have to move this particle? */
+                    // TODO: consolidate moving to one method.
+                    if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] -= delta[k] * h[k];
+                            p->p0[k] -= delta[k] * h[k];
+                        }
+
+                        c_dest = &( s->cells[ space_cellid( s ,
+                                (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
+                                (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
+                                (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
+
+                        pthread_mutex_lock(&c_dest->cell_mutex);
+                        space_cell_add_incomming( c_dest , p );
+                        pthread_mutex_unlock(&c_dest->cell_mutex);
+
+                        s->celllist[ p->id ] = c_dest;
+
+                        // remove a particle from a cell. if the part was the last in the
+                        // cell, simply dec the count, otherwise, move the last part
+                        // in the cell to the ejected part's prev loc.
+                        c->count -= 1;
+                        if ( pid < c->count ) {
+                            c->parts[pid] = c->parts[c->count];
+                            s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
+                        }
+                    }
+                    else {
+                        pid += 1;
+                    }
+                }
+            }
+#pragma omp atomic
+            epot += epot_local;
+        }
+
+        /* Welcome the new particles in each cell. */
+#pragma omp parallel for schedule(static)
+        for ( cid = 0 ; cid < s->nr_marked ; cid++ ) {
+            space_cell_welcome( &(s->cells[ s->cid_marked[cid] ]) , s->partlist );
+        }
+    } // endif NOT if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi))
+
+    /* Store the accumulated potential energy. */
+    s->epot_nonbond += epot;
+    s->epot += epot;
+
+    /* return quietly */
+    return engine_err_ok;
+}
+
+#define CHECK_TOOFAST(p, h, h2) \
+{\
+    for(int _k = 0; _k < 3; _k++) {\
+        if (p->x[_k] >= h2[_k] || p->x[_k] <= -h[_k]) {\
+            return toofast_error(p);\
+        }\
+    }\
+}\
+
+
+
+/**
+ * @brief Update the particle velocities and positions, re-shuffle if
+ *      appropriate.
+ * @param e The #engine on which to run.
+ *
+ * @return #engine_err_ok or < 0 on error (see #engine_err).
+ */
+
+int engine_advance_runge_kutta_4 ( struct engine *e ) {
+
+    int cid, pid, k, delta[3], step;
+    struct space_cell *c, *c_dest;
+    struct MxParticle *p;
+    struct space *s;
+    FPTYPE dt, w, h[3], h2[3]; // h, h2: edge length of space cells.
+    double epot = 0.0, epot_local;
+    int toofast;
+
+    /* Get a grip on the space. */
+    s = &(e->s);
+    dt = e->dt;
+    for ( k = 0 ; k < 3 ; k++ ) {
+        h[k] = s->h[k];
+        h2[k] = 2. * s->h[k];
+    }
+
+    /* update the particle velocities and positions */
+    if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi)) {
+
+        /* Collect potential energy from ghosts. */
+        for ( cid = 0 ; cid < s->nr_ghost ; cid++ )
+            epot += s->cells[ s->cid_ghost[cid] ].epot;
+
+#pragma omp parallel private(cid,c,pid,p,w,k,epot_local)
+        {
+            step = omp_get_num_threads();
+            epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                for ( pid = 0 ; pid < c->count ; pid++ ) {
+                    p = &( c->parts[pid] );
+                    w = dt * p->imass;
+
+                    toofast = 0;
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->v[k] += dt * p->f[k] * w;
+                            p->x[k] += dt * p->v[k];
+                            delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
+                        }
+                    }
+                    else {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] += dt * p->f[k] * w;
+                            delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
+                            toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
+                        }
+                    }
+                }
+            }
+#pragma omp atomic
+            epot += epot_local;
+        }
+    }
+    else { // NOT if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi))
+
+        /* Collect potential energy from ghosts. */
+        for ( cid = 0 ; cid < s->nr_ghost ; cid++ ) {
+            epot += s->cells[ s->cid_ghost[cid] ].epot;
+        }
+
+        // **  get K1, calculate forces at current position **
+        // set the integrator flag to set any persistent forces
+        e->integrator_flags |= INTEGRATOR_UPDATE_PERSISTENTFORCE;
+        if (engine_force( e ) < 0 ) {
+            return error(engine_err);
+        }
+        e->integrator_flags &= ~INTEGRATOR_UPDATE_PERSISTENTFORCE;
+
+#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
+        {
+            step = omp_get_num_threads(); epot_local = 0.0;
+            toofast = 0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                pid = 0;
+                
+                while ( pid < c->count ) {
+                    p = &( c->parts[pid] );
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        p->vk[0] = p->force * p->imass;
+                        p->xk[0] = p->velocity;
+                    }
+                    else {
+                        p->xk[0] = p->force * p->imass;
+                    }
+
+                    // update position for k2
+                    p->p0 = p->position;
+                    p->v0 = p->velocity;
+                    p->position = p->p0 + 0.5 * dt * p->xk[0];
+                    CHECK_TOOFAST(p, h, h2);
+                    pid += 1;
+                }
+            }
+        }
+
+        // ** get K2, calculate forces at x0 + 1/2 dt k1 **
+        if (engine_force( e ) < 0 ) {
+            return error(engine_err);
+        }
+
+#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
+        {
+            step = omp_get_num_threads(); epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                pid = 0;
+                while ( pid < c->count ) {
+                    p = &( c->parts[pid] );
+
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        p->vk[1] = p->force * p->imass;
+                        p->xk[1] = p->v0 + 0.5 * dt * p->vk[0];
+                    }
+                    else {
+                        p->xk[1] = p->force * p->imass;
+                    }
+
+                    // setup pos for next k3
+                    p->position = p->p0 + 0.5 * dt * p->xk[1];
+                    CHECK_TOOFAST(p, h, h2);
+                    pid += 1;
+                }
+            }
+        }
+
+        // ** get K3, calculate forces at x0 + 1/2 dt k2 **
+        if (engine_force( e ) < 0 ) {
+            return error(engine_err);
+        }
+
+#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
+        {
+            step = omp_get_num_threads(); epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                pid = 0;
+                while ( pid < c->count ) {
+                    p = &( c->parts[pid] );
+
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        p->vk[2] = p->force * p->imass;
+                        p->xk[2] = p->v0 + 0.5 * dt * p->vk[1];
+                    }
+                    else {
+                        p->xk[2] = p->force * p->imass;
+                    }
+
+                    // setup pos for next k3
+                    p->position = p->p0 + dt * p->xk[2];
+                    CHECK_TOOFAST(p, h, h2);
+                    pid += 1;
+                }
+            }
+        }
+
+        // ** get K4, calculate forces at x0 + dt k3, final position calculation **
+        if (engine_force( e ) < 0 ) {
+            return error(engine_err);
+        }
+
+#pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
+        {
+            step = omp_get_num_threads(); epot_local = 0.0;
+            for ( cid = omp_get_thread_num() ; cid < s->nr_real ; cid += step ) {
+                c = &(s->cells[ s->cid_real[cid] ]);
+                epot_local += c->epot;
+                pid = 0;
+                while ( pid < c->count ) {
+                    p = &( c->parts[pid] );
+                    toofast = 0;
+
+                    if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
+                        p->vk[3] = p->imass * p->force;
+                        p->xk[3] = p->v0 + dt * p->vk[2];
+                        p->velocity = p->v0 + (dt/6.) * (p->vk[0] + 2*p->vk[1] + 2 * p->vk[2] + p->vk[3]);
+                    }
+                    else {
+                        p->xk[3] = p->imass * p->force;
+                    }
+                    
+                    p->position = p->p0 + (dt/6.) * (p->xk[0] + 2*p->xk[1] + 2 * p->xk[2] + p->xk[3]);
+
+                    for(int k = 0; k < 3; ++k) {
+                        delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                        toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
+                    }
+
+                    if(toofast) {
+                        return toofast_error(p);
+                    }
+
                     /* do we have to move this particle? */
                     if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
                         for ( k = 0 ; k < 3 ; k++ ) {
@@ -1959,9 +2254,11 @@ int engine_advance ( struct engine *e ) {
 
         /* Welcome the new particles in each cell. */
 #pragma omp parallel for schedule(static)
-        for ( cid = 0 ; cid < s->nr_marked ; cid++ )
+        for ( cid = 0 ; cid < s->nr_marked ; cid++ ) {
             space_cell_welcome( &(s->cells[ s->cid_marked[cid] ]) , s->partlist );
-    }
+        }
+
+    } // endif  NOT if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi))
 
     /* Store the accumulated potential energy. */
     s->epot_nonbond += epot;
@@ -1994,105 +2291,8 @@ int engine_step ( struct engine *e ) {
 	/* increase the time stepper */
 	e->time += 1;
 
-	// clear the energy on the types
-    // TODO: should go in prepare space for better performance
-    engine_kinetic_energy(e);
+	engine_advance(e);
 
-	/* prepare the space, sets forces to zero */
-	tic = getticks();
-	if ( space_prepare( &e->s ) != space_err_ok )
-		return error(engine_err_space);
-	e->timers[engine_timer_prepare] += getticks() - tic;
-
-	/* Make sure the verlet lists are up to date. */
-	if ( e->flags & engine_flag_verlet ) {
-
-		/* Start the clock. */
-		tic = getticks();
-
-		/* Check particle movement and update cells if necessary. */
-        if ( engine_verlet_update( e ) < 0 ) {
-			return error(engine_err);
-        }
-
-		/* Store the timing. */
-		e->timers[engine_timer_verlet] += getticks() - tic;
-	}
-    
-
-
-	/* Otherwise, if async MPI, move the particles accross the
-       node boundaries. */
-	else { // if ( e->flags & engine_flag_async ) {
-		tic = getticks();
-        if ( engine_shuffle( e ) < 0 ) {
-			return error(engine_err_space);
-        }
-		e->timers[engine_timer_advance] += getticks() - tic;
-	}
-    
-
-
-#ifdef WITH_MPI
-	/* Re-distribute the particles to the processors. */
-	if ( e->flags & engine_flag_mpi ) {
-
-		/* Start the clock. */
-		tic = getticks();
-
-		if ( e->flags & engine_flag_async ) {
-			if ( engine_exchange_async( e ) < 0 )
-				return error(engine_err);
-		}
-		else {
-			if ( engine_exchange( e ) < 0 )
-				return error(engine_err);
-		}
-
-		/* Store the timing. */
-		e->timers[engine_timer_exchange1] += getticks() - tic;
-
-	}
-#endif
-
-	/* Compute the non-bonded interactions. */
-	tic = getticks();
-#if defined(HAVE_CUDA) && defined(WITH_CUDA)
-	if ( e->flags & engine_flag_cuda ) {
-		if ( engine_nonbond_cuda( e ) < 0 )
-			return error(engine_err);
-	}
-	else
-#endif
-
-    if ( engine_nonbond_eval( e ) < 0 ) {
-        return error(engine_err);
-    }
-
-    e->timers[engine_timer_nonbond] += getticks() - tic;
-
-    /* Clear the verlet-rebuild flag if it was set. */
-    if ( e->flags & engine_flag_verlet && e->s.verlet_rebuild )
-        e->s.verlet_rebuild = 0;
-
-    /* Do bonded interactions. */
-    tic = getticks();
-    if ( e->flags & engine_flag_sets ) {
-        if ( engine_bonded_eval_sets( e ) < 0 )
-            return error(engine_err);
-    }
-    else {
-        if ( engine_bonded_eval( e ) < 0 )
-            return error(engine_err);
-    }
-    e->timers[engine_timer_bonded] += getticks() - tic;
-
-    /* update the particle velocities and positions. */
-    tic = getticks();
-    
-    if (engine_advance( e ) < 0 ) {
-        return error(engine_err);
-    }
 
     e->timers[engine_timer_advance] += getticks() - tic;
 
@@ -2137,14 +2337,106 @@ int engine_step ( struct engine *e ) {
 
 	/* Stop the clock. */
 	e->timers[engine_timer_step] += getticks() - tic_step;
-    
+
     // notify time listeners
     if(!SUCCEEDED(CMulticastTimeEvent_Invoke(e->on_time, e->time * e->dt))) {
         return error(engine_err);
     }
-    
+
 	/* return quietly */
 	return engine_err_ok;
+}
+
+int engine_force(struct engine *e) {
+
+    ticks tic, tic_step = getticks();
+
+    // clear the energy on the types
+    // TODO: should go in prepare space for better performance
+    engine_kinetic_energy(e);
+
+    /* prepare the space, sets forces to zero */
+    tic = getticks();
+    if ( space_prepare( &e->s ) != space_err_ok )
+        return error(engine_err_space);
+    e->timers[engine_timer_prepare] += getticks() - tic;
+
+    /* Make sure the verlet lists are up to date. */
+    if ( e->flags & engine_flag_verlet ) {
+
+        /* Start the clock. */
+        tic = getticks();
+
+        /* Check particle movement and update cells if necessary. */
+        if ( engine_verlet_update( e ) < 0 ) {
+            return error(engine_err);
+        }
+
+        /* Store the timing. */
+        e->timers[engine_timer_verlet] += getticks() - tic;
+    }
+    
+
+    /* Otherwise, if async MPI, move the particles accross the
+       node boundaries. */
+    else { // if ( e->flags & engine_flag_async ) {
+        tic = getticks();
+        if ( engine_shuffle( e ) < 0 ) {
+            return error(engine_err_space);
+        }
+        e->timers[engine_timer_advance] += getticks() - tic;
+    }
+    
+
+#ifdef WITH_MPI
+    /* Re-distribute the particles to the processors. */
+    if ( e->flags & engine_flag_mpi ) {
+
+        /* Start the clock. */
+        tic = getticks();
+
+        if ( e->flags & engine_flag_async ) {
+            if ( engine_exchange_async( e ) < 0 )
+                return error(engine_err);
+        }
+        else {
+            if ( engine_exchange( e ) < 0 )
+                return error(engine_err);
+        }
+
+        /* Store the timing. */
+        e->timers[engine_timer_exchange1] += getticks() - tic;
+
+    }
+#endif
+
+    /* Compute the non-bonded interactions. */
+    tic = getticks();
+
+    if ( engine_nonbond_eval( e ) < 0 ) {
+        return error(engine_err);
+    }
+
+    e->timers[engine_timer_nonbond] += getticks() - tic;
+
+    /* Clear the verlet-rebuild flag if it was set. */
+    if ( e->flags & engine_flag_verlet && e->s.verlet_rebuild )
+        e->s.verlet_rebuild = 0;
+
+    /* Do bonded interactions. */
+    tic = getticks();
+    if ( e->flags & engine_flag_sets ) {
+        if ( engine_bonded_eval_sets( e ) < 0 )
+            return error(engine_err);
+    }
+    else {
+        if ( engine_bonded_eval( e ) < 0 )
+            return error(engine_err);
+    }
+    e->timers[engine_timer_bonded] += getticks() - tic;
+
+
+    return engine_err_ok;
 }
 
 
@@ -2333,6 +2625,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* default Boltzmann constant to 1 */
     e->K = 1.0;
 
+    e->integrator_flags = 0;
+
     /* Check for bad flags. */
 #ifdef FPTYPE_DOUBLE
     if ( e->flags & engine_flag_cuda )
@@ -2450,6 +2744,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     
     e->on_time = CMulticastTimeEvent_New();
 
+    e->integrator = EngineIntegrator::FORWARD_EULER;
+
     e->flags |= engine_flag_initialized;
 
     /* all is well... */
@@ -2554,9 +2850,9 @@ int engine_next_partid(struct engine *e)
 {
     // TODO: not the most effecient algorithm...
     space *s = &e->s;
-    int i = 0;
+    int i;
     
-    for(i; i < s->nr_parts; ++i) {
+    for(i = 0; i < s->nr_parts; ++i) {
         if(s->partlist[i] == NULL) {
             return i;
         }

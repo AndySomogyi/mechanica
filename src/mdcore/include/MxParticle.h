@@ -87,23 +87,39 @@ struct MxParticle  {
         Magnum::Vector3 velocity __attribute__ ((aligned (16))) = {0,0,0};
     };
 
-	/** Particle force */
+	/**
+	 * Particle force
+	 *
+	 * ONLY the coherent part of the force should go here. We use multi-step
+	 * integrators, that need to separate the random and coherent forces.
+	 */
     union {
         FPTYPE f[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 force __attribute__ ((aligned (16))) = {0,0,0};
     };
     
-    /** persistant force */
+    /** random force force */
     union {
-        FPTYPE pf[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 pforce __attribute__ ((aligned (16))) = {0,0,0};
+        Magnum::Vector3 persistent_force __attribute__ ((aligned (16))) = {0,0,0};
     };
+    
 
+    // inverse mass
+    double imass;
+
+    float radius;
+    
+    double mass;
 
 	/** individual particle charge, if needed. */
 	float q;
+
+	// runge-kutta k intermediates.
+	Magnum::Vector3 p0;
+	Magnum::Vector3 v0;
+	Magnum::Vector3 xk[4];
+	Magnum::Vector3 vk[4];
     
-    float radius;
 
 	/** 
 	 * Particle id, virtual id 
@@ -184,6 +200,14 @@ struct MxParticleType : PyHeapTypeObject {
     double potential_energy;
     
     double target_energy;
+    
+    /**
+     * minimum radius, if a fission event occurs, it will not spit a particle
+     * such that it's radius gets less than this value.
+     *
+     * defaults to radius
+     */
+    double minumum_radius;
 
     /** Nonbonded interaction parameters. */
     double eps, rmin;
