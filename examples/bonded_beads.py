@@ -18,14 +18,14 @@ class Bead(m.Particle):
     radius = 0.2
     dynamics = m.Overdamped
 
-pot_bb = m.Potential.soft_sphere(kappa=20, epsilon=5.0, \
+pot_bb = m.Potential.soft_sphere(kappa=0.2, epsilon=0.05, \
                                  r0=0.2, eta=4, tol=0.01, min=0.01, max=0.5)
 
 # hamonic bond between particles
-pot_bond = m.Potential.harmonic(k=40., r0=0.2, max = 2)
+pot_bond = m.Potential.harmonic(k=0.4, r0=0.2, max = 2)
 
 # angle bond potential
-pot_ang = m.Potential.harmonic_angle(k=20, theta0 = 0.85*np.pi, tol=0.1)
+pot_ang = m.Potential.harmonic_angle(k=0.2, theta0 = 0.85*np.pi, tol=0.1)
 
 # bind the potential with the *TYPES* of the particles
 m.bind(pot_bb, Bead, Bead)
@@ -33,7 +33,7 @@ m.bind(pot_bb, Bead, Bead)
 # create a random force. In overdamped dynamcis, we neeed a random force to
 # enable the objects to move around, otherwise they tend to get trapped
 # in a potential
-rforce = m.forces.random(0, 1)
+rforce = m.forces.random(0, 0.1)
 
 # bind it just like any other force
 m.bind(rforce, Bead)

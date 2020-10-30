@@ -7,7 +7,7 @@ cutoff = 1
 # new simulator, don't load any example
 m.Simulator(example="", dim=[20., 20., 20.])
 
-pot = m.Potential.soft_sphere(kappa=500, epsilon=1000,
+pot = m.Potential.soft_sphere(kappa=5, epsilon=1,
     r0=0.6, eta=3, tol = 0.1, min=0.05, max=4)
 
 class Cell(m.Particle):

@@ -28,13 +28,13 @@ class B(m.Particle):
 
 
 # create three potentials, for each kind of particle interaction
-pot_aa = m.Potential.soft_sphere(kappa=400, epsilon=40, r0=1.5, \
+pot_aa = m.Potential.soft_sphere(kappa=4, epsilon=0.5, r0=1.5, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
-pot_bb = m.Potential.soft_sphere(kappa=400, epsilon=40, r0=1.5, \
+pot_bb = m.Potential.soft_sphere(kappa=4, epsilon=0.5, r0=1.5, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
-pot_ab = m.Potential.soft_sphere(kappa=400, epsilon=5, r0=1.5, \
+pot_ab = m.Potential.soft_sphere(kappa=4, epsilon=0.01, r0=1.5, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
 
