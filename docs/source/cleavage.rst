@@ -44,7 +44,7 @@ The `Cluster.cleave` method is the single entry point for all cleavage
 operations, and it supports a lot of different options.
 
 Cleavage is built on the concept of embryo cleavage. Embryology introduced some
-rather unusual terminolgy that we adopt here. First off, embryologists have a
+rather interesting terminolgy that we adopt here. First off, embryologists have a
 concept called an *animal* and *vegatble* poles. We represent these concepts
 using the built-in base `Particle.orientation` vector, and here we use this
 vector to represent a direction from the vegatable pole to the animal pole. All
