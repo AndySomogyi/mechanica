@@ -172,6 +172,59 @@ A potential can be treated just like any python callable object to evaluate it::
          .. math::
 
             k (r-r_0)^2
+
+      .. staticmethod:: soft_sphere(kappa, epsilon, r0, eta, min, max, tol)
+
+         Creates a soft sphere interaction potential. The soft sphere is a
+         generalized Lennard Jones type potentail, but you can varry the
+         exponents to create a softer interaction.
+
+         :param kappa:
+         :param epsilon:
+         :param r0:
+         :param eta:
+         :param min:
+         :param max:
+         :param tol:
+
+
+      .. staticmethod:: glj(e, [m], [n], [min], [max], [tol])
+
+         :param e: effective energy of the potential 
+         :param m: order of potential, defaults to 6
+         :param n: order of potential, defaults to 2*m
+         :param min:  minimum distance, defaults to 0.1
+         :param max:  max distance, defaults to 10
+         :param tol:  tolerance, defaults to 0.001
+
+         Generalized Lennard-Jones potential.
+
+         .. math::
+
+            V^{GLJ}_{m,n}(r) = \frac{\epsilon}{n-m} \left[ m \left( \frac{r_e}{r}
+            \right)^n - n \left( \frac{r_e}{r} \right) ^ m \right]
+
+         where :math:`r_e` is the effective radius, which is automatically
+         computed as the sum of the interacting particle radii.
+
+         .. figure:: glj.png
+            :width: 500px
+            :align: center
+            :alt: alternate text
+            :figclass: align-center
+
+               
+
+            The Generalized Lennard-Jones potential for different exponents
+            :math:`(m, n)` with fixed :math:`n = 2m`.  As the exponents grow smaller,
+            the potential flattens out and becomes softer, but as the exponents grow
+            larger the potential becomes narrower and sharper, and approaches
+            the hard sphere potential.
+
+
+
+
+
  
 
 

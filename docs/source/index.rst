@@ -19,8 +19,10 @@ Contents:
    quick_start
    examples
    concepts
-   bonded_interactions
+   clusters
+   cleavage
    flux
+   bonded_interactions
    continuum-reactions
    network-object-model
    formalism
