@@ -26,7 +26,14 @@ daughter cluster. Split accepts an optional `plane` argument to define a
 cleavage plane. `plane` can be either a vector in which it defines the plane
 normal vectur, and `split` uses the center of mass of the custer, or `plane` can
 be a two vectors in which case it's interpreted as a point and normal, to define
-the cleavage plane. 
+the cleavage plane.
+
+For example, to split a cluster along the `x` axis, we can::
+
+  c = MyCell(...)
+  d = c.split(plane=[1., 0., 0.])
+
+where `d` is the new daughter cell. 
 
 
 Cleavage
