@@ -159,7 +159,7 @@ int engine_shuffle ( struct engine *e ) {
 
 #ifdef WITH_MPI
 	/* Get the incomming particle from other procs if needed. */
-	if ( e->flags & engine_flag_mpi )
+	if ( e->particle_flags & engine_flag_mpi )
 		if ( engine_exchange_incomming( e ) < 0 )
 			return error(engine_err);
 #endif
@@ -274,7 +274,7 @@ int engine_verlet_update ( struct engine *e ) {
 
 #ifdef WITH_MPI
 /* Collect the maximum displacement from other nodes. */
-if ( ( e->flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
+if ( ( e->particle_flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
 	/* Do not use in-place as it is buggy when async is going on in the background. */
 	if ( MPI_Allreduce( MPI_IN_PLACE , &maxdx , 1 , MPI_DOUBLE , MPI_MAX , e->comm ) != MPI_SUCCESS )
 		return error(engine_err_mpi);
@@ -296,7 +296,7 @@ if ( ( e->flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
 		/* Wait for any unterminated exchange. */
 		tic = getticks();
 #ifdef WITH_MPI
-		if ( e->flags & engine_flag_async )
+		if ( e->particle_flags & engine_flag_async )
 			if ( engine_exchange_wait( e ) < 0 )
 				return error(engine_err);
 #endif
@@ -511,7 +511,7 @@ int engine_split ( struct engine *e ) {
 	for ( cid = 0 ; cid < s->nr_cells ; cid++ )
 		if ( s->cells[cid].flags & cell_flag_ghost )
 			for ( k = 0 ; k < s->cells[cid].count ; k++ )
-				s->cells[cid].parts[k].flags |= PARTICLE_FLAG_GHOST;
+				s->cells[cid].parts[k].flags |= PARTICLE_GHOST;
 
 	/* Fill the cid lists with marked, local and ghost cells. */
 	s->nr_real = 0; s->nr_ghost = 0; s->nr_marked = 0;
@@ -543,7 +543,7 @@ int engine_split ( struct engine *e ) {
  *
  *@return #engine_err_ok or < 0 on error (see #engine_err).
  */
-int engine_split_METIS ( struct engine *e, int N, int flags){
+int engine_split_METIS ( struct engine *e, int N, int particle_flags){
 
 	//printf("Using METIS algorithm to split the space\n");
 	int currentIndex, i,j,shiftDim,neighbor;
@@ -554,14 +554,14 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 	//Do single GPU version ie. N = 1
 	if(N==1)
 	{
-		if( flags == engine_split_MPI )
+		if( particle_flags == engine_split_MPI )
 		{
 			for(i = 0; i < e->s.nr_cells; i++ )
 			{
 				e->s.cells[i].nodeID = 0;
 
 			}
-		}else if ( flags == engine_split_GPU )
+		}else if ( particle_flags == engine_split_GPU )
 		{
 			for( i = 0 ; i < e->s.nr_cells ; i++ )
 			{
@@ -732,18 +732,18 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 
 	//Run METIS to partition the graph
 	METIS_PartGraphKway( nvtxs , ncon , xadj , adjncy , vwgt , NULL , adjwgt , nparts , NULL , NULL , options , objval , MxParticle );
-	if( flags == engine_split_MPI )
+	if( particle_flags == engine_split_MPI )
 	{
 		for(i = 0; i < e->s.nr_cells; i++ )
 		{
 			e->s.cells[i].nodeID = MxParticle[i];
 			//Not my cell? Mark as ghost.
 			if(MxParticle[i] != e->nodeID)
-				e->s.cells[i].flags |= cell_flag_ghost;
+				e->s.cells[i].particle_flags |= cell_flag_ghost;
 			e->nr_nodes = N;
 
 		}
-	}else if ( flags == engine_split_GPU )
+	}else if ( particle_flags == engine_split_GPU )
 	{
 		int part1 = 0;
 		int part2 = 0;
@@ -780,7 +780,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 
 	/* Bisect recursively */
 	/* Interior, recursive function that actually does the split. */
-	int engine_split_bisect_rec( int N_min , int N_max , int x_min , int x_max , int y_min , int y_max , int z_min , int z_max , int flags) {
+	int engine_split_bisect_rec( int N_min , int N_max , int x_min , int x_max , int y_min , int y_max , int z_min , int z_max , int particle_flags) {
 
 		int i, j, k, m, Nm;
 		int hx, hy, hz;
@@ -795,7 +795,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 		if ( N_min == N_max ) {
 
 			/* Flag as ghost or not? */
-			if( flags == engine_split_MPI )
+			if( particle_flags == engine_split_MPI )
 			{
 				if ( N_min != e->nodeID )
 					flag = cell_flag_ghost;
@@ -808,7 +808,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 					for ( j = y_min ; j < y_max ; j++ )
 						for ( k = z_min ; k < z_max ; k++ ) {
 							c = &( e->s.cells[ space_cellid(&(e->s),i,j,k) ] );
-							c->flags |= flag;
+							c->particle_flags |= flag;
 							c->nodeID = N_min;
 						}
 			}else{
@@ -833,24 +833,24 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 			/* Is the x-axis the largest? */
 					if ( hx > hy && hx > hz ) {
 						m = (x_min + x_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , m , y_min , y_max , z_min , z_max , flags) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , m , x_max , y_min , y_max , z_min , z_max , flags) < 0 )
+						if ( engine_split_bisect_rec( N_min , Nm , x_min , m , y_min , y_max , z_min , z_max , particle_flags) < 0 ||
+								engine_split_bisect_rec( Nm+1 , N_max , m , x_max , y_min , y_max , z_min , z_max , particle_flags) < 0 )
 							return error(engine_err);
 					}
 
 					/* Nope, maybe the y-axis? */
 					else if ( hy > hz ) {
 						m = (y_min + y_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , m , z_min , z_max , flags ) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , m , y_max , z_min , z_max , flags) < 0 )
+						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , m , z_min , z_max , particle_flags ) < 0 ||
+								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , m , y_max , z_min , z_max , particle_flags) < 0 )
 							return error(engine_err);
 					}
 
 					/* Then it has to be the z-axis. */
 					else {
 						m = (z_min + z_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , y_max , z_min , m , flags) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , y_min , y_max , m , z_max , flags) < 0 )
+						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , y_max , z_min , m , particle_flags) < 0 ||
+								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , y_min , y_max , m , z_max , particle_flags) < 0 )
 							return error(engine_err);
 					}
 
@@ -866,7 +866,7 @@ int engine_split_METIS ( struct engine *e, int N, int flags){
 		return error(engine_err_null);
 
 	/* Call the recursive bisection. */
-	if ( engine_split_bisect_rec( 0 , N-1 , 0 , e->s.cdim[0] , 0 , e->s.cdim[1] , 0 , e->s.cdim[2] , flags) < 0 )
+	if ( engine_split_bisect_rec( 0 , N-1 , 0 , e->s.cdim[0] , 0 , e->s.cdim[1] , 0 , e->s.cdim[2] , particle_flags) < 0 )
 		return error(engine_err);
 
 	/* Store the number of nodes. */
@@ -1298,11 +1298,11 @@ int engine_unload_strays ( struct engine *e , double *x , double *v , int *type 
 		epot_acc += c->epot;
 
 		/* Loop over the parts in this cell. */
-		for ( k = c->count-1 ; k >= 0 && !(c->parts[k].flags & PARTICLE_FLAG_GHOST) ; k-- ) {
+		for ( k = c->count-1 ; k >= 0 && !(c->parts[k].flags & PARTICLE_GHOST) ; k-- ) {
 
 			/* Get a hold of the particle. */
 			p = &( c->parts[k] );
-			if ( p->flags & PARTICLE_FLAG_GHOST )
+			if ( p->flags & PARTICLE_GHOST )
 				continue;
 
 			/* get this particle's data, where requested. */
@@ -1372,7 +1372,7 @@ int engine_load ( struct engine *e , double *x , double *v , int *type , int *pi
 	p.v[0] = 0.0; p.v[1] = 0.0; p.v[2] = 0.0;
 	p.f[0] = 0.0; p.f[1] = 0.0; p.f[2] = 0.0;
 	p.q = 0.0;
-	p.flags = PARTICLE_FLAG_NONE;
+	p.flags = PARTICLE_NONE;
 
 	/* loop over the entries. */
 	for ( j = 0 ; j < N ; j++ ) {
@@ -1441,7 +1441,7 @@ int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , 
 	p.v[0] = 0.0; p.v[1] = 0.0; p.v[2] = 0.0;
 	p.f[0] = 0.0; p.f[1] = 0.0; p.f[2] = 0.0;
 	p.q = 0.0;
-	p.flags = PARTICLE_FLAG_GHOST;
+	p.flags = PARTICLE_GHOST;
 
 	/* loop over the entries. */
 	for ( j = 0 ; j < N ; j++ ) {
@@ -1455,7 +1455,7 @@ int engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , 
 		if ( vid != NULL )
 			p.vid = vid[j];
 		if ( flags != NULL )
-			p.flags = flags[j] | PARTICLE_FLAG_GHOST;
+			p.flags = flags[j] | PARTICLE_GHOST;
 		if ( v != NULL )
 			for ( k = 0 ; k < 3 ; k++ )
 				p.v[k] = v[j*3+k];
@@ -1586,13 +1586,15 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 		return error(engine_err_null);
 	if ( i < 0 || i >= e->nr_types || j < 0 || j >= e->nr_types )
 		return error(engine_err_range);
+    
+    MxPotential **pots = p->flags & POTENTIAL_BOUND ? e->p_bound : e->p;
 
 	/* store the potential. */
-	e->p[ i * e->max_type + j ] = p;
+	pots[ i * e->max_type + j ] = p;
     Py_INCREF(p);
     
     if ( i != j ) {
-		e->p[ j * e->max_type + i ] = p;
+		pots[ j * e->max_type + i ] = p;
         Py_INCREF(p);
     }
 
@@ -1641,7 +1643,7 @@ int engine_start ( struct engine *e , int nr_runners , int nr_queues ) {
 
 #ifdef WITH_MPI
 	/* Set up async communication? */
-	if ( e->flags & engine_flag_async ) {
+	if ( e->particle_flags & engine_flag_async ) {
 
 		/* Init the mutex and condition variable for the asynchronous communication. */
 		if ( pthread_mutex_init( &e->xchg_mutex , NULL ) != 0 ||
@@ -1855,9 +1857,10 @@ int engine_advance_forward_euler ( struct engine *e ) {
     struct space_cell *c, *c_dest;
     struct MxParticle *p;
     struct space *s;
-    FPTYPE dt, w, h[3], h2[3]; // h, h2: edge length of space cells.
+    FPTYPE dt, h[3], h2[3], maxv[3], maxv2[3], maxx[3], maxx2[3]; // h, h2: edge length of space cells.
     double epot = 0.0, epot_local;
     int toofast;
+    float dx, v, neg;
 
     /* Get a grip on the space. */
     s = &(e->s);
@@ -1865,6 +1868,13 @@ int engine_advance_forward_euler ( struct engine *e ) {
     for ( k = 0 ; k < 3 ; k++ ) {
         h[k] = s->h[k];
         h2[k] = 2. * s->h[k];
+        
+        // max velocity and step, as a fraction of cell size. 
+        maxv[k] = (h[k] * e->particle_max_dist_fraction) / dt;
+        maxv2[k] = maxv[k] * maxv[k];
+        
+        maxx[k] = h[k] * e->particle_max_dist_fraction;
+        maxx2[k] = maxx[k] * maxx[k];
     }
 
     /* update the particle velocities and positions */
@@ -1883,20 +1893,19 @@ int engine_advance_forward_euler ( struct engine *e ) {
                 epot_local += c->epot;
                 for ( pid = 0 ; pid < c->count ; pid++ ) {
                     p = &( c->parts[pid] );
-                    w = dt * p->imass;
 
                     toofast = 0;
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            p->v[k] += dt * p->f[k] * w;
-                            p->x[k] += dt * p->v[k];
+                            p->v[k] += p->f[k] * dt * p->imass;
+                            p->x[k] += p->v[k] * dt;
                             delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
                     else {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            p->x[k] += dt * p->f[k] * w;
+                            p->x[k] += p->f[k] * dt * p->imass;
                             delta[k] = isgreaterequal( p->x[k] , h[k] ) - isless( p->x[k] , 0.0 );
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
@@ -1923,12 +1932,13 @@ int engine_advance_forward_euler ( struct engine *e ) {
                 pid = 0;
                 while ( pid < c->count ) {
                     p = &( c->parts[pid] );
-                    w = dt * p->imass;
                     toofast = 0;
-
+                    
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            p->v[k] += dt * p->f[k] * w;
+                            v = p->v[k] +  dt * p->f[k] * p->imass;
+                            neg = v / abs(v);
+                            p->v[k] = v * v <= maxv2[k] ? v : neg * maxv[k];
                             p->x[k] += dt * p->v[k];
                             delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
@@ -1936,7 +1946,11 @@ int engine_advance_forward_euler ( struct engine *e ) {
                     }
                     else {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            p->x[k] += dt * p->f[k] * w;
+                            
+                            dx = dt * p->f[k] * p->imass;
+                            neg = dx / abs(dx); // could be NaN, but only used if dx is > maxx.
+                            p->x[k] += dx * dx <= maxx2[k] ? dx : neg * maxx[k];
+                            
                             delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
@@ -2023,9 +2037,11 @@ int engine_advance_runge_kutta_4 ( struct engine *e ) {
     struct space_cell *c, *c_dest;
     struct MxParticle *p;
     struct space *s;
-    FPTYPE dt, w, h[3], h2[3]; // h, h2: edge length of space cells.
+    FPTYPE dt, w, h[3], h2[3], maxv[3], maxv2[3], maxx[3], maxx2[3]; // h, h2: edge length of space cells.
     double epot = 0.0, epot_local;
     int toofast;
+
+    Magnum::Vector3  dx, v, neg;
 
     /* Get a grip on the space. */
     s = &(e->s);
@@ -2033,6 +2049,12 @@ int engine_advance_runge_kutta_4 ( struct engine *e ) {
     for ( k = 0 ; k < 3 ; k++ ) {
         h[k] = s->h[k];
         h2[k] = 2. * s->h[k];
+
+        maxv[k] = h[k] / (e->particle_max_dist_fraction * dt);
+        maxv2[k] = maxv[k] * maxv[k];
+
+        maxx[k] = h[k] / (e->particle_max_dist_fraction);
+        maxx2[k] = maxx[k] * maxx[k];
     }
 
     /* update the particle velocities and positions */
@@ -2301,7 +2323,7 @@ int engine_step ( struct engine *e ) {
 
 #ifdef WITH_MPI
 		/* If we have to do some communication first... */
-		if ( e->flags & engine_flag_mpi ) {
+		if ( e->particle_flags & engine_flag_mpi ) {
 
 			/* Sort the constraints. */
 			tic = getticks();
@@ -2312,7 +2334,7 @@ int engine_step ( struct engine *e ) {
 			/* Start the clock. */
 			tic = getticks();
 
-			if ( e->flags & engine_flag_async ) {
+			if ( e->particle_flags & engine_flag_async ) {
 				if ( engine_exchange_rigid_async( e ) != 0 )
 					return error(engine_err);
 			}
@@ -2390,12 +2412,12 @@ int engine_force(struct engine *e) {
 
 #ifdef WITH_MPI
     /* Re-distribute the particles to the processors. */
-    if ( e->flags & engine_flag_mpi ) {
+    if ( e->particle_flags & engine_flag_mpi ) {
 
         /* Start the clock. */
         tic = getticks();
 
-        if ( e->flags & engine_flag_async ) {
+        if ( e->particle_flags & engine_flag_async ) {
             if ( engine_exchange_async( e ) < 0 )
                 return error(engine_err);
         }
@@ -2510,10 +2532,10 @@ int engine_barrier ( struct engine *e ) {
  */
 
 #ifdef WITH_MPI
-int engine_init_mpi ( struct engine *e , const double *origin , const double *dim , double *L , double cutoff , unsigned int period , int max_type , unsigned int flags , MPI_Comm comm , int rank ) {
+int engine_init_mpi ( struct engine *e , const double *origin , const double *dim , double *L , double cutoff , unsigned int period , int max_type , unsigned int particle_flags , MPI_Comm comm , int rank ) {
 
 	/* Init the engine. */
-	if ( engine_init( e , origin , dim , L , cutoff , period , max_type , flags | engine_flag_mpi ) < 0 )
+	if ( engine_init( e , origin , dim , L , cutoff , period , max_type , particle_flags | engine_flag_mpi ) < 0 )
 		return error(engine_err);
 
 	/* Store the MPI Comm and rank. */
@@ -2537,80 +2559,86 @@ int engine_init_mpi ( struct engine *e , const double *origin , const double *di
 
 int engine_finalize ( struct engine *e ) {
 
-	int j, k;
+    int j, k;
 
-	/* make sure the inputs are ok */
-	if ( e == NULL )
-		return error(engine_err_null);
+    /* make sure the inputs are ok */
+    if ( e == NULL )
+        return error(engine_err_null);
 
-	/* Shut down the runners, if they were started. */
-	if ( e->runners != NULL ) {
-		for ( k = 0 ; k < e->nr_runners ; k++ )
-			if ( pthread_cancel( e->runners[k].thread ) != 0 )
-				return error(engine_err_pthread);
-		free( e->runners );
-		free( e->queues );
-	}
+    /* Shut down the runners, if they were started. */
+    if ( e->runners != NULL ) {
+        for ( k = 0 ; k < e->nr_runners ; k++ )
+            if ( pthread_cancel( e->runners[k].thread ) != 0 )
+                return error(engine_err_pthread);
+        free( e->runners );
+        free( e->queues );
+    }
 
-	/* Finalize the space. */
-	// if ( space_finalize( &e->s ) < 0 )
-	//     return error(engine_err_space);
+    /* Finalize the space. */
+    // if ( space_finalize( &e->s ) < 0 )
+    //     return error(engine_err_space);
 
-	/* Free-up the types. */
-	free( e->types );
+    /* Free-up the types. */
+    free( e->types );
 
-	/* Free the potentials. */
-	if ( e->p != NULL ) {
-		for ( j = 0 ; j < e->nr_types ; j++ )
-			for ( k = j ; k < e->nr_types ; k++ ) {
-				if ( e->p[ j*e->max_type + k ] != NULL )
-					potential_clear( e->p[ j*e->max_type + k ] );
-			}
+    /* Free the potentials. */
+    if ( e->p != NULL ) {
+        for ( j = 0 ; j < e->nr_types ; j++ ) {
+            for ( k = j ; k < e->nr_types ; k++ ) {
+                if ( e->p[ j*e->max_type + k ] != NULL )
+                    potential_clear( e->p[ j*e->max_type + k ] );
+            }
+        }
 
-		for ( k = 0 ; k < e->nr_dihedralpots ; k++ )
-			potential_clear( e->p_dihedral[k] );
-		free( e->p );
-	}
+        for ( j = 0 ; j < e->nr_types ; j++ ) {
+            for ( k = j ; k < e->nr_types ; k++ ) {
+                if ( e->p[ j*e->max_type + k ] != NULL )
+                    potential_clear( e->p_bound[ j*e->max_type + k ] );
+            }
+        }
 
-	if ( e->p_dihedral != NULL )
-		free( e->p_dihedral );
+        for ( k = 0 ; k < e->nr_dihedralpots ; k++ )
+            potential_clear( e->p_dihedral[k] );
+        free( e->p );
+    }
 
-	/* Free the communicators, if needed. */
-	if ( e->flags & engine_flag_mpi ) {
-		for ( k = 0 ; k < e->nr_nodes ; k++ ) {
-			free( e->send[k].cellid );
-			free( e->recv[k].cellid );
-		}
-		free( e->send );
-		free( e->recv );
-	}
+    if ( e->p_dihedral != NULL )
+        free( e->p_dihedral );
 
-	/* Free the bonded interactions. */
-	free( e->bonds );
-	free( e->angles );
-	free( e->dihedrals );
-	free( e->exclusions );
-	free( e->rigids );
-	free( e->part2rigid );
+    /* Free the communicators, if needed. */
+    if ( e->flags & engine_flag_mpi ) {
+        for ( k = 0 ; k < e->nr_nodes ; k++ ) {
+            free( e->send[k].cellid );
+            free( e->recv[k].cellid );
+        }
+        free( e->send );
+        free( e->recv );
+    }
 
-	/* If we have bonded sets, kill them. */
-	for ( k = 0 ; k < e->nr_sets ; k++ ) {
-		free( e->sets[k].bonds );
-		free( e->sets[k].angles );
-		free( e->sets[k].dihedrals );
-		free( e->sets[k].exclusions );
-		free( e->sets[k].confl );
-	}
+    /* Free the bonded interactions. */
+    free( e->bonds );
+    free( e->angles );
+    free( e->dihedrals );
+    free( e->exclusions );
+    free( e->rigids );
+    free( e->part2rigid );
 
-	/* Clear all the counts and what not. */
-	bzero( e , sizeof( struct engine ) );
+    /* If we have bonded sets, kill them. */
+    for ( k = 0 ; k < e->nr_sets ; k++ ) {
+        free( e->sets[k].bonds );
+        free( e->sets[k].angles );
+        free( e->sets[k].dihedrals );
+        free( e->sets[k].exclusions );
+        free( e->sets[k].confl );
+    }
 
-	/* Happy and I know it... */
-	return engine_err_ok;
+    /* Clear all the counts and what not. */
+    bzero( e , sizeof( struct engine ) );
+
+    /* Happy and I know it... */
+    return engine_err_ok;
 
 }
-
-
 
 
 int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
@@ -2629,7 +2657,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 
     /* Check for bad flags. */
 #ifdef FPTYPE_DOUBLE
-    if ( e->flags & engine_flag_cuda )
+    if ( e->particle_flags & engine_flag_cuda )
         return error(engine_err_cudasp);
 #endif
 
@@ -2702,9 +2730,16 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->nr_sets = 0;
 
     /* allocate the interaction matrices */
-    if ( ( e->p = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->max_type * e->max_type ) ) == NULL )
+    if ( ( e->p = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
+
+    if ( ( e->p_bound = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
+            return error(engine_err_malloc);
+
+
     bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
+
+    bzero( e->p_bound , sizeof(struct MxPotential *) * e->max_type * e->max_type );
 
 
     e->dihedralpots_size = 100;
@@ -2747,6 +2782,8 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->integrator = EngineIntegrator::FORWARD_EULER;
 
     e->flags |= engine_flag_initialized;
+    
+    e->particle_max_dist_fraction = 0.08;
 
     /* all is well... */
     return engine_err_ok;

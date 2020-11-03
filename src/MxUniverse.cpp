@@ -31,7 +31,7 @@ MxUniverse Universe = {
         ENGINE_TIMER_ADVANCE
 };
 
-static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b);
+static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *b, bool bound = false);
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a);
 
@@ -289,15 +289,49 @@ HRESULT _MxUniverse_init(PyObject* m)
 
 CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
 {
+    
+    if(args && PyTuple_Size(args) == 4) {
+        return MxUniverse_BindThing3(PyTuple_GetItem(args, 0),
+                                     PyTuple_GetItem(args, 1),
+                                     PyTuple_GetItem(args, 2),
+                                     PyTuple_GetItem(args, 3));
+    }
+    
+    PyObject *bound = NULL;
+    if(args && PyTuple_Size(args) == 3 &&
+       kwargs && (bound = PyDict_GetItemString(kwargs, "bound"))) {
+        return MxUniverse_BindThing3(PyTuple_GetItem(args, 0),
+                                     PyTuple_GetItem(args, 1),
+                                     PyTuple_GetItem(args, 2),
+                                     bound);
+    }
+    
     if(args && PyTuple_Size(args) == 3) {
-        return MxUniverse_BindThing2(PyTuple_GetItem(args, 0), PyTuple_GetItem(args, 1), PyTuple_GetItem(args, 2));
+        return MxUniverse_BindThing2(PyTuple_GetItem(args, 0),
+                                     PyTuple_GetItem(args, 1),
+                                     PyTuple_GetItem(args, 2));
     }
     
     if(args && PyTuple_Size(args) == 2) {
-        return MxUniverse_BindThing1(PyTuple_GetItem(args, 0), PyTuple_GetItem(args, 1));
+        return MxUniverse_BindThing1(PyTuple_GetItem(args, 0),
+                                     PyTuple_GetItem(args, 1));
     }
     
+
+    
+    
+    
     return mx_error(E_FAIL, "bind only implmented for 2 or 3 arguments: bind(thing, a, b)");
+}
+
+
+CAPI_FUNC(HRESULT) MxUniverse_BindThing3(PyObject *thing, PyObject *a,
+                                         PyObject *b, PyObject *c)
+{
+    if(PyObject_IsInstance(thing, (PyObject*)&MxPotential_Type) && PyBool_Check(c)) {
+        return universe_bind_potential((MxPotential*)thing, a, b, c == Py_True);
+    }
+    return mx_error(E_NOTIMPL, "binding currently implmented for potentials to things");
 }
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a,
@@ -317,11 +351,10 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a) {
 }
 
 
-static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b) {
-    if(PyObject_TypeCheck(a, &MxParticleType_Type) &&
-       PyObject_TypeCheck(b, &MxParticleType_Type)) {
-        MxParticleData *a_type = ((MxParticleType *)a);
-        MxParticleData *b_type = ((MxParticleType *)b);
+static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool bound) {
+    MxParticleData *a_type = NULL;
+    MxParticleData *b_type = NULL;
+    if((a_type = MxParticleType_Get(a)) && (b_type = MxParticleType_Get(b))) {
         
         MxPotential *pot = NULL;
         
@@ -330,6 +363,10 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b)
         }
         else {
             pot = p;
+        }
+        
+        if(bound) {
+            pot->flags = pot->flags | POTENTIAL_BOUND;
         }
         
         if(engine_addpot(&_Engine, pot, a_type->id, b_type->id) != engine_err_ok) {
@@ -364,9 +401,8 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b)
 }
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
-    if(PyObject_TypeCheck(a, &MxParticleType_Type)) {
-        MxParticleData *a_type = ((MxParticleType *)a);
-        
+    MxParticleData *a_type = MxParticleType_Get(a);
+    if(a_type) {
         if(engine_addforce1(&_Engine, f, a_type->id) != engine_err_ok) {
             std::string msg = "failed to add force to engine: error";
             msg += std::to_string(engine_err);

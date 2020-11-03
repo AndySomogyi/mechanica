@@ -24,6 +24,8 @@
 #include "carbon.h"
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
+#include "engine.h"
+#include "space_cell.h"
 
 CAPI_STRUCT(NOMStyle);
 
@@ -46,15 +48,23 @@ typedef enum MxParticleDynamics {
 
 /* particle flags */
 typedef enum MxParticleFlags {
-    PARTICLE_FLAG_NONE          = 0,
-    PARTICLE_FLAG_FROZEN        = 1 << 0,
-    PARTICLE_FLAG_GHOST         = 1 << 1,
+    PARTICLE_NONE          = 0,
+    PARTICLE_FROZEN        = 1 << 0,
+    PARTICLE_GHOST         = 1 << 1,
+    PARTICLE_CLUSTER       = 1 << 2,
+    PARTICLE_BOUND         = 1 << 3,
 } MxParticleFlags;
 
 
 
 /** ID of the last error. */
 CAPI_DATA(int) particle_err;
+
+
+/**
+ * increment size of cluster particle list.
+ */
+#define CLUSTER_PARTLIST_INCR 50
 
 
 /**
@@ -130,22 +140,75 @@ struct MxParticle  {
 	/** particle type. */
 	short int typeId;
 
+	/**
+	 * Id of the space cell that this particle belongs to.
+	 */
+	short int cellId;
+
+
+	/**
+	 * Id of this parts
+	 */
+	int32_t clusterId;
+
 	/** Particle flags */
-	unsigned short int flags;
+	uint16_t flags;
+
+	/**
+	 * particle / potential interaction flags. Is one of the
+	 * PotentialFlags enumeration.
+	 */
+	//uint16_t potential_flags;
     
     /**
      * pointer to the python 'wrapper'. Need this because the particle data
      * gets moved around between cells, and python can't hold onto that directly,
      * so keep a pointer to the python object, and update that pointer
      * when this object gets moved.
+     *
+     * initialzied to null, and only set when .
+     
      */
-    struct MxPyParticle *pyparticle;
+    struct MxPyParticle *_pyparticle;
     
+    /**
+     * public way of getting the pyparticle. Creates and caches one if
+     * it's not there.
+     */
+    struct MxPyParticle *py_particle();
+
+    /**
+     * list of particle ids that belong to this particle, if it is a cluster.
+     */
+    int32_t *parts;
+    uint16_t nr_parts;
+    uint16_t size_parts;
     
+    /**
+     * add a particle (id) to this type
+     */    
+    HRESULT addpart(int32_t uid);
+    
+    /**
+     * removes a particle from this cluster. Sets the particle cluster id
+     * to -1, and removes if from this cluster's list.
+     */
+    HRESULT removepart(int32_t uid);
+    
+    inline MxParticle *particle(int i) {
+        return _Engine.s.partlist[this->parts[i]];
+    }
+
     // style pointer, set at object construction time.
     // may be re-set by users later.
     // the base particle type has a default style. 
     NOMStyle *style;
+    
+    
+    inline Magnum::Vector3 global_position() {
+        double *o = _Engine.s.celllist[this->id]->origin;
+        return this->position + Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
+    }
 };
 
 
@@ -161,6 +224,9 @@ struct MxParticle  {
  */
 struct MxPyParticle : PyObject {
     int id;
+    inline MxParticle *part() {
+        return _Engine.s.partlist[this->id];
+    };
 };
 
 /**
@@ -207,7 +273,7 @@ struct MxParticleType : PyHeapTypeObject {
      *
      * defaults to radius
      */
-    double minumum_radius;
+    double minimum_radius;
 
     /** Nonbonded interaction parameters. */
     double eps, rmin;
@@ -255,6 +321,8 @@ typedef MxParticleType MxParticleData;
 //CAPI_DATA(MxParticleType) MxParticle_Type;
 CAPI_FUNC(MxParticleType*) MxParticle_GetType();
 
+CAPI_FUNC(MxParticleType*) MxCluster_GetType();
+
 /**
  * initialize the base particle type in the
  *
@@ -275,12 +343,6 @@ CAPI_DATA(PyTypeObject) MxParticleType_Type;
  */
 CAPI_FUNC(int) MxParticle_Check(PyObject *o);
 
-
-/**
- * Creates a new MxPyParticle wrapper, and attach it to an existing
- * particle
- */
-MxPyParticle* MxPyParticle_New(MxParticle *data);
 
 /**
  *
@@ -321,6 +383,37 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 
 
 /**
+ * Gets the particle type of an object.
+ * returns a borrowed reference.
+ * (1) If the object is a particle derived instance, returns
+ *     the particle type.
+ * (2) if object is a particle type, simply returns itself.
+ * (3) If the object is a wrapper, as in a cluster type,
+ *     returns the corresponding particle type.
+ * (4) null otherwise.
+ */
+CAPI_FUNC(MxParticleType*) MxParticleType_Get(PyObject *obj);
+
+/**
+ * checks if a python object is a particle, and returns the
+ * corresponding particle pointer, NULL otherwise
+ */
+CAPI_FUNC(MxParticle*) MxParticle_Get(PyObject* obj);
+
+CAPI_FUNC(int) MxParticle_Check(PyObject* obj);
+
+
+/**
+ * internal function that absoltuly has to be moved to a util file,
+ * TODO: quick hack putting it here.
+ *
+ * points in a random direction with given magnitide mean, std
+ */
+Magnum::Vector3 MxRandomVector(float mean, float std);
+Magnum::Vector3 MxRandomUnitVector();
+
+
+/**
  * simple fission,
  *
  * divides a particle into two, and creates a new daughter particle in the
@@ -331,6 +424,14 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
 CAPI_FUNC(PyObject*) MxParticle_FissionSimple(MxParticle *part,
         MxParticleType *a, MxParticleType *b,
         int nPartitionRatios, float *partitionRations);
+
+
+CAPI_FUNC(PyObject*) MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs);
+
+/**
+ * The the particle type type
+ */
+CAPI_DATA(unsigned int) *MxParticle_Colors;
 
 
 

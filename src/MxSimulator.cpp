@@ -917,7 +917,7 @@ HRESULT example_argon(const MxUniverseConfig &conf) {
     // set fields for all particles
     srand(6178);
 
-    pAr.flags = PARTICLE_FLAG_NONE;
+    pAr.flags = PARTICLE_NONE;
     for (int k = 0 ; k < 3 ; k++ ) {
         pAr.x[k] = 0.0;
         pAr.v[k] = 0.0;

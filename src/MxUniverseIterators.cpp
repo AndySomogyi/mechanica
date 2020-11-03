@@ -40,7 +40,7 @@ struct PyParticlesIterator {
             throw py::stop_iteration();
 
         MxParticle *part = _Engine.s.partlist[index++];
-        MxPyParticle *py = MxPyParticle_New(part);
+        MxPyParticle *py = part->py_particle();
         return py;
     }
 
@@ -88,7 +88,7 @@ HRESULT _MxUniverseIterators_init(PyObject *_m) {
                 /// Bare bones interface
                 .def("__getitem__", [](const PyParticles &s, size_t i) -> py::handle {
         if (i >= _Engine.s.nr_parts) throw py::index_error();
-        return MxPyParticle_New(_Engine.s.partlist[i]);
+        return _Engine.s.partlist[i]->py_particle();
     })
     .def("__setitem__", [](PyParticles &s, size_t i, py::handle) {
         throw py::index_error();

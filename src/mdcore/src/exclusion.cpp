@@ -128,8 +128,8 @@ int exclusion_eval ( struct exclusion *b , int N , struct engine *e , double *ep
             continue;
         
         /* Skip if both ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) && 
-             ( pj->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) && 
+             ( pj->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */
@@ -331,8 +331,8 @@ int exclusion_evalf ( struct exclusion *b , int N , struct engine *e , FPTYPE *f
             continue;
         
         /* Skip if both ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) && 
-             ( pj->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) && 
+             ( pj->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */

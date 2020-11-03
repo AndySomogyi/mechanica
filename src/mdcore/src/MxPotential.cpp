@@ -2465,6 +2465,35 @@ static PyGetSetDef potential_getset[] = {
         .doc = "test doc",
         .closure = NULL
     },
+    {
+        .name = "bound",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(obj->flags & POTENTIAL_BOUND) {
+                Py_RETURN_TRUE;
+            }
+            else {
+                Py_RETURN_FALSE;
+            }
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(PyBool_Check(val)) {
+                if(val == Py_True) {
+                    obj->flags |= POTENTIAL_BOUND;
+                }
+                else {
+                    obj->flags &= POTENTIAL_BOUND;
+                }
+            }
+            else {
+                PyErr_SetString(PyExc_ValueError, "Potential.bound is a boolean");
+            }
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {NULL}
 };
 

@@ -38,6 +38,7 @@
 
 #include <MxParticleEvent.h>
 #include "../../rendering/NOMStyle.hpp"
+#include "MxCluster.hpp"
 
 struct Foo {
     int x; int y; int z;
@@ -80,6 +81,8 @@ static unsigned colors [] = {
     0x778899,
     0x000000
 };
+
+unsigned int *MxParticle_Colors = colors;
 
 
 //template <typename C, typename D, typename... Extra>
@@ -436,13 +439,13 @@ PyGetSetDef gs_minimum_radius = {
     .get = [](PyObject *obj, void *p) -> PyObject* {
         MxParticleType *type = (MxParticleType*)obj;
         assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-        return pybind11::cast(type->minumum_radius).release().ptr();
+        return pybind11::cast(type->minimum_radius).release().ptr();
     },
     .set = [](PyObject *obj, PyObject *val, void *p) -> int {
         try {
             MxParticleType *type = (MxParticleType*)obj;
             assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
-            double* pradius = &(type->minumum_radius);
+            double* pradius = &(type->minimum_radius);
             *pradius = pybind11::cast<double>(val);
             return 0;
         }
@@ -686,6 +689,7 @@ PyGetSetDef particle_getsets[] = {
 
 static PyMethodDef particle_methods[] = {
         { "fission", (PyCFunction)particle_fission, METH_VARARGS, NULL },
+        { "split", (PyCFunction)particle_fission, METH_VARARGS, NULL }, // alias name
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { NULL, NULL, 0, NULL }
 };
@@ -700,6 +704,8 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
+  
+    
     MxParticle part = {};
     part.position = {};
     part.velocity = {};
@@ -713,10 +719,19 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.vid = 0;
     part.typeId = type->id;
     part.flags = 0;
-    part.pyparticle = NULL;
+    part._pyparticle = NULL;
+    part.parts = NULL;
+    part.nr_parts = 0;
+    part.size_parts = 0;
     part.creation_time = _Engine.time;
     part.style = NULL;
     
+    if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
+        std::cout << "making cluster" << std::endl;
+        part.flags |= PARTICLE_CLUSTER;
+    }
+
+
     try {
         pybind11::detail::loader_life_support ls{};
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
@@ -749,8 +764,16 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
         
         self->id = p->id;
         
+        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
+        if(cluster) {
+            p->flags |= PARTICLE_BOUND;
+            cluster->addpart(p->id);
+        } else {
+            p->clusterId = -1;
+        }
+        
         Py_INCREF(self);
-        p->pyparticle = self;
+        p->_pyparticle = self;
         
         return 0;
     }
@@ -937,6 +960,7 @@ static PyGetSetDef particle_type_getset[] = {
 static PyObject *
 particle_type_descr_get(PyMemberDescrObject *descr, PyObject *obj, PyObject *type)
 {
+    std::cout << "PyType_Type.tp_descr_get: " << PyType_Type.tp_descr_get << std::endl;
     return PyType_Type.tp_descr_get((PyObject*)descr, obj, type);
 }
 
@@ -994,7 +1018,7 @@ PyTypeObject MxParticleType_Type = {
     .tp_getset =         particle_type_getset,
     .tp_base =           0, 
     .tp_dict =           0, 
-    .tp_descr_get =      (descrgetfunc)particle_type_descr_get,
+    .tp_descr_get =      0,//(descrgetfunc)particle_type_descr_get,
     .tp_descr_set =      0, 
     .tp_dictoffset =     0, 
     .tp_init =           (initproc)particle_type_init,
@@ -1107,20 +1131,7 @@ HRESULT _MxParticle_init(PyObject *m)
 
 int MxParticle_Check(PyObject *o)
 {
-    return PyObject_IsInstance(o, (PyObject*)MxParticle_GetType());
-}
-
-MxPyParticle* MxPyParticle_New(MxParticle *data)
-{
-    if(!data->pyparticle) {
-        PyTypeObject *type = (PyTypeObject*)&_Engine.types[data->typeId];
-        MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
-        part->id = data->id;
-        data->pyparticle = part;
-    }
-    
-    Py_INCREF(data->pyparticle);
-    return data->pyparticle;
+    return o && PyObject_IsInstance(o, (PyObject*)MxParticle_GetType());
 }
 
 
@@ -1152,7 +1163,7 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
     self->target_energy = base->target_energy;
     self->radius = base->radius;
     self->dynamics = base->dynamics;
-    self->minumum_radius = base->minumum_radius;
+    self->minimum_radius = base->minimum_radius;
 
     std::strncpy(self->name, self->ht_type.tp_name, MxParticleType::MAX_NAME);
     
@@ -1176,8 +1187,8 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             self->radius = dict["radius"].cast<double>();
         }
         
-        if(dict.contains("minumum_radius")) {
-            self->minumum_radius = dict["minumum_radius"].cast<double>();
+        if(dict.contains("minimum_radius")) {
+            self->minimum_radius = dict["minimum_radius"].cast<double>();
         }
         
         if(dict.contains("name2")) {
@@ -1219,7 +1230,7 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
-            key = pybind11::cast("minumum_radius");
+            key = pybind11::cast("minimum_radius");
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
@@ -1247,8 +1258,15 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
 
         // bind all the events that are in the type dictionary
         MyParticleType_BindEvents(self, PyDict_Values(_dict));
-
-        return S_OK;
+        
+        
+        // special stuff for cluster types
+        if(PyType_IsSubtype(self->ht_type.tp_base, (PyTypeObject*)MxCluster_GetType())) {
+            return MxClusterType_Init(self, _dict);
+        }
+        else {
+            return S_OK;
+        }
     }
     catch(const std::exception &e) {
         return c_error(CERR_EXCEP, e.what());
@@ -1277,10 +1295,15 @@ CAPI_FUNC(MxParticleType*) MxParticle_GetType()
     return &engine::types[0];
 }
 
+CAPI_FUNC(MxParticleType*) MxCluster_GetType()
+{
+    return &engine::types[1];
+}
+
 HRESULT engine_particle_base_init(PyObject *m)
 {
-    if(engine::max_type < 2) {
-        return mx_error(E_FAIL, "must have at least space for 2 particle types");
+    if(engine::max_type < 3) {
+        return mx_error(E_FAIL, "must have at least space for 3 particle types");
     }
 
     if(engine::nr_types != 0) {
@@ -1307,6 +1330,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     ob->tp_doc =           "Custom objects";
     ob->tp_init =          (initproc)particle_init;
     ob->tp_new =           particle_new;
+    ob->tp_as_sequence =   &MxCluster_Sequence;
     ob->tp_del =           [] (PyObject *p) -> void {
         std::cout << "tp_del MxPyParticle" << std::endl;
     };
@@ -1323,7 +1347,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     MxParticleType *pt = (MxParticleType*)ob;
     
     pt->radius = 1.0;
-    pt->minumum_radius = 1.0;
+    pt->minimum_radius = 0.0;
     pt->mass = 1.0;
     pt->charge = 0.0;
     pt->id = 0;
@@ -1414,11 +1438,12 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
     // volume preserving radius
     float r2 = self->radius / std::pow(2., 1/3.);
     
-    if(r2 < type->minumum_radius) {
+    if(r2 < type->minimum_radius) {
         Py_RETURN_NONE;
     }
 
     MxParticle part = {};
+    part.mass = self->mass;
     part.position = self->position;
     part.velocity = self->velocity;
     part.force = {};
@@ -1429,7 +1454,10 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
     part.vid = 0;
     part.typeId = type->id;
     part.flags = self->flags;
-    part.pyparticle = NULL;
+    part._pyparticle = NULL;
+    part.parts = NULL;
+    part.nr_parts = 0;
+    part.size_parts = 0;
     part.creation_time = _Engine.time;
 
     std::uniform_real_distribution<float> x(-1, 1);
@@ -1458,14 +1486,6 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
         
         // p is valid, because that's the result of the addpart
         p->position -= sep;
-
-        // new python handle
-        MxPyParticle *py = (MxPyParticle*)particle_new((PyTypeObject*)type, NULL, NULL);
-        py->id = p->id;
-        Py_INCREF(py);
-        p->pyparticle = py;
-        
-        assert(py->id == _Engine.s.partlist[p->id]->id);
         
         // all is good, set the new radii
         self->radius = r2;
@@ -1473,7 +1493,7 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
         self->mass = p->mass = self->mass / 2.;
         self->imass = p->imass = 1. / self->mass;
 
-        return py;
+        return p->py_particle();
     }
     catch (const pybind11::builtin_exception &e) {
         e.set_error();
@@ -1506,3 +1526,140 @@ PyObject* particle_fission(MxPyParticle *part, PyObject *args,
         return NULL;
     }
 }
+
+MxParticle* MxParticle_Get(PyObject* obj) {
+    if(MxParticle_Check(obj)) {
+        MxPyParticle *pypart = (MxPyParticle*)obj;
+        return _Engine.s.partlist[pypart->id];
+    }
+    return NULL;
+}
+
+MxPyParticle *MxParticle::py_particle() {
+    
+    if(!this->_pyparticle) {
+
+        PyTypeObject *type = (PyTypeObject*)&_Engine.types[this->typeId];
+        MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
+        part->id = this->id;
+        this->_pyparticle = part;
+    }
+    
+    Py_INCREF(this->_pyparticle);
+    return this->_pyparticle;
+}
+
+
+HRESULT MxParticle::addpart(int32_t pid) {
+    
+    /* do we need to extend the partlist? */
+    if ( nr_parts == size_parts ) {
+        size_parts += CLUSTER_PARTLIST_INCR;
+        int32_t* temp;
+        if ( ( temp = (int32_t*)malloc( sizeof(int32_t) * size_parts ) ) == NULL )
+            return c_error(E_FAIL, "could not allocate space for type particles");
+        memcpy( temp , parts , sizeof(int32_t) * nr_parts );
+        free( parts );
+        parts = temp;
+    }
+    
+    MxParticle *p = _Engine.s.partlist[pid];
+    p->clusterId = this->id;
+    
+    parts[nr_parts] = pid;
+    nr_parts++;
+    return S_OK;
+}
+
+HRESULT MxParticle::removepart(int32_t pid) {
+    
+    int pid_index = -1;
+    
+    for(int i = 0; i < this->nr_parts; ++i) {
+        if(this->particle(i)->id == pid) {
+            pid_index = i;
+            break;
+        }
+    }
+    
+    if(pid_index < 0) {
+        return mx_error(E_FAIL, "particle id not in this cluster");
+    }
+    
+    MxParticle *p = _Engine.s.partlist[pid];
+    p->clusterId = -1;
+    
+    for(int i = pid_index; i + 1 < this->nr_parts; ++i) {
+        this->parts[i] = this->parts[i+1];
+    }
+    nr_parts--;
+    
+    return S_OK;
+}
+
+PyObject* MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs) {
+    
+    if(!PyType_Check(type)) {
+        return NULL;
+    }
+    
+    if(!PyObject_IsSubclass(type, (PyObject*)MxParticle_GetType())) {
+        return NULL;
+    }
+    
+    // make a new pyparticle
+    PyObject *pyPart = PyType_GenericNew((PyTypeObject*)type, args, kwargs);
+    
+    if(!args) {
+        args = PyTuple_New(0);
+    }
+    else{
+        Py_INCREF(args);
+    }
+    
+    if(!kwargs) {
+        kwargs = PyDict_New();
+    }
+    else {
+        Py_INCREF(kwargs);
+    }
+    
+    
+    if(particle_init((MxPyParticle*)pyPart, args, kwargs) < 0) {
+        std::cout << "bad stuff" << std::endl;
+        return NULL;
+    }
+    
+    Py_DECREF(args);
+    Py_DECREF(kwargs);
+    
+    return pyPart;
+}
+
+
+Magnum::Vector3 MxRandomVector(float mean, float std) {
+    std::normal_distribution<> dist{mean,std};
+    std::uniform_real_distribution<double> uniform01(0.0, 1.0);
+    float theta = 2 * M_PI * uniform01(CRandom);
+    float phi = acos(1 - 2 * uniform01(CRandom));
+    float r = dist(CRandom);
+    float x = r * sin(phi) * cos(theta);
+    float y = r * sin(phi) * sin(theta);
+    float z = r * cos(phi);
+    return Magnum::Vector3{x, y, z};
+}
+
+Magnum::Vector3 MxRandomUnitVector() {
+    std::uniform_real_distribution<double> uniform01(0.0, 1.0);
+    float theta = 2 * M_PI * uniform01(CRandom);
+    float phi = acos(1 - 2 * uniform01(CRandom));
+    float r = 1.;
+    float x = r * sin(phi) * cos(theta);
+    float y = r * sin(phi) * sin(theta);
+    float z = r * cos(phi);
+    return Magnum::Vector3{x, y, z};
+}
+
+
+
+

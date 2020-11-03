@@ -186,11 +186,10 @@ static void gaussian_force(struct Gaussian* t, struct MxParticle *p, FPTYPE*f) {
     // standard deviation affects the dispersion of generated values from the mean
     
     if((_Engine.integrator_flags & INTEGRATOR_UPDATE_PERSISTENTFORCE) &&
-            (_Engine.time + p->id) % 100 == 0) {
-        std::normal_distribution<> dist{t->mean,t->std};
-        p->persistent_force[0] = _Engine.dt * dist(CRandom);
-        p->persistent_force[1] = _Engine.dt * dist(CRandom);
-        p->persistent_force[2] = _Engine.dt * dist(CRandom);
+       (_Engine.time + p->id) % 100 == 0) {
+        
+        
+        p->persistent_force = MxRandomVector(t->mean, t->std);
     }
     
     f[0] += p->persistent_force[0];

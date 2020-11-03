@@ -206,7 +206,7 @@ typedef struct engine {
     static struct MxParticleType *types;
 
 	/** The interaction matrix */
-	struct MxPotential **p, **p_dihedral;
+	struct MxPotential **p, **p_dihedral, **p_bound;
 
 	/** The explicit electrostatic potential. */
 	struct MxPotential *ep;
@@ -315,6 +315,19 @@ typedef struct engine {
 	int nr_sets;
 
 	struct CMulticastTimeEvent *on_time;
+    
+    /**
+     * particle maximum velocity as a fraction of space cell size.
+     * good values for this are around 0.2, meaning that a particle can
+     * move about 1/5th of a cell length per time step.
+     *
+     * if this is set of infinity, means there is not max speed.
+     * if the particle speed exceeds maximum velocity, the velocity
+     * is clamped to this speed.
+     *
+     * defaults to 0.1.
+     */
+    float particle_max_dist_fraction;
 
 	EngineIntegrator integrator;
 } engine;

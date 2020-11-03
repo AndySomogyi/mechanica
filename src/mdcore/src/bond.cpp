@@ -134,8 +134,8 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
             continue;
         
         /* Skip if both ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) && 
-             ( pj->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) && 
+             ( pj->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */
@@ -336,7 +336,7 @@ int bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , doubl
             continue;
         
         /* Skip if both ghosts. */
-        if ( pi->flags & PARTICLE_FLAG_GHOST && pj->flags & PARTICLE_FLAG_GHOST )
+        if ( pi->flags & PARTICLE_GHOST && pj->flags & PARTICLE_GHOST )
             continue;
             
         /* Get the potential. */

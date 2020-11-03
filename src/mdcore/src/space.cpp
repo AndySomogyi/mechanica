@@ -1352,7 +1352,7 @@ CAPI_FUNC(HRESULT) space_del_particle(struct space *s, int pid)
     
     // the particle will get overwritten, release the
     // pyobject ptr now
-    Py_DecRef(p->pyparticle);
+    Py_DecRef(p->_pyparticle);
 
     cell->count -= 1;
     if ( cid < cell->count ) {

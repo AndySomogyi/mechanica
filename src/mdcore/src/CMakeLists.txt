@@ -56,6 +56,8 @@ set(PRIVATE_HEADERS
   "mainpage.h"
   "potential_eval.h"
   "reader.h"
+  "MxConstraint.hpp"
+  "MxCluster.hpp"
   )
 
 #add_library(${_target} ${ARGN} ${_header_list})
@@ -93,6 +95,8 @@ SET(SOURCES
   MxForce.cpp
   MxParticleEvent.cpp
   MxReactivePotential.cpp
+  MxConstraint.cpp
+  MxCluster.cpp
   )
 
 if(MDCORE_USE_MPI)

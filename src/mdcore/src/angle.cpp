@@ -137,7 +137,7 @@ int angle_eval ( struct MxAngle *a , int N , struct engine *e , double *epot_out
             continue;
         
         /* Skip if all three are ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) && ( pj->flags & PARTICLE_FLAG_GHOST ) && ( pk->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) && ( pj->flags & PARTICLE_GHOST ) && ( pk->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */
@@ -399,7 +399,7 @@ int angle_evalf ( struct MxAngle *a , int N , struct engine *e , FPTYPE *f , dou
             continue;
         
         /* Skip if all three are ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) && ( pj->flags & PARTICLE_FLAG_GHOST ) && ( pk->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) && ( pj->flags & PARTICLE_GHOST ) && ( pk->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */

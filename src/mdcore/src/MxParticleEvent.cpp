@@ -131,10 +131,10 @@ HRESULT particletimeevent_pyfunction_invoke(CTimeEvent *event, double time) {
     int pid = type->part_ids[tid];
     
     assert(_Engine.s.partlist[pid]);
-    assert(_Engine.s.partlist[pid]->pyparticle);
+    assert(_Engine.s.partlist[pid]->_pyparticle);
     
     PyObject *t = PyFloat_FromDouble(time);
-    PyTuple_SET_ITEM(args, 0, _Engine.s.partlist[pid]->pyparticle);
+    PyTuple_SET_ITEM(args, 0, _Engine.s.partlist[pid]->_pyparticle);
     PyTuple_SET_ITEM(args, 1, t);
     
     //std::cout << MX_FUNCTION << std::endl;

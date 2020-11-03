@@ -154,7 +154,7 @@ int main ( int argc , char *argv[] ) {
     // set fields for all particles
     srand(6178);
     pNe.typeId = 0;
-    pNe.flags = PARTICLE_FLAG_NONE;
+    pNe.flags = PARTICLE_NONE;
     for ( k = 0 ; k < 3 ; k++ ) {
         pNe.v[k] = 0.0;
         pNe.f[k] = 0.0;

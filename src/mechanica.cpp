@@ -40,6 +40,9 @@
 #include "MxPyTest.h"
 #include "MxUtil.h"
 #include <rendering/NOMStyle.hpp>
+#include "MxCluster.hpp"
+#include "MxConstraint.hpp"
+
 
 #include <c_util.h>
 
@@ -246,6 +249,7 @@ static PyObject * moduleinit(void)
     MxSurfaceSimulator_init(m);
     MxCylinderModel_init(m);
     _MxParticle_init(m);
+    _MxCluster_init(m);
     _MxPotential_init(m);
     _MxReactivePotential_init(m);
     _MxUniverse_init(m);

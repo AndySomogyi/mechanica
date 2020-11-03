@@ -185,9 +185,9 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
                 (float)(_Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1]),
                 (float)(_Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2])
             };
+            float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
             pData[i].transformationMatrix =
-                    Matrix4::translation(position) *
-            Matrix4::scaling(Vector3{(float)p->radius});
+                    Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
             pData[i].normalMatrix =
                     pData[i].transformationMatrix.normalMatrix();
             

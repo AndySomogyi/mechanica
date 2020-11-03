@@ -83,6 +83,17 @@ enum PotentialFlags {
      * force = 0.
      */
     POTENTIAL_SCALED          = 1 << 11,
+
+    /**
+     * potential shifted by x value,
+     */
+    POTENTIAL_SHIFTED         = 1 << 12,
+
+    /**
+     * potential is valid for bound particles, if un-set,
+     * potential is for free particles.
+     */
+    POTENTIAL_BOUND           = 1 << 13,
 };
 
 

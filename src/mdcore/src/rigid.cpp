@@ -124,7 +124,7 @@ int rigid_eval_shake ( struct rigid *rs , int N , struct engine *e ) {
             continue;
             
         /* Are all the parts ghosts? */
-        for ( k = 0 ; k < nr_parts && (p[k]->flags & PARTICLE_FLAG_GHOST) ; k++ );
+        for ( k = 0 ; k < nr_parts && (p[k]->flags & PARTICLE_GHOST) ; k++ );
         if ( k == nr_parts )
             continue;
             
@@ -321,7 +321,7 @@ int rigid_eval_pshake ( struct rigid *rs , int N , struct engine *e , int a_upda
             continue;
             
         /* Are all the parts ghosts? */
-        for ( k = 0 ; k < nr_parts && (p[k]->flags & PARTICLE_FLAG_GHOST) ; k++ );
+        for ( k = 0 ; k < nr_parts && (p[k]->flags & PARTICLE_GHOST) ; k++ );
         if ( k == nr_parts )
             continue;
             

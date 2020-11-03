@@ -196,8 +196,8 @@ int main ( int argc , char *argv[] ) {
 
     // set fields for all particles
     srand(6178);
-    pO.flags = PARTICLE_FLAG_NONE;
-    pH.flags = PARTICLE_FLAG_NONE;
+    pO.flags = PARTICLE_NONE;
+    pH.flags = PARTICLE_NONE;
     for ( k = 0 ; k < 3 ; k++ ) {
         pO.v[k] = 0.0; pH.v[k] = 0.0;
         pO.f[k] = 0.0; pH.f[k] = 0.0;

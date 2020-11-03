@@ -133,10 +133,10 @@ int dihedral_eval ( struct dihedral *d , int N , struct engine *e , double *epot
             continue;
             
         /* Skip if all three are ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pj->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pk->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pl->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) &&
+             ( pj->flags & PARTICLE_GHOST ) &&
+             ( pk->flags & PARTICLE_GHOST ) &&
+             ( pl->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */
@@ -447,10 +447,10 @@ int dihedral_evalf ( struct dihedral *d , int N , struct engine *e , FPTYPE *f ,
             continue;
         
         /* Skip if all three are ghosts. */
-        if ( ( pi->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pj->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pk->flags & PARTICLE_FLAG_GHOST ) &&
-             ( pl->flags & PARTICLE_FLAG_GHOST ) )
+        if ( ( pi->flags & PARTICLE_GHOST ) &&
+             ( pj->flags & PARTICLE_GHOST ) &&
+             ( pk->flags & PARTICLE_GHOST ) &&
+             ( pl->flags & PARTICLE_GHOST ) )
             continue;
             
         /* Get the potential. */

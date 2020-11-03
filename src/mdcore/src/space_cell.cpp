@@ -198,10 +198,10 @@ int space_cell_load ( struct space_cell *c , struct MxParticle *parts , int nr_p
 	/* Mark them as ghosts? */
 	if ( c->flags & cell_flag_ghost )
 		for ( k = c->count ; k < c->count + nr_parts ; k++ )
-			c->parts[k].flags |= PARTICLE_FLAG_GHOST;
+			c->parts[k].flags |= PARTICLE_GHOST;
 	else
 		for ( k = c->count ; k < c->count + nr_parts ; k++ )
-			c->parts[k].flags &= ~PARTICLE_FLAG_GHOST;
+			c->parts[k].flags &= ~PARTICLE_GHOST;
 
 	/* Adjust the count. */
 	c->count += nr_parts;
@@ -382,9 +382,9 @@ struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p 
 
 	/* Mark it as a ghost? */
 	if ( c->flags & cell_flag_ghost )
-		c->parts[c->count].flags |= PARTICLE_FLAG_GHOST;
+		c->parts[c->count].flags |= PARTICLE_GHOST;
 	else
-		c->parts[c->count].flags &= ~PARTICLE_FLAG_GHOST;
+		c->parts[c->count].flags &= ~PARTICLE_GHOST;
 
 	/* all is well */
 	return &( c->parts[ c->count++ ] );

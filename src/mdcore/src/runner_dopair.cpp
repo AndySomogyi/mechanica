@@ -59,6 +59,16 @@
 extern const char *runner_err_msg[];
 extern unsigned int runner_rcount;
 
+static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
+    int index = _Engine.max_type * a->typeId + b->typeId;
+    if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
+        return _Engine.p_bound[index];
+    }
+    else {
+        return _Engine.p[index];
+    }
+}
+
 
 /**
  * @brief Compute the pairwise interactions for the given pair.
@@ -85,7 +95,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
     struct MxParticle *parts_i, *parts_j;
     struct MxPotential *pot, **pots;
     struct engine *eng;
-    int emt, pioff, dmaxdist, dnshift;
+    int dmaxdist, dnshift;
     FPTYPE cutoff, cutoff2, r2, w;
     unsigned int *iparts, *jparts;
     FPTYPE dscale;
@@ -113,7 +123,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
     
     /* get the space and cutoff */
     eng = r->e;
-    emt = eng->max_type;
     s = &(eng->s);
     pots = eng->p;
     cutoff = s->cutoff;
@@ -163,7 +172,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
         pix[0] = part_i->x[0] - shift[0];
         pix[1] = part_i->x[1] - shift[1];
         pix[2] = part_i->x[2] - shift[2];
-        pioff = part_i->typeId * emt;
         pif = &( part_i->f[0] );
 
         /* loop over the left particles */
@@ -173,7 +181,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
             part_j = &( parts_j[ jparts[j] >> 16 ] );
 
             /* fetch the potential, if any */
-            pot = pots[ pioff + part_j->typeId ];
+            pot = get_potential(part_i, part_j);
             if ( pot == NULL )
                 continue;
 
@@ -339,7 +347,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     // single body force and forces
     MxForce *psb, **psbs;
     struct engine *eng;
-    int emt, pioff;
     FPTYPE cutoff2, r2, w;
     FPTYPE *pif;
 #if defined(VECTORIZE)
@@ -363,7 +370,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     
     /* get some useful data */
     eng = r->e;
-    emt = eng->max_type;
     s = &(eng->s);
     pots = eng->p;
     psbs = eng->p_singlebody;
@@ -378,8 +384,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     else {
         parts = c->parts;
     }
-
-
+    
     // loop over all particles , indexing here only calculates pairwise
     // interactions, and avoids self-interactions.
     for ( i = 0 ; i < count ; i++ ) {
@@ -389,7 +394,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         pix[0] = part_i->x[0];
         pix[1] = part_i->x[1];
         pix[2] = part_i->x[2];
-        pioff = part_i->typeId * emt;
         pif = &( part_i->f[0] );
 
         // calculate single body force if any
@@ -403,9 +407,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
 
             /* get the other particle */
             part_j = &(parts[j]);
-
-            /* fetch the potential, if any */
-            pot = pots[ pioff + part_j->typeId ];
+                        
+            pot = get_potential(part_i, part_j);
             if ( pot == NULL ) {
                 continue;
             }
@@ -534,17 +537,16 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             c->parts[i].f[0] = parts[i].f[0];
             c->parts[i].f[1] = parts[i].f[1];
             c->parts[i].f[2] = parts[i].f[2];
-            }
-            
         }
+            
+    }
         
     /* Store the potential energy to c. */
     c->epot += epot;
         
     /* since nothing bad happened to us... */
     return runner_err_ok;
-
-    }
+}
 
 
 /**
@@ -566,7 +568,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
 
 __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct space_cell *cell_i , struct space_cell *cell_j ) {
 
-    int i, j, k, emt, pioff, count_i, count_j;
+    int i, j, k, count_i, count_j;
     FPTYPE cutoff2, r2, w, shift[3];
     FPTYPE *pif;
     double epot = 0.0;
@@ -596,7 +598,6 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     
     /* get the space and cutoff */
     eng = r->e;
-    emt = eng->max_type;
     s = &(eng->s);
     cutoff2 = s->cutoff2;
     pix[3] = FPTYPE_ZERO;
@@ -635,7 +636,6 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
             pix[1] = part_i->x[1];
             pix[2] = part_i->x[2];
             pif = part_i->f;
-            pioff = part_i->typeId * emt;
         
             /* loop over all other particles */
             for ( j = 0 ; j < i ; j++ ) {
@@ -652,7 +652,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
                 /* runner_rcount += 1; */
                 
                 /* fetch the potential, if any */
-                pot = eng->p[ pioff + part_j->typeId ];
+                pot = get_potential(part_i, part_j);
                 if ( pot == NULL )
                     continue;
                     
@@ -735,7 +735,6 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
             pix[1] = part_i->x[1] - shift[1];
             pix[2] = part_i->x[2] - shift[2];
             pif = part_i->f;
-            pioff = part_i->typeId * emt;
             
             /* loop over all other particles */
             for ( j = 0 ; j < count_j ; j++ ) {
@@ -752,7 +751,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
                     continue;
                 /* runner_rcount += 1; */
                     
-                pot = eng->p[ pioff + part_j->typeId ];
+                pot = get_potential(part_i, part_j);
                 if ( pot == NULL )
                     continue;
                     
