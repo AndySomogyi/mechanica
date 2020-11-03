@@ -22,18 +22,41 @@ Splitting
 ---------
 
 The `Cluster.split` method splits a given cluster into itself, and a new
-daughter cluster. Split accepts an optional `plane` argument to define a
-cleavage plane. `plane` can be either a vector in which it defines the plane
-normal vectur, and `split` uses the center of mass of the custer, or `plane` can
-be a two vectors in which case it's interpreted as a point and normal, to define
-the cleavage plane.
-
-For example, to split a cluster along the `x` axis, we can::
+daughter cluster. Split accepts optional `normal` and `point` arguments to define a
+cleavage plane. If only a normal vector is given, and no point, the  `split`
+uses the center of mass of the cluster as the point. For example, to split a
+cluster along the `x` axis, we can::
 
   c = MyCell(...)
-  d = c.split(plane=[1., 0., 0.])
+  d = c.split(normal=[1., 0., 0.])
 
-where `d` is the new daughter cell. 
+where `d` is the new daughter cell. This form uses the center of mass of the
+cluster as the cleavage plane point. We can also specify the full normal/point
+form as::
+
+  d = c.split(normal=[x, y, z], point=[px, py, pz])
+
+If no named arguments are given, split interprets the first argument as a
+cleavage plane normal::
+
+  c.split([x, y, z])
+
+We frequently want to split a cell along an *axis*, i.e. generate a cleavage
+plane coincident with an axis. In this case, we use the optional `axis`
+argument. Here, the split will generate a cleavage plane that contains the given
+axis::
+
+  c.split(axis=[x, y, z])
+
+The default version of split uses a random cleavage plane that intersects the
+cell center::
+
+  d = c.split()
+
+Split can also randomly pick half the particles in a cluster, and assign them to
+a new cluster with the `random` agument as in::
+
+  c.split(random=True)
 
 
 Cleavage
