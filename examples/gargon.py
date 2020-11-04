@@ -15,7 +15,7 @@ m.Simulator(example="", dim=dim)
 # B The second parameter of the Lennard-Jones potential.
 # cutoff
 #pot = m.Potential.lennard_jones_12_6(0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 )
-pot = m.Potential.glj(e=1, min=0.5, max=3)
+pot = m.Potential.glj(e=0.1, min=0.5, max=3)
 
 
 # create a particle type

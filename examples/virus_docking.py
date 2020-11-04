@@ -42,8 +42,8 @@ m.bind(pot_vr, Receptor, Virus)
 m.bind(pot_vb, Big, Virus)
 
 # create a random force (Brownian motion), zero mean of given amplitide
-tstat = m.forces.random(0, 3)
-vtstat = m.forces.random(0, 5)
+tstat = m.forces.random(0, 0.1)
+vtstat = m.forces.random(0, 0.1)
 
 # bind it just like any other force
 m.bind(tstat, Receptor)

@@ -11,9 +11,15 @@
 #include <space.h>
 #include <iostream>
 
-static HRESULT particletimeevent_pyfunction_invoke(CTimeEvent *event, double time);
+static HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, double time);
+
+static HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double time);
+
+static HRESULT particletimeevent_pyfunction_invoke_oldest(CTimeEvent *event, double time);
 
 static HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, double time);
+
+static HRESULT particletimeevent_fixed_setnexttime(CTimeEvent *event, double time);
 
 PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
 {
@@ -79,10 +85,25 @@ HRESULT MxParticleType_BindEvent(MxParticleType *type, PyObject *e) {
     
         timeEvent->flags |= EVENT_ACTIVE;
         
-        timeEvent->te_invoke = (timeevent_invoke)particletimeevent_pyfunction_invoke;
+        if(timeEvent->predicate && PyUnicode_Check(timeEvent->predicate)) {
+            
+            if(PyUnicode_CompareWithASCIIString(timeEvent->predicate, "largest") == 0) {
+                timeEvent->te_invoke = (timeevent_invoke)particletimeevent_pyfunction_invoke_largest;
+            }
+            else {
+                return mx_error(E_FAIL, "invalid predicate option");
+            }
+        }
+        else {
+            timeEvent->te_invoke = (timeevent_invoke)particletimeevent_pyfunction_invoke_uniform_random;
+        }
         
         if(timeEvent->flags & EVENT_EXPONENTIAL) {
             timeEvent->te_setnexttime = particletimeevent_exponential_setnexttime;
+            timeEvent->te_setnexttime(timeEvent, _Engine.time * _Engine.dt);
+        }
+        else {
+            timeEvent->te_setnexttime = particletimeevent_fixed_setnexttime;
             timeEvent->te_setnexttime(timeEvent, _Engine.time * _Engine.dt);
         }
     }
@@ -111,8 +132,45 @@ HRESULT MyParticleType_BindEvents(struct MxParticleType *type, PyObject *events)
     return S_OK;
 }
 
+HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double time) {
+    
+    MxParticleType *type = (MxParticleType*)event->target;
+    
+    if(type->nr_parts == 0) {
+        return S_OK;
+    }
+    
+    // TODO: memory leak
+    PyObject *args = PyTuple_New(2);
+    
+    // max particle
+    MxParticle *mp = type->particle(0);
+    // find the object with the largest number of contained objects
+    for(int i = 1; i < type->nr_parts; ++i) {
+        MxParticle *part = type->particle(i);
+        if(part->nr_parts > mp->nr_parts) {
+            mp = part;
+        }
+    }
+    
+    PyObject *t = PyFloat_FromDouble(time);
+    PyTuple_SET_ITEM(args, 0, mp->_pyparticle);
+    PyTuple_SET_ITEM(args, 1, t);
+    
+    //std::cout << MX_FUNCTION << std::endl;
+    //std::cout << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl;
+    //std::cout << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL) << std::endl;
+    
+    // time expired, so invoke the event.
+    PyObject *result = PyObject_CallObject((PyObject*)event->method, args);
+    
+    Py_DecRef(result);
+    
+    return S_OK;
+}
 
-HRESULT particletimeevent_pyfunction_invoke(CTimeEvent *event, double time) {
+
+HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, double time) {
     
     MxParticleType *type = (MxParticleType*)event->target;
     
@@ -161,9 +219,27 @@ PyObject *MxInvokeTime(PyObject *module, PyObject *args, PyObject *kwargs) {
 // need to scale period by number of particles.
 // TODO: need to update next time when particles are added or removed.
 HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, double time) {
-    MxParticleType *type = (MxParticleType*)event->target;
-    uint32_t nr_parts = type->nr_parts > 0 ? type->nr_parts : 1;
-    std::exponential_distribution<> d(nr_parts / event->period);
+    double rescale = 1;
+    if(event->flags & EVENT_PERIOD_RESCALE) {
+        MxParticleType *type = (MxParticleType*)event->target;
+        rescale = type->nr_parts > 0 ? type->nr_parts : 1;
+    }
+    std::exponential_distribution<> d(rescale / event->period);
     event->next_time = time + d(CRandom);
+    return S_OK;
+}
+
+
+// need to scale period by number of particles.
+// TODO: need to update next time when particles are added or removed.
+HRESULT particletimeevent_fixed_setnexttime(CTimeEvent *event, double time) {
+    if(event->flags & EVENT_PERIOD_RESCALE) {
+        MxParticleType *type = (MxParticleType*)event->target;
+        uint32_t nr_parts = type->nr_parts > 0 ? type->nr_parts : 1;
+        event->next_time = time + (event->period / nr_parts);
+    }
+    else {
+        event->next_time = time + event->period;
+    }
     return S_OK;
 }

@@ -16,25 +16,25 @@ center = dim / 2
 m.Simulator(example="", dim=dim, cutoff=cutoff)
 
 class A(m.Particle):
-    mass = 1
+    mass = 5
     radius = 0.5
     dynamics = m.Overdamped
 
 
 class B(m.Particle):
-    mass = 1
+    mass = 5
     radius = 0.5
     dynamics = m.Overdamped
 
 
 # create three potentials, for each kind of particle interaction
-pot_aa = m.Potential.soft_sphere(kappa=4, epsilon=0.5, r0=1.5, \
+pot_aa = m.Potential.soft_sphere(kappa=5, epsilon=0.25, r0=1, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
-pot_bb = m.Potential.soft_sphere(kappa=4, epsilon=0.5, r0=1.5, \
+pot_bb = m.Potential.soft_sphere(kappa=5, epsilon=0.25, r0=1, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
-pot_ab = m.Potential.soft_sphere(kappa=4, epsilon=0.01, r0=1.5, \
+pot_ab = m.Potential.soft_sphere(kappa=5, epsilon=0.0025, r0=1, \
                                  eta=2, tol = 0.05, min=0.01, max=3)
 
 
@@ -47,7 +47,7 @@ m.Universe.bind(pot_ab, A, B)
 # enable the objects to move around, otherwise they tend to get trapped
 # in a potential
 
-rforce = m.forces.random(0, 50)
+rforce = m.forces.random(0, 5)
 
 # bind it just like any other force
 m.bind(rforce, A)

@@ -311,6 +311,13 @@ struct MxParticleType : PyHeapTypeObject {
      * remove a particle id from this type
      */
     HRESULT del_part(int32_t id);
+    
+    /**
+     * get the i'th particle that's a member of this type.
+     */
+    inline MxParticle *particle(int i) {
+        return _Engine.s.partlist[this->part_ids[i]];
+    }
 };
 
 typedef MxParticleType MxParticleData;
@@ -393,6 +400,10 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
  * (4) null otherwise.
  */
 CAPI_FUNC(MxParticleType*) MxParticleType_Get(PyObject *obj);
+
+inline MxParticle *MxParticle_FromId(int id) {
+    return _Engine.s.partlist[id];
+}
 
 /**
  * checks if a python object is a particle, and returns the

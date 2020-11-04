@@ -282,8 +282,6 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
 static PyObject* cluster_fission_normal_point(MxParticle *cluster,
     const Magnum::Vector3 &normal, const Magnum::Vector3 &point) {
     
-    
-    
     Magnum::Debug() << "plane normal vector: " << normal;
     
     Magnum::Debug() << "plane point vector: " << point;
@@ -293,31 +291,45 @@ static PyObject* cluster_fission_normal_point(MxParticle *cluster,
     
     Magnum::Vector4 plane = Magnum::Math::planeEquation(normal, point);
     
-    PyObject *_daughter = MxParticle_New((PyObject*)cluster->_pyparticle->ob_type,  NULL,  NULL);
     
-    MxCluster *daughter = (MxCluster*)MxParticle_Get(_daughter);
-    assert(daughter);
+    // particles to move to daughter cluster.
+    // only perform a split if the contained particles can be split into
+    // two non-empty sets.
+    std::vector<int> dparts;
     
-    int i = 0;
-    
-    while (i < cluster->nr_parts) {
+    for(int i = 0; i < cluster->nr_parts; ++i) {
         MxParticle *p = cluster->particle(i);
         float dist = Magnum::Math::Distance::pointPlaneScaled(p->global_position(), plane);
         
-        Magnum::Debug() << "particle[" << i << "] position: " << p->global_position() << ", dist: " << dist;
+        //Magnum::Debug() << "particle[" << i << "] position: " << p->global_position() << ", dist: " << dist;
         
         if(dist < 0) {
-            // this decrements nr_parts
-            cluster->removepart(p->id);
-            daughter->addpart(p->id);
-        }
-        else {
-            // not in right plane orientation, so move on.
-            i++;
+            dparts.push_back(p->id);
         }
     }
     
-    return _daughter;
+    if(dparts.size() > 0 && dparts.size() < cluster->nr_parts) {
+        
+        PyObject *_daughter = MxParticle_New((PyObject*)cluster->_pyparticle->ob_type,  NULL,  NULL);
+        MxCluster *daughter = (MxCluster*)MxParticle_Get(_daughter);
+        assert(daughter);
+        
+        std::cout << "split cluster "
+                  << cluster->id << " into ("
+                  << cluster->id << ":" << (cluster->nr_parts - dparts.size())
+                  << ", "
+                  << daughter->id << ": " << dparts.size() << ")" << std::endl;
+        
+        for(int i = 0; i < dparts.size(); ++i) {
+            cluster->removepart(dparts[i]);
+            daughter->addpart(dparts[i]);
+        }
+        
+        return _daughter;
+    }
+    else {
+        Py_RETURN_NONE;
+    }
 }
 
 
@@ -454,20 +466,40 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
         return cluster_fission_axis(cluster, axis);
     }
     
-    PyObject *random = NULL;
-    if(kwargs && (random = PyDict_GetItemString(kwargs, "random")) && random == Py_True) {
+    PyObject *a = NULL;
+    if(kwargs && (a = PyDict_GetItemString(kwargs, "random")) && a == Py_True) {
         // use random form of split
         return cluster_fission_random(cluster);
     }
     
-    pybind11::detail::loader_life_support ls{};
-    Magnum::Vector3 normal = arg("normal", 0, args, kwargs, MxRandomUnitVector());
-    Magnum::Vector3 point = arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
+    Magnum::Vector3 normal;
+    Magnum::Vector3 point;
     
-    std::cout << "using cleavage plane to split cluster" << std::endl;
-    
-    if(point[0] < 0 || point[1] < 0 || point[3] < 0) {
+    // check if being called as an event, with the first arge a time number
+    a = NULL;
+    if(args &&
+       PyTuple_Check(args) &&
+       PyTuple_Size(args) > 0 &&
+       (a = PyTuple_GetItem(args, 0)) &&
+       PyNumber_Check(a)) {
+        float t = PyFloat_AsDouble(a);
+        std::cout << "cluster split event(cluster id: " << cluster->id
+                  << ", count: " << cluster->nr_parts
+                  << ", time: " << t << ")" << std::endl;
         point = cluster->global_position();
+        normal = MxRandomUnitVector();
+    }
+    else {
+        // normal documented usage, grab args from args and kewords.
+        pybind11::detail::loader_life_support ls{};
+        normal = arg("normal", 0, args, kwargs, MxRandomUnitVector());
+        point = arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
+        
+        std::cout << "using cleavage plane to split cluster" << std::endl;
+        
+        if(point[0] < 0 || point[1] < 0 || point[3] < 0) {
+            point = cluster->global_position();
+        }
     }
     
     return cluster_fission_normal_point(cluster, normal, point);

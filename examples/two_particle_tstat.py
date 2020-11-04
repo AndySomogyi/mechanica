@@ -22,10 +22,12 @@ pot = m.Potential.lennard_jones_12_6(0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1
 class A(m.Particle):
     mass = 39.4
     target_temperature = 10000
+    radius=0.25
 
 class B(m.Particle):
     mass = 39.4
     target_temperature = 0
+    radius=0.25
 
 # bind the potential with the *TYPES* of the particles
 m.Universe.bind(pot, A, A)
