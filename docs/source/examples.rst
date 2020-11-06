@@ -15,6 +15,8 @@ Examples
 
    epiboly
 
+   epiboly_cluster
+
    square_well
 
    

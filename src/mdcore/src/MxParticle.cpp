@@ -704,8 +704,6 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
-  
-    
     MxParticle part = {};
     part.position = {};
     part.velocity = {};
@@ -725,6 +723,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.size_parts = 0;
     part.creation_time = _Engine.time;
     part.style = NULL;
+    part.clusterId = -1;
     
     if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
         std::cout << "making cluster" << std::endl;

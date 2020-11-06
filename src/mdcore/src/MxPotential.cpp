@@ -1307,20 +1307,30 @@ struct MxPotential *potential_create_SS4(double k, double e, double r0, double a
 }
 
 
-struct MxPotential *potential_create_SS(int eta, double k, double e, double r0, double a , double b , double tol) {
+struct MxPotential *potential_create_SS(int eta, double k, double e, double r0,
+                                        double a , double b , double tol, bool shift) {
+    
+    MxPotential *result = NULL;
+    
     if(eta == 1) {
-        return potential_create_SS1(k, e, r0, a, b, tol);
+        result =  potential_create_SS1(k, e, r0, a, b, tol);
     }
     else if(eta == 2) {
-        return potential_create_SS2(k, e, r0, a, b, tol);
+        result =  potential_create_SS2(k, e, r0, a, b, tol);
     }
     else if(eta == 3) {
-        return potential_create_SS3(k, e, r0, a, b, tol);
+        result = potential_create_SS3(k, e, r0, a, b, tol);
     }
     else if(eta == 4) {
-        return potential_create_SS4(k, e, r0, a, b, tol);
+        result = potential_create_SS4(k, e, r0, a, b, tol);
     }
-    return NULL;
+    
+    if(result && shift) {
+        result->flags |= POTENTIAL_SHIFTED;
+        result->shift = r0;
+    }
+    
+    return result;
 }
 
 /**
@@ -2074,7 +2084,7 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
         float f = 0;
         
         if(self->flags & POTENTIAL_SCALED) {
-            potential_eval_scaled(self, ri, rj, r*r, &e, &f);
+            potential_eval_ex(self, ri, rj, r*r, &e, &f);
         }
         else if(self->flags & POTENTIAL_R2) {
             potential_eval (self , r*r, &e, &f);
@@ -2150,7 +2160,8 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
         double min = arg<double>("min", 4, _args, _kwargs, 0);
         double max = arg<double>("max", 5, _args, _kwargs, 2);
         double tol = arg<double>("tol", 6, _args, _kwargs, 0.001 * (max-min));
-        return potential_create_SS(eta, kappa, epsilon, r0, min, max, tol);
+        bool shift = arg<bool>("shift", 7, _args, _kwargs, false);
+        return potential_create_SS(eta, kappa, epsilon, r0, min, max, tol, shift);
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2590,6 +2601,7 @@ HRESULT _MxPotential_init(PyObject *m)
         .value("POTENTIAL_SWITCH", PotentialFlags::POTENTIAL_SWITCH)
         .value("POTENTIAL_REACTIVE", PotentialFlags::POTENTIAL_REACTIVE)
         .value("POTENTIAL_SCALED", PotentialFlags::POTENTIAL_SCALED)
+        .value("POTENTIAL_SHIFTED", PotentialFlags::POTENTIAL_SHIFTED)
         .export_values();
 
     return S_OK;

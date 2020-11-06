@@ -105,7 +105,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     
 }
 
-__attribute__ ((always_inline)) INLINE bool potential_eval_scaled(
+__attribute__ ((always_inline)) INLINE bool potential_eval_ex(
     struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
     
     unsigned ind, k;
@@ -116,6 +116,9 @@ __attribute__ ((always_inline)) INLINE bool potential_eval_scaled(
     
     if(p->flags & POTENTIAL_SCALED) {
         r = r / (ri + rj);
+    }
+    else if(p->flags & POTENTIAL_SHIFTED) {
+        r = r - (ri + rj) + p->shift;
     }
     
     /* is r in the house? */

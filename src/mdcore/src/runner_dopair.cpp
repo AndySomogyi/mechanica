@@ -189,7 +189,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
             r2 = fptype_r2( pix , part_j->x , dx );
 
             /* is this within cutoff? */
-            if ( r2 > cutoff2 || r2 > (pot->b * pot->b ))
+            if (r2 > cutoff2)
                 continue;
             // runner_rcount += 1;
 
@@ -241,7 +241,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_ce
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
             /* update the forces if part in range */
-            if (potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+            if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
                 
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];
@@ -473,7 +473,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
             /* update the forces if part in range */
-            if (potential_eval_scaled(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+            if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
                 
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];

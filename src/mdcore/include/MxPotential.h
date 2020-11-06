@@ -117,6 +117,8 @@ typedef struct MxPotential : PyObject {
 
 	/** The coefficients. */
 	FPTYPE *c;
+    
+    FPTYPE shift;
 
 	/** Interval edges. */
 	double a, b;
@@ -181,7 +183,8 @@ CAPI_FUNC(struct MxPotential *) potential_create_harmonic_dihedral ( double K , 
 
 CAPI_FUNC(struct MxPotential *) potential_create_SS1(double k, double e, double r0, double a , double b ,double tol);
 
-CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e, double r0, double a , double b , double tol);
+CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e,
+                                                    double r0, double a , double b , double tol, bool scale = false);
 
 CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
 

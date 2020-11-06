@@ -26,6 +26,7 @@
 #include <float.h>
 #include <string.h>
 #include <MxParticleEvent.h>
+#include <MxCluster.hpp>
 
 /* Include conditional headers. */
 #include "mdcore_config.h"
@@ -338,649 +339,6 @@ if ( ( e->particle_flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
 
 }
 
-
-/**
- * @brief Set-up the engine for distributed-memory parallel operation.
- *
- * @param e The #engine to set-up.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
- *
- * This function assumes that #engine_split_bisect or some similar
- * function has already been called and that #nodeID, #nr_nodes as
- * well as the #cell @c nodeIDs have been set.
- */
-int engine_split ( struct engine *e ) {
-
-	int i, k, cid, cjd;
-	struct space_cell *ci, *cj, *ct;
-	struct space *s = &(e->s);
-
-	/* Check for nonsense inputs. */
-	if ( e == NULL )
-		return error(engine_err_null);
-
-	/* Start by allocating and initializing the send/recv lists. */
-	if ( ( e->send = (struct engine_comm *)malloc( sizeof(struct engine_comm) * e->nr_nodes ) ) == NULL ||
-			( e->recv = (struct engine_comm *)malloc( sizeof(struct engine_comm) * e->nr_nodes ) ) == NULL )
-		return error(engine_err_malloc);
-	for ( k = 0 ; k < e->nr_nodes ; k++ ) {
-		if ( ( e->send[k].cellid = (int *)malloc( sizeof(int) * 100 ) ) == NULL )
-			return error(engine_err_malloc);
-		e->send[k].size = 100;
-		e->send[k].count = 0;
-		if ( ( e->recv[k].cellid = (int *)malloc( sizeof(int) * 100 ) ) == NULL )
-			return error(engine_err_malloc);
-		e->recv[k].size = 100;
-		e->recv[k].count = 0;
-	}
-
-	/* Un-mark all cells. */
-	for ( cid = 0 ; cid < s->nr_cells ; cid++ )
-		s->cells[cid].flags &= ~cell_flag_marked;
-
-	/* Loop over each cell pair... */
-	for ( i = 0 ; i < s->nr_tasks ; i++ ) {
-
-		/* Is this task a pair? */
-		if ( s->tasks[i].type != task_type_pair )
-			continue;
-
-		/* Get the cells in this pair. */
-		cid = s->tasks[i].i;
-		cjd = s->tasks[i].j;
-		ci = &( s->cells[ cid ] );
-		cj = &( s->cells[ cjd ] );
-
-		/* If it is a ghost-ghost pair, skip it. */
-		if ( (ci->flags & cell_flag_ghost) && (cj->flags & cell_flag_ghost) )
-			continue;
-
-		/* Mark the cells. */
-		ci->flags |= cell_flag_marked;
-		cj->flags |= cell_flag_marked;
-
-		/* Make cj the ghost cell and bail if both are real. */
-		if ( ci->flags & cell_flag_ghost ) {
-			ct = ci; cj = ct;
-			k = cid; cid = cjd; cjd = k;
-		}
-		else if ( !( cj->flags & cell_flag_ghost ) )
-			continue;
-
-		/* Store the communication between cid and cjd. */
-		/* Store the send, if not already there... */
-		for ( k = 0 ; k < e->send[cj->nodeID].count && e->send[cj->nodeID].cellid[k] != cid ; k++ );
-		if ( k == e->send[cj->nodeID].count ) {
-			if ( e->send[cj->nodeID].count == e->send[cj->nodeID].size ) {
-				e->send[cj->nodeID].size += 100;
-				if ( ( e->send[cj->nodeID].cellid = (int *)realloc( e->send[cj->nodeID].cellid , sizeof(int) * e->send[cj->nodeID].size ) ) == NULL )
-					return error(engine_err_malloc);
-			}
-			e->send[cj->nodeID].cellid[ e->send[cj->nodeID].count++ ] = cid;
-		}
-		/* Store the recv, if not already there... */
-		for ( k = 0 ; k < e->recv[cj->nodeID].count && e->recv[cj->nodeID].cellid[k] != cjd ; k++ );
-		if ( k == e->recv[cj->nodeID].count ) {
-			if ( e->recv[cj->nodeID].count == e->recv[cj->nodeID].size ) {
-				e->recv[cj->nodeID].size += 100;
-				if ( ( e->recv[cj->nodeID].cellid = (int *)realloc( e->recv[cj->nodeID].cellid , sizeof(int) * e->recv[cj->nodeID].size ) ) == NULL )
-					return error(engine_err_malloc);
-			}
-			e->recv[cj->nodeID].cellid[ e->recv[cj->nodeID].count++ ] = cjd;
-		}
-
-	}
-
-	/* Nuke all ghost-ghost tasks. */
-	i = 0;
-	while ( i < s->nr_tasks ) {
-
-		/* Pair? */
-		if ( s->tasks[i].type == task_type_pair ) {
-
-			/* Get the cells in this pair. */
-			ci = &( s->cells[ s->tasks[i].i ] );
-			cj = &( s->cells[ s->tasks[i].j ] );
-
-			/* If it is a ghost-ghost pair, skip it. */
-			if ( (ci->flags & cell_flag_ghost) && (cj->flags & cell_flag_ghost) )
-				s->tasks[i] = s->tasks[ --(s->nr_tasks) ];
-			else
-				i += 1;
-
-		}
-
-		/* Self? */
-		else if ( s->tasks[i].type == task_type_self ) {
-
-			/* Get the cells in this pair. */
-			ci = &( s->cells[ s->tasks[i].i ] );
-
-			/* If it is a ghost-ghost pair, skip it. */
-			if ( ci->flags & cell_flag_ghost )
-				s->tasks[i] = s->tasks[ --(s->nr_tasks) ];
-			else
-				i += 1;
-
-		}
-
-		/* Sort? */
-		else if ( s->tasks[i].type == task_type_sort ) {
-
-			/* Get the cells in this pair. */
-			ci = &( s->cells[ s->tasks[i].i ] );
-
-			/* If it is a ghost-ghost pair, skip it. */
-			if ( !(ci->flags & cell_flag_marked) )
-				s->tasks[i] = s->tasks[ --(s->nr_tasks) ];
-			else
-				i += 1;
-
-		}
-
-	}
-
-	/* Clear all task dependencies and re-link each sort task with its cell. */
-	for ( i = 0 ; i < s->nr_tasks ; i++ ) {
-		s->tasks[i].nr_unlock = 0;
-		if ( s->tasks[i].type == task_type_sort ) {
-			s->cells[ s->tasks[i].i ].sort = &s->tasks[i];
-			s->tasks[i].flags = 0;
-		}
-	}
-
-	/* Run through the tasks and make each pair depend on the sorts.
-       Also set the flags for each sort. */
-	for ( k = 0 ; k < s->nr_tasks ; k++ )
-		if ( s->tasks[k].type == task_type_pair ) {
-			if ( task_addunlock( s->cells[ s->tasks[k].i ].sort , &s->tasks[k] ) != 0 ||
-					task_addunlock( s->cells[ s->tasks[k].j ].sort , &s->tasks[k] ) != 0 )
-				return error(space_err_task);
-			s->cells[ s->tasks[k].i ].sort->flags |= 1 << s->tasks[k].flags;
-			s->cells[ s->tasks[k].j ].sort->flags |= 1 << s->tasks[k].flags;
-		}
-
-
-	/* Empty unmarked cells. */
-	for ( k = 0 ; k < s->nr_cells ; k++ )
-		if ( !( s->cells[k].flags & cell_flag_marked ) )
-			space_cell_flush( &s->cells[k] , s->partlist , s->celllist );
-
-	/* Set ghost markings on particles. */
-	for ( cid = 0 ; cid < s->nr_cells ; cid++ )
-		if ( s->cells[cid].flags & cell_flag_ghost )
-			for ( k = 0 ; k < s->cells[cid].count ; k++ )
-				s->cells[cid].parts[k].flags |= PARTICLE_GHOST;
-
-	/* Fill the cid lists with marked, local and ghost cells. */
-	s->nr_real = 0; s->nr_ghost = 0; s->nr_marked = 0;
-	for ( cid = 0 ; cid < s->nr_cells ; cid++ )
-		if ( s->cells[cid].flags & cell_flag_marked ) {
-			s->cid_marked[ s->nr_marked++ ] = cid;
-			if ( s->cells[cid].flags & cell_flag_ghost ) {
-				s->cells[cid].id = -s->nr_cells;
-				s->cid_ghost[ s->nr_ghost++ ] = cid;
-			}
-			else {
-				s->cells[cid].id = s->nr_real;
-				s->cid_real[ s->nr_real++ ] = cid;
-			}
-		}
-
-	/* Done deal. */
-	return engine_err_ok;
-
-}
-
-#ifdef WITH_METIS
-/**
- * @brief Split the computation domain over a number of nodes using METIS graph partitioning.
- *
- *@param e The #engine to split up.
- *@param N The number of computational nodes.
- *@param flags Flag telling whether to split the space for MPI or for GPUs.
- *
- *@return #engine_err_ok or < 0 on error (see #engine_err).
- */
-int engine_split_METIS ( struct engine *e, int N, int particle_flags){
-
-	//printf("Using METIS algorithm to split the space\n");
-	int currentIndex, i,j,shiftDim,neighbor;
-	idx_t vw; //Temporary vertex Weight store
-	idx_t ew; //Temporary edge Weight store
-
-
-	//Do single GPU version ie. N = 1
-	if(N==1)
-	{
-		if( particle_flags == engine_split_MPI )
-		{
-			for(i = 0; i < e->s.nr_cells; i++ )
-			{
-				e->s.cells[i].nodeID = 0;
-
-			}
-		}else if ( particle_flags == engine_split_GPU )
-		{
-			for( i = 0 ; i < e->s.nr_cells ; i++ )
-			{
-				e->s.cells[i].GPUID = 0;
-			}
-
-
-		}
-		return engine_err_ok;
-	}
-
-	//Values to adjust weighting of edges dependent on spatial share.
-	//These values are taken from random simulations of vector distances as described in GONNET 2007.
-	float FACE = 0.50004f;
-	float EDGE = 0.16176f;
-	float CORNER = 0.036213f;
-
-	int nr_pairs = 0;
-	for( i = 0; i < e->s.nr_tasks; i++ )
-		if(e->s.tasks[i].typeId == task_type_pair)
-			nr_pairs++;
-	nr_pairs *= 2;
-	/* Check inputs. */
-	if ( e == NULL )
-		return error(engine_err_null);
-
-	/* Check cell size >= cutoff distance*/
-	if( e->s.h[0] < e->s.cutoff || e->s.h[1] < e->s.cutoff || e->s.h[2] < e->s.cutoff)
-		return error(engine_err_cutoff);
-
-	//Need to include #include <metis.h>
-	/*Allocate memory required for METIS*/
-	/*Number of cells = number of nodes. */
-	idx_t *xadj = (idx_t*) malloc((e->s.nr_cells+1) * sizeof(idx_t));
-	if(xadj == NULL) return error(engine_err_malloc);
-	/*Number of edges = number of cellpairs */
-	idx_t *adjncy = (idx_t*) malloc (nr_pairs *2 * sizeof(idx_t));
-	if(adjncy == NULL) return error(engine_err_malloc);
-	/*Vertex Weights */
-	idx_t *vwgt = (idx_t*) malloc(e->s.nr_cells * sizeof(idx_t));
-	if(vwgt == NULL) return error(engine_err_malloc);
-	/*Edge Weights */
-	idx_t *adjwgt = (idx_t*) malloc(nr_pairs * 2 * sizeof(idx_t));
-	if(adjwgt == NULL) return error(engine_err_malloc);
-	/*Number vertices */
-	idx_t *nvtxs = (idx_t*) malloc(sizeof(idx_t));
-	if(nvtxs==NULL)return 1;
-	*nvtxs = e->s.nr_cells;
-	//Number constraints
-	idx_t *ncon = (idx_t*) malloc(sizeof(idx_t));
-	if(ncon==NULL)return 1;
-	*ncon = 1;
-	//Number partitions
-	idx_t *nparts = (idx_t*) malloc(sizeof(idx_t));
-	if(nparts==NULL)return 1;
-	*nparts = N;
-
-	/*results*/
-	idx_t *objval = (idx_t*) malloc(sizeof(idx_t));
-	if(objval==NULL)return 1;
-	idx_t *MxParticle = (idx_t*) malloc(e->s.nr_cells * (sizeof(idx_t)));
-	if(MxParticle==NULL)return 1;
-
-	//Loop over cell pairs and add to array if valid. Needs to be double loop.
-	currentIndex=0;
-	for(j=0; j<e->s.nr_cells; j++)
-	{
-		vw=0;
-		ew=0;
-		xadj[j]=currentIndex;
-		for(i=0; i<e->s.nr_tasks; i++)
-		{
-			if(e->s.tasks[i].typeId == task_type_sort)
-				continue;
-			shiftDim=0;
-			//If the pair involves cell j.
-			if(e->s.tasks[i].i==j || e->s.tasks[i].j==j)
-			{
-
-
-				//If type = self this is a self interaction. All particles interact (n^2-n interactions)
-				//Increment vertex weight by e->s.cell[j].count ^ 2 - e->s.cell[j].count
-				if(e->s.tasks[i].typeId == task_type_self)
-				{
-					vw+= e->s.cells[j].count*e->s.cells[j].count - e->s.cells[j].count;
-				}else{
-					//Find neighbor cell index.
-					if(e->s.tasks[i].i==j)
-						neighbor = e->s.tasks[i].j;
-					else
-						neighbor = e->s.tasks[i].i;
-
-					//Check how many shift==0.
-					if(e->s.cells[e->s.tasks[i].i].loc[0] == e->s.cells[e->s.tasks[i].j].loc[0])
-						shiftDim++;
-					if(e->s.cells[e->s.tasks[i].i].loc[1] == e->s.cells[e->s.tasks[i].j].loc[1])
-						shiftDim++;
-					if(e->s.cells[e->s.tasks[i].i].loc[2] == e->s.cells[e->s.tasks[i].j].loc[2])
-						shiftDim++;
-
-					//If shiftDim = 2 this is a face interaction. Add edge from j to i
-					//Edge has weight e->s.cell[j].count * e->s.cell[neighbor].count * FACE	(Estimated number of distance calculations)
-					if(shiftDim==2)
-					{
-						ew = e->s.cells[j].count * e->s.cells[neighbor].count * FACE;
-						//Vertex Weights are the sum of edge weights + self interaction
-						vw+= ew;
-						//Add an edge and the edge weight to the graph
-						adjncy[currentIndex] = neighbor;
-						adjwgt[currentIndex] = ew;
-						currentIndex++;
-					}
-
-					//If shiftDim = 1 this is an edge interaction. Add edge from j to i
-					//Edge has weight e->s.cell[j].count * e->s.cell[neightbor.count * EDGE (Estimated number of distance calculations)
-					if(shiftDim==1)
-					{
-						ew = e->s.cells[j].count * e->s.cells[neighbor].count * EDGE;
-						//Vertex Weights are the sum of edge weights + self interaction
-						vw+=ew;
-						//Add an edge and the edge weight to the graph
-						adjncy[currentIndex] = neighbor;
-						adjwgt[currentIndex] = ew;
-						currentIndex++;
-					}
-
-
-					//If shiftDim = 0 this is an corner interaction. Add edge from j to i
-					//Edge has weight e->s.cell[j].count * e->s.cell[neightbor.count * CORNER (Estimated number of distance calculations)
-					if(shiftDim==0)
-					{
-						ew = e->s.cells[j].count * e->s.cells[neighbor].count * CORNER;
-						//Vertex Weights are the sum of edge weights + self interaction
-						vw+=ew;
-						//Add an edge and the edge weight to the graph
-						adjncy[currentIndex] = neighbor;
-						adjwgt[currentIndex] = ew;
-						currentIndex++;
-					}
-				}
-
-
-			}
-		}
-		//We now know vertex weight.
-		vwgt[j] = vw;
-	}
-
-	//Need to add the final thing METIS needs to xadj
-	xadj[e->s.nr_cells]=currentIndex;
-
-	//Setup METIS options
-	idx_t *options = (idx_t*) malloc(METIS_NOPTIONS * sizeof(idx_t));
-	if(options==NULL)return 1;
-	METIS_SetDefaultOptions(options);
-	options[METIS_OPTION_PTYPE]=METIS_PTYPE_KWAY;
-	options[METIS_OPTION_OBJTYPE]=METIS_OBJTYPE_CUT;
-	options[METIS_OPTION_CTYPE] = METIS_CTYPE_SHEM;
-	options[METIS_OPTION_IPTYPE]=METIS_IPTYPE_GROW;
-	options[METIS_OPTION_NCUTS] = 1;
-	options[METIS_OPTION_NSEPS] = 1;
-	options[METIS_OPTION_NUMBERING] = 0; //C-style numbering :)
-	options[METIS_OPTION_NITER] = 10;
-	options[METIS_OPTION_SEED] = 1;
-	options[METIS_OPTION_CONTIG] = 1;
-	options[METIS_OPTION_UFACTOR] = 30;
-	//	options[METIS_OPTION_DBGLVL] = METIS_DBG_INFO;
-
-	//Run METIS to partition the graph
-	METIS_PartGraphKway( nvtxs , ncon , xadj , adjncy , vwgt , NULL , adjwgt , nparts , NULL , NULL , options , objval , MxParticle );
-	if( particle_flags == engine_split_MPI )
-	{
-		for(i = 0; i < e->s.nr_cells; i++ )
-		{
-			e->s.cells[i].nodeID = MxParticle[i];
-			//Not my cell? Mark as ghost.
-			if(MxParticle[i] != e->nodeID)
-				e->s.cells[i].particle_flags |= cell_flag_ghost;
-			e->nr_nodes = N;
-
-		}
-	}else if ( particle_flags == engine_split_GPU )
-	{
-		int part1 = 0;
-		int part2 = 0;
-		for( i = 0 ; i < e->s.nr_cells ; i++ )
-		{
-			e->s.cells[i].GPUID = MxParticle[i];
-			if(e->s.cells[i].GPUID == 0)
-				part1++;
-			else
-				part2++;
-		}
-		printf("%i  %i \n", part1, part2);
-
-
-	}
-
-	/* Store the number of nodes. */
-
-	/*Free memory used by METIS*/
-	free(xadj);
-	free(adjncy);
-	free(vwgt);
-	free(adjwgt);
-	free(nvtxs);
-	free(ncon);
-	free(nparts);
-	free(objval);
-	free(MxParticle);
-	free(options);
-	printf("Successfully split the space\n");
-
-	/* Call it a day. */
-	return engine_err_ok;
-
-	/* Bisect recursively */
-	/* Interior, recursive function that actually does the split. */
-	int engine_split_bisect_rec( int N_min , int N_max , int x_min , int x_max , int y_min , int y_max , int z_min , int z_max , int particle_flags) {
-
-		int i, j, k, m, Nm;
-		int hx, hy, hz;
-		unsigned int flag = 0;
-		struct space_cell *c;
-
-		/* Check inputs. */
-		if ( x_max < x_min || y_max < y_min || z_max < z_min )
-			return error(engine_err_domain);
-
-		/* Is there nothing left to split? */
-		if ( N_min == N_max ) {
-
-			/* Flag as ghost or not? */
-			if( particle_flags == engine_split_MPI )
-			{
-				if ( N_min != e->nodeID )
-					flag = cell_flag_ghost;
-
-				/* printf("engine_split_bisect: marking range [ %i..%i , %i..%i , %i..%i ] with flag %i.\n",
-                x_min, x_max, y_min, y_max, z_min, z_max, flag ); */
-
-				/* Run through the cells. */
-				for ( i = x_min ; i < x_max ; i++ )
-					for ( j = y_min ; j < y_max ; j++ )
-						for ( k = z_min ; k < z_max ; k++ ) {
-							c = &( e->s.cells[ space_cellid(&(e->s),i,j,k) ] );
-							c->particle_flags |= flag;
-							c->nodeID = N_min;
-						}
-			}else{
-
-				for ( i = x_min ; i < x_max ; i++ )
-					for ( j = y_min ; j < y_max ; j++ )
-						for ( k = z_min ; k < z_max ; k++ ) {
-							c = &( e->s.cells[ space_cellid(&(e->s),i,j,k) ] );
-							c->GPUID = N_min;
-						}
-			}
-		}
-
-		/* Otherwise, bisect. */
-		else {
-
-			hx = x_max - x_min;
-			hy = y_max - y_min;
-			hz = z_max - z_min;
-			Nm = (N_min + N_max) / 2;
-
-			/* Is the x-axis the largest? */
-					if ( hx > hy && hx > hz ) {
-						m = (x_min + x_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , m , y_min , y_max , z_min , z_max , particle_flags) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , m , x_max , y_min , y_max , z_min , z_max , particle_flags) < 0 )
-							return error(engine_err);
-					}
-
-					/* Nope, maybe the y-axis? */
-					else if ( hy > hz ) {
-						m = (y_min + y_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , m , z_min , z_max , particle_flags ) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , m , y_max , z_min , z_max , particle_flags) < 0 )
-							return error(engine_err);
-					}
-
-					/* Then it has to be the z-axis. */
-					else {
-						m = (z_min + z_max) / 2;
-						if ( engine_split_bisect_rec( N_min , Nm , x_min , x_max , y_min , y_max , z_min , m , particle_flags) < 0 ||
-								engine_split_bisect_rec( Nm+1 , N_max , x_min , x_max , y_min , y_max , m , z_max , particle_flags) < 0 )
-							return error(engine_err);
-					}
-
-		}
-
-		/* So far, so good! */
-		return engine_err_ok;
-
-	}
-
-	/* Check inputs. */
-	if ( e == NULL )
-		return error(engine_err_null);
-
-	/* Call the recursive bisection. */
-	if ( engine_split_bisect_rec( 0 , N-1 , 0 , e->s.cdim[0] , 0 , e->s.cdim[1] , 0 , e->s.cdim[2] , particle_flags) < 0 )
-		return error(engine_err);
-
-	/* Store the number of nodes. */
-	e->nr_nodes = N;
-
-	/* Call it a day. */
-	return engine_err_ok;
-
-}
-
-#endif
-
-/* Interior, recursive function that actually does the split. */
-static int engine_split_bisect_rec(struct engine *e, int N_min , int N_max ,
-		int x_min , int x_max , int y_min , int y_max , int z_min , int z_max ) {
-
-	int i, j, k, m, Nm;
-	int hx, hy, hz;
-	unsigned int flag = 0;
-	struct space_cell *c;
-
-	/* Check inputs. */
-	if ( x_max < x_min || y_max < y_min || z_max < z_min )
-		return error(engine_err_domain);
-
-	/* Is there nothing left to split? */
-	if ( N_min == N_max ) {
-
-		/* Flag as ghost or not? */
-		if ( N_min != e->nodeID )
-			flag = cell_flag_ghost;
-
-		/* printf("engine_split_bisect: marking range [ %i..%i , %i..%i , %i..%i ] with flag %i.\n",
-            x_min, x_max, y_min, y_max, z_min, z_max, flag ); */
-
-		/* Run through the cells. */
-		for ( i = x_min ; i < x_max ; i++ )
-			for ( j = y_min ; j < y_max ; j++ )
-				for ( k = z_min ; k < z_max ; k++ ) {
-					c = &( e->s.cells[ space_cellid(&(e->s),i,j,k) ] );
-					c->flags |= flag;
-					c->nodeID = N_min;
-				}
-	}
-
-	/* Otherwise, bisect. */
-	else {
-
-		hx = x_max - x_min;
-		hy = y_max - y_min;
-		hz = z_max - z_min;
-		Nm = (N_min + N_max) / 2;
-
-		/* Is the x-axis the largest? */
-		if ( hx > hy && hx > hz ) {
-			m = (x_min + x_max) / 2;
-			if ( engine_split_bisect_rec(e, N_min , Nm , x_min , m , y_min , y_max , z_min , z_max ) < 0 ||
-					engine_split_bisect_rec(e, Nm+1 , N_max , m , x_max , y_min , y_max , z_min , z_max ) < 0 )
-				return error(engine_err);
-		}
-
-		/* Nope, maybe the y-axis? */
-		else if ( hy > hz ) {
-			m = (y_min + y_max) / 2;
-			if ( engine_split_bisect_rec(e, N_min , Nm , x_min , x_max , y_min , m , z_min , z_max ) < 0 ||
-					engine_split_bisect_rec(e, Nm+1 , N_max , x_min , x_max , m , y_max , z_min , z_max ) < 0 )
-				return error(engine_err);
-		}
-
-		/* Then it has to be the z-axis. */
-		else {
-			m = (z_min + z_max) / 2;
-			if ( engine_split_bisect_rec(e, N_min , Nm , x_min , x_max , y_min , y_max , z_min , m ) < 0 ||
-					engine_split_bisect_rec(e, Nm+1 , N_max , x_min , x_max , y_min , y_max , m , z_max ) < 0 )
-				return error(engine_err);
-		}
-
-	}
-
-	/* So far, so good! */
-	return engine_err_ok;
-
-}
-
-
-
-
-/**
- * @brief Split the computational domain over a number of nodes using
- *      bisection.
- *
- * @param e The #engine to split up.
- * @param N The number of computational nodes.
- *
- * @return #engine_err_ok or < 0 on error (see #engine_err).
- */
-
-int engine_split_bisect ( struct engine *e , int N ) {
-
-	/* Check inputs. */
-	if ( e == NULL )
-		return error(engine_err_null);
-
-	/* Call the recursive bisection. */
-	if ( engine_split_bisect_rec(e, 0 , N-1 , 0 , e->s.cdim[0] , 0 , e->s.cdim[1] , 0 , e->s.cdim[2] ) < 0 )
-		return error(engine_err);
-
-	/* Store the number of nodes. */
-	e->nr_nodes = N;
-
-	/* Call it a day. */
-	return engine_err_ok;
-
-}
 
 
 /**
@@ -1922,7 +1280,7 @@ int engine_advance_forward_euler ( struct engine *e ) {
         for ( cid = 0 ; cid < s->nr_ghost ; cid++ ) {
             epot += s->cells[ s->cid_ghost[cid] ].epot;
         }
-
+        
 #pragma omp parallel private(cid,c,pid,p,w,k,delta,c_dest,epot_local,ke)
         {
             step = omp_get_num_threads(); epot_local = 0.0;
@@ -1933,6 +1291,11 @@ int engine_advance_forward_euler ( struct engine *e ) {
                 while ( pid < c->count ) {
                     p = &( c->parts[pid] );
                     toofast = 0;
+                    
+                    if(p->flags & PARTICLE_CLUSTER) {
+                        pid++;
+                        continue;
+                    }
                     
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
@@ -1955,7 +1318,7 @@ int engine_advance_forward_euler ( struct engine *e ) {
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }
                     }
-
+                    
                     if(toofast) {
                         return toofast_error(p);
                     }
@@ -1995,6 +1358,58 @@ int engine_advance_forward_euler ( struct engine *e ) {
             }
 #pragma omp atomic
             epot += epot_local;
+        }
+        
+        /* set the new pos for the clusters.  */
+        for ( cid = 0 ; cid < s->nr_real ; ++cid ) {
+            c = &(s->cells[ s->cid_real[cid] ]);
+            pid = 0;
+            while ( pid < c->count ) {
+                p = &( c->parts[pid] );
+                if((p->flags & PARTICLE_CLUSTER) && p->nr_parts > 0) {
+                    
+                    MxCluster_ComputeAggregateQuantities((MxCluster*)p);
+                    
+                    for ( k = 0 ; k < 3 ; k++ ) {
+                        delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+                    }
+                    
+                    /* do we have to move this particle? */
+                    // TODO: consolidate moving to one method.
+                    if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            p->x[k] -= delta[k] * h[k];
+                            p->p0[k] -= delta[k] * h[k];
+                        }
+                        
+                        c_dest = &( s->cells[ space_cellid( s ,
+                                                           (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
+                                                           (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
+                                                           (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
+                        
+                        pthread_mutex_lock(&c_dest->cell_mutex);
+                        space_cell_add_incomming( c_dest , p );
+                        pthread_mutex_unlock(&c_dest->cell_mutex);
+                        
+                        s->celllist[ p->id ] = c_dest;
+                        
+                        // remove a particle from a cell. if the part was the last in the
+                        // cell, simply dec the count, otherwise, move the last part
+                        // in the cell to the ejected part's prev loc.
+                        c->count -= 1;
+                        if ( pid < c->count ) {
+                            c->parts[pid] = c->parts[c->count];
+                            s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
+                        }
+                    }
+                    else {
+                        pid += 1;
+                    }
+                }
+                else {
+                    pid += 1;
+                }
+            }
         }
 
         /* Welcome the new particles in each cell. */

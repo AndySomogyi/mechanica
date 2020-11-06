@@ -209,6 +209,11 @@ struct MxParticle  {
         double *o = _Engine.s.celllist[this->id]->origin;
         return this->position + Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
     }
+    
+    inline void set_global_position(const Magnum::Vector3& pos) {
+        double *o = _Engine.s.celllist[this->id]->origin;
+        this->position = pos - Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
+    }
 };
 
 

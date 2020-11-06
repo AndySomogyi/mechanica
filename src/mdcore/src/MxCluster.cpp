@@ -45,6 +45,8 @@ PyObject *pctor_call(PyObject *, PyObject *, PyObject *) {
  */
 static MxParticle *remove_particle_at_index(MxCluster *cluster, int index);
 
+static PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plane);
+
 
 PyTypeObject MxParticleConstructor_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -279,18 +281,9 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
     return S_OK;
 }
 
-static PyObject* cluster_fission_normal_point(MxParticle *cluster,
-    const Magnum::Vector3 &normal, const Magnum::Vector3 &point) {
+PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plane) {
     
-    Magnum::Debug() << "plane normal vector: " << normal;
-    
-    Magnum::Debug() << "plane point vector: " << point;
-    
-    Magnum::Debug() << "cluster center " << cluster->global_position();
-    
-    
-    Magnum::Vector4 plane = Magnum::Math::planeEquation(normal, point);
-    
+    Magnum::Debug() << MX_FUNCTION << ", plane: " << plane;
     
     // particles to move to daughter cluster.
     // only perform a split if the contained particles can be split into
@@ -315,10 +308,10 @@ static PyObject* cluster_fission_normal_point(MxParticle *cluster,
         assert(daughter);
         
         std::cout << "split cluster "
-                  << cluster->id << " into ("
-                  << cluster->id << ":" << (cluster->nr_parts - dparts.size())
-                  << ", "
-                  << daughter->id << ": " << dparts.size() << ")" << std::endl;
+        << cluster->id << " into ("
+        << cluster->id << ":" << (cluster->nr_parts - dparts.size())
+        << ", "
+        << daughter->id << ": " << dparts.size() << ")" << std::endl;
         
         for(int i = 0; i < dparts.size(); ++i) {
             cluster->removepart(dparts[i]);
@@ -332,51 +325,40 @@ static PyObject* cluster_fission_normal_point(MxParticle *cluster,
     }
 }
 
+static PyObject* cluster_fission_normal_point(MxParticle *cluster,
+    const Magnum::Vector3 &normal, const Magnum::Vector3 &point) {
+    
+    Magnum::Debug() << MX_FUNCTION << "normal: " << normal
+                    << ", point: " << point << ", cluster center: "
+                    << cluster->global_position();
+    
+    Magnum::Vector4 plane = Magnum::Math::planeEquation(normal, point);
+    
+    return cluster_fission_plane(cluster, plane);
+}
+
 
 static PyObject* cluster_fission_axis(MxParticle *cluster,
     const Magnum::Vector3 &axis) {
     
-    /*
-
-    Magnum::Debug() << "plane normal vector: " << normal;
+    Magnum::Debug() << MX_FUNCTION << "axis: " << axis;
     
-    Magnum::Debug() << "plane point vector: " << point;
+    Magnum::Vector3 p1 = cluster->global_position();
     
-    Magnum::Debug() << "cluster center " << cluster->global_position();
+    Magnum::Vector3 p2 = p1 + axis;
     
+    Magnum::Vector3 p3 = p1 + MxRandomUnitVector();
     
-    Magnum::Vector4 plane = Magnum::Math::planeEquation(normal, point);
+    Magnum::Vector4 plane = Magnum::Math::planeEquation(p1, p2, p3);
     
-    PyObject *_daughter = MxParticle_New((PyObject*)cluster->_pyparticle->ob_type,  NULL,  NULL);
-    
-    MxCluster *daughter = (MxCluster*)MxParticle_Get(_daughter);
-    assert(daughter);
-    
-    int i = 0;
-    
-    while (i < cluster->nr_parts) {
-        MxParticle *p = cluster->particle(i);
-        float dist = Magnum::Math::Distance::pointPlaneScaled(p->global_position(), plane);
-        
-        Magnum::Debug() << "particle[" << i << "] position: " << p->global_position() << ", dist: " << dist;
-        
-        if(dist < 0) {
-            // this decrements nr_parts
-            cluster->removepart(p->id);
-            daughter->addpart(p->id);
-        }
-        else {
-            // not in right plane orientation, so move on.
-            i++;
-        }
-    }
-    
-    return _daughter;
-     */
-    return NULL;
+    return cluster_fission_plane(cluster, plane);
 }
 
 int MxCluster_ComputeAggregateQuantities(struct MxCluster *cluster) {
+    
+    if(cluster->nr_parts <= 0) {
+        return 0;
+    }
     
     Magnum::Vector3 pos;
     
@@ -391,9 +373,7 @@ int MxCluster_ComputeAggregateQuantities(struct MxCluster *cluster) {
         pos += p->global_position();
     }
     
-    double *o = _Engine.s.celllist[cluster->id]->origin;
-    
-    cluster->position = (pos / cluster->nr_parts) - Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
+    cluster->set_global_position(pos / cluster->nr_parts);
     
     return 0;
 }
@@ -580,7 +560,7 @@ static Magnum::Vector3 random_point_solid_sphere(float radius) {
 
         double theta = 2 * M_PI * uniform01(CRandom);
         double phi = acos(1 - 2 * uniform01(CRandom));
-        double r = std::cbrt(uniform01(CRandom) * radius);
+        double r = std::cbrt(uniform01(CRandom)) * radius;
         float x = r * sin(phi) * cos(theta);
         float y = r * sin(phi) * sin(theta);
         float z = r * cos(phi);
