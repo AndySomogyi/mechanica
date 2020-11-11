@@ -74,6 +74,14 @@ const char *potential_err_msg[] = {
 		"Maximum number of intervals reached before tolerance satisfied."
 };
 
+static PyObject *potential_checkerr(MxPotential *p) {
+    if(p == NULL) {
+        std::string err = errs_getstring(0);
+        PyErr_SetString(PyExc_ValueError, err.c_str());
+    }
+    return p;
+}
+
 static MxPotential *potential_alloc(PyTypeObject *type);
 
 /**
@@ -893,7 +901,7 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
 	}
 
 	/* return it */
-			return p;
+	return p;
 
 }
 
@@ -2129,7 +2137,7 @@ static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject 
 
 static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
-    
+
     try {
         double min = arg<double>("min", 0, _args, _kwargs);
         double max = arg<double>("max", 1, _args, _kwargs);
@@ -2137,7 +2145,7 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
         double B = arg<double>("B", 3, _args, _kwargs);
         double q = arg<double>("q", 4, _args, _kwargs);
         double tol = arg<double>("tol", 5, _args, _kwargs, 0.001 * (max-min));
-        return potential_create_LJ126_Coulomb( min, max, A, B, q, tol);
+        return potential_checkerr(potential_create_LJ126_Coulomb( min, max, A, B, q, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2151,7 +2159,7 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
 
 static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
-    
+
     try {
         double kappa = arg<double>("kappa", 0, _args, _kwargs);
         double epsilon = arg<double>("epsilon", 1, _args, _kwargs);
@@ -2161,7 +2169,7 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
         double max = arg<double>("max", 5, _args, _kwargs, 2);
         double tol = arg<double>("tol", 6, _args, _kwargs, 0.001 * (max-min));
         bool shift = arg<bool>("shift", 7, _args, _kwargs, false);
-        return potential_create_SS(eta, kappa, epsilon, r0, min, max, tol, shift);
+        return potential_checkerr(potential_create_SS(eta, kappa, epsilon, r0, min, max, tol, shift));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2175,14 +2183,14 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
 
 static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
-    
+
     try {
         double min = arg<double>("min", 0, _args, _kwargs);
         double max = arg<double>("max", 1, _args, _kwargs);
         double q = arg<double>("q", 2, _args, _kwargs);
         double kappa = arg<double>("kappa", 3, _args, _kwargs);
         double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
-        return potential_create_Ewald( min, max, q, kappa, tol);
+        return potential_checkerr(potential_create_Ewald( min, max, q, kappa, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2203,7 +2211,7 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double min = arg<double>("min", 1, _args, _kwargs, 0.01);
         double max = arg<double>("max", 2, _args, _kwargs, 2);
         double tol = arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
-        return potential_create_Coulomb( min, max, q, tol);
+        return potential_checkerr(potential_create_Coulomb( min, max, q, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2226,7 +2234,7 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
         double min =   arg<double>("min", 2, _args, _kwargs, r0 - range);
         double max =   arg<double>("max", 3, _args, _kwargs, r0 + range);
         double tol =   arg<double>("tol", 4, _args, _kwargs, 0.01 * (max-min));
-        return potential_create_harmonic(min, max, k, r0, tol);
+        return potential_checkerr(potential_create_harmonic(min, max, k, r0, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2248,7 +2256,7 @@ static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kw
         double max = arg<double>("max", 3, _args, _kwargs, M_PI);
         double tol = arg<double>("tol", 4, _args, _kwargs, 0.005 * std::abs(max-min));
 
-        return potential_create_harmonic_angle( min, max, k, theta0, tol);
+        return potential_checkerr(potential_create_harmonic_angle( min, max, k, theta0, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2269,7 +2277,7 @@ static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *
         int n = arg<int>("n", 1, _args, _kwargs);
         double delta = arg<double>("delta", 2, _args, _kwargs);
         double tol = arg<double>("tol", 3, _args, _kwargs, 0.001);
-        return potential_create_harmonic_dihedral( k, n, delta, tol);
+        return potential_checkerr(potential_create_harmonic_dihedral( k, n, delta, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2294,7 +2302,7 @@ static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double max = arg<double>("max", 4, _args, _kwargs, 0.99 * r0);
         double tol = arg<double>("tol", 5, _args, _kwargs, 0.01 * std::abs(min - max));
 
-        return potential_create_well(k, n, r0, tol, min, max);
+        return potential_checkerr(potential_create_well(k, n, r0, tol, min, max));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2318,7 +2326,7 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double max = arg<double>("max", 4, _args, _kwargs, 10);
         double tol = arg<double>("tol", 5, _args, _kwargs, 0.001);
         
-        return potential_create_glj(e, n, m, min, max, tol);
+        return potential_checkerr(potential_create_glj(e, n, m, min, max, tol));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2327,6 +2335,27 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     catch(py::error_already_set &e){
         e.restore();
         return NULL;
+    }
+}
+
+
+static PyObject *_potential_set_value(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+   
+    PyObject *key = PyTuple_GetItem(_args, 0);
+    PyObject *value = PyTuple_GetItem(_args, 1);
+    
+    if(key == NULL || value == NULL) {
+        PyErr_SetString(PyExc_RuntimeError, "potential_set_dict_value arguments null");
+        return NULL;
+    }
+    
+    int result = PyDict_SetItem(MxPotential_Type.tp_dict, key, value);
+    
+    if(result) {
+        return NULL;
+    }
+    else {
+        Py_RETURN_NONE;
     }
 }
 
@@ -2403,6 +2432,12 @@ static PyMethodDef potential_methods[] = {
         (PyCFunction)_glj,
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "Generalized Lennard-Joned potential"
+    },
+    {
+        "_set_dict_value",
+        (PyCFunction)_potential_set_value,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "set dictionary value"
     },
     {NULL}
 };

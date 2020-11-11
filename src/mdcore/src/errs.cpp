@@ -19,7 +19,7 @@
 
 /* System-wide includes. */
 #include <stdlib.h>
-#include <stdio.h>
+#include <cstdio>
 
 
 /* Local includes. */
@@ -36,7 +36,7 @@ const char *errs_err_msg[] = {
 struct {
     int id, line;
     const char *msg, *func, *file;
-    } errs_stack[ errs_maxstack ];
+} errs_stack[ errs_maxstack ];
 int errs_count = 0;
 
 
@@ -46,8 +46,7 @@ int errs_count = 0;
 void errs_clear( ) {
 
     errs_count = 0;
-
-    }
+}
 
 
 /**
@@ -73,7 +72,30 @@ int errs_dump( FILE *out ) {
     /* End on a good note. */
     return errs_err_ok;
 
+}
+
+std::string errs_getstring(int i) {
+    char buffer[256];
+    std::string result;
+    
+    
+    int k;
+    
+    /* Loop over the error stack, bottom-up. */
+    for ( k = 0 ; k < errs_count ; k++ ) {
+        snprintf(buffer, 255*sizeof(char), "%s, id:%i, file:%s, func:%s, line:%i" ,
+                 errs_stack[k].msg, errs_stack[k].id, errs_stack[k].file , errs_stack[k].func , errs_stack[k].line );
+        result = result + buffer;
+        if(k+2 < errs_count) {
+            result += "\n";
+        }
     }
+    
+    /* Clean up the stack. */
+    errs_clear();
+
+    return result;
+}
 
 
 /**
@@ -108,4 +130,4 @@ int errs_register( int id , const char *msg , int line , const char *func , cons
     /* Return with the given error code. */
     return id;
 
-    }
+}

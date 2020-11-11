@@ -30,7 +30,7 @@
 #define errs_err_ok                             0
 #define errs_err_io                             -1
 
-MDCORE_BEGIN_DECLS
+
 
 
 /* Global variables. */
@@ -42,9 +42,11 @@ CAPI_DATA(const char *) errs_err_msg[];
 
 CAPI_FUNC(int) errs_register( int id , const char *msg , int line , const char *func , const char *file );
 CAPI_FUNC(int) errs_dump(FILE *out );
-CAPI_FUNC(void) errs_clear( );
+CAPI_FUNC(void) errs_clear();
+
+std::string errs_getstring(int id);
 
 
-MDCORE_END_DECLS
+
 
 #endif // INCLUDE_ERRS_H_

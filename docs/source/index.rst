@@ -21,6 +21,7 @@ Contents:
    concepts
    clusters
    cleavage
+   potentials
    flux
    bonded_interactions
    continuum-reactions

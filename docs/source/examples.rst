@@ -19,6 +19,8 @@ Examples
 
    square_well
 
+   epiboly_plotting
+
    
 
    

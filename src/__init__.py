@@ -8,7 +8,7 @@ show = Simulator.show
 irun = Simulator.irun
 
 
-def plot_potential(p, *args, **kwargs):
+def _plot_potential(p, show=True, *args, **kwargs):
     import matplotlib.pyplot as plt
     import numpy as n
 
@@ -30,5 +30,12 @@ def plot_potential(p, *args, **kwargs):
     else:
         y = [p(x) for x in xx]
 
-    plt.plot(xx, y)
-    plt.show()
+    p = plt.plot(xx, y)
+
+    if show:
+        plt.show()
+
+    return p
+
+
+_mechanica.Potential._set_dict_value("plot", _plot_potential)
