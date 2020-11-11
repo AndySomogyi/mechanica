@@ -110,4 +110,4 @@ class FluidSimApp: public Platform::GlfwApplication {
 
 }}
 
-MAGNUM_APPLICATION_MAIN(Magnum::Examples::FluidSimApp)
+

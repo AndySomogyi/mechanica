@@ -159,6 +159,7 @@ function(add_mdcore_single)
   add_library(mdcore_single OBJECT ${SOURCES} ${SINGLE_HEADERS})
 
   target_compile_definitions(mdcore_single PUBLIC MDCORE_SINGLE)
+  target_compile_definitions(mdcore_single PRIVATE C_BUILDING_DLL)
 
   set_target_properties(mdcore_single PROPERTIES
     CXX_VISIBILITY_PRESET hidden

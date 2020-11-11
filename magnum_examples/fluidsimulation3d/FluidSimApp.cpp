@@ -412,3 +412,23 @@ void FluidSimApp::simulationStep() {
 }
 
 }}
+
+
+#ifdef _WIN32
+#include <Windows.h>
+INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PSTR lpCmdLine, INT nCmdShow) {
+    char* argv[] = { "foo" };
+    int argc = 1;
+#else
+int main(int argc, char** argv) {
+#endif
+
+    //test();
+
+
+
+
+    Magnum::Examples::FluidSimApp app({ argc, argv });
+    return app.exec();
+}

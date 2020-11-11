@@ -20,7 +20,6 @@
 // include some standard headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <math.h>
 #include <float.h>
 #include <pthread.h>

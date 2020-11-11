@@ -6,4 +6,5 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(argon
 	Threads::Threads
-	Mechanica::Mechanica)
+	Mechanica::Mechanica
+	)

@@ -251,6 +251,8 @@ add_library(mechanica_obj
   ${MxMeshShaderProgramRes}
   )
 
+target_compile_definitions(mechanica_obj PRIVATE C_BUILDING_DLL)
+
 set_target_properties(mechanica_obj PROPERTIES
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN 1
@@ -335,6 +337,8 @@ add_library(mechanica_shared SHARED
   mechanica.cpp
   )
 
+target_compile_definitions(mechanica_shared PRIVATE C_BUILDING_DLL)
+
 set_target_properties(mechanica_shared PROPERTIES
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN 1
@@ -360,6 +364,8 @@ add_library(mechanica_py SHARED
   $<TARGET_OBJECTS:mdcore_single>
   mechanica.cpp
   )
+
+target_compile_definitions(mechanica_py PRIVATE C_BUILDING_DLL)
 
 set_target_properties(mechanica_py PROPERTIES
   CXX_VISIBILITY_PRESET hidden
@@ -510,6 +516,8 @@ target_link_libraries(mechanica_shared
   Magnum::MeshTools
   ${MX_JPEG_LIBRARIES}
   )
+
+
 
 
 target_link_libraries(mechanica_shared PUBLIC

@@ -461,7 +461,6 @@ void FluidSimApp::simulationStep() {
 // include some standard headers
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <math.h>
 #include <float.h>
 #include <pthread.h>
@@ -770,9 +769,18 @@ void test() {
     std::cout << "major version: " << majorVersion << std::endl;
 }
 
+#ifdef _WIN32
+INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+    PSTR lpCmdLine, INT nCmdShow) {
+    char* argv[] = { "foo" };
+    int argc = 1;
+#else
 int main(int argc, char** argv) {
+#endif
 
     //test();
+
+   
 
 
     FluidSimApp app({argc, argv});

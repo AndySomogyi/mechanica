@@ -19,18 +19,19 @@
 
 
 /* include some standard header files */
-#include <stdlib.h>
-#include <math.h>
+#define _USE_MATH_DEFINES // for C++
+
 #include <MxParticle.h>
+
+#include <cmath>
+#include <stdlib.h>
 #include "fptype.h"
 #include <iostream>
 
 // python type info
 #include <structmember.h>
 #include <MxNumpy.h>
-
 #include <pybind11/pybind11.h>
-
 #include <MxPy.h>
 #include "engine.h"
 #include "space.h"

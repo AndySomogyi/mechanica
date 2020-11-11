@@ -13,6 +13,7 @@
 #include <pybind11/stl.h>
 
 #include <constructor_stats.h>
+#include <algorithm>
 
 namespace py = pybind11;
 
