@@ -1335,7 +1335,7 @@ struct MxPotential *potential_create_SS(int eta, double k, double e, double r0,
     
     if(result && shift) {
         result->flags |= POTENTIAL_SHIFTED;
-        result->shift = r0;
+        result->r0 = r0;
     }
     
     return result;
@@ -2081,24 +2081,25 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
 
         float r = py::cast<float>(args[0]);
         
-        double ri, rj;
-        if(self->flags & POTENTIAL_SCALED) {
-            ri = pybind11::cast<double>(args[1]);
-            rj = pybind11::cast<double>(args[2]);
+        
+        double ri = arg<double>("ri",  1, _args, _kwargs, -1);
+        double rj = arg<double>("rj",  2, _args, _kwargs, -1);
+        
+        // if no r args are given, we pull the r0 from the potential,
+        // and use the ri, rj to cancel them out.
+        if((self->flags & POTENTIAL_SHIFTED) && ri < 0 && rj < 0) {
+            ri = self->r0 / 2;
+            rj = self->r0 / 2;
         }
-
         
         float e = 0;
         float f = 0;
         
-        if(self->flags & POTENTIAL_SCALED) {
-            potential_eval_ex(self, ri, rj, r*r, &e, &f);
-        }
-        else if(self->flags & POTENTIAL_R2) {
-            potential_eval (self , r*r, &e, &f);
+        if(self->flags & POTENTIAL_R) {
+            potential_eval_r(self, r, &e, &f);
         }
         else {
-            potential_eval_r(self, r, &e, &f);
+            potential_eval_ex(self, ri, rj, r*r, &e, &f);
         }
         
         return py::cast(e).release().ptr();
@@ -2320,13 +2321,15 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     
     try {
         double e =   arg<double>("e",   0, _args, _kwargs);
-        int m =   arg<int>("m",   1, _args, _kwargs, 6);
+        int m =   arg<int>("m",   1, _args, _kwargs, 3);
         int n =  arg<int>("n",  2, _args, _kwargs, 2*m);
-        double min = arg<double>("min", 3, _args, _kwargs, 0.1);
-        double max = arg<double>("max", 4, _args, _kwargs, 10);
-        double tol = arg<double>("tol", 5, _args, _kwargs, 0.001);
+        double r0 = arg<double>("r0", 3, _args, _kwargs, 1);
+        double min = arg<double>("min", 4, _args, _kwargs, 0.05 * r0);
+        double max = arg<double>("max", 5, _args, _kwargs, 5 * r0);
+        double tol = arg<double>("tol", 6, _args, _kwargs, 0.01);
+        bool shifted = arg<bool>("shifted", 7, _args, _kwargs, true);
         
-        return potential_checkerr(potential_create_glj(e, n, m, min, max, tol));
+        return potential_checkerr(potential_create_glj(e, n, m, r0, min, max, tol, shifted));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2529,11 +2532,89 @@ static PyGetSetDef potential_getset[] = {
                     obj->flags |= POTENTIAL_BOUND;
                 }
                 else {
-                    obj->flags &= POTENTIAL_BOUND;
+                    obj->flags &= ~POTENTIAL_BOUND;
                 }
             }
             else {
                 PyErr_SetString(PyExc_ValueError, "Potential.bound is a boolean");
+            }
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "r0",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return PyFloat_FromDouble(obj->r0);
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(PyNumber_Check(val)) {
+                obj->r0 = PyFloat_AsDouble(val);
+            }
+            else {
+                PyErr_SetString(PyExc_ValueError, "r0 is a number");
+                return -1;
+            }
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "shifted",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(obj->flags & POTENTIAL_SHIFTED) {
+                Py_RETURN_TRUE;
+            }
+            else {
+                Py_RETURN_FALSE;
+            }
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(PyBool_Check(val)) {
+                if(val == Py_True) {
+                    obj->flags |= POTENTIAL_SHIFTED;
+                }
+                else {
+                    obj->flags &= ~POTENTIAL_SHIFTED;
+                }
+            }
+            else {
+                PyErr_SetString(PyExc_ValueError, "shifted is a boolean");
+            }
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "r_square",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(obj->flags & POTENTIAL_R2) {
+                Py_RETURN_TRUE;
+            }
+            else {
+                Py_RETURN_FALSE;
+            }
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            MxPotential *obj = (MxPotential*)_obj;
+            if(PyBool_Check(val)) {
+                if(val == Py_True) {
+                    obj->flags |= POTENTIAL_R2;
+                }
+                else {
+                    obj->flags &= POTENTIAL_R2;
+                }
+            }
+            else {
+                PyErr_SetString(PyExc_ValueError, "r_square is a boolean");
             }
             return 0;
         },
@@ -2701,6 +2782,7 @@ MxPotential *potential_create_well(double k, double n, double r0, double tol, do
 static double potential_create_glj_e;
 static double potential_create_glj_m;
 static double potential_create_glj_n;
+static double potential_create_glj_r0;
 
 
 /* the potential functions */
@@ -2708,27 +2790,41 @@ static double potential_create_glj_f ( double r ) {
     double e = potential_create_glj_e;
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
-    return (e*(-(n/Power(r,m)) + m/Power(r,n)))/(-m + n);
+    double r0 = potential_create_glj_r0;
+    return (e*(-(n*Power(r0/r,m)) + m*Power(r0/r,n)))/(-m + n);
 }
 
 static double potential_create_glj_dfdr ( double r ) {
     double e = potential_create_glj_e;
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
-    return (e*(m*n*Power(r,-1 - m) - m*n*Power(r,-1 - n)))/(-m + n);
+    double r0 = potential_create_glj_r0;
+    return (e*((m*n*r0*Power(r0/r,-1 + m))/Power(r,2) - (m*n*r0*Power(r0/r,-1 + n))/Power(r,2)))/(-m + n);
 }
 
 static double potential_create_glj_d6fdr6 ( double r ) {
     double e = potential_create_glj_e;
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
-    return (e*((-5 - m)*(-4 - m)*(-3 - m)*(-2 - m)*(-1 - m)*m*n*Power(r,-6 - m) -
-               m*(-5 - n)*(-4 - n)*(-3 - n)*(-2 - n)*(-1 - n)*n*Power(r,-6 - n)))/(-m + n);
-    
+    double r0 = potential_create_glj_r0;
+    return (e*(-(n*(((-5 + m)*(-4 + m)*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,6)*Power(r0/r,-6 + m))/Power(r,12) +
+                    (30*(-4 + m)*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,5)*Power(r0/r,-5 + m))/Power(r,11) +
+                    (300*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,4)*Power(r0/r,-4 + m))/Power(r,10) +
+                    (1200*(-2 + m)*(-1 + m)*m*Power(r0,3)*Power(r0/r,-3 + m))/Power(r,9) +
+                    (1800*(-1 + m)*m*Power(r0,2)*Power(r0/r,-2 + m))/Power(r,8) +
+                    (720*m*r0*Power(r0/r,-1 + m))/Power(r,7))) +
+               m*(((-5 + n)*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,6)*Power(r0/r,-6 + n))/Power(r,12) +
+                  (30*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,5)*Power(r0/r,-5 + n))/Power(r,11) +
+                  (300*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,4)*Power(r0/r,-4 + n))/Power(r,10) +
+                  (1200*(-2 + n)*(-1 + n)*n*Power(r0,3)*Power(r0/r,-3 + n))/Power(r,9) +
+                  (1800*(-1 + n)*n*Power(r0,2)*Power(r0/r,-2 + n))/Power(r,8) + (720*n*r0*Power(r0/r,-1 + n))/Power(r,7))
+               ))/(-m + n);
 }
 
 
-MxPotential *potential_create_glj(double e, int m, int n, double min, double max, double tol)
+MxPotential *potential_create_glj(double e, int m, int n,
+                                  double r0, double min, double max,
+                                  double tol, bool shifted)
 {
     MxPotential *p = NULL;
     
@@ -2744,14 +2840,21 @@ MxPotential *potential_create_glj(double e, int m, int n, double min, double max
     potential_create_glj_e = e;
     potential_create_glj_n = n;
     potential_create_glj_m = m;
+    potential_create_glj_r0 = r0;
     
-    if (potential_init( p ,
+    if (potential_init(p ,
                        &potential_create_glj_f ,
                        &potential_create_glj_dfdr ,
                        &potential_create_glj_d6fdr6 ,
                        min , max , tol ) < 0 ) {
         CAligned_Free(p);
         return NULL;
+    }
+    
+    if(shifted) {
+        p->r0 = r0;
+        p->flags &= ~POTENTIAL_SCALED;
+        p->flags |= POTENTIAL_SHIFTED;
     }
     
     /* return it */

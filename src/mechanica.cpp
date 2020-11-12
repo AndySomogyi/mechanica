@@ -135,6 +135,46 @@ static struct PyModuleDef mechanica_module = {
         methods
 };
 
+static struct PyModuleDef version_module = {
+    PyModuleDef_HEAD_INIT,
+    "version",   /* name of module */
+    NULL, /* module documentation, may be NULL */
+    -1,       /* size of per-interpreter state of the module,
+               or -1 if the module keeps state in global variables. */
+    NULL
+};
+
+static PyObject *version_create() {
+    PyObject *m = PyModule_Create(&version_module);
+
+    if(PyModule_AddObject(m, "version", PyUnicode_FromString(MX_VERSION)) != 0) {
+        std::cout << "could not add version info string" << std::endl;
+        return NULL;
+    }
+
+    if(PyModule_AddObject(m, "system_name", PyUnicode_FromString(MX_SYSTEM_NAME)) != 0) {
+        std::cout << "could not add version info string" << std::endl;
+        return NULL;
+    }
+
+    if(PyModule_AddObject(m, "system_version", PyUnicode_FromString(MX_SYSTEM_VERSION)) != 0) {
+        std::cout << "could not add version info string" << std::endl;
+        return NULL;
+    }
+
+    if(PyModule_AddObject(m, "compiler", PyUnicode_FromString(MX_COMPILER_ID)) != 0) {
+        std::cout << "could not add version info string" << std::endl;
+        return NULL;
+    }
+
+    if(PyModule_AddObject(m, "compiler_version", PyUnicode_FromString(MX_COMPILER_VERSION)) != 0) {
+        std::cout << "could not add version info string" << std::endl;
+        return NULL;
+    }
+
+    return m;
+}
+
 static PyObject *mechanicaModule = NULL;
 
 CAPI_FUNC(PyObject*) Mx_GetModule() {
@@ -161,15 +201,20 @@ static PyObject * moduleinit(void)
     }
 
     m = PyModule_Create(&mechanica_module);
-    
-    if(PyModule_AddObject(m, "version", PyUnicode_FromString(MX_VERSION)) != 0) {
-        std::cout << "could not add version"  << std::endl;
-        return NULL;
-    }
 
     if (m == NULL) {
         std::cout << "could not create mechanica module: "  << std::endl;
         return NULL;
+    }
+    
+    if(PyModule_AddObject(m, "__version__", PyUnicode_FromString(MX_VERSION)) != 0) {
+        std::cout << "could not add version"  << std::endl;
+        return NULL;
+    }
+
+    
+    if(PyModule_AddObject(m, "version", version_create()) != 0) {
+        std::cout << "error creating version info module" << std::endl;
     }
 
     if(PyModule_AddObject(m, "carbon", carbonModule) != 0) {

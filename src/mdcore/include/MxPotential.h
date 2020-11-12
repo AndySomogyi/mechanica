@@ -118,7 +118,7 @@ typedef struct MxPotential : PyObject {
 	/** The coefficients. */
 	FPTYPE *c;
     
-    FPTYPE shift;
+    FPTYPE r0;
 
 	/** Interval edges. */
 	double a, b;
@@ -189,7 +189,10 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e,
 CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
 
 
-CAPI_FUNC(struct MxPotential *) potential_create_glj(double e, int m, int n, double min, double max, double tol);
+CAPI_FUNC(struct MxPotential *) potential_create_glj(
+    double e, int m, int n,
+    double min, double r0, double max,
+    double tol, bool shifted);
 
 /**
  * Creates a square well potential of the form:

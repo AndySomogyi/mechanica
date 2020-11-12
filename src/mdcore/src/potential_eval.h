@@ -118,7 +118,7 @@ __attribute__ ((always_inline)) INLINE bool potential_eval_ex(
         r = r / (ri + rj);
     }
     else if(p->flags & POTENTIAL_SHIFTED) {
-        r = r - (ri + rj) + p->shift;
+        r = r - (ri + rj) + p->r0;
     }
     
     /* is r in the house? */

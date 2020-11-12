@@ -7,6 +7,7 @@ run = Simulator.run
 show = Simulator.show
 irun = Simulator.irun
 
+__version__ = _mechanica.__version__
 
 def _plot_potential(p, show=True, *args, **kwargs):
     import matplotlib.pyplot as plt
@@ -30,6 +31,9 @@ def _plot_potential(p, show=True, *args, **kwargs):
     else:
         y = [p(x) for x in xx]
 
+
+    miny = n.amin(y)
+    plt.ylim(1.1*miny, -5*miny)
     p = plt.plot(xx, y)
 
     if show:

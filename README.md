@@ -18,6 +18,22 @@ course).
 
 History
 =======
+Version Alpha 0.0.9
+-------------------
+* all new cluster dynamics to create sub-cellular element models
+* cluster splitting
+* splitting via cleavage plane
+* splitting via cleavage axis
+* other splitting options
+* new potential system to deal with cluster and non-cluster interactions
+* revamped generalized Lennard-Jones (glj) potential
+* new 'shifted' potential takes into account particle radius
+* updated potential plotting
+* more examples
+* fixed major integrator bug
+
+
+
 Version Alpha 0.0.8
 -------------------
 * explicit Bond and Angle objects 
