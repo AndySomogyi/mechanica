@@ -49,6 +49,12 @@ class ArcBall {
            direction */
         void setViewParameters(const Vector3& eye, const Vector3& viewCenter,
             const Vector3& upDir);
+    
+        /*
+         * Set the camera view parameters: eye position, view center, up
+         * direction, only rotates the view to the given eye position.
+         */
+        void rotateToAxis(const Vector3& axis, float distance);
 
         /* Reset the camera to its initial position, view center, and up dir */
         void reset();

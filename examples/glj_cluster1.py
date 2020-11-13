@@ -12,7 +12,13 @@ m.Simulator(example="",
             dt=0.0005)
 
 class C(m.Cluster):
-    radius=10
+    radius=3
+
+    class A(m.Particle):
+        radius=0.5
+        dynamics = m.Overdamped
+        mass=10
+        style={"color":"MediumSeaGreen"}
 
     class B(m.Particle):
         radius=0.5
@@ -20,15 +26,20 @@ class C(m.Cluster):
         mass=10
         style={"color":"skyblue"}
 
-c = C(position=center)
 
-c.B(2000)
+c1 = C(position=center - (3, 0, 0))
+c2 = C(position=center + (7, 0, 0))
 
-pb  = m.Potential.glj(e=5, m=3)
+c1.A(2000)
+c2.B(2000)
 
-rforce = m.forces.random(0, 50)
+p1  = m.Potential.glj(e=7, m=1, max=1)
+p2  = m.Potential.glj(e=7, m=1, max=2)
+m.bind(p1, C.A, C.A, bound=True)
+m.bind(p2, C.B, C.B, bound=True)
 
+rforce = m.forces.random(0, 10)
+m.bind(rforce, C.A)
 m.bind(rforce, C.B)
-m.bind(pb, C.B, C.B, bound=True)
 
-m.Simulator.irun()
+m.run()

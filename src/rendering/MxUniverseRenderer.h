@@ -195,6 +195,8 @@ struct MxUniverseRenderer : MxRenderer {
     Vector2i _prevMousePosition;
     Vector3  _rotationPoint, _translationPoint;
     Float _lastDepth;
+    
+    float sideLength;
 
 
     /* Scene and drawable group must be constructed before camera and other

@@ -80,6 +80,44 @@ void ArcBall::setViewParameters(const Vector3& eye, const Vector3& viewCenter,
 
     updateInternalTransformations();
 }
+    
+/*
+ * Set the camera view parameters: eye position, view center, up
+ * direction, only rotates the view to the given eye position.
+ */
+void ArcBall::rotateToAxis(const Vector3& axis, float distance) {
+    
+    
+    Vector3 zAxis;
+    Vector3 xAxis;
+    Vector3 yAxis;
+        
+    Vector3 naxis = axis.normalized();
+    float dotx = Math::dot(naxis, Vector3::xAxis());
+    float doty = Math::dot(naxis, Vector3::yAxis());
+    float dotz = Math::dot(naxis, Vector3::zAxis());
+        
+    if(dotx > 0) {
+        xAxis = Vector3::xAxis();
+        yAxis = Vector3::yAxis();
+        zAxis = Vector3::zAxis();
+    }
+    else if(dotx < 0) {
+        xAxis = -Vector3::xAxis();
+        yAxis = Vector3::yAxis();
+        zAxis = Vector3::zAxis();
+    }
+    else {
+
+    }
+    
+    // original position
+    _targetPosition = _positionT0;
+    _targetZooming = -distance;
+    _targetQRotation = Quaternion::fromMatrix(
+        Matrix3x3{xAxis, yAxis, -zAxis}.transposed()).normalized();
+        
+}
 
 void ArcBall::reset() {
     _targetPosition = _positionT0;

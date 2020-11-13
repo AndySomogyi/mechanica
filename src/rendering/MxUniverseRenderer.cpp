@@ -82,7 +82,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     center = (dim + origin) / 2.;
 
     // TODO: get the max value
-    float sideLength = dim[0];
+    sideLength = dim[0];
 
     /* Setup scene objects and camera */
 
@@ -422,9 +422,17 @@ void MxUniverseRenderer::keyPressEvent(Platform::GlfwApplication::KeyEvent& even
                 _arcball->setLagging(0.85f);
             }
             break;
-        case Platform::GlfwApplication::KeyEvent::Key::R:
-            _arcball->reset();
+        case Platform::GlfwApplication::KeyEvent::Key::R:{
+                _arcball->reset();
+            }
             break;
+            
+        case Platform::GlfwApplication::KeyEvent::Key::T: {
+            _arcball->rotateToAxis(Vector3::xAxis(), 2 * sideLength);
+            }
+            break;
+            
+            
 
         default: return;
     }
