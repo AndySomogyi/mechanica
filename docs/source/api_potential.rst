@@ -188,21 +188,23 @@ A potential can be treated just like any python callable object to evaluate it::
          :param tol:
 
 
-      .. staticmethod:: glj(e, [m], [n], [min], [max], [tol])
+      .. staticmethod:: glj(e, [m], [n], [r0], [min], [max], [tol], [shifted])
 
          :param e: effective energy of the potential 
-         :param m: order of potential, defaults to 6
+         :param m: order of potential, defaults to 3
          :param n: order of potential, defaults to 2*m
-         :param min:  minimum distance, defaults to 0.1
-         :param max:  max distance, defaults to 10
-         :param tol:  tolerance, defaults to 0.001
+         :param r0: mimumum of the potential, defaults to 1
+         :param min:  minimum distance, defaults to 0.05 * r0
+         :param max:  max distance, defaults to 5 * r0
+         :param tol:  tolerance, defaults to 0.01
+         :param shifted: is this shifted potential, defaults to true 
 
          Generalized Lennard-Jones potential.
 
          .. math::
 
-            V^{GLJ}_{m,n}(r) = \frac{\epsilon}{n-m} \left[ m \left( \frac{r_e}{r}
-            \right)^n - n \left( \frac{r_e}{r} \right) ^ m \right]
+            V^{GLJ}_{m,n}(r) = \frac{\epsilon}{n-m} \left[ m \left( \frac{r_0}{r}
+            \right)^n - n \left( \frac{r_0}{r} \right) ^ m \right]
 
          where :math:`r_e` is the effective radius, which is automatically
          computed as the sum of the interacting particle radii.

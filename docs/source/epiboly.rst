@@ -77,7 +77,7 @@ Run the simulation::
 
 
 .. figure:: epiboly.png
-    :width: 800px
+    :width: 400px
     :align: center
     :alt: alternate text
     :figclass: align-center

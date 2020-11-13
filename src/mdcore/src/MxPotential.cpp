@@ -2321,8 +2321,8 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     
     try {
         double e =   arg<double>("e",   0, _args, _kwargs);
-        int m =   arg<int>("m",   1, _args, _kwargs, 3);
-        int n =  arg<int>("n",  2, _args, _kwargs, 2*m);
+        int m =   arg<double>("m",   1, _args, _kwargs, 3);
+        int n =  arg<double>("n",  2, _args, _kwargs, 2*m);
         double r0 = arg<double>("r0", 3, _args, _kwargs, 1);
         double min = arg<double>("min", 4, _args, _kwargs, 0.05 * r0);
         double max = arg<double>("max", 5, _args, _kwargs, 5 * r0);
@@ -2822,7 +2822,7 @@ static double potential_create_glj_d6fdr6 ( double r ) {
 }
 
 
-MxPotential *potential_create_glj(double e, int m, int n,
+MxPotential *potential_create_glj(double e, double m, double n,
                                   double r0, double min, double max,
                                   double tol, bool shifted)
 {

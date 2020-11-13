@@ -2,3 +2,140 @@
 
 Potentials and Effect On Mechanics
 ==================================
+
+One of the main goals of Mechanica is to enable users to rapidly develop and
+explore emperical or phenomological models of active and biological matter in
+the 100nm to multiple cm range. There are no pre-defined force fields in this
+length scale, as such users need a good deal of flexibility to create and
+calibrate potential functions to model material rheology and particle
+interactions.
+
+Mechanica provides a wide range of potentials in the :any:`Potential` class, we can
+create any of these potential objects using the static methods in this class. 
+
+Creating, Plotting and Exploring Potentials
+-------------------------------------------
+
+We create a potential object simply by calling one of the static methods on the
+:any:`Potential` class. Potential objects conviently have a `plot` method on
+them that displays a 'matplotlib' plot, for example::
+
+  p = m.Potential.glj(10)
+  p.plot()
+
+results in 
+
+.. image:: glj_plot.png
+    :alt: usage
+    :width: 300px
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <Potential at 0x7fb7f6110210>
+
+
+The `Generalized Lennard-Jones Potential`, :any:`Potential.glj` is one of the
+most potential we offer, and supports a wide range of parameters. The `glj`
+potential has the form
+
+.. math::
+
+            V^{GLJ}_{m,n}(r) = \frac{\epsilon}{n-m} \left[ m \left( \frac{r_0}{r}
+            \right)^n - n \left( \frac{r_0}{r} \right) ^ m \right]
+
+where :math:`r_e` is the effective radius, which is automatically
+computed as the sum of the interacting particle radii.
+
+In most traditional molecular dynamics packages, it is important to specify the
+*r0* paramter in a potential, however, Mechanica automatically picks up the rest
+length from the particle radius, For example, say we have two particles, one
+with radius 1 and the other with 2, then, if these particles interact with a
+potential like :any:`glj`, they will automatically have a rest separation
+distance of 3. We can make a simple model like to illustrate this::
+
+  class B(m.Particle):
+    mass = 1
+    dynamics = m.Overdamped
+
+  # make a glj potential, this automatically reads the
+  # particle radius to determine rest distance.
+  pot = m.Potential.glj(e=1)
+
+  m.bind(pot, B, B)
+
+  p1 = B(center + (-2, 0, 0))
+  p2 = B(center + (2, 0, 0))
+  p1.radius = 1
+  p2.radius = 2
+
+  m.Simulator.run()
+
+The two particles start out a with a little separation, but the potential pulls
+them in such that they just touch at the specified radii, and we get an output
+of:
+
+.. image:: glj_radii.png
+    :alt: usage
+    :width: 300px
+    :class: sphx-glr-single-img
+
+This complete model is can be downloaded here:
+:download:`glj-1.py <../../examples/glj-1.py>`
+
+
+The Mechanica runtime automatically *shifts* the potential, such that the
+minimum of the potential will always be when the separation distance between
+particles is :math:`r_1 + r_2` where :math:`r_1` and :math:`r_2` are the radii
+of the two interacting particles. 
+
+The most important parameters to :any:`glj` are the *e*, *r0* and *m*
+parameters. The *e* represents the strength of the potential, it is the depth of
+the potential well, and ultimatly determines how strongy objects stick
+together. *r0* is the the lowest point of the potential, and *m* and *n* are the
+exponents which determine how sharp or shallow the potential is.
+
+Appropriate values of *e* should be close to the mass of an object, if *e* is
+much larger than about two to three times the mass at most, as this will result
+in unrealistic behavior and numeric instability. *e* however can be small as
+needed to create weakly bound or interacting objects. 
+
+Because Mechanica shifts the potential, *r0* doesn't determine separation
+distance, but is rather influences how soft the potential is. Smaller values of
+*r0* lead to a stiff potential, with a harder shoulder, i.e. it makes the
+particles harder. Whereas larger values of *r0* spread the potential well out
+over a larger distnce, and also allows the potential to be longer ranging, and
+attract objects from longer distances, as in (A) of :numref:`glj_fig`. 
+
+
+.. figure:: glj_row.png
+    :width: 1000px
+    :align: center
+    :alt: alternate text
+    :figclass: align-center
+    :name: glj_fig
+
+    (A) Varrying the :math:`r_0` parameter in a `glj` potential, while holding
+    all other parameters constant, with *e=1*, *m=3*, *n=6*. (B) Varrying the
+    *m* parameter in a `glj` potential, holding *e=1*, :math:`r_0=1` and with
+    *m=2n*.  
+
+The *m* and *n* parameter are the exponents of the potential, and these are
+principally responisble for how soft or hard the potential is. Small values of
+*m* results in a softer, potential, and also allow a longer ranging potential,
+much like the *r0* parameter. It is normally not required to specify the *n*
+parameter, as the potential constructor automatically sets this to :math:`2 *
+m`, because this format is widely used in many meso-scale particle dynmics based
+simulations, and results in well-behaved numerics and realistic physical
+behavior.   
+
+
+
+
+
+

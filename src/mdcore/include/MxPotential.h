@@ -190,7 +190,7 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double 
 
 
 CAPI_FUNC(struct MxPotential *) potential_create_glj(
-    double e, int m, int n,
+    double e, double m, double n,
     double min, double r0, double max,
     double tol, bool shifted);
 
