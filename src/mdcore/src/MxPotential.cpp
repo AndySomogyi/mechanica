@@ -2325,7 +2325,7 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         int n =  arg<double>("n",  2, _args, _kwargs, 2*m);
         double r0 = arg<double>("r0", 3, _args, _kwargs, 1);
         double min = arg<double>("min", 4, _args, _kwargs, 0.05 * r0);
-        double max = arg<double>("max", 5, _args, _kwargs, 5 * r0);
+        double max = arg<double>("max", 5, _args, _kwargs, 3 * r0);
         double tol = arg<double>("tol", 6, _args, _kwargs, 0.01);
         bool shifted = arg<bool>("shifted", 7, _args, _kwargs, true);
         
