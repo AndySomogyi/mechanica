@@ -13,7 +13,7 @@
 #include <random>
 
 static PyObject *berenderson_create(float tau);
-static PyObject *random_create(float std, float mean);
+static PyObject *random_create(float std, float mean, float durration);
 
 /**
  * force type
@@ -104,8 +104,9 @@ static PyObject* py_random_create(PyObject *m, PyObject *_args, PyObject *_kwds)
         
         float std = arg<float>("std", 0, args.ptr(), kwargs.ptr());
         float mean = arg<float>("mean", 1, args.ptr(), kwargs.ptr());
+        float durration = arg<float>("durration", 2, args.ptr(), kwargs.ptr(), 0.01);
         
-        return random_create(std, mean);
+        return random_create(std, mean, durration);
     }
     catch (const pybind11::builtin_exception &e) {
         e.set_error();
@@ -164,6 +165,7 @@ struct Berendsen : MxForce {
 struct Gaussian : MxForce {
     float std;
     float mean;
+    unsigned durration_steps;
 };
 
 /**
@@ -186,7 +188,7 @@ static void gaussian_force(struct Gaussian* t, struct MxParticle *p, FPTYPE*f) {
     // standard deviation affects the dispersion of generated values from the mean
     
     if((_Engine.integrator_flags & INTEGRATOR_UPDATE_PERSISTENTFORCE) &&
-       (_Engine.time + p->id) % 100 == 0) {
+       (_Engine.time + p->id) % t->durration_steps == 0) {
         
         
         p->persistent_force = MxRandomVector(t->mean, t->std);
@@ -207,13 +209,14 @@ PyObject *berenderson_create(float tau) {
     return (PyObject*)obj;
 }
 
-PyObject *random_create(float mean, float std) {
+PyObject *random_create(float mean, float std, float durration) {
     Gaussian *obj = (Gaussian*)PyType_GenericAlloc(&MxForce_Type,
                                                      sizeof(Gaussian) - sizeof(MxForce));
     
     obj->func = (MxForce_OneBodyPtr)gaussian_force;
     obj->std = std;
     obj->mean = mean;
+    obj->durration_steps = std::ceil(durration / _Engine.dt);
     
     return (PyObject*)obj;
 }

@@ -6,6 +6,9 @@ close = Simulator.close
 run = Simulator.run
 show = Simulator.show
 irun = Simulator.irun
+step = Universe.step
+stop = Universe.stop
+start = Universe.start
 
 __version__ = _mechanica.__version__
 

@@ -121,14 +121,16 @@ __attribute__ ((always_inline)) INLINE bool potential_eval_ex(
         r = r - (ri + rj) + p->r0;
     }
     
+    r = r < p->a ? p->a : r;
+    
     /* is r in the house? */
     /* if ( r < p->a || r > p->b )
      printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
     
     /* compute the index */
-    ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
+    ind = std::max( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
     
-    if(r < p->a || r >= p->b || ind < 0 || ind > p->n) {
+    if(r > p->b || ind > p->n) {
         //*e = 0;
         //*f = 0;
         //std::cerr << "potential_eval particle out of range, scaled r: " <<

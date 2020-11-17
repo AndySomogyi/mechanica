@@ -9,7 +9,7 @@ m.Simulator(example="",
             dim=dim,
             cutoff=12,
             integrator=m.FORWARD_EULER,
-            dt=0.0005)
+            dt=0.001)
 
 class C(m.Cluster):
     radius=2.3
@@ -34,6 +34,7 @@ class Yolk(m.Particle):
     radius = 10
     mass = 1000000
     dynamics=m.Overdamped
+    flozen=True
     style={"color":"gold"}
 
 total_height = 2 * Yolk.radius + 2 * C.radius
@@ -49,13 +50,13 @@ C.yolk_pos = yolk.position
 c.B(4000)
 
 pb  = m.Potential.soft_sphere(kappa=300, epsilon=6, r0=0.5, \
-                              eta=2, tol = 0.05, min=0, max=3)
+                              eta=2, tol = 0.05, min=0.01, max=3)
 
 pub = m.Potential.soft_sphere(kappa=400, epsilon=0, r0=0.5, \
-                              eta=2, tol = 0.05, min=0.001, max=1.5)
+                              eta=2, tol = 0.05, min=0.01, max=1.5)
 
 py = m.Potential.soft_sphere(kappa=300, epsilon=25, r0=1, \
-                             eta=2, tol = 0.04, min=0, \
+                             eta=2, tol = 0.04, min=0.01, \
                              max=10, shift=True)
 
 rforce = m.forces.random(0, 1)

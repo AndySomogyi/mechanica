@@ -42,7 +42,7 @@
 #define potential_ivalsb                    10
 #define potential_N                         100
 #define potential_align                     64
-#define potential_ivalsmax                  1024
+#define potential_ivalsmax                  2048
 
 #define potential_escale                    (0.079577471545947667882)
 // #define potential_escale                    1.0
@@ -191,7 +191,7 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double 
 
 CAPI_FUNC(struct MxPotential *) potential_create_glj(
     double e, double m, double n,
-    double min, double r0, double max,
+    double min, double r0, double k, double max,
     double tol, bool shifted);
 
 /**

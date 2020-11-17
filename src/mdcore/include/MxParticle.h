@@ -251,9 +251,15 @@ struct MxParticleType : PyHeapTypeObject {
     int id;
     
     /**
-     * particle type flags
+     *  type flags
      */
-    uint32_t flags;
+    uint32_t type_flags;
+
+    /**
+     * particle flags, the type initializer sets these, and
+     * all new particle instances get a copy of these.
+     */
+    uint16_t particle_flags;
     
     
     /** Constant physical characteristics */

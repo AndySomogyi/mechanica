@@ -67,6 +67,8 @@ struct CAPI_EXPORT MxUniverseConfig {
     int nParticles;
     int threads;
     EngineIntegrator integrator;
+    uint32_t periodic;
+    double max_distance;
     MxUniverseConfig();
 };
 

@@ -119,7 +119,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
 
     // box is cube of side length 2 centered at origin
-    _drawableBox->transform(Matrix4::scaling(Vector3(sideLength / 2)) );
+    _drawableBox->transform(Matrix4::scaling(dim / 2));
     _drawableBox->setColor(Color3(1, 1, 0));
 
     setModelViewTransform(Matrix4::translation(-center));

@@ -85,7 +85,9 @@ MxUniverseConfig::MxUniverseConfig() :
     temp{1},
     nParticles{100},
     threads{4},
-    integrator{EngineIntegrator::FORWARD_EULER}
+    integrator{EngineIntegrator::FORWARD_EULER},
+    periodic{PeriodicFlags::space_periodic_full},
+    max_distance(-1)
 {
 }
 

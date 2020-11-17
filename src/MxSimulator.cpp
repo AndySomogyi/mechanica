@@ -208,8 +208,14 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("dt")) {
         conf.universeConfig.dt = py::cast<double>(kwargs["dt"]);
     }
-
-
+    
+    if(kwargs.contains("periodic")) {
+        conf.universeConfig.periodic = py::cast<unsigned>(kwargs["periodic"]);
+    }
+    
+    if(kwargs.contains("max_distance")) {
+        conf.universeConfig.max_distance = py::cast<double>(kwargs["max_distance"]);
+    }
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs);
@@ -427,6 +433,18 @@ HRESULT _MxSimulator_init(PyObject* m) {
             .value("RUNGE_KUTTA_4", EngineIntegrator::RUNGE_KUTTA_4)
             .export_values();
 
+    py::enum_<PeriodicFlags>(m, "BoundaryConditions", py::arithmetic())
+        .value("PERIODIC_NONE",       space_periodic_none)
+        .value("PERIODIC_X",          space_periodic_x)
+        .value("PERIODIC_Y",          space_periodic_y)
+        .value("PERIODIC_Z",          space_periodic_z)
+        .value("PERIODIC_FULL",       space_periodic_full)
+        .value("PERIODIC_GHOST_X",    space_periodic_ghost_x)
+        .value("PERIODIC_GHOST_Y",    space_periodic_ghost_y)
+        .value("PERIODIC_GHOST_Z",    space_periodic_ghost_z)
+        .value("PERIODIC_GHOST_FULL", space_periodic_ghost_full)
+        .export_values();
+
     py::class_<MxSimulator::Config> sc(sim, "Config");
     sc.def(py::init());
     sc.def_property("window_title", &MxSimulator::Config::title, &MxSimulator::Config::setTitle);
@@ -617,9 +635,16 @@ int universe_init (const MxUniverseConfig &conf ) {
     printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
     printf("engine: requesting cutoff = %22.16e.\n", cutoff);
     
+    printf("engine periodic x : %s\n", conf.periodic & space_periodic_x ? "true" : "false");
+    printf("engine periodic y : %s\n", conf.periodic & space_periodic_y ? "true" : "false");
+    printf("engine periodic z : %s\n", conf.periodic & space_periodic_z ? "true" : "false");
+    printf("engine periodic ghost x : %s\n", conf.periodic & space_periodic_ghost_x ? "true" : "false");
+    printf("engine periodic ghost y : %s\n", conf.periodic & space_periodic_ghost_y ? "true" : "false");
+    printf("engine periodic ghost z : %s\n", conf.periodic & space_periodic_ghost_z ? "true" : "false");
+    
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , space_periodic_full ,
+    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , conf.periodic ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
@@ -629,7 +654,14 @@ int universe_init (const MxUniverseConfig &conf ) {
     _Engine.dt = conf.dt;
     _Engine.temperature = conf.temp;
     _Engine.integrator = conf.integrator;
-
+    
+    if(conf.max_distance >= 0) {
+        // max_velocity is in absolute units, convert
+        // to scale fraction.
+        
+        _Engine.particle_max_dist_fraction = conf.max_distance / _Engine.s.h[0];
+    }
+    
     const char* inte = NULL;
 
     switch(_Engine.integrator) {
@@ -648,6 +680,7 @@ int universe_init (const MxUniverseConfig &conf ) {
     printf("engine: cutoff set to %22.16e.\n", cutoff);
     printf("engine: nr tasks: %i.\n",_Engine.s.nr_tasks);
     printf("engine: dt: %22.16e.\n",_Engine.dt);
+    printf("engine: max distance fraction: %22.16e.\n",_Engine.particle_max_dist_fraction);
     
     // start the engine
 

@@ -38,15 +38,17 @@ MDCORE_BEGIN_DECLS
 
 
 /* some constants */
-#define space_periodic_none             0
-#define space_periodic_x                1
-#define space_periodic_y                2
-#define space_periodic_z                4
-#define space_periodic_full             7
-#define space_periodic_ghost_x          8
-#define space_periodic_ghost_y          16
-#define space_periodic_ghost_z          32
-#define space_periodic_ghost_full       56
+enum PeriodicFlags {
+    space_periodic_none       = 0,
+    space_periodic_x          = 1,
+    space_periodic_y          = 2,
+    space_periodic_z          = 4,
+    space_periodic_full       = 7,
+    space_periodic_ghost_x    = 8,
+    space_periodic_ghost_y    = 16,
+    space_periodic_ghost_z    = 32,
+    space_periodic_ghost_full = 56,
+};
 
 #define space_partlist_incr             100
 

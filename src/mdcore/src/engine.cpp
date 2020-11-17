@@ -1292,7 +1292,7 @@ int engine_advance_forward_euler ( struct engine *e ) {
                     p = &( c->parts[pid] );
                     toofast = 0;
                     
-                    if(p->flags & PARTICLE_CLUSTER) {
+                    if(p->flags & PARTICLE_CLUSTER || p->flags & PARTICLE_FROZEN) {
                         pid++;
                         continue;
                     }
@@ -2198,7 +2198,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 
     e->flags |= engine_flag_initialized;
     
-    e->particle_max_dist_fraction = 0.08;
+    e->particle_max_dist_fraction = 0.05;
 
     /* all is well... */
     return engine_err_ok;

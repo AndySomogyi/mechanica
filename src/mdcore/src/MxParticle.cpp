@@ -309,6 +309,58 @@ PyGetSetDef gs_mass = {
     .closure = NULL
 };
 
+PyGetSetDef gs_frozen = {
+    .name = "frozen",
+    .get = [](PyObject *obj, void *p) -> PyObject* {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
+        bool frozen = 0;
+        if(isParticle) {
+            MxPyParticle *pobj = (MxPyParticle*)obj;
+            frozen = _Engine.s.partlist[pobj->id]->flags & PARTICLE_FROZEN;
+        }
+        else {
+            MxParticleType *type = (MxParticleType*)obj;
+            assert(type && PyObject_IsInstance((PyObject*)type, (PyObject*)&MxParticleType_Type));
+            frozen = type->particle_flags & PARTICLE_FROZEN;
+        }
+        return pybind11::cast(frozen).release().ptr();
+    },
+    .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+        bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
+        
+        try {
+            if(isParticle) {
+                MxParticle *part = ((MxPyParticle*)obj)->part();
+                bool b = val == Py_True;
+                if(b) {
+                    part->flags |= PARTICLE_FROZEN;
+                }
+                else {
+                    part->flags &= ~PARTICLE_FROZEN;
+                }
+                return 0;
+            }
+            else {
+                MxParticleType *type = (MxParticleType*)obj;
+                bool b = val == Py_True;
+                if(b) {
+                    type->particle_flags |= PARTICLE_FROZEN;
+                }
+                else {
+                    type->particle_flags &= ~PARTICLE_FROZEN;
+                }
+                return 0;
+            }
+        }
+        catch (const pybind11::builtin_exception &e) {
+            e.set_error();
+            return -1;
+        }
+    },
+    .doc = "test doc",
+    .closure = NULL
+};
+
 PyGetSetDef gs_style = {
     .name = "style",
     .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -555,6 +607,7 @@ PyGetSetDef particle_getsets[] = {
     gsd,
     gs_age,
     gs_style,
+    gs_frozen,
     {
         .name = "position",
         .get = [](PyObject *obj, void *p) -> PyObject* {
@@ -717,7 +770,7 @@ static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
     part.id = engine_next_partid(&_Engine);
     part.vid = 0;
     part.typeId = type->id;
-    part.flags = 0;
+    part.flags = type->particle_flags;
     part._pyparticle = NULL;
     part.parts = NULL;
     part.nr_parts = 0;
@@ -954,6 +1007,7 @@ static PyGetSetDef particle_type_getset[] = {
     gs_type_temperature,
     gs_type_target_temperature,
     gs_style,
+    gs_frozen,
     {NULL},
 };
 
@@ -1164,6 +1218,8 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
     self->radius = base->radius;
     self->dynamics = base->dynamics;
     self->minimum_radius = base->minimum_radius;
+    self->type_flags = base->type_flags;
+    self->particle_flags = base->particle_flags;
 
     std::strncpy(self->name, self->ht_type.tp_name, MxParticleType::MAX_NAME);
     
@@ -1198,6 +1254,19 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
         
         if(dict.contains("dynamics")) {
             self->dynamics = dict["dynamics"].cast<MxParticleDynamics>();
+        }
+        
+        PyObject *frozen = PyDict_GetItemString(_dict, "frozen");
+        if(frozen) {
+            if(frozen == Py_True) {
+                self->particle_flags |= PARTICLE_FROZEN;
+            }
+            else if(frozen == Py_False) {
+                self->particle_flags &= ~PARTICLE_FROZEN;
+            }
+            else {
+                PyErr_WarnEx(PyExc_ValueError, "warning, non-boolean given to \"frozen\" argument", 1);
+            }
         }
         
         if(dict.contains("style")) {
@@ -1247,6 +1316,10 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 PyDict_DelItem(_dict, key.ptr());
             }
             key = pybind11::cast("style");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
+            key = pybind11::cast("frozen");
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }

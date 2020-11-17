@@ -1624,8 +1624,10 @@ int potential_init (struct MxPotential *p ,
 
 	/* all is well that ends well... */
     
-
-    assert(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])) < p->n+1);
+    // round off error sometimes lets max r larger than number of bins,
+    // the potential eval takes care of not overstepping bin count.
+    //float max_n = p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]);
+    //assert(FPTYPE_FMAX( FPTYPE_ZERO , max_n < p->n+1));
 	return potential_err_ok;
 }
 
@@ -2323,13 +2325,14 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double e =   arg<double>("e",   0, _args, _kwargs);
         int m =   arg<double>("m",   1, _args, _kwargs, 3);
         int n =  arg<double>("n",  2, _args, _kwargs, 2*m);
-        double r0 = arg<double>("r0", 3, _args, _kwargs, 1);
-        double min = arg<double>("min", 4, _args, _kwargs, 0.05 * r0);
-        double max = arg<double>("max", 5, _args, _kwargs, 3 * r0);
-        double tol = arg<double>("tol", 6, _args, _kwargs, 0.01);
-        bool shifted = arg<bool>("shifted", 7, _args, _kwargs, true);
+        double k = arg<double>("k", 3, _args, _kwargs, 0);
+        double r0 = arg<double>("r0", 4, _args, _kwargs, 1);
+        double min = arg<double>("min", 5, _args, _kwargs, 0.05 * r0);
+        double max = arg<double>("max", 6, _args, _kwargs, 3 * r0);
+        double tol = arg<double>("tol", 7, _args, _kwargs, 0.01);
+        bool shifted = arg<bool>("shifted", 8, _args, _kwargs, true);
         
-        return potential_checkerr(potential_create_glj(e, n, m, r0, min, max, tol, shifted));
+        return potential_checkerr(potential_create_glj(e, n, m, k, r0, min, max, tol, shifted));
     }
     catch (const std::exception &e) {
         PyErr_SetString(PyExc_ValueError, e.what());
@@ -2783,7 +2786,7 @@ static double potential_create_glj_e;
 static double potential_create_glj_m;
 static double potential_create_glj_n;
 static double potential_create_glj_r0;
-
+static double potential_create_glj_k;
 
 /* the potential functions */
 static double potential_create_glj_f ( double r ) {
@@ -2791,7 +2794,8 @@ static double potential_create_glj_f ( double r ) {
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
     double r0 = potential_create_glj_r0;
-    return (e*(-(n*Power(r0/r,m)) + m*Power(r0/r,n)))/(-m + n);
+    double k = potential_create_glj_k;
+    return k*Power(-r + r0,2) + (e*(-(n*Power(r0/r,m)) + m*Power(r0/r,n)))/(-m + n);
 }
 
 static double potential_create_glj_dfdr ( double r ) {
@@ -2799,7 +2803,8 @@ static double potential_create_glj_dfdr ( double r ) {
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
     double r0 = potential_create_glj_r0;
-    return (e*((m*n*r0*Power(r0/r,-1 + m))/Power(r,2) - (m*n*r0*Power(r0/r,-1 + n))/Power(r,2)))/(-m + n);
+    double k = potential_create_glj_k;
+    return 2*k*(-r + r0) + (e*((m*n*r0*Power(r0/r,-1 + m))/Power(r,2) - (m*n*r0*Power(r0/r,-1 + n))/Power(r,2)))/(-m + n);
 }
 
 static double potential_create_glj_d6fdr6 ( double r ) {
@@ -2807,22 +2812,22 @@ static double potential_create_glj_d6fdr6 ( double r ) {
     double n = potential_create_glj_n;
     double m = potential_create_glj_m;
     double r0 = potential_create_glj_r0;
+
     return (e*(-(n*(((-5 + m)*(-4 + m)*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,6)*Power(r0/r,-6 + m))/Power(r,12) +
                     (30*(-4 + m)*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,5)*Power(r0/r,-5 + m))/Power(r,11) +
                     (300*(-3 + m)*(-2 + m)*(-1 + m)*m*Power(r0,4)*Power(r0/r,-4 + m))/Power(r,10) +
                     (1200*(-2 + m)*(-1 + m)*m*Power(r0,3)*Power(r0/r,-3 + m))/Power(r,9) +
-                    (1800*(-1 + m)*m*Power(r0,2)*Power(r0/r,-2 + m))/Power(r,8) +
-                    (720*m*r0*Power(r0/r,-1 + m))/Power(r,7))) +
-               m*(((-5 + n)*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,6)*Power(r0/r,-6 + n))/Power(r,12) +
-                  (30*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,5)*Power(r0/r,-5 + n))/Power(r,11) +
-                  (300*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,4)*Power(r0/r,-4 + n))/Power(r,10) +
-                  (1200*(-2 + n)*(-1 + n)*n*Power(r0,3)*Power(r0/r,-3 + n))/Power(r,9) +
-                  (1800*(-1 + n)*n*Power(r0,2)*Power(r0/r,-2 + n))/Power(r,8) + (720*n*r0*Power(r0/r,-1 + n))/Power(r,7))
-               ))/(-m + n);
+                    (1800*(-1 + m)*m*Power(r0,2)*Power(r0/r,-2 + m))/Power(r,8) + (720*m*r0*Power(r0/r,-1 + m))/Power(r,7))
+                 ) + m*(((-5 + n)*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,6)*Power(r0/r,-6 + n))/Power(r,12) +
+                        (30*(-4 + n)*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,5)*Power(r0/r,-5 + n))/Power(r,11) +
+                        (300*(-3 + n)*(-2 + n)*(-1 + n)*n*Power(r0,4)*Power(r0/r,-4 + n))/Power(r,10) +
+                        (1200*(-2 + n)*(-1 + n)*n*Power(r0,3)*Power(r0/r,-3 + n))/Power(r,9) +
+                        (1800*(-1 + n)*n*Power(r0,2)*Power(r0/r,-2 + n))/Power(r,8) + (720*n*r0*Power(r0/r,-1 + n))/Power(r,7))))
+    /(-m + n);
 }
 
 
-MxPotential *potential_create_glj(double e, double m, double n,
+MxPotential *potential_create_glj(double e, double m, double n, double k,
                                   double r0, double min, double max,
                                   double tol, bool shifted)
 {
@@ -2841,6 +2846,7 @@ MxPotential *potential_create_glj(double e, double m, double n,
     potential_create_glj_n = n;
     potential_create_glj_m = m;
     potential_create_glj_r0 = r0;
+    potential_create_glj_k = k;
     
     if (potential_init(p ,
                        &potential_create_glj_f ,
