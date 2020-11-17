@@ -18,6 +18,17 @@ course).
 
 History
 =======
+Version Alpha 0.0.9-dev4
+------------------------
+* tweaks in example models
+* more options (periodic, max distance) in simulator ctor
+* add flags to potentials
+* persistence time in random force
+* frozen option for particles
+* make glj also have harmonic potential
+* in force eval, if distance is less than min, set eval force to value at min position.
+* accept bound python methods for events
+
 Version Alpha 0.0.9
 -------------------
 * all new cluster dynamics to create sub-cellular element models

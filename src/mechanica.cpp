@@ -59,6 +59,17 @@
 #include <string>
 #include <MxPy.h>
 
+static std::string version_str() {
+    #if MX_VERSION_DEV
+        std::string dev = "-dev" + std::to_string(MX_VERSION_DEV);
+    #else
+        std::string dev = "";
+    #endif
+
+    std::string version = std::string(MX_VERSION) + dev;
+    return version;
+}
+
 
 
 
@@ -147,7 +158,9 @@ static struct PyModuleDef version_module = {
 static PyObject *version_create() {
     PyObject *m = PyModule_Create(&version_module);
 
-    if(PyModule_AddObject(m, "version", PyUnicode_FromString(MX_VERSION)) != 0) {
+
+
+    if(PyModule_AddObject(m, "version", PyUnicode_FromString(version_str().c_str())) != 0) {
         std::cout << "could not add version info string" << std::endl;
         return NULL;
     }
@@ -170,6 +183,33 @@ static PyObject *version_create() {
     if(PyModule_AddObject(m, "compiler_version", PyUnicode_FromString(MX_COMPILER_VERSION)) != 0) {
         std::cout << "could not add version info string" << std::endl;
         return NULL;
+    }
+
+    std::string datetime = std::string(__DATE__)+ ", " + __TIME__;
+
+    if(PyModule_AddObject(m, "build_date", PyUnicode_FromString(datetime.c_str())) != 0) {
+            std::cout << "could not add version info string" << std::endl;
+            return NULL;
+    }
+
+    if(PyModule_AddObject(m, "major", PyLong_FromLong(MX_VERSION_MAJOR)) != 0) {
+                std::cout << "could not add version info string" << std::endl;
+                return NULL;
+    }
+
+    if(PyModule_AddObject(m, "minor", PyLong_FromLong(MX_VERSION_MINOR)) != 0) {
+                std::cout << "could not add version info string" << std::endl;
+                return NULL;
+    }
+
+    if(PyModule_AddObject(m, "patch", PyLong_FromLong(MX_VERSION_PATCH)) != 0) {
+                std::cout << "could not add version info string" << std::endl;
+                return NULL;
+    }
+
+    if(PyModule_AddObject(m, "dev", PyLong_FromLong(MX_VERSION_DEV)) != 0) {
+                std::cout << "could not add version info string" << std::endl;
+                return NULL;
     }
 
     return m;
@@ -207,7 +247,7 @@ static PyObject * moduleinit(void)
         return NULL;
     }
     
-    if(PyModule_AddObject(m, "__version__", PyUnicode_FromString(MX_VERSION)) != 0) {
+    if(PyModule_AddObject(m, "__version__", PyUnicode_FromString(version_str().c_str())) != 0) {
         std::cout << "could not add version"  << std::endl;
         return NULL;
     }
