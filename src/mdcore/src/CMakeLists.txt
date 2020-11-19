@@ -49,6 +49,8 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/MxForce.h"
   "${MDCORE_SOURCE_DIR}/include/MxParticleEvent.h"
   "${MDCORE_SOURCE_DIR}/include/MxReactivePotential.h"
+  "${MDCORE_SOURCE_DIR}/include/metrics.h"
+  "${MDCORE_SOURCE_DIR}/include/MxConvert.hpp"
   )
 
 set(PRIVATE_HEADERS
@@ -97,6 +99,8 @@ SET(SOURCES
   MxReactivePotential.cpp
   MxConstraint.cpp
   MxCluster.cpp
+  metrics.cpp
+  MxConvert.cpp
   )
 
 if(MDCORE_USE_MPI)

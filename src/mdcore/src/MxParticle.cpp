@@ -40,6 +40,8 @@
 #include <MxParticleEvent.h>
 #include "../../rendering/NOMStyle.hpp"
 #include "MxCluster.hpp"
+#include "MxConvert.hpp"
+#include "metrics.h"
 
 struct Foo {
     int x; int y; int z;
@@ -121,6 +123,8 @@ static HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
 static void printTypeInfo(const char* name, PyTypeObject *p);
 
 static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
+
+static PyObject* particle_spherical(MxPyParticle *part, PyObject *args);
 
 static PyObject* particle_fission(MxPyParticle *part, PyObject *args, PyObject *kwargs);
 
@@ -745,6 +749,7 @@ static PyMethodDef particle_methods[] = {
         { "fission", (PyCFunction)particle_fission, METH_VARARGS, NULL },
         { "split", (PyCFunction)particle_fission, METH_VARARGS, NULL }, // alias name
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
+        { "spherical", (PyCFunction)particle_spherical, METH_VARARGS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -1452,6 +1457,30 @@ PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
     }
     // c_error should set the python error
     return NULL;
+}
+
+PyObject* particle_spherical(MxPyParticle *_self, PyObject *args)
+{
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        // c_error should set the python error
+        
+        Magnum::Vector3 origin;
+        if(PyTuple_Check(args) && PyTuple_Size(args) > 0) {
+            origin = mx::cast<Magnum::Vector3>(PyTuple_GET_ITEM(args, 0));
+        }
+        else {
+            origin = Magnum::Vector3{
+                (float)_Engine.s.dim[0],
+                (float)_Engine.s.dim[1],
+                (float)_Engine.s.dim[2]} / 2.;
+        }
+        return MPyCartesianToSpherical(self->global_position(), origin);
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
 }
 
 PyObject *MxParticle_BasicFission(MxParticle *part) {
