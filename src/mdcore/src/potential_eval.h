@@ -2,6 +2,7 @@
 /*******************************************************************************
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
+ * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
@@ -17,6 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  ******************************************************************************/
+
+#ifndef _MDCORE_POTENTIAL_EVAL_H_
+#define _MDCORE_POTENTIAL_EVAL_H_
+
+#include "MxPotential.h"
 
 
 /* This file contains the potential evaluation function als "extern inline",
@@ -1536,6 +1542,17 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4double_r ( struc
         potential_eval_r( p[k] , r_in[k] , &e[k] , &f[k] );
 #endif
         
+}
+
+static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
+    int index = _Engine.max_type * a->typeId + b->typeId;
+    if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
+        return _Engine.p_bound[index];
     }
+    else {
+        return _Engine.p[index];
+    }
+}
 
 
+#endif

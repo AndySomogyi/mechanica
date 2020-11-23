@@ -22,6 +22,7 @@ Contents:
    clusters
    cleavage
    potentials
+   metrics
    flux
    bonded_interactions
    continuum-reactions

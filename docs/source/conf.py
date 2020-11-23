@@ -52,7 +52,8 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinxcontrib.bibtex',
     'sphinx.ext.ifconfig',
-    'sphinxemoji.sphinxemoji'
+    'sphinxemoji.sphinxemoji',
+    'sphinx.ext.autosectionlabel'
 ]
 
 numfig = True

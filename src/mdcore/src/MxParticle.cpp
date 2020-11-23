@@ -40,8 +40,8 @@
 #include <MxParticleEvent.h>
 #include "../../rendering/NOMStyle.hpp"
 #include "MxCluster.hpp"
-#include "MxConvert.hpp"
 #include "metrics.h"
+#include "MxConvert.hpp"
 
 struct Foo {
     int x; int y; int z;
@@ -127,6 +127,8 @@ static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
 static PyObject* particle_spherical(MxPyParticle *part, PyObject *args);
 
 static PyObject* particle_fission(MxPyParticle *part, PyObject *args, PyObject *kwargs);
+
+static PyObject* particle_pressure(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     
@@ -618,13 +620,13 @@ PyGetSetDef particle_getsets[] = {
             int id = ((MxPyParticle*)obj)->id;
             Magnum::Vector3 vec;
             space_getpos(&_Engine.s, id, vec.data());
-            return pybind11::cast(vec).release().ptr();
+            return mx::cast(vec);
             
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
                 int id = ((MxPyParticle*)obj)->id;
-                Magnum::Vector3 vec = pybind11::cast<Magnum::Vector3>(val);
+                Magnum::Vector3 vec = mx::cast<Magnum::Vector3>(val);
                 space_setpos(&_Engine.s, id, vec.data());
                 return 0;
             }
@@ -641,13 +643,13 @@ PyGetSetDef particle_getsets[] = {
         .get = [](PyObject *obj, void *p) -> PyObject* {
             int id = ((MxPyParticle*)obj)->id;
             Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
-            return pybind11::cast(vec).release().ptr();
+            return mx::cast(*vec);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
                 int id = ((MxPyParticle*)obj)->id;
                 Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
-                *vec = pybind11::cast<Magnum::Vector3>(val);
+                *vec = mx::cast<Magnum::Vector3>(val);
                 return 0;
             }
             catch (const pybind11::builtin_exception &e) {
@@ -663,13 +665,13 @@ PyGetSetDef particle_getsets[] = {
         .get = [](PyObject *obj, void *p) -> PyObject* {
             int id = ((MxPyParticle*)obj)->id;
             Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
-            return pybind11::cast(vec).release().ptr();
+            return mx::cast(*vec);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
                 int id = ((MxPyParticle*)obj)->id;
                 Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
-                *vec = pybind11::cast<Magnum::Vector3>(val);
+                *vec = mx::cast<Magnum::Vector3>(val);
                 return 0;
             }
             catch (const pybind11::builtin_exception &e) {
@@ -750,6 +752,7 @@ static PyMethodDef particle_methods[] = {
         { "split", (PyCFunction)particle_fission, METH_VARARGS, NULL }, // alias name
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { "spherical", (PyCFunction)particle_spherical, METH_VARARGS, NULL },
+        { "pressure", (PyCFunction)particle_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -1263,14 +1266,34 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
         
         PyObject *frozen = PyDict_GetItemString(_dict, "frozen");
         if(frozen) {
-            if(frozen == Py_True) {
-                self->particle_flags |= PARTICLE_FROZEN;
-            }
-            else if(frozen == Py_False) {
-                self->particle_flags &= ~PARTICLE_FROZEN;
+            if(mx::check<bool>(frozen)) {
+                if(frozen == Py_True) {
+                    self->particle_flags |= PARTICLE_FROZEN;
+                }
+                else if(frozen == Py_False) {
+                    self->particle_flags &= ~PARTICLE_FROZEN;
+                }
             }
             else {
-                PyErr_WarnEx(PyExc_ValueError, "warning, non-boolean given to \"frozen\" argument", 1);
+                Magnum::Vector3i frozen_vec = mx::cast<Magnum::Vector3i>(frozen);
+                if(frozen_vec[0]) {
+                    self->particle_flags |= PARTICLE_FROZEN_X;
+                }
+                else {
+                    self->particle_flags &= ~PARTICLE_FROZEN_X;
+                }
+                if(frozen_vec[1]) {
+                    self->particle_flags |= PARTICLE_FROZEN_Y;
+                }
+                else {
+                    self->particle_flags &= ~PARTICLE_FROZEN_Y;
+                }
+                if(frozen_vec[2]) {
+                    self->particle_flags |= PARTICLE_FROZEN_Z;
+                }
+                else {
+                    self->particle_flags &= ~PARTICLE_FROZEN_Z;
+                }
             }
         }
         
@@ -1478,7 +1501,38 @@ PyObject* particle_spherical(MxPyParticle *_self, PyObject *args)
         return MPyCartesianToSpherical(self->global_position(), origin);
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* particle_pressure(MxPyParticle *_self, PyObject *args, PyObject *kwargs)
+{
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        Magnum::Vector3 pos = self->global_position();
+        Magnum::Matrix3 mat;
+        
+        float radius;
+        
+        if(PyTuple_Size(args) > 0) {
+            radius = mx::cast<float>(PyTuple_GetItem(args, 0));
+        }
+        else {
+            radius = self->radius * 10;
+        }
+        
+        std::set<short int> typeIds;
+        for(int i = 0; i < _Engine.nr_types; ++i) {
+            typeIds.emplace(i);
+        }
+        
+        HRESULT result = MxCalculatePressure(pos.data(), radius, typeIds, mat.data());
+        
+        return mx::cast(mat);
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
         return NULL;
     }
 }

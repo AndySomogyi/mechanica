@@ -202,10 +202,6 @@ typedef struct space {
     int verlet_size, verlet_next;
     pthread_mutex_t verlet_force_mutex;
 
-
-
-
-
     /** The total number of cell pairs. */
     int nr_pairs;
 
@@ -270,6 +266,16 @@ CAPI_FUNC(int) space_shuffle_local ( struct space *s );
  */
 CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,
         double *x, struct MxParticle **result );
+
+
+/**
+ * get the cell id for a position,
+ * negative on failure
+ *
+ * @param cellids[optional] get the (i,j,k) indices of the space cell.
+ * returns the absolute cell id (index into array).
+ */
+CAPI_FUNC(int) space_get_cellids_for_pos (struct space *s , FPTYPE *x, int *cellids);
 
 /**
  * Deletes a particle from the space, and sets the partlist[pid] to null.

@@ -8,7 +8,7 @@ Universe
    The universe is a top level singleton object, and is automatically
    initialized when the simulator loads. The universe is a representation of the
    physical universe that we are simulating, and is the repository for all
-   phyical object representations.
+   physical object representations.
 
    All properties and methods on the universe are static, and you never actually
    instantiate a universe.
@@ -40,7 +40,7 @@ Universe
       Get / set the universe temperature.
 
       The universe can be run with, or without a thermostat. With a thermostat,
-      getting / setting the temperature changes the temperture that the thermostat
+      getting / setting the temperature changes the temperature that the thermostat
       will try to keep the universe at. When the universe is run without a
       thermostat, reading the temperature returns the computed universe temp, but
       attempting to set the temperature yields an error. 
@@ -78,7 +78,7 @@ Universe
    .. staticmethod:: stop()
 
       Stops the universe time evolution. This essentially freezes the universe,
-      everythign remains the same, except time no longer moves forward.
+      everything remains the same, except time no longer moves forward.
 
    .. staticmethod:: step(until=None, dt=None)
 
@@ -91,4 +91,20 @@ Universe
                  stepping, optional. 
 
 
+   .. staticmethod:: pressure([origin], [radius], [types])
+
+      Computes the :ref:`Pressure Tensor` for the either the entire simulation
+      domain, or a specific local pressure tensor at a location and
+      radius. Optionally can accept a list of particle types to restrict the
+      pressure calculation for specify types.
+
+      :param origin: An optional length-3 array for the origin. Defaults to the
+                     center of the simulation domain if not given.
+
+      :param radius: An optional number specifying the size of the region to
+                     compute the pressure tensor for. Defaults to the entire
+                     simulation domain.
+
+      :param types: An optional list of :class:`Particle` types to include in
+                    the calculation. Defaults to every particle type. 
 

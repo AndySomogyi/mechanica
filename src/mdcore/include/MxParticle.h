@@ -43,16 +43,19 @@ typedef enum MxParticleTypeFlags {
 
 typedef enum MxParticleDynamics {
     PARTICLE_NEWTONIAN          = 0,
-    PARTICLE_OVERDAMPED           = 1,
+    PARTICLE_OVERDAMPED         = 1,
 } MxParticleDynamics;
 
 /* particle flags */
 typedef enum MxParticleFlags {
     PARTICLE_NONE          = 0,
-    PARTICLE_FROZEN        = 1 << 0,
-    PARTICLE_GHOST         = 1 << 1,
-    PARTICLE_CLUSTER       = 1 << 2,
-    PARTICLE_BOUND         = 1 << 3,
+    PARTICLE_GHOST         = 1 << 0,
+    PARTICLE_CLUSTER       = 1 << 1,
+    PARTICLE_BOUND         = 1 << 2,
+    PARTICLE_FROZEN_X      = 1 << 3,
+    PARTICLE_FROZEN_Y      = 1 << 4,
+    PARTICLE_FROZEN_Z      = 1 << 5,
+    PARTICLE_FROZEN        = PARTICLE_FROZEN_X | PARTICLE_FROZEN_Y | PARTICLE_FROZEN_Z,
 } MxParticleFlags;
 
 

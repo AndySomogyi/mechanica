@@ -46,6 +46,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/fptype.h"
   "${MDCORE_SOURCE_DIR}/include/mdcore_config.h"
   "${MDCORE_SOURCE_DIR}/include/MxPy.h"
+  "${MDCORE_SOURCE_DIR}/include/MxNumpy.h"
   "${MDCORE_SOURCE_DIR}/include/MxForce.h"
   "${MDCORE_SOURCE_DIR}/include/MxParticleEvent.h"
   "${MDCORE_SOURCE_DIR}/include/MxReactivePotential.h"

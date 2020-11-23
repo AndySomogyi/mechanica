@@ -2116,6 +2116,59 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
     }
 }
 
+static PyObject *potential_force(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    MxPotential *self = (MxPotential*)_self;
+    
+    try {
+        py::args args = py::reinterpret_borrow<py::args>(_args);
+        py::kwargs kwargs = py::reinterpret_borrow<py::kwargs>(_kwargs);
+        
+        
+        float r = py::cast<float>(args[0]);
+        
+        
+        double ri = arg<double>("ri",  1, _args, _kwargs, -1);
+        double rj = arg<double>("rj",  2, _args, _kwargs, -1);
+        
+        // if no r args are given, we pull the r0 from the potential,
+        // and use the ri, rj to cancel them out.
+        if((self->flags & POTENTIAL_SHIFTED) && ri < 0 && rj < 0) {
+            ri = self->r0 / 2;
+            rj = self->r0 / 2;
+        }
+        
+        float e = 0;
+        float f = 0;
+        
+        if(self->flags & POTENTIAL_R) {
+            potential_eval_r(self, r, &e, &f);
+        }
+        else {
+            potential_eval_ex(self, ri, rj, r*r, &e, &f);
+        }
+        
+     //   if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+     //
+     //       for ( k = 0 ; k < 3 ; k++ ) {
+     //           w = f * dx[k];
+     //           pif[k] -= w;
+     //           part_j->f[k] += w;
+     //       }
+        
+        f = (f * r) / 2;
+        
+        return py::cast(f).release().ptr();
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
@@ -2445,6 +2498,13 @@ static PyMethodDef potential_methods[] = {
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "set dictionary value"
     },
+    {
+        "force",
+        (PyCFunction)potential_force,
+        METH_VARARGS | METH_KEYWORDS,
+        "calc force"
+    },
+    
     {NULL}
 };
 

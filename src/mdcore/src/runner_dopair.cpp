@@ -59,16 +59,6 @@
 extern const char *runner_err_msg[];
 extern unsigned int runner_rcount;
 
-static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
-    int index = _Engine.max_type * a->typeId + b->typeId;
-    if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
-        return _Engine.p_bound[index];
-    }
-    else {
-        return _Engine.p[index];
-    }
-}
-
 
 /**
  * @brief Compute the pairwise interactions for the given pair.
@@ -87,7 +77,9 @@ static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *
  * @sa #runner_sortedpair.
  */
 
-__attribute__ ((flatten)) int runner_dopair ( struct runner *r , struct space_cell *cell_i , struct space_cell *cell_j , int sid ) {
+__attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
+        struct space_cell *cell_i , struct space_cell *cell_j ,
+        int sid ) {
 
     struct MxParticle *part_i, *part_j;
     struct space *s;

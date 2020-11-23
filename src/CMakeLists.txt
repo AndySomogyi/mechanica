@@ -360,9 +360,9 @@ target_include_directories(mechanica_shared PRIVATE ${PYBIND11_INCLUDE_DIR})
 
 # shared and static libraries built from the same object files
 add_library(mechanica_py SHARED
+  mechanica.cpp
   $<TARGET_OBJECTS:mechanica_obj>
   $<TARGET_OBJECTS:mdcore_single>
-  mechanica.cpp
   )
 
 target_compile_definitions(mechanica_py PRIVATE C_BUILDING_DLL)

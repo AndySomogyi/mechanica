@@ -42,6 +42,7 @@
 #include <rendering/NOMStyle.hpp>
 #include "MxCluster.hpp"
 #include "MxConstraint.hpp"
+#include "MxConvert.hpp"
 
 
 #include <c_util.h>
@@ -119,6 +120,31 @@ static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
     }
 }
 
+static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
+    
+    Magnum::Matrix3 mat;
+    
+    int k = 0;
+    for(int i = 0; i < 3; ++i) {
+        for(int j = 0; j < 3; ++j) {
+            mat[i][j] = k++;
+        }
+    }
+    
+    Magnum::Vector3 vec;
+    
+    
+    
+    return mx::cast(vec);
+}
+
+/**
+ * top level pressure tensor method
+ */
+static PyObject* pressure(PyObject *m, PyObject *args, PyObject *kwargs) {
+    
+}
+
 
 
 static PyMethodDef methods[] = {
@@ -134,6 +160,8 @@ static PyMethodDef methods[] = {
         { "random_point", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "pressure", (PyCFunction)pressure, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 

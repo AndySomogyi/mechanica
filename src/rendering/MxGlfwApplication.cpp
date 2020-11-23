@@ -275,7 +275,9 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 
 HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
     HRESULT hr;
-    if(engine_err == 0) {
+    if(engine_err == 0 && MxUniverse_Flag(MX_RUNNING)) {
+
+        // perform a simulation step if universe is in running state
         if(FAILED((hr = simulationStep()))) {
             // window close message
             close();
@@ -288,6 +290,10 @@ HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
             return hr;
         }
     }
+    else {
+        MxSimulator_Redraw();
+    }
+
     // process messages
     GlfwApplication::mainLoopIteration();
     return S_OK;

@@ -12,7 +12,7 @@
 
 #include <MxUtil.h>
 #include <MxPy.h>
-#include "numpy/arrayobject.h"
+#include <MxNumpy.h>
 
 #include <algorithm>
 #include <string>

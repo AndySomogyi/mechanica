@@ -399,7 +399,7 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
     sim.def_static("run", [](){PY_CHECK(MxSimulator_Run());});
     sim.def_static("ftest", &ftest);
-    sim.def_static("irun", &simulator_interactive_run);
+    sim.def_static("irun", [] () { PY_CHECK(MxSimulator_InteractiveRun()); });
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
     sim.def_static("close", [] () { PY_CHECK(MxSimulator_Close()); });
 
@@ -610,16 +610,36 @@ int universe_init (const MxUniverseConfig &conf ) {
 
     Magnum::Vector3 tmp = conf.dim - conf.origin;
     Magnum::Vector3d length{tmp[0], tmp[1], tmp[2]};
-    Magnum::Vector3d spaceGridSize{(float)conf.spaceGridSize[0], 
-                                   (float)conf.spaceGridSize[1], 
-                                   (float)conf.spaceGridSize[2]};
+    Magnum::Vector3i cells = conf.spaceGridSize;
+    
+    if(cells[0] < 3 && (conf.periodic & space_periodic_x)) {
+        cells[0] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[0]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+    if(cells[1] < 3 && (conf.periodic & space_periodic_y)) {
+        cells[1] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[1]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+    if(cells[2] < 3 && (conf.periodic & space_periodic_z)) {
+        cells[2] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[2]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+
+    Magnum::Vector3d spaceGridSize{(float)cells[0],
+                                   (float)cells[1],
+                                   (float)cells[2]};
 
     Magnum::Vector3d L = length / spaceGridSize;
 
     double   cutoff = conf.cutoff;
 
     int  nr_runners = conf.threads;
-
 
     double _origin[3];
     double _dim[3];
@@ -679,6 +699,9 @@ int universe_init (const MxUniverseConfig &conf ) {
     printf("engine: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
     printf("engine: cutoff set to %22.16e.\n", cutoff);
     printf("engine: nr tasks: %i.\n",_Engine.s.nr_tasks);
+    printf("engine: nr cell pairs: %i.\n",_Engine.s.nr_pairs);
+    
+    
     printf("engine: dt: %22.16e.\n",_Engine.dt);
     printf("engine: max distance fraction: %22.16e.\n",_Engine.particle_max_dist_fraction);
     
@@ -723,19 +746,28 @@ CAPI_FUNC(HRESULT) MxSimulator_Run()
 CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
 {
     SIMULATOR_CHECK();
-    try {
 
-    }
-    catch(std::exception  &err) {
+    MxUniverse_SetFlag(MX_RUNNING, true);
 
-    }
-    catch (pybind11::error_already_set &err) {
 
-    }
-    catch(...) {
+    std::fprintf(stderr, "checking for ipython \n");
+    if (Mx_IsIpython()) {
 
+        if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
+            // ipython message loop, this exits right away
+            simulator_interactive_run();
+        }
+
+        std::fprintf(stderr, "in ipython, calling interactive \n");
+
+        Simulator->app->show();
+
+        return S_OK;
     }
-    return E_FAIL;
+    else {
+        std::fprintf(stderr, "not ipython, returning MxSimulator_Run \n");
+        return MxSimulator_Run();
+    }
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs) {

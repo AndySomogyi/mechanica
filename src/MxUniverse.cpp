@@ -11,6 +11,8 @@
 #include <MxForce.h>
 #include <MxPy.h>
 #include <MxSimulator.h>
+#include <MxConvert.hpp>
+#include <metrics.h>
 #include <limits>
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
@@ -35,6 +37,10 @@ static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a);
 
+static PyObject *universe_pressure(PyObject *_args, PyObject *_kwargs);
+
+static Magnum::Vector3 universe_center();
+
 // the single static engine instance per process
 
 // complete and total hack to get the global engine to show up here
@@ -44,8 +50,8 @@ engine _Engine = {
         .flags = 0
 };
 
-// default to running universe.
-static uint32_t universe_flags = MxUniverse_Flags::MX_RUNNING;
+// default to paused universe
+static uint32_t universe_flags = 0;
 
 
 CAPI_FUNC(struct engine*) engine_get()
@@ -112,13 +118,9 @@ static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
 
 
     MxUniverse_Init(conf);
-
-
+    
     return new PyUniverse();
 }
-
-
-
 
 PyTypeObject MxUniverse_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -171,9 +173,6 @@ PyTypeObject MxUniverse_Type = {
     .tp_finalize =       0, 
 };
 
-
-
-
 Magnum::Vector3 MxUniverse::origin()
 {
     return Vector3{(float)_Engine.s.origin[0], (float)_Engine.s.origin[1], (float)_Engine.s.origin[2]};
@@ -183,8 +182,6 @@ Magnum::Vector3 MxUniverse::dim()
 {
     return Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
-
-
 
 HRESULT _MxUniverse_init(PyObject* m)
 {
@@ -246,11 +243,25 @@ HRESULT _MxUniverse_init(PyObject* m)
                 return py::cast(bonds).release();
             }
         );
+    
+    u.def_property_readonly_static("center",
+           [](py::object self) -> py::handle {
+               Magnum::Vector3 center = universe_center();
+               PyObject *result = mx::cast(center);
+               return result;
+        }
+    );
 
     u.def_static("bind", [](py::args args, py::kwargs kwargs) -> void {
             UNIVERSE_CHECK();
             PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr()));
             return;
+        }
+    );
+
+    u.def_static("pressure", [](py::args args, py::kwargs kwargs) -> py::handle {
+            UNIVERSE_CHECK();
+            return universe_pressure(args.ptr(), kwargs.ptr());
         }
     );
 
@@ -291,6 +302,12 @@ HRESULT _MxUniverse_init(PyObject* m)
 
 CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
 {
+    if(kwargs && PyDict_Size(kwargs) > 0) {
+        if((PyDict_Size(kwargs) > 1) ||
+            PyUnicode_CompareWithASCIIString(PyList_GET_ITEM(PyDict_Keys(kwargs), 0), "bound") != 0) {
+            return c_error(E_INVALIDARG, "Error, kwargs to Universe.bind contains invalid items");
+        }
+    }
     
     if(args && PyTuple_Size(args) == 4) {
         return MxUniverse_BindThing3(PyTuple_GetItem(args, 0),
@@ -323,7 +340,7 @@ CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
     
     
     
-    return mx_error(E_FAIL, "bind only implmented for 2 or 3 arguments: bind(thing, a, b)");
+    return mx_error(E_FAIL, "bind only implemented for 2 or 3 arguments: bind(thing, a, b)");
 }
 
 
@@ -501,4 +518,81 @@ void print_performance_counters() {
     std::cout << "\t engine_bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
     std::cout << "\t engine_advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
     std::cout << "}" << std::endl;
+}
+
+
+PyObject *universe_pressure(PyObject *_args, PyObject *_kwargs) {
+    try {
+        PyObject *_origin = mx::arg("origin", 0, _args, _kwargs);
+        PyObject *_radius = mx::arg("radius", 1, _args, _kwargs);
+        PyObject *_types = mx::arg("types", 2, _args, _kwargs);
+        
+        Magnum::Vector3 origin;
+        float radius = 0;
+        std::set<short int> typeIds;
+        
+        if(_origin) {
+            origin = mx::cast<Magnum::Vector3>(_origin);
+        }
+        else {
+            origin = universe_center();
+        }
+        
+        if(_radius) {
+            radius = mx::cast<float>(_radius);
+        }
+        else {
+            // complete simulation domain
+            radius = 2 * origin.max();
+        }
+        
+        if(_types) {
+            if(PyList_Check(_types)) {
+                for(int i = 0; i < PyList_GET_SIZE(_types); ++i) {
+                    PyObject *item = PyList_GET_ITEM(_types, i);
+                    MxParticleType *type = MxParticleType_Get(item);
+                    if(type) {
+                        typeIds.insert(type->id);
+                    }
+                    else {
+                        std::string msg = "error, types must be a list of Particle types, types[";
+                        msg += std::to_string(i);
+                        msg += "] is a ";
+                        msg += item->ob_type->tp_name;
+                        throw std::logic_error(msg.c_str());
+                    }
+                }
+            }
+            else {
+                throw std::logic_error("types must be a list of Particle types");
+            }
+        }
+        else {
+            for(int i = 0; i < _Engine.nr_types; ++i) {
+                typeIds.insert(i);
+            }
+        }
+        Magnum::Matrix3 m;
+        HRESULT result = MxCalculatePressure(origin.data(),
+                                             radius,
+                                             typeIds,
+                                             m.data());
+        if(SUCCEEDED(result)) {
+            return mx::cast(m);
+        }
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "error checking args");
+    }
+    return NULL;
+}
+
+Magnum::Vector3 universe_center() {
+    Magnum::Vector3 center = {
+        (float)_Engine.s.dim[0],
+        (float)_Engine.s.dim[1],
+        (float)_Engine.s.dim[2]
+    };
+    center = center / 2;
+    return center;
 }

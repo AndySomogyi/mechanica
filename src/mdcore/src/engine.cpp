@@ -1292,14 +1292,24 @@ int engine_advance_forward_euler ( struct engine *e ) {
                     p = &( c->parts[pid] );
                     toofast = 0;
                     
-                    if(p->flags & PARTICLE_CLUSTER || p->flags & PARTICLE_FROZEN) {
+                    if(p->flags & PARTICLE_CLUSTER || (
+                           (p->flags & PARTICLE_FROZEN_X) &&
+                           (p->flags & PARTICLE_FROZEN_Y) &&
+                           (p->flags & PARTICLE_FROZEN_Z)
+                       )) {
                         pid++;
                         continue;
                     }
                     
+                    float mask[] = {
+                        (p->flags & PARTICLE_FROZEN_X) ? 0.0f : 1.0f,
+                        (p->flags & PARTICLE_FROZEN_Y) ? 0.0f : 1.0f,
+                        (p->flags & PARTICLE_FROZEN_Z) ? 0.0f : 1.0f
+                    };
+                    
                     if(engine::types[p->typeId].dynamics == PARTICLE_NEWTONIAN) {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            v = p->v[k] +  dt * p->f[k] * p->imass;
+                            v = mask[k] * (p->v[k] +  dt * p->f[k] * p->imass);
                             neg = v / abs(v);
                             p->v[k] = v * v <= maxv2[k] ? v : neg * maxv[k];
                             p->x[k] += dt * p->v[k];
@@ -1309,11 +1319,9 @@ int engine_advance_forward_euler ( struct engine *e ) {
                     }
                     else {
                         for ( k = 0 ; k < 3 ; k++ ) {
-                            
-                            dx = dt * p->f[k] * p->imass;
+                            dx = mask[k] * (dt * p->f[k] * p->imass);
                             neg = dx / abs(dx); // could be NaN, but only used if dx is > maxx.
                             p->x[k] += dx * dx <= maxx2[k] ? dx : neg * maxx[k];
-                            
                             delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
                             toofast = toofast || (p->x[k] >= h2[k] || p->x[k] <= -h[k]);
                         }

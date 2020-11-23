@@ -30,6 +30,9 @@
 #include "../../rendering/NOMStyle.hpp"
 
 #include <Magnum/Math/Distance.h>
+#include <Magnum/Math/Matrix3.h>
+#include <MxConvert.hpp>
+#include <metrics.h>
 
 struct MxParticleConstructor : PyObject {
     
@@ -46,6 +49,18 @@ PyObject *pctor_call(PyObject *, PyObject *, PyObject *) {
 static MxParticle *remove_particle_at_index(MxCluster *cluster, int index);
 
 static PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plane);
+
+static PyObject* cluster_pressure(PyObject *_self, PyObject *args, PyObject *kwargs);
+
+static PyObject* cluster_radius_of_gyration(PyObject *_self, PyObject *args, PyObject *kwargs);
+
+static PyObject* cluster_center_of_mass(PyObject *_self, PyObject *args, PyObject *kwargs);
+
+static PyObject* cluster_center_of_geometry(PyObject *_self, PyObject *args, PyObject *kwargs);
+
+static PyObject* cluster_moment_of_inertia(PyObject *_self, PyObject *args, PyObject *kwargs);
+
+
 
 
 PyTypeObject MxParticleConstructor_Type = {
@@ -488,6 +503,13 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
 static PyMethodDef cluster_methods[] = {
     { "fission", (PyCFunction)cluster_fission, METH_VARARGS | METH_KEYWORDS, NULL },
     { "split", (PyCFunction)cluster_fission, METH_VARARGS | METH_KEYWORDS, NULL }, // alias name
+    { "pressure", (PyCFunction)cluster_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "radius_of_gyration", (PyCFunction)cluster_radius_of_gyration, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "center_of_mass", (PyCFunction)cluster_center_of_mass, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "center_of_geometry", (PyCFunction)cluster_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "centroid", (PyCFunction)cluster_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "moment_of_inertia", (PyCFunction)cluster_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "inertia", (PyCFunction)cluster_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -598,7 +620,7 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
     PyTypeObject *ptype = (PyTypeObject*)wrapped;
     
     // first item is a number, use this as a count
-    if(PyTuple_Size(args) > 0 && PyNumber_Check(PyTuple_GetItem(args, 0))) {
+    if(PyTuple_Size(args) > 0 && PyLong_Check(PyTuple_GetItem(args, 0))) {
         int count = PyLong_AsLong(PyTuple_GetItem(args, 0));
         PyObject *newArgs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
         
@@ -689,7 +711,7 @@ PyObject *MxClusterParticleCtor_New(
  * adds an existing particle to the cluster.
  */
 int MxCluster_AddParticle(struct MxCluster *cluster, struct MxParticle *part) {
-    
+    return -1;
 }
 
 /**
@@ -697,7 +719,7 @@ int MxCluster_AddParticle(struct MxCluster *cluster, struct MxParticle *part) {
  */
 PyObject* MxCluster_CreateParticle(PyObject *self,
                                    PyObject* particleType, PyObject *args, PyObject *kwargs) {
-    
+    return NULL;
 }
 
 
@@ -722,10 +744,6 @@ MxParticle *remove_particle_at_index(MxCluster *cluster, int index) {
     return part;
 }
 
-
-
-
-
 HRESULT _MxCluster_init(PyObject *m) {
     std::cout << MX_FUNCTION << std::endl;
     return cluster_type_init(m);
@@ -735,3 +753,89 @@ int MxCluster_Check(PyObject *p) {
     return p && PyObject_IsSubclass((PyObject*)p->ob_type, (PyObject*)MxCluster_GetType());
 }
 
+
+// TODO: in universe.bind, check keywords are correct, and no extra keyworkds
+// TODO: simulator init, turn off periodoc if only single cell. 
+PyObject* cluster_pressure(PyObject *_self, PyObject *args, PyObject *kwargs)
+{
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        
+        Magnum::Matrix3 mat;
+        
+        HRESULT result = MxParticles_Pressure(self->parts,
+                                              self->nr_parts, 0, mat.data());
+        
+        if(SUCCEEDED(result)) {
+            return mx::cast(mat);
+        }
+        else {
+            // result if failed should set py error.
+            return NULL;
+        }
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* cluster_radius_of_gyration(PyObject *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        float result;
+        if(SUCCEEDED(MxParticles_RadiusOfGyration(self->parts, self->nr_parts, &result))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* cluster_center_of_mass(PyObject *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        Magnum::Vector3 result;
+        if(SUCCEEDED(MxParticles_CenterOfMass(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* cluster_center_of_geometry(PyObject *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        Magnum::Vector3 result;
+        if(SUCCEEDED(MxParticles_CenterOfGeometry(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* cluster_moment_of_inertia(PyObject *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        MxParticle *self = MxParticle_Get(_self);
+        Magnum::Matrix3 result;
+        if(SUCCEEDED(MxParticles_MomentOfInertia(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}

@@ -52,7 +52,7 @@ int space_err = space_err_ok;
 
 
 /* the error macro. */
-#define error(id)				( space_err = errs_register( id , space_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
+#define error(id) ( space_err = errs_register( id , space_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
 /* list of error messages. */
 const char *space_err_msg[10] = {
@@ -79,7 +79,8 @@ const char *space_err_msg[10] = {
  * @return The sort ID of both cells, which may be swapped.
  */
 
-int space_getsid ( struct space *s , struct space_cell **ci , struct space_cell **cj , FPTYPE *shift ) {
+int space_getsid ( struct space *s , struct space_cell **ci ,
+        struct space_cell **cj , FPTYPE *shift ) {
 
     int k, sid;
     struct space_cell *temp;
@@ -747,10 +748,13 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
                             if ( id1 < id2 ||
                                     ( id1 == id2 && l[0] == 0 && l[1] == 0 && l[2] == 0 ) ||
                                     (s->cells[id2].flags & cell_flag_ghost ) ) {
-                                if ( space_addtask( s , ( id1 == id2 ) ? task_type_self : task_type_pair , task_subtype_none , sid , ci - s->cells , cj - s->cells ) == NULL )
+                                if ( space_addtask(s, ( id1 == id2 ) ? task_type_self : task_type_pair,
+                                                   task_subtype_none, sid, ci - s->cells,
+                                                   cj - s->cells ) == NULL ) {
                                     return error(space_err);
+                                }
                             }
-
+                            
                         } /* for every neighbouring cell in the z-axis... */
                     } /* for every neighbouring cell in the y-axis... */
                 } /* for every neighbouring cell in the x-axis... */
@@ -760,20 +764,24 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     }
 
     /* Run through the cells and add a sort task to each one. */
-    for ( k = 0 ; k < s->nr_cells ; k++ )
-        if ( ( s->cells[k].sort = space_addtask( s , task_type_sort , task_subtype_none , 0 , k , -1 ) ) == NULL )
+    for ( k = 0 ; k < s->nr_cells ; k++ ) {
+        if ((s->cells[k].sort = space_addtask(s, task_type_sort, task_subtype_none, 0, k, -1)) == NULL) {
             return error(space_err);
+        }
+    }
 
     /* Run through the tasks and make each pair depend on the sorts. 
        Also set the flags for each sort. */
-    for ( k = 0 ; k < s->nr_tasks ; k++ )
+    for ( k = 0 ; k < s->nr_tasks ; k++ ) {
         if ( s->tasks[k].type == task_type_pair ) {
-            if ( task_addunlock( s->cells[ s->tasks[k].i ].sort , &s->tasks[k] ) != 0 ||
-                    task_addunlock( s->cells[ s->tasks[k].j ].sort , &s->tasks[k] ) != 0 )
+            if (task_addunlock( s->cells[ s->tasks[k].i ].sort , &s->tasks[k] ) != 0 ||
+                task_addunlock( s->cells[ s->tasks[k].j ].sort , &s->tasks[k] ) != 0 ) {
                 return error(space_err_task);
+            }
             s->cells[ s->tasks[k].i ].sort->flags |= 1 << s->tasks[k].flags;
             s->cells[ s->tasks[k].j ].sort->flags |= 1 << s->tasks[k].flags;
         }
+    }
 
     /* allocate and init the taboo-list */
     if ( (s->cells_taboo = (char *)malloc( sizeof(char) * s->nr_cells )) == NULL )
@@ -1363,4 +1371,28 @@ CAPI_FUNC(HRESULT) space_del_particle(struct space *s, int pid)
     s->nr_parts -= 1;
 
     return S_OK;
+}
+
+
+int space_get_cellids_for_pos (struct space *s , FPTYPE *x, int *cellids) {
+    
+    int k, ind[3];
+
+    /* get the hypothetical cell coordinate */
+    for ( k = 0 ; k < 3 ; k++ ) {
+        ind[k] = (x[k] - s->origin[k]) * s->ih[k];
+    }
+    
+    if(cellids) {
+        for ( k = 0 ; k < 3 ; k++ ) {
+            cellids[k] = ind[k];
+        }
+    }
+    
+    /* is this particle within the space? */
+    for ( k = 0 ; k < 3 ; k++ )
+        if ( ind[k] < 0 || ind[k] >= s->cdim[k] )
+            return error(space_err_range);
+    
+    return space_cellid(s,ind[0],ind[1],ind[2]);
 }
