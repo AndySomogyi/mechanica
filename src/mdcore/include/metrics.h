@@ -24,7 +24,7 @@
  * location.
  *
  * If periodoc, we don't include the periodic image cells, because we only
- * calculate the forces within the simulation volume. 
+ * calculate the forces within the simulation volume.
  */
 CAPI_FUNC(HRESULT) MxCalculatePressure(FPTYPE *origin,
                                        FPTYPE radius,
@@ -78,8 +78,22 @@ PyObject* MPyCartesianToSpherical(const Magnum::Vector3& postion,
 Magnum::Vector3 MxCartesianToSpherical(const Magnum::Vector3& postion,
                                           const Magnum::Vector3& origin);
 
-
-
+/**
+ * Searches and enumerates a location of space for all particles there.
+ *
+ * Allocates a buffer, and stores the results there.
+ *
+ * @param typeIds [optional] set of type ids to include. If not given,
+ * gets all other parts within radius.
+ * 
+ * @param nr_parts, out, number of parts
+ * @param parts, out, newly allocated buffer of particle ids.
+ */
+CAPI_FUNC(HRESULT) MxParticles_AtLocation(FPTYPE *origin,
+                                          FPTYPE radius,
+                                          const std::set<short int> *typeIds,
+                                          uint16_t *nr_parts,
+                                          int32_t **parts);
 
 
 #endif /* SRC_MDCORE_INCLUDE_METRICS_H_ */

@@ -41,7 +41,6 @@
 #include <string>
 
 #include <Mechanica.h>
-#include <rendering/MxUniverseRendererOld.h>
 #include <rendering/WireframeObjects.h>
 
 #include <Corrade/Containers/Pointer.h>

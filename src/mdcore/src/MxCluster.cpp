@@ -547,7 +547,8 @@ HRESULT cluster_type_init(PyObject *m)
     }
 
     MxParticleType *pt = (MxParticleType*)ob;
-
+    
+    pt->parts.init();
     pt->radius = 1.0;
     pt->minimum_radius = 0.0;
     pt->mass = 1.0;

@@ -26,6 +26,8 @@
 #include <Magnum/Math/Vector4.h>
 #include "engine.h"
 #include "space_cell.h"
+#include "MxParticleList.hpp"
+
 
 CAPI_STRUCT(NOMStyle);
 
@@ -56,6 +58,7 @@ typedef enum MxParticleFlags {
     PARTICLE_FROZEN_Y      = 1 << 4,
     PARTICLE_FROZEN_Z      = 1 << 5,
     PARTICLE_FROZEN        = PARTICLE_FROZEN_X | PARTICLE_FROZEN_Y | PARTICLE_FROZEN_Z,
+    PARTICLE_LARGE         = 1 << 6,
 } MxParticleFlags;
 
 
@@ -300,17 +303,10 @@ struct MxParticleType : PyHeapTypeObject {
     /** Name of this particle type. */
     char name[MAX_NAME], name2[MAX_NAME];
     
-    /** number of current particles of this type. Incremented in engine_addpart. */
-    uint32_t nr_parts = 0;
-    
     /**
-     * list of particle ids that are of this type
+     * list of particles that belong to this type.
      */
-    int32_t *part_ids;
-    
-    // max size of the ids array. 
-    uint32_t size_parts;
-    
+    MxParticleList parts;
     
     // style pointer, optional.
     NOMStyle *style;
@@ -330,7 +326,7 @@ struct MxParticleType : PyHeapTypeObject {
      * get the i'th particle that's a member of this type.
      */
     inline MxParticle *particle(int i) {
-        return _Engine.s.partlist[this->part_ids[i]];
+        return _Engine.s.partlist[this->parts.parts[i]];
     }
 };
 
@@ -454,11 +450,20 @@ CAPI_FUNC(PyObject*) MxParticle_FissionSimple(MxParticle *part,
 CAPI_FUNC(PyObject*) MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs);
 
 /**
+ * Change the type of one particle to another.
+ *
+ * removes the particle from it's current type's list of objects,
+ * and adds it to the new types list.
+ *
+ * changes the type pointer in the C MxParticle, and also changes
+ * the type pointer in the Python MxPyParticle handle.
+ */
+CAPI_FUNC(HRESULT) MxParticle_Become(MxParticle *part, MxParticleType *type);
+
+/**
  * The the particle type type
  */
 CAPI_DATA(unsigned int) *MxParticle_Colors;
-
-
 
 /**
  * internal function to initalize the particle and particle types

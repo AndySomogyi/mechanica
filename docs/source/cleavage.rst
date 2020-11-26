@@ -21,7 +21,7 @@ models the early embryo cleavage processes.
 Splitting
 ---------
 
-The `Cluster.split` method splits a given cluster into itself, and a new
+The :meth:`Cluster.split` method splits a given cluster into itself, and a new
 daughter cluster. Split accepts optional `normal` and `point` arguments to define a
 cleavage plane. If only a normal vector is given, and no point, the  `split`
 uses the center of mass of the cluster as the point. For example, to split a
@@ -63,7 +63,7 @@ Cleavage
 --------
 
 
-The `Cluster.cleave` method is the single entry point for all cleavage
+The :meth:`Cluster.cleave` method is the single entry point for all cleavage
 operations, and it supports a lot of different options.
 
 Cleavage is built on the concept of embryo cleavage. Embryology introduced some

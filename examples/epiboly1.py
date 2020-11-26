@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 # potential cutoff distance
-cutoff = 8
+cutoff = 0.5
 
 count = 3000
 

@@ -45,6 +45,7 @@
 #define cell_flag_wait                  2
 #define cell_flag_waited                4
 #define cell_flag_marked                8
+#define cell_flag_large                 16
 
 
 MDCORE_BEGIN_DECLS

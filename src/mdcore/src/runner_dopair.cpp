@@ -303,19 +303,119 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
             cell_i->parts[i].f[0] = parts_i[i].f[0];
             cell_i->parts[i].f[1] = parts_i[i].f[1];
             cell_i->parts[i].f[2] = parts_i[i].f[2];
-            }
-        if ( cell_i != cell_j )
-            for ( i = 0 ; i < count_j ; i++ ) {
-                cell_j->parts[i].f[0] = parts_j[i].f[0];
-                cell_j->parts[i].f[1] = parts_j[i].f[1];
-                cell_j->parts[i].f[2] = parts_j[i].f[2];
+        }
+        if ( cell_i != cell_j ) {
+                for ( i = 0 ; i < count_j ; i++ ) {
+                    cell_j->parts[i].f[0] = parts_j[i].f[0];
+                    cell_j->parts[i].f[1] = parts_j[i].f[1];
+                    cell_j->parts[i].f[2] = parts_j[i].f[2];
                 }
+            }
         }
         
     /* since nothing bad happened to us... */
     return runner_err_ok;
+}
 
+static inline int particle_largecell_force(MxParticle *p, struct space_cell *c, double& epot) {
+    FPTYPE w, r2, e, f, dx[4], pix[4];
+    space_cell *large = &_Engine.s.largeparts;
+    MxPotential *pot;
+    int k;
+    FPTYPE *pif = p->f;
+    
+    // TODO will be more local parts than large parts, so more efficient
+    // to translate large parts to local coordinate system once.
+    // but simpler to do this...
+    
+    for(k = 0; k < 3; ++k) {
+        pix[k] = p->x[k] + c->origin[k];
     }
+    
+    
+    /* loop over the left particles */
+    for (int j = 0 ; j < large->count; ++j ) {
+        
+        /* get a handle on the second particle */
+        MxParticle *part_j = &large->parts[j];
+        
+        /* fetch the potential, if any */
+        pot = get_potential(p, part_j);
+        if ( pot == NULL )
+            continue;
+        
+        /* get the distance between both particles */
+        r2 = fptype_r2( pix , part_j->x , dx );
+        
+        /* is this within cutoff? */
+        // TODO add large particle cutoff...
+        //if (r2 > cutoff2)
+        //    continue;
+        
+#if defined(VECTORIZE)
+        /* add this interaction to the interaction queue. */
+        r2q[icount] = r2;
+        dxq[icount*3] = dx[0];
+        dxq[icount*3+1] = dx[1];
+        dxq[icount*3+2] = dx[2];
+        effi[icount] = pif;
+        effj[icount] = part_j->f;
+        potq[icount] = pot;
+        icount += 1;
+        
+        /* evaluate the interactions if the queue is full. */
+        if ( icount == VEC_SIZE ) {
+            
+#if defined(FPTYPE_SINGLE)
+#if VEC_SIZE==8
+            potential_eval_vec_8single( potq , r2q , e , f );
+#else
+            potential_eval_vec_4single( potq , r2q , e , f );
+#endif
+#elif defined(FPTYPE_DOUBLE)
+#if VEC_SIZE==4
+            potential_eval_vec_4double( potq , r2q , e , f );
+#else
+            potential_eval_vec_2double( potq , r2q , e , f );
+#endif
+#endif
+            
+            /* update the forces and the energy */
+            for ( l = 0 ; l < VEC_SIZE ; l++ ) {
+                epot += e[l];
+                for ( k = 0 ; k < 3 ; k++ ) {
+                    w = f[l] * dxq[l*3+k];
+                    effi[l][k] -= w;
+                    effj[l][k] += w;
+                }
+            }
+            
+            /* re-set the counter. */
+            icount = 0;
+            
+        }
+#else
+        /* evaluate the interaction */
+#ifdef EXPLICIT_POTENTIALS
+        potential_eval_expl( pot , r2 , &e , &f );
+#else
+        /* update the forces if part in range */
+        if (potential_eval_ex(pot, p->radius, part_j->radius, r2 , &e , &f )) {
+            for ( k = 0 ; k < 3 ; k++ ) {
+                w = f * dx[k];
+                pif[k] -= w;
+                // TODO large parts frozen for now
+                //part_j->f[k] += w;
+            }
+            /* tabulate the energy */
+            epot += e;
+        }
+#endif // EXPLICIT_POTENTIALS
+#endif // VECTORIZE
+        
+    }
+    return 0;
+}
     
     
 /**
@@ -393,6 +493,9 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         if(psb) {
             psb->func(psb, part_i, part_i->f);
         }
+        
+        // force between particle and large particles
+        particle_largecell_force(part_i, c, epot);
 
         /* loop over all other particles */
         for ( j = i + 1 ; j < count ; j++ ) {
@@ -479,7 +582,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             #endif // VECTORIZE
 
             } /* loop over all other particles */
-
         } /* loop over all particles */
         
 
@@ -517,9 +619,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                     effj[l][k] += w;
                     }
                 }
-
             }
-    #endif
+    #endif // #if defined(VECTORIZE)
         
     /* Write local data back if needed. */
     if ( r->e->flags & engine_flag_localparts ) {
@@ -530,7 +631,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             c->parts[i].f[1] = parts[i].f[1];
             c->parts[i].f[2] = parts[i].f[2];
         }
-            
     }
         
     /* Store the potential energy to c. */

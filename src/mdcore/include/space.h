@@ -20,6 +20,7 @@
 #ifndef INCLUDE_SPACE_H_
 #define INCLUDE_SPACE_H_
 #include "mdcore_config.h"
+#include "space_cell.h"
 
 
 MDCORE_BEGIN_DECLS
@@ -179,6 +180,9 @@ typedef struct space {
 
     /** Array of pointers to the individual parts, sorted by their ID. */
     struct MxParticle **partlist;
+    
+    /** store the large particles in the largs parts cell, its special */
+    space_cell largeparts;
 
     /** Array of pointers to the #cell of individual parts, sorted by their ID. */
     struct space_cell **celllist;

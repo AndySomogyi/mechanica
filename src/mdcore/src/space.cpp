@@ -43,6 +43,7 @@
 #include "task.h"
 #include "space.h"
 #include "engine.h"
+#include <iostream>
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -406,18 +407,25 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     if(p->id < 0 || p->id >= s->nr_parts) {
         return error(space_err_invalid_partid);
     }
-
+    
     /* get the hypothetical cell coordinate */
     for ( k = 0 ; k < 3 ; k++ )
         ind[k] = (x[k] - s->origin[k]) * s->ih[k];
-
+    
     /* is this particle within the space? */
     for ( k = 0 ; k < 3 ; k++ )
         if ( ind[k] < 0 || ind[k] >= s->cdim[k] )
             return error(space_err_range);
-
-    /* get the appropriate cell */
-    c = &( s->cells[ space_cellid(s,ind[0],ind[1],ind[2]) ] );
+    
+    // treat large particles in the large parts cell
+    if(p->flags & PARTICLE_LARGE) {
+        std::cout << "adding large particle: " << p->id << std::endl;
+        c = &s->largeparts;
+    }
+    else {
+        /* get the appropriate cell */
+        c = &( s->cells[ space_cellid(s,ind[0],ind[1],ind[2]) ] );
+    }
 
     /* make the particle position local */
     for ( k = 0 ; k < 3 ; k++ )
@@ -436,7 +444,6 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
 
     /* end well */
     return space_err_ok;
-
 }
 
 
@@ -807,6 +814,12 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     /* Init the Verlet table (NULL for now). */
     s->verlet_rebuild = 1;
     s->maxdx = 0.0;
+    
+    /* init the large particles cell */
+    l[0] = l[1] = l[1] = 0;
+    
+    if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
+        return error(space_err_cell);
 
     /* all is well that ends well... */
     return space_err_ok;

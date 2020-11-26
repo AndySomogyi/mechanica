@@ -43,6 +43,7 @@
 #include "MxCluster.hpp"
 #include "MxConstraint.hpp"
 #include "MxConvert.hpp"
+#include "MxParticleList.hpp"
 
 
 #include <c_util.h>
@@ -362,6 +363,7 @@ static PyObject * moduleinit(void)
     MxSurfaceSimulator_init(m);
     MxCylinderModel_init(m);
     _MxParticle_init(m);
+    _MxParticleList_init(m);
     _MxCluster_init(m);
     _MxPotential_init(m);
     _MxReactivePotential_init(m);

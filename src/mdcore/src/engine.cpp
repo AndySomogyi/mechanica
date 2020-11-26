@@ -2248,12 +2248,12 @@ double engine_kinetic_energy(struct engine *e)
     
     for(int i = 1; i < engine::nr_types; ++i) {
         engine::types[0].kinetic_energy += engine::types[i].kinetic_energy;
-        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].nr_parts);
+        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].parts.nr_parts);
     }
     
     // TODO: super lame hack to work around bug with
     // not setting root particle count. FIX THIS. 
-    engine::types[0].kinetic_energy /= (2. * engine::types[0].nr_parts);
+    engine::types[0].kinetic_energy /= (2. * engine::types[0].parts.nr_parts);
     return engine::types[0].kinetic_energy;
 }
 

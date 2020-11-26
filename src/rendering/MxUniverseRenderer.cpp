@@ -72,6 +72,11 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     
     GL::Renderer::setClearColor(Color3{0.35f});
+    
+    //GL::Renderer::enable(GL::Renderer::Feature::Blending);
+    //GL::Renderer::setBlendFunction(
+    //                               GL::Renderer::BlendFunction::SourceAlpha, /* or SourceAlpha for non-premultiplied */
+    //                               GL::Renderer::BlendFunction::OneMinusSourceAlpha);
 
     /* Loop at 60 Hz max */
     glfwSwapInterval(1);
@@ -151,6 +156,26 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     sphereMesh.setInstanceCount(0);
 }
 
+static inline void render_particle(SphereInstanceData* pData, int i, MxParticle *p, space_cell *c) {
+
+    MxParticleType *type = &_Engine.types[p->typeId];
+    Magnum::Vector3 position = {
+        (float)(c->origin[0] + p->x[0]),
+        (float)(c->origin[1] + p->x[1]),
+        (float)(c->origin[2] + p->x[2])
+    };
+    float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
+    pData[i].transformationMatrix =
+    Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
+    pData[i].normalMatrix =
+    pData[i].transformationMatrix.normalMatrix();
+    
+    NOMStyle *style = p->style ? p->style : type->style;
+    pData[i].color = style->color;
+
+    i++;
+}
+
 template<typename T>
 MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         const Vector2i& viewportSize) {
@@ -174,29 +199,19 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
                 GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
     
     
-
     int i = 0;
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
             MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
-            MxParticleType *type = &_Engine.types[p->typeId];
-            Magnum::Vector3 position = {
-                (float)(_Engine.s.cells[cid].origin[0] + _Engine.s.cells[cid].parts[pid].x[0]),
-                (float)(_Engine.s.cells[cid].origin[1] + _Engine.s.cells[cid].parts[pid].x[1]),
-                (float)(_Engine.s.cells[cid].origin[2] + _Engine.s.cells[cid].parts[pid].x[2])
-            };
-            float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
-            pData[i].transformationMatrix =
-                    Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
-            pData[i].normalMatrix =
-                    pData[i].transformationMatrix.normalMatrix();
-            
-            NOMStyle *style = p->style ? p->style : type->style;
-            pData[i].color = style->color;
-            i++;
+            render_particle(pData, i++, p, &_Engine.s.cells[cid]);
         }
     }
-
+    
+    for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
+        MxParticle *p  = &_Engine.s.largeparts.parts[pid];
+        render_particle(pData, i++, p, &_Engine.s.largeparts);
+    }
+    
     sphereInstanceBuffer.unmap();
     
     sphereShader

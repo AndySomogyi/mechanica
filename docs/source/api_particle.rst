@@ -82,13 +82,27 @@ Particles and Clusters
 
    A Cluster is a collection of particles.
 
-   .. method:: split()
+   .. method:: split([axis], [random], [normal], [point])
 
       Splits the cluster into two clusters, where the first one is the original
       cluster and the new one is a new 'daughter' cluster.
 
       split is discussed in detail in :ref:`Mitosis and Events`
 
+
+      :param axis: (length 3 vector (,optional)) - orientation axis for a
+                   split. If the 'axis' argument is given, the 'split' method
+                   chooses a random plane co-linear with this vector and uses
+                   this as the cleavage plane. 
+
+      :param random: (Boolean (,optional)) - 'split' chooses a random cleavage
+                     plane coincident with the center of mass of the cluster. 
+                  
+      :param normal: (length 3 vector (,optional)) - a normal direction for the
+                     cleavage plane. 
+
+      :param point: (length 3 vector (,optional)) - if given, uses this point to
+                    determine the point-normal form for the clevage plane. 
 
    .. method:: pressure()
 

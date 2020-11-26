@@ -136,7 +136,7 @@ HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double ti
     
     MxParticleType *type = (MxParticleType*)event->target;
     
-    if(type->nr_parts == 0) {
+    if(type->parts.nr_parts == 0) {
         return S_OK;
     }
     
@@ -146,7 +146,7 @@ HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double ti
     // max particle
     MxParticle *mp = type->particle(0);
     // find the object with the largest number of contained objects
-    for(int i = 1; i < type->nr_parts; ++i) {
+    for(int i = 1; i < type->parts.nr_parts; ++i) {
         MxParticle *part = type->particle(i);
         if(part->nr_parts > mp->nr_parts) {
             mp = part;
@@ -174,11 +174,11 @@ HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, do
     
     MxParticleType *type = (MxParticleType*)event->target;
     
-    if(type->nr_parts == 0) {
+    if(type->parts.nr_parts == 0) {
         return S_OK;
     }
     
-    std::uniform_int_distribution<int> distribution(0,type->nr_parts-1);
+    std::uniform_int_distribution<int> distribution(0,type->parts.nr_parts-1);
     
     // TODO: memory leak
     PyObject *args = PyTuple_New(2);
@@ -186,7 +186,7 @@ HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, do
     // index in the type's list of particles
     int tid = distribution(CRandom);
     
-    int pid = type->part_ids[tid];
+    int pid = type->parts.parts[tid];
     
     assert(_Engine.s.partlist[pid]);
     assert(_Engine.s.partlist[pid]->_pyparticle);
@@ -222,7 +222,7 @@ HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, double time
     double rescale = 1;
     if(event->flags & EVENT_PERIOD_RESCALE) {
         MxParticleType *type = (MxParticleType*)event->target;
-        rescale = type->nr_parts > 0 ? type->nr_parts : 1;
+        rescale = type->parts.nr_parts > 0 ? type->parts.nr_parts : 1;
     }
     std::exponential_distribution<> d(rescale / event->period);
     event->next_time = time + d(CRandom);
@@ -235,7 +235,7 @@ HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, double time
 HRESULT particletimeevent_fixed_setnexttime(CTimeEvent *event, double time) {
     if(event->flags & EVENT_PERIOD_RESCALE) {
         MxParticleType *type = (MxParticleType*)event->target;
-        uint32_t nr_parts = type->nr_parts > 0 ? type->nr_parts : 1;
+        uint32_t nr_parts = type->parts.nr_parts > 0 ? type->parts.nr_parts : 1;
         event->next_time = time + (event->period / nr_parts);
     }
     else {

@@ -25,6 +25,16 @@ static HRESULT pressure_pair (float cutoff,
                               const Magnum::Vector3 &shift,
                               Magnum::Matrix3 &m);
 
+/**
+ * search a pair of cells for particles
+ */
+static HRESULT enum_particles(const Magnum::Vector3 &origin,
+                              float radius,
+                              space_cell *cell,
+                              const std::set<short int> *typeIds,
+                              const Magnum::Vector3 &shift,
+                              std::vector<int32_t> &ids);
+
 
 HRESULT MxCalculatePressure(FPTYPE *_origin,
                             FPTYPE radius,
@@ -54,7 +64,7 @@ HRESULT MxCalculatePressure(FPTYPE *_origin,
     }
     
     // the current cell
-    space_cell *c;
+    space_cell *c = &s->cells[cid];
     
     // the other cell.
     space_cell *cj;
@@ -114,6 +124,7 @@ HRESULT MxCalculatePressure(FPTYPE *_origin,
                 c = &s->cells[cid];
                 cj = &s->cells[id2];
                 sid = space_getsid(s , &c , &cj , shift.data());
+                
                 HRESULT result = pressure_pair (radius, typeIds, c, cj, sid, shift, m);
             } /* for every neighbouring cell in the z-axis... */
         } /* for every neighbouring cell in the y-axis... */
@@ -257,7 +268,10 @@ static HRESULT pressure_pair (float cutoff,
         /* loop over all particles */
         for ( i = 0 ; i < count_i ; i++ ) {
             
-            /* get the particle */
+            // get the particle
+            // first particle in in cell_i frame, subtract off shift
+            // vector to compute pix in cell_j frame
+             
             part_i = &(parts_i[i]);
             pix[0] = part_i->x[0] - shift[0];
             pix[1] = part_i->x[1] - shift[1];
@@ -537,3 +551,192 @@ CAPI_FUNC(HRESULT) MxParticles_Pressure(int32_t *parts,
     
     return S_OK;
 }
+
+
+HRESULT MxParticles_AtLocation(FPTYPE *_origin,
+                               FPTYPE radius,
+                               const std::set<short int> *typeIds,
+                               uint16_t *nr_parts,
+                               int32_t **pparts)  {
+    
+    // origin in global space
+    Magnum::Vector3 origin = Magnum::Vector3::from(_origin);
+    
+    // cell id of target cell
+    int cid, ijk[3];
+    
+    int l[3], ii, jj, kk;
+    
+    double lh[3];
+    
+    int id2, sid;
+    
+    space *s = &_Engine.s;
+    
+    /** Number of cells within cutoff in each dimension. */
+    int span[3];
+    
+    std::vector<int32_t> ids;
+    
+    if((cid = space_get_cellids_for_pos(&_Engine.s, origin.data(), ijk)) < 0) {
+        // TODO: bad...
+        return E_FAIL;
+    }
+    
+    std::cout << "origin cell: " << cid << "(" << ijk[0] << "," << ijk[1] << "," << ijk[2] << ")" << std::endl;
+    
+    // the current cell
+    space_cell *c = &s->cells[cid];
+    
+    // origin in the target cell's coordinate system
+    Magnum::Vector3 local_origin = {
+        (float)(origin[0] - c->origin[0]),
+        (float)(origin[1] - c->origin[1]),
+        (float)(origin[2] - c->origin[2])
+    };
+    
+    // the other cell.
+    space_cell *cj, *ci;
+    
+    // shift vector between cells.
+    Magnum::Vector3 shift;
+    
+    /* Get the span of the cells we will search for pairs. */
+    for (int k = 0 ; k < 3 ; k++ ) {
+        span[k] = (int)std::ceil( radius * s->ih[k] );
+    }
+    
+    /* for every neighbouring cell in the x-axis... */
+    for ( l[0] = -span[0] ; l[0] <= span[0] ; l[0]++ ) {
+        
+        /* get coords of neighbour */
+        ii = ijk[0] + l[0];
+        
+        /* wrap or abort if not periodic */
+        if (ii < 0 || ii >= s->cdim[0]) {
+            continue;
+        }
+        
+        /* for every neighbouring cell in the y-axis... */
+        for ( l[1] = -span[1] ; l[1] <= span[1] ; l[1]++ ) {
+            
+            /* get coords of neighbour */
+            jj = ijk[1] + l[1];
+            
+            /* wrap or abort if not periodic */
+            if ( jj < 0 || jj >= s->cdim[1] ) {
+                continue;
+            }
+            
+            /* for every neighbouring cell in the z-axis... */
+            for ( l[2] = -span[2] ; l[2] <= span[2] ; l[2]++ ) {
+                
+                /* get coords of neighbour */
+                kk = ijk[2] + l[2];
+                
+                /* wrap or abort if not periodic */
+                if ( kk < 0  ||  kk >= s->cdim[2] ) {
+                    continue;
+                }
+                
+                /* Are these cells within the cutoff of each other? */
+                lh[0] = s->h[0]*fmax( abs(l[0])-1 , 0 );
+                lh[1] = s->h[1]*fmax( abs(l[1])-1 , 0 );
+                lh[2] = s->h[2]*fmax( abs(l[2])-1 , 0 );
+                if (std::sqrt(lh[0]*lh[0] + lh[1]*lh[1] + lh[2]*lh[2]) > radius )
+                    continue;
+                
+                /* get the neighbour's id */
+                id2 = space_cellid(s,ii,jj,kk);
+                
+                /* Get the pair sortID. */
+                ci = &s->cells[cid];
+                cj = &s->cells[id2];
+                sid = space_getsid(s , &ci , &cj , shift.data());
+                
+                // check if flipped,
+                // space_getsid flips cells under certain circumstances.
+                if(cj == c) {
+                    cj = ci;
+                    shift = shift * -1;
+                }
+                
+                std::cout << id2 << ":(" << ii << "," << jj << "," << kk << "), ("
+                 << shift[0] << ", " << shift[1] << ", " << shift[2] << ")" << std::endl;
+                
+                HRESULT result = enum_particles (local_origin, radius, cj, typeIds, shift, ids);
+            } /* for every neighbouring cell in the z-axis... */
+        } /* for every neighbouring cell in the y-axis... */
+    } /* for every neighbouring cell in the x-axis... */
+    
+    *nr_parts = ids.size();
+    int32_t *parts = (int32_t*)malloc(ids.size() * sizeof(int32_t));
+    memcpy(parts, ids.data(), ids.size() * sizeof(int32_t));
+    *pparts = parts;
+    
+    return S_OK;
+}
+
+
+HRESULT enum_particles(const Magnum::Vector3 &_origin,
+                       float radius,
+                       space_cell *cell,
+                       const std::set<short int> *typeIds,
+                       const Magnum::Vector3 &shift,
+                       std::vector<int32_t> &ids) {
+    
+    int i, count;
+    FPTYPE cutoff2, r2;
+    struct MxParticle *part, *parts;
+    Magnum::Vector4 dx;
+    Magnum::Vector4 pix;
+    Magnum::Vector4 origin;
+    
+    /* break early if one of the cells is empty */
+    count = cell->count;
+    
+    if ( count == 0 )
+        return runner_err_ok;
+    
+    /* get the space and cutoff */
+    cutoff2 = radius * radius;
+    pix[3] = FPTYPE_ZERO;
+    
+    parts = cell->parts;
+    
+    // shift the origin into the current cell's reference
+    // frame with the shift vector.
+    origin[0] = _origin[0] - shift[0];
+    origin[1] = _origin[1] - shift[1];
+    origin[2] = _origin[2] - shift[2];
+    
+    /* loop over all other particles */
+    for ( i = 0 ; i < count ; i++ ) {
+        
+        /* get the other particle */
+        part = &(parts[i]);
+        
+        /* fetch the potential, if any */
+        /* get the distance between both particles */
+        r2 = fptype_r2(origin.data() , part->x , dx.data() );
+        
+        /* is this within cutoff? */
+        if ( r2 > cutoff2 ) {
+            continue;
+        }
+        
+        /* check if this is a valid particle to search for */
+        if(typeIds && typeIds->find(part->typeId) == typeIds->end()) {
+            continue;
+        }
+        
+        ids.push_back(part->id);
+        
+    } /* loop over all other particles */
+    
+    
+    /* all is well that ends ok */
+    return runner_err_ok;
+}
+
+
