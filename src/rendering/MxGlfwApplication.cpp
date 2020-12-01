@@ -238,14 +238,19 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
+    MxUniverse_SetFlag(MX_RUNNING, true);
+    
     // process initial messages.
     GlfwApplication::mainLoopIteration();
 
     // show the window
     show();
-
-    // process initial messages.
-    GlfwApplication::mainLoopIteration();
+    
+    // need to post an empty message for some reason.
+    // if you start the app, the simulation loop won't start
+    // until the moust moves or some event happens, so send a
+    // empty event here to start it.
+    glfwPostEmptyEvent();
 
 #if defined(_WIN32)
 
@@ -259,8 +264,7 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 
     // run while it's visible, process window messages
     while(GlfwApplication::mainLoopIteration() &&
-        glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE))
-    {
+          glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
         // keep processing messages until window closes.
         if(engine_err == 0) {
             if(!SUCCEEDED((hr = simulationStep()))) {

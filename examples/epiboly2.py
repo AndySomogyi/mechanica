@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 # potential cutoff distance
-cutoff = 32
+cutoff = 3
 
 # number of particles
 count = 6000

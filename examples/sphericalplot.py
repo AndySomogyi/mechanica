@@ -12,16 +12,18 @@ print ( matplotlib.__version__ )
 class SphericalPlot :
 
 
-    def __init__(self, count, origin):
+    def __init__(self, cells, origin):
 
         # keep a handle on all the cells we've made.
-        self.cells = count * [None]
+        self.cells = cells
 
         # number of time points we avg things
         self.avg_pts = 3
 
         # number of bins we use for averaging
         self.avg_bins = 3
+
+        count = len(cells)
 
         self.prev_pos = np.zeros((count, 3))
         self.avg_vel  = np.zeros((count, 3))

@@ -45,6 +45,7 @@
 #include <Magnum/Timeline.h>
 
 #include <Magnum/Shaders/Phong.h>
+#include <Magnum/Shaders/Flat.h>
 
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/MxGlfwWindow.h>
@@ -67,6 +68,11 @@ class WireframeBox;
 struct SphereInstanceData {
     Magnum::Matrix4 transformationMatrix;
     Magnum::Matrix3x3 normalMatrix;
+    Magnum::Color4 color;
+};
+
+struct BondsInstanceData {
+    Magnum::Vector3 position;
     Magnum::Color3 color;
 };
 
@@ -223,9 +229,18 @@ struct MxUniverseRenderer : MxRenderer {
     
     Shaders::Phong sphereShader{NoCreate};
     
+    Shaders::Flat3D flatShader{NoCreate};
+    
     GL::Buffer sphereInstanceBuffer{NoCreate};
     
+    GL::Buffer largeSphereInstanceBuffer{NoCreate};
+
     GL::Mesh sphereMesh{NoCreate};
+
+    GL::Mesh largeSphereMesh{NoCreate};
+    
+    GL::Mesh bondsMesh{NoCreate};
+    GL::Buffer bondsVertexBuffer{NoCreate};
 
     Vector3 center;
 
@@ -238,8 +253,6 @@ struct MxUniverseRenderer : MxRenderer {
     void setupCallbacks();
     
     ~MxUniverseRenderer();
-
-
 };
 
 

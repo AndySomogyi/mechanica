@@ -135,6 +135,9 @@ friction = Force.friction(…)
 m.bind(friction, SomeOtherParticle)
 
 
+Accessing Particles
+-------------------
+ 
 
  .. _binding:
 

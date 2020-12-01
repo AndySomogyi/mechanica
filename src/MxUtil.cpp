@@ -330,8 +330,51 @@ static PyObject* random_point_solidcube(int n) {
 }
 
 
+static PyObject* points_ring(int n) {
+    try {
+        double radius = 1.0;
+        
+        int nd = 2;
+        
+        int typenum = NPY_DOUBLE;
+        
+        npy_intp dims[] = {n,3};
+        
+        const double phi = M_PI / 2.;
+        const double theta_i = 2 * M_PI / n;
+        
+        PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+        
+        double *data = (double*)PyArray_DATA(array);
+        
+        for(int i = 0; i < n; ++i) {
+            double theta = i * theta_i;
+            double x = radius * sin(phi) * cos(theta);
+            double y = radius * sin(phi) * sin(theta);
+            double z = radius * cos(phi);
+            
+            data[i * 3 + 0] = x;
+            data[i * 3 + 1] = y;
+            data[i * 3 + 2] = z;
+        }
+        
+        return (PyObject*)array;
+        
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
 
-PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
+
+
+
+PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
 {
     try {
         MxPointsType kind = arg<MxPointsType>("kind", 0, args, kwargs, MxPointsType::Sphere);
@@ -362,6 +405,27 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
 }
 
 
+PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
+{
+    try {
+        MxPointsType kind = arg<MxPointsType>("kind", 0, args, kwargs, MxPointsType::Sphere);
+        int n  = arg<int>("n", 1, args, kwargs, 1);
+        
+        if(kind == MxPointsType::Ring) {
+            
+        }
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
+
 
 
 HRESULT _MxUtil_init(PyObject *m)
@@ -372,6 +436,7 @@ HRESULT _MxUtil_init(PyObject *m)
     .value("Disk", MxPointsType::Disk)
     .value("SolidCube", MxPointsType::SolidCube)
     .value("Cube", MxPointsType::Cube)
+    .value("Ring", MxPointsType::Ring)
     .export_values();
 
     return S_OK;

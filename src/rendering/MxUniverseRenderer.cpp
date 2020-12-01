@@ -73,10 +73,10 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     
     GL::Renderer::setClearColor(Color3{0.35f});
     
-    //GL::Renderer::enable(GL::Renderer::Feature::Blending);
-    //GL::Renderer::setBlendFunction(
-    //                               GL::Renderer::BlendFunction::SourceAlpha, /* or SourceAlpha for non-premultiplied */
-    //                               GL::Renderer::BlendFunction::OneMinusSourceAlpha);
+    GL::Renderer::enable(GL::Renderer::Feature::Blending);
+    GL::Renderer::setBlendFunction(
+                                   GL::Renderer::BlendFunction::SourceAlpha, /* or SourceAlpha for non-premultiplied */
+                                   GL::Renderer::BlendFunction::OneMinusSourceAlpha);
 
     /* Loop at 60 Hz max */
     glfwSwapInterval(1);
@@ -135,25 +135,47 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
         Shaders::Phong::Flag::InstancedTransformation, 1};
     
     sphereInstanceBuffer = GL::Buffer{};
+
+    largeSphereInstanceBuffer = GL::Buffer{};
+    
+    // setup bonds mesh, shader and vertex buffer.
+    bondsMesh = GL::Mesh{};
+    bondsVertexBuffer = GL::Buffer{};
+    bondsMesh.setPrimitive(MeshPrimitive::Lines);
+    
+    flatShader = Shaders::Flat3D{Shaders::Flat3D::Flag::VertexColor };
+    
+    bondsMesh.addVertexBuffer(bondsVertexBuffer, 0,
+                              Shaders::Flat3D::Position{},
+                              Shaders::Flat3D::Color3{});
+    
     
     sphereMesh = MeshTools::compile(Primitives::icosphereSolid(2));
+
+    largeSphereMesh = MeshTools::compile(Primitives::icosphereSolid(4));
     
     sphereMesh.addVertexBufferInstanced(sphereInstanceBuffer, 1, 0,
         Shaders::Phong::TransformationMatrix{},
         Shaders::Phong::NormalMatrix{},
-        Shaders::Phong::Color3{});
+        Shaders::Phong::Color4{});
     
+    largeSphereMesh.addVertexBufferInstanced(largeSphereInstanceBuffer, 1, 0,
+            Shaders::Phong::TransformationMatrix{},
+            Shaders::Phong::NormalMatrix{},
+            Shaders::Phong::Color4{});
+
     // setup up lighting properties. TODO: move these to style
     sphereShader.setShininess(2000.0f)
-    .setLightPositions({{-20, 40, 20}})
-    .setLightColor({0.9, 0.9, 0.9, 1})
-    .setShininess(100)
-    .setAmbientColor({0.4, 0.4, 0.4, 1})
-    .setDiffuseColor({1, 1, 1, 1})
-    .setSpecularColor({0.2, 0.2, 0.2, 1});
+        .setLightPositions({{-20, 40, 20}})
+        .setLightColor({0.9, 0.9, 0.9, 1})
+        .setShininess(100)
+        .setAmbientColor({0.4, 0.4, 0.4, 1})
+        .setDiffuseColor({1, 1, 1, 0})
+        .setSpecularColor({0.2, 0.2, 0.2, 0});
     
     // we resize instances all the time.
     sphereMesh.setInstanceCount(0);
+    largeSphereMesh.setInstanceCount(0);
 }
 
 static inline void render_particle(SphereInstanceData* pData, int i, MxParticle *p, space_cell *c) {
@@ -171,34 +193,37 @@ static inline void render_particle(SphereInstanceData* pData, int i, MxParticle 
     pData[i].transformationMatrix.normalMatrix();
     
     NOMStyle *style = p->style ? p->style : type->style;
-    pData[i].color = style->color;
-
-    i++;
+    pData[i].color = Magnum::Color4{style->color, 1};
 }
 
 template<typename T>
 MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         const Vector2i& viewportSize) {
 
-
     // the incomprehensible template madness way of doing things.
-    //Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&_points[0]), _points.size() * 3);
-    //_bufferParticles.setData(data);
+    // Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&_points[0]), _points.size() * 3);
+    // _bufferParticles.setData(data);
 
     _dirty = false;
 
-    sphereMesh.setInstanceCount(_Engine.s.nr_parts);
+    sphereMesh.setInstanceCount(_Engine.s.nr_parts - _Engine.s.largeparts.count);
+    largeSphereMesh.setInstanceCount(_Engine.s.largeparts.count);
 
     // invalidate / resize the buffer
-    sphereInstanceBuffer.setData({NULL, _Engine.s.nr_parts * sizeof(SphereInstanceData)},
-                GL::BufferUsage::DynamicDraw);
+    sphereInstanceBuffer.setData({NULL,
+        (_Engine.s.nr_parts - _Engine.s.largeparts.count) * sizeof(SphereInstanceData)},
+            GL::BufferUsage::DynamicDraw);
+
+    largeSphereInstanceBuffer.setData({NULL,
+        _Engine.s.largeparts.count * sizeof(SphereInstanceData)},
+            GL::BufferUsage::DynamicDraw);
+    
 
     // get pointer to data, give me the damned bytes
     SphereInstanceData* pData = (SphereInstanceData*)(void*)sphereInstanceBuffer.map(0,
-            _Engine.s.nr_parts * sizeof(SphereInstanceData),
-                GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
-    
-    
+            (_Engine.s.nr_parts - _Engine.s.largeparts.count) * sizeof(SphereInstanceData),
+            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+
     int i = 0;
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
@@ -206,20 +231,65 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             render_particle(pData, i++, p, &_Engine.s.cells[cid]);
         }
     }
-    
+    sphereInstanceBuffer.unmap();
+
+    // get pointer to data, give me the damned bytes
+    SphereInstanceData* pLargeData = (SphereInstanceData*)(void*)largeSphereInstanceBuffer.map(0,
+            _Engine.s.largeparts.count * sizeof(SphereInstanceData),
+            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+
     for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
         MxParticle *p  = &_Engine.s.largeparts.parts[pid];
-        render_particle(pData, i++, p, &_Engine.s.largeparts);
+        render_particle(pLargeData, pid, p, &_Engine.s.largeparts);
+    }
+
+    largeSphereInstanceBuffer.unmap();
+    
+    if(_Engine.nr_bonds > 0) {
+        int vertexCount = _Engine.nr_bonds * 2;
+        bondsMesh.setCount(vertexCount);
+        
+        bondsVertexBuffer.setData(
+            {NULL, vertexCount * sizeof(BondsInstanceData)},
+            GL::BufferUsage::DynamicDraw
+        );
+        
+        // get pointer to data, give me the damned bytes
+        BondsInstanceData* bondData = (BondsInstanceData*)(void*)bondsVertexBuffer.map(
+           0,
+           vertexCount * sizeof(BondsInstanceData),
+           GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer
+        );
+        
+        int i = 0;
+        for(int j = 0; j < _Engine.nr_bonds; ++j) {
+            MxBond *bond = &_Engine.bonds[j];
+            MxParticle *pi = _Engine.s.partlist[bond->i];
+            MxParticle *pj = _Engine.s.partlist[bond->j];
+            bondData[i].position = pi->global_position();
+            bondData[i++].color = Magnum::Color3::yellow();
+            bondData[i].position = pj->global_position();
+            bondData[i++].color = Magnum::Color3::yellow();
+        }
+        bondsVertexBuffer.unmap();
+        
+        
+
+        flatShader
+        .setTransformationProjectionMatrix(camera->projectionMatrix() * camera->cameraMatrix() * modelViewMat)
+        .draw(bondsMesh);
     }
     
-    sphereInstanceBuffer.unmap();
-    
+
     sphereShader
         .setProjectionMatrix(camera->projectionMatrix())
         .setTransformationMatrix(camera->cameraMatrix() * modelViewMat)
-        .setNormalMatrix(camera->viewMatrix().normalMatrix())
-        .draw(sphereMesh);
-
+        .setNormalMatrix(camera->viewMatrix().normalMatrix());
+    
+    sphereShader.draw(sphereMesh);
+    sphereShader.draw(largeSphereMesh);
+    
+    
     return *this;
 }
 
@@ -379,7 +449,6 @@ void MxUniverseRenderer::draw() {
     if(camChanged) {
         MxSimulator_Redraw();
     }
-
 }
 
 /*

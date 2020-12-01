@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 # potential cutoff distance
-cutoff = 5
+cutoff = 3
 
 # number of particles
 count = 6000
@@ -60,15 +60,14 @@ m.bind(rforce, Cell)
 yolk = Yolk(position=center-[0., 0., yshift])
 
 import sphericalplot as sp
-plt = sp.SphericalPlot(count, yolk.position)
 
-
-for i, p in enumerate(m.random_point(m.SolidSphere, count)):
+for p in m.random_point(m.SolidSphere, count):
     pos = p * clump_radius + center+[0., 0., cshift]
-    plt.cells[i] = Cell(position=pos)
+    Cell(position=pos)
+
+plt = sp.SphericalPlot(Cell.items(), yolk.position)
 
 m.on_time(plt.update, period=0.01)
-
 
 # run the simulator interactive
 m.Simulator.run()

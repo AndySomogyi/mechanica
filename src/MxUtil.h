@@ -18,13 +18,16 @@ enum MxPointsType {
     SolidSphere,
     Disk,
     SolidCube,
-    Cube
+    Cube,
+    Ring
 };
 
 Magnum::Color3 Color3_Parse(const std::string &str);
 
 
 
+
+PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs);
 
 PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs);
 

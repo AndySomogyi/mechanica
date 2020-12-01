@@ -20,6 +20,8 @@ Particles and Clusters
    .. attribute:: force
 
 
+
+
    .. attribute:: charge
 
 
@@ -74,6 +76,22 @@ Particles and Clusters
                              origin. 
 
    .. method:: pressure()
+
+
+   .. method:: neighbors([distance], [types])
+
+      Gets a list of all the other particles that are near the current one. By
+      default, we list all the nearest particles that interact with the current
+      one via forces.
+
+      :param axis: (length 3 vector (,optional)) - An optional cut-off
+                   distance, if specified will get all objects within the given
+                   distance.
+
+      :param types: ([types], (,optional)) -- If specified, can provide a list
+                    of types to include in the neighbor search. If types are
+                    provides, this method will return all non-cluster particles
+                    within a certain distance. 
 
 
 

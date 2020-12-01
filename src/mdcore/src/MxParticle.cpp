@@ -133,6 +133,8 @@ static PyObject* particle_pressure(MxPyParticle *_self, PyObject *args, PyObject
 
 static PyObject* particle_become(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
 
+static PyObject* particle_distance(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
+
 static PyObject* particle_neighbors(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particletype_items(MxParticleType *self);
@@ -762,6 +764,7 @@ static PyMethodDef particle_methods[] = {
         { "pressure", (PyCFunction)particle_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
         { "become", (PyCFunction)particle_become, METH_VARARGS | METH_KEYWORDS, NULL },
         { "neighbors", (PyCFunction)particle_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "distance", (PyCFunction)particle_distance, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -1826,11 +1829,52 @@ Magnum::Vector3 MxRandomUnitVector() {
 
 
 HRESULT MxParticle_Become(MxParticle *part, MxParticleType *type) {
-    return E_FAIL;
+    HRESULT hr;
+    if(!part || !type) {
+        return c_error(E_FAIL, "null arguments");
+    }
+    MxPyParticle *pypart = part->py_particle();
+    
+    MxParticleType *currentType = &_Engine.types[part->typeId];
+    
+    assert(pypart->ob_type == (PyTypeObject*)currentType);
+    
+    if(!SUCCEEDED(hr = currentType->del_part(part->id))) {
+        return hr;
+    };
+    
+    if(!SUCCEEDED(hr = type->addpart(part->id))) {
+        return hr;
+    }
+    
+    pypart->ob_type = (PyTypeObject*)type;
+    Py_DECREF(currentType);
+    Py_INCREF(type);
+    
+    part->typeId = type->id;
+    
+    assert(type == &_Engine.types[part->typeId]);
+    
+    // TODO: bad things will happen if we convert between cluster and atomic types.
+    
+    return S_OK;
 }
 
 static PyObject* particle_become(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
-    return NULL;
+    if(args && PyTuple_Size(args) > 0) {
+        MxParticleType *o = MxParticleType_Get(PyTuple_GetItem(args, 0));
+        if(!o) {
+            PyErr_SetString(PyExc_TypeError, "argument 0 is not a particle derived type");
+            return NULL;
+        }
+        
+        HRESULT hr;
+        if(!SUCCEEDED((hr = MxParticle_Become(MxParticle_Get(_self), o)))) {
+            c_error(hr, "could not convert particle type");
+            return NULL;
+        }
+    }
+    Py_RETURN_NONE;
 }
 
 static PyObject* particle_neighbors(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
@@ -1876,6 +1920,25 @@ static PyObject* particletype_items(MxParticleType *self) {
     PyObject *result = &self->parts;
     Py_INCREF(result);
     return result;
+}
+
+static PyObject* particle_distance(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
+    MxParticle *self = MxParticle_Get(_self);
+    MxParticle *other = NULL;
+    
+    if(args && PyTuple_Size(args) > 0) {
+        other = MxParticle_Get(PyTuple_GetItem(args, 0));
+    }
+    
+    if(other == NULL || self == NULL) {
+        c_error(E_FAIL, "invalid args, distance(Particle)");
+        return NULL;
+    }
+    
+    Magnum::Vector3 pos = self->global_position();
+    Magnum::Vector3 opos = other->global_position();
+    float d = (opos - pos).length();
+    return PyFloat_FromDouble(d);
 }
 
 

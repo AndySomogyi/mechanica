@@ -1,0 +1,255 @@
+/*
+ * MxParticleList.cpp
+ *
+ *  Created on: Nov 23, 2020
+ *      Author: andy
+ */
+
+
+#include <MxParticleList.hpp>
+#include "MxParticle.h"
+#include <iostream>
+
+
+
+void MxParticleList::init()
+{
+    this->ob_type = &MxParticleList_Type;
+    this->ob_refcnt = 1;
+    this->parts = NULL;
+    this->nr_parts = 0;
+    this->size_parts = 0;
+    this->flags = 0;
+}
+
+void MxParticleList::free()
+{
+}
+
+uint16_t MxParticleList::insert(int32_t id)
+{
+    /* do we need to extend the partlist? */
+    if ( nr_parts == size_parts ) {
+        size_parts += space_partlist_incr;
+        int32_t* temp = NULL;
+        if (( temp = (int32_t*)malloc( sizeof(int32_t) * size_parts )) == NULL ) {
+            return c_error(E_FAIL, "could not allocate space for type particles");
+        }
+        memcpy( temp , parts , sizeof(int32_t) * nr_parts );
+        ::free( parts );
+        parts = temp;
+    }
+    
+    parts[nr_parts] = id;
+
+    return nr_parts++;
+}
+
+uint16_t MxParticleList::remove(int32_t id)
+{
+    int i = 0;
+    for(; i < nr_parts; i++) {
+        if(parts[i] == id)
+            break;
+    }
+    
+    if(i == nr_parts) {
+        return c_error(E_FAIL, "type does not contain particle id");
+    }
+    
+    nr_parts--;
+    if(i < nr_parts) {
+        parts[i] = parts[nr_parts];
+    }
+    
+    return i;
+}
+
+//typedef void (*freefunc)(void *);
+
+
+/**
+ * called when the new reference count is zero. At this point, the instance is
+ * still in existence, but there are no references to it. The destructor
+ * function should free all references which the instance owns, free all
+ * memory buffers owned by the instance (using the freeing function corresponding
+ * to the allocation function used to allocate the buffer), and call the
+ * type’s tp_free function.
+ */
+void particlelist_dealloc(MxParticleList *p) {
+    std::cout << MX_FUNCTION << std::endl;
+    if(p->flags & PARTICLELIST_OWNDATA) {
+        ::free(p->parts);
+    }
+    
+    std::cout << "tp_free: " << MxParticleList_Type.tp_free << std::endl;
+    
+    if(p->flags * PARTICLELIST_OWNSELF) {
+        MxParticleList_Type.tp_free(p);
+    }
+}
+
+
+
+// sq_length
+static Py_ssize_t plist_length(PyObject *_self) {
+    std::cout << MX_FUNCTION << std::endl;
+    MxParticleList *self = (MxParticleList*)_self;
+    return self->nr_parts;
+}
+
+// sq_concat
+static PyObject *plist_concat(PyObject *, PyObject *) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+// sq_repeat
+static PyObject *plist_repeat(PyObject *, Py_ssize_t) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+// sq_item
+static PyObject *plist_item(PyObject *_self, Py_ssize_t i) {
+
+    MxParticleList *self = (MxParticleList*)_self;
+    
+    if(i < self->nr_parts) {
+        return _Engine.s.partlist[self->parts[i]]->py_particle();
+    }
+    else {
+        PyErr_SetString(PyExc_IndexError, "cluster index out of range");
+    }
+    return NULL;
+}
+
+// sq_ass_item
+static int plist_ass_item(PyObject *, Py_ssize_t, PyObject *) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+// sq_contains
+static int plist_contains(PyObject *, PyObject *) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+// sq_inplace_concat
+static PyObject *plist_inplace_concat(PyObject *, PyObject *) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+// sq_inplace_repeat
+static PyObject *plist_inplace_repeat(PyObject *, Py_ssize_t) {
+    std::cout << MX_FUNCTION << std::endl;
+    return 0;
+}
+
+
+static PySequenceMethods sequence_methods =  {
+    plist_length, // lenfunc sq_length;
+    plist_concat, // binaryfunc sq_concat;
+    plist_repeat, // ssizeargfunc sq_repeat;
+    plist_item, // ssizeargfunc sq_item;
+    0, // void *was_sq_slice;
+    plist_ass_item, // ssizeobjargproc sq_ass_item;
+    0, // void *was_sq_ass_slice;
+    plist_contains, // objobjproc sq_contains;
+    plist_inplace_concat, // binaryfunc sq_inplace_concat;
+    plist_inplace_repeat  // ssizeargfunc sq_inplace_repeat;
+};
+
+PyTypeObject MxParticleList_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ParticleList",
+    .tp_basicsize = sizeof(MxParticleList),
+    .tp_itemsize =       0,
+    .tp_dealloc =        (destructor)particlelist_dealloc,
+    .tp_print =          0,
+    .tp_getattr =        0,
+    .tp_setattr =        0,
+    .tp_as_async =       0,
+    .tp_repr =           0,
+    .tp_as_number =      0,
+    .tp_as_sequence =    &sequence_methods,
+    .tp_as_mapping =     0,
+    .tp_hash =           0,
+    .tp_call =           0,
+    .tp_str =            0,
+    .tp_getattro =       0,
+    .tp_setattro =       0,
+    .tp_as_buffer =      0,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = "Custom objects",
+    .tp_traverse =       0,
+    .tp_clear =          0,
+    .tp_richcompare =    0,
+    .tp_weaklistoffset = 0,
+    .tp_iter =           0,
+    .tp_iternext =       0,
+    .tp_methods =        0,
+    .tp_members =        0,
+    .tp_getset =         0,
+    .tp_base =           0,
+    .tp_dict =           0,
+    .tp_descr_get =      0,
+    .tp_descr_set =      0,
+    .tp_dictoffset =     0,
+    .tp_init =           0,
+    .tp_alloc =          0,
+    .tp_new =            0,
+    .tp_free =           0,
+    .tp_is_gc =          0,
+    .tp_bases =          0,
+    .tp_mro =            0,
+    .tp_cache =          0,
+    .tp_subclasses =     0,
+    .tp_weaklist =       0,
+    .tp_del =            0,
+    .tp_version_tag =    0,
+    .tp_finalize =       0,
+};
+
+
+HRESULT _MxParticleList_init(PyObject *m)
+{
+    if (PyType_Ready((PyTypeObject*)&MxParticleList_Type) < 0) {
+        return E_FAIL;
+    }
+    
+    Py_INCREF(&MxParticleList_Type);
+    if (PyModule_AddObject(m, "ParticleList", (PyObject *)&MxParticleList_Type) < 0) {
+        Py_DECREF(&MxParticleList_Type);
+        return E_FAIL;
+    }
+    
+    return S_OK;
+}
+
+MxParticleList* MxParticleList_New(uint16_t init_size,
+        uint16_t flags)
+{
+    MxParticleList *list = (MxParticleList*)PyType_GenericAlloc(&MxParticleList_Type, 0);
+    list->flags = flags;
+    list->size_parts = init_size;
+    list->parts = (int32_t*)malloc(init_size * sizeof(int32_t));
+    list->nr_parts = 0;
+    
+    // we allocated usign Python, so this object both owns it's own memory and the
+    // data memory
+    list->flags |= PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    
+    return list;
+}
+
+MxParticleList* MxParticleList_NewFromData(uint16_t nr_parts, int32_t *parts) {
+    MxParticleList *list = (MxParticleList*)PyType_GenericAlloc(&MxParticleList_Type, 0);
+    list->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    list->size_parts = nr_parts;
+    list->parts = parts;
+    list->nr_parts = nr_parts;
+    return list;
+}
