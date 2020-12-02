@@ -154,6 +154,10 @@ public:
     HRESULT close() override;
 
     HRESULT show() override;
+            
+    HRESULT messageLoop();
+            
+    HRESULT showWindow();
 };
 
 

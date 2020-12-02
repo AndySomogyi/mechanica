@@ -238,13 +238,20 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 HRESULT MxGlfwApplication:: MxGlfwApplication::run()
 {
+    std::cout << MX_FUNCTION << std::endl;
     MxUniverse_SetFlag(MX_RUNNING, true);
+    return messageLoop();
+}
+
+HRESULT MxGlfwApplication:: MxGlfwApplication::messageLoop()
+{
+    std::cout << MX_FUNCTION << std::endl;
     
     // process initial messages.
     GlfwApplication::mainLoopIteration();
 
     // show the window
-    show();
+    showWindow();
     
     // need to post an empty message for some reason.
     // if you start the app, the simulation loop won't start
@@ -266,7 +273,7 @@ HRESULT MxGlfwApplication:: MxGlfwApplication::run()
     while(GlfwApplication::mainLoopIteration() &&
           glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
         // keep processing messages until window closes.
-        if(engine_err == 0) {
+        if(engine_err == 0 && MxUniverse_Flag(MX_RUNNING)) {
             if(!SUCCEEDED((hr = simulationStep()))) {
                 close();
             }
@@ -316,7 +323,23 @@ void MxGlfwApplication::viewportEvent(ViewportEvent &event)
 
 void MxGlfwApplication::keyPressEvent(KeyEvent &event)
 {
-    _ren->keyPressEvent(event);
+    bool handled = false;
+    switch(event.key()) {
+        case Platform::GlfwApplication::KeyEvent::Key::Space: {
+            bool current = MxUniverse_Flag(MxUniverse_Flags::MX_RUNNING);
+            MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, !current);
+            break;
+        }
+        default:
+            break;
+    }
+    
+    if(handled) {
+        event.setAccepted();
+    }
+    else {
+        _ren->keyPressEvent(event);
+    }
 }
 
 void MxGlfwApplication::mousePressEvent(MouseEvent &event)
@@ -483,9 +506,23 @@ void ForceForgoundWindow2(GLFWwindow* wnd)
 
 #endif
 
-
 HRESULT MxGlfwApplication::show()
 {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    showWindow();
+    
+    if (!Mx_IsIpython()) {
+        return messageLoop();
+    }
+    
+    return S_OK;
+}
+
+HRESULT MxGlfwApplication::showWindow()
+{
+    std::cout << MX_FUNCTION << std::endl;
+    
     glfwShowWindow(window());
 
 #ifdef _WIN32
