@@ -123,19 +123,19 @@ static HRESULT MxParticleType_Init(MxParticleType *self, PyObject *dict);
 
 static void printTypeInfo(const char* name, PyTypeObject *p);
 
-static PyObject* particle_destroy(MxPyParticle *part, PyObject *args);
+static PyObject* particle_destroy(MxParticleHandle *part, PyObject *args);
 
-static PyObject* particle_spherical(MxPyParticle *part, PyObject *args);
+static PyObject* particle_spherical(MxParticleHandle *part, PyObject *args);
 
-static PyObject* particle_fission(MxPyParticle *part, PyObject *args, PyObject *kwargs);
+static PyObject* particle_fission(MxParticleHandle *part, PyObject *args, PyObject *kwargs);
 
-static PyObject* particle_pressure(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
+static PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
-static PyObject* particle_become(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
+static PyObject* particle_become(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
-static PyObject* particle_distance(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
+static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
-static PyObject* particle_neighbors(MxPyParticle *_self, PyObject *args, PyObject *kwargs);
+static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particletype_items(MxParticleType *self);
 
@@ -330,7 +330,7 @@ PyGetSetDef gs_frozen = {
         bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         bool frozen = 0;
         if(isParticle) {
-            MxPyParticle *pobj = (MxPyParticle*)obj;
+            MxParticleHandle *pobj = (MxParticleHandle*)obj;
             frozen = _Engine.s.partlist[pobj->id]->flags & PARTICLE_FROZEN;
         }
         else {
@@ -345,7 +345,7 @@ PyGetSetDef gs_frozen = {
         
         try {
             if(isParticle) {
-                MxParticle *part = ((MxPyParticle*)obj)->part();
+                MxParticle *part = ((MxParticleHandle*)obj)->part();
                 bool b = val == Py_True;
                 if(b) {
                     part->flags |= PARTICLE_FROZEN;
@@ -382,7 +382,7 @@ PyGetSetDef gs_style = {
         bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         NOMStyle *style = NULL;
         if(isParticle) {
-            MxPyParticle *pyp = (MxPyParticle*)obj;
+            MxParticleHandle *pyp = (MxParticleHandle*)obj;
             style = _Engine.s.partlist[pyp->id]->style;
         }
         else {
@@ -405,7 +405,7 @@ PyGetSetDef gs_style = {
 PyGetSetDef gs_age = {
     .name = "age",
     .get = [](PyObject *obj, void *p) -> PyObject* {
-        MxPyParticle *part = (MxPyParticle*)obj;
+        MxParticleHandle *part = (MxParticleHandle*)obj;
         double age = _Engine.s.partlist[part->id]->creation_time * _Engine.dt;
         return pybind11::cast(age).release().ptr();
     },
@@ -461,7 +461,7 @@ PyGetSetDef gs_radius = {
         bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
         float radius = 0;
         if(isParticle) {
-            MxPyParticle *pobj = (MxPyParticle*)obj;
+            MxParticleHandle *pobj = (MxParticleHandle*)obj;
             radius = _Engine.s.partlist[pobj->id]->radius;
         }
         else {
@@ -478,7 +478,7 @@ PyGetSetDef gs_radius = {
         try {
             if(isParticle) {
                 float *pradius = nullptr;
-                MxPyParticle *pobj = (MxPyParticle*)obj;
+                MxParticleHandle *pobj = (MxParticleHandle*)obj;
                 pradius = &(_Engine.s.partlist[pobj->id]->radius);
                 *pradius = pybind11::cast<float>(val);
                 return 0;
@@ -626,7 +626,7 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "position",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->id;
+            int id = ((MxParticleHandle*)obj)->id;
             Magnum::Vector3 vec;
             space_getpos(&_Engine.s, id, vec.data());
             return mx::cast(vec);
@@ -634,7 +634,7 @@ PyGetSetDef particle_getsets[] = {
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int id = ((MxPyParticle*)obj)->id;
+                int id = ((MxParticleHandle*)obj)->id;
                 Magnum::Vector3 vec = mx::cast<Magnum::Vector3>(val);
                 space_setpos(&_Engine.s, id, vec.data());
                 return 0;
@@ -650,13 +650,13 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "velocity",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->id;
+            int id = ((MxParticleHandle*)obj)->id;
             Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
             return mx::cast(*vec);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int id = ((MxPyParticle*)obj)->id;
+                int id = ((MxParticleHandle*)obj)->id;
                 Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
                 *vec = mx::cast<Magnum::Vector3>(val);
                 return 0;
@@ -672,13 +672,13 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "force",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->id;
+            int id = ((MxParticleHandle*)obj)->id;
             Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
             return mx::cast(*vec);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int id = ((MxPyParticle*)obj)->id;
+                int id = ((MxParticleHandle*)obj)->id;
                 Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
                 *vec = mx::cast<Magnum::Vector3>(val);
                 return 0;
@@ -694,7 +694,7 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "id",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int x = ((MxPyParticle*)obj)->id;
+            int x = ((MxParticleHandle*)obj)->id;
             return pybind11::cast(x).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
@@ -713,7 +713,7 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "type_id",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->id;
+            int id = ((MxParticleHandle*)obj)->id;
             int x = _Engine.s.partlist[id]->typeId;
             return pybind11::cast(x).release().ptr();
         },
@@ -733,13 +733,13 @@ PyGetSetDef particle_getsets[] = {
     {
         .name = "flags",
         .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxPyParticle*)obj)->id;
+            int id = ((MxParticleHandle*)obj)->id;
             unsigned short x = _Engine.s.partlist[id]->flags;
             return pybind11::cast(x).release().ptr();
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                int id = ((MxPyParticle*)obj)->id;
+                int id = ((MxParticleHandle*)obj)->id;
                 unsigned short *x = &_Engine.s.partlist[id]->flags;
                 *x = pybind11::cast<unsigned short>(val);
                 return 0;
@@ -781,7 +781,7 @@ static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwar
     return PyType_GenericNew(type, args, kwargs);
 }
 
-static int particle_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
+static int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
     // std::cout << MX_FUNCTION << std::endl;
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
@@ -1452,7 +1452,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     ob->tp_getset =        particle_getsets;
     ob->tp_methods =       particle_methods;
     ob->tp_name =          "Particle";
-    ob->tp_basicsize =     sizeof(MxPyParticle);
+    ob->tp_basicsize =     sizeof(MxParticleHandle);
     ob->tp_flags =         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
     ob->tp_doc =           "Custom objects";
     ob->tp_init =          (initproc)particle_init;
@@ -1500,7 +1500,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     return S_OK;
 }
 
-PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
+PyObject* particle_destroy(MxParticleHandle *part, PyObject *args)
 {
     if(SUCCEEDED(engine_del_particle(&_Engine, part->id))) {
         Py_RETURN_NONE;
@@ -1509,7 +1509,7 @@ PyObject* particle_destroy(MxPyParticle *part, PyObject *args)
     return NULL;
 }
 
-PyObject* particle_spherical(MxPyParticle *_self, PyObject *args)
+PyObject* particle_spherical(MxParticleHandle *_self, PyObject *args)
 {
     try {
         MxParticle *self = MxParticle_Get(_self);
@@ -1540,7 +1540,7 @@ PyObject* particle_spherical(MxPyParticle *_self, PyObject *args)
     }
 }
 
-PyObject* particle_pressure(MxPyParticle *_self, PyObject *args, PyObject *kwargs)
+PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *kwargs)
 {
     try {
         MxParticle *self = MxParticle_Get(_self);
@@ -1668,7 +1668,7 @@ PyObject* MxParticle_FissionSimple(MxParticle *self,
     }
 }
 
-PyObject* particle_fission(MxPyParticle *part, PyObject *args,
+PyObject* particle_fission(MxParticleHandle *part, PyObject *args,
         PyObject *kwargs)
 {
     try {
@@ -1696,18 +1696,18 @@ PyObject* particle_fission(MxPyParticle *part, PyObject *args,
 
 MxParticle* MxParticle_Get(PyObject* obj) {
     if(MxParticle_Check(obj)) {
-        MxPyParticle *pypart = (MxPyParticle*)obj;
+        MxParticleHandle *pypart = (MxParticleHandle*)obj;
         return _Engine.s.partlist[pypart->id];
     }
     return NULL;
 }
 
-MxPyParticle *MxParticle::py_particle() {
+MxParticleHandle *MxParticle::py_particle() {
     
     if(!this->_pyparticle) {
 
         PyTypeObject *type = (PyTypeObject*)&_Engine.types[this->typeId];
-        MxPyParticle *part = (MxPyParticle*)PyType_GenericAlloc(type, 0);
+        MxParticleHandle *part = (MxParticleHandle*)PyType_GenericAlloc(type, 0);
         part->id = this->id;
         this->_pyparticle = part;
     }
@@ -1792,7 +1792,7 @@ PyObject* MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs) {
     }
     
     
-    if(particle_init((MxPyParticle*)pyPart, args, kwargs) < 0) {
+    if(particle_init((MxParticleHandle*)pyPart, args, kwargs) < 0) {
         std::cout << "bad stuff" << std::endl;
         return NULL;
     }
@@ -1833,7 +1833,7 @@ HRESULT MxParticle_Become(MxParticle *part, MxParticleType *type) {
     if(!part || !type) {
         return c_error(E_FAIL, "null arguments");
     }
-    MxPyParticle *pypart = part->py_particle();
+    MxParticleHandle *pypart = part->py_particle();
     
     MxParticleType *currentType = &_Engine.types[part->typeId];
     
@@ -1860,7 +1860,7 @@ HRESULT MxParticle_Become(MxParticle *part, MxParticleType *type) {
     return S_OK;
 }
 
-static PyObject* particle_become(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
+static PyObject* particle_become(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
     if(args && PyTuple_Size(args) > 0) {
         MxParticleType *o = MxParticleType_Get(PyTuple_GetItem(args, 0));
         if(!o) {
@@ -1877,7 +1877,7 @@ static PyObject* particle_become(MxPyParticle *_self, PyObject *args, PyObject *
     Py_RETURN_NONE;
 }
 
-static PyObject* particle_neighbors(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
+static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
     try {
         float radius;
         PyObject *_radius = mx::arg("distance", 0, args, kwargs);
@@ -1922,7 +1922,7 @@ static PyObject* particletype_items(MxParticleType *self) {
     return result;
 }
 
-static PyObject* particle_distance(MxPyParticle *_self, PyObject *args, PyObject *kwargs) {
+static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
     MxParticle *self = MxParticle_Get(_self);
     MxParticle *other = NULL;
     

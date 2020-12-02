@@ -40,7 +40,7 @@ struct PyParticlesIterator {
             throw py::stop_iteration();
 
         MxParticle *part = _Engine.s.partlist[index++];
-        MxPyParticle *py = part->py_particle();
+        MxParticleHandle *py = part->py_particle();
         return py;
     }
 

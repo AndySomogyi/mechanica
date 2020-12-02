@@ -687,9 +687,9 @@ int angle_init(MxAngle *self, PyObject *args, PyObject *kwargs) {
         }
         
         self->potential = (MxPotential*)pot;
-        self->i = ((MxPyParticle*)p1)->id;
-        self->j = ((MxPyParticle*)p2)->id;
-        self->k = ((MxPyParticle*)p3)->id;
+        self->i = ((MxParticleHandle*)p1)->id;
+        self->j = ((MxParticleHandle*)p2)->id;
+        self->k = ((MxParticleHandle*)p3)->id;
         
         Py_XINCREF(pot);
     }

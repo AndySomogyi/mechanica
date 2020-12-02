@@ -1052,8 +1052,8 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
         return S_OK;
     } 
     else {
-        std::fprintf(stderr, "not ipython, returning MxSimulator_Run \n");
-        return MxSimulator_Run();
+        std::fprintf(stderr, "not ipython, returning Simulator->app->show() \n");
+        return Simulator->app->show();
     }
 }
 

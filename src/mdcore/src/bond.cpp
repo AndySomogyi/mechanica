@@ -530,7 +530,7 @@ static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
             return -1;
         }
         
-        return _bond_init(self, flags, ((MxPyParticle*)p1)->id, ((MxPyParticle*)p2)->id,
+        return _bond_init(self, flags, ((MxParticleHandle*)p1)->id, ((MxParticleHandle*)p2)->id,
                    half_life, bond_energy, (MxPotential*)pot);
 
     }

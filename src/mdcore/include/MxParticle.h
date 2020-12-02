@@ -175,13 +175,13 @@ struct MxParticle  {
      * initialzied to null, and only set when .
      
      */
-    struct MxPyParticle *_pyparticle;
+    struct MxParticleHandle *_pyparticle;
     
     /**
      * public way of getting the pyparticle. Creates and caches one if
      * it's not there.
      */
-    struct MxPyParticle *py_particle();
+    struct MxParticleHandle *py_particle();
 
     /**
      * list of particle ids that belong to this particle, if it is a cluster.
@@ -233,7 +233,7 @@ struct MxParticle  {
  * points to the same particle, even though that particle may move
  * from cell to cell.
  */
-struct MxPyParticle : PyObject {
+struct MxParticleHandle : PyObject {
     int id;
     inline MxParticle *part() {
         return _Engine.s.partlist[this->id];

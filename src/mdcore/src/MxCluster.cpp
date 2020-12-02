@@ -227,7 +227,7 @@ PyMethodDef wrap = {
     .ml_doc = "docs"    /* The __doc__ attribute, or NULL */
 };
 
-static int cluster_init(MxPyParticle *self, PyObject *_args, PyObject *_kwds) {
+static int cluster_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
     std::cout << MX_FUNCTION << std::endl;
     
     int result = 0;
@@ -528,7 +528,7 @@ HRESULT cluster_type_init(PyObject *m)
     ob->tp_getset =        0;
     ob->tp_methods =       cluster_methods;
     ob->tp_name =          "Cluster";
-    ob->tp_basicsize =     sizeof(MxPyParticle);
+    ob->tp_basicsize =     sizeof(MxParticleHandle);
     ob->tp_flags =         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
     ob->tp_doc =           "Custom objects";
     ob->tp_init =          (initproc)cluster_init;

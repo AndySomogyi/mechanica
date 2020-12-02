@@ -426,8 +426,8 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b,
     }
 
     if(MxParticle_Check(a) && MxParticle_Check(b)) {
-        MxPyParticle *a_part = ((MxPyParticle *)a);
-        MxPyParticle *b_part = ((MxPyParticle *)b);
+        MxParticleHandle *a_part = ((MxParticleHandle *)a);
+        MxParticleHandle *b_part = ((MxParticleHandle *)b);
 
         //MxBond_New(uint32_t flags,
         //        int32_t i, int32_t j,
