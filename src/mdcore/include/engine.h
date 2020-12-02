@@ -429,8 +429,9 @@ CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 
 /**
  * allocates a new bond, returns a pointer to it.
+ * returns index of new object. 
  */
-int engine_bond_alloc (struct engine *e , struct _typeobject *type, struct MxBond **result );
+int engine_bond_alloc (struct engine *e, struct MxBond **result );
 
 /**
  * External C apps should call this to get a particle type ptr.

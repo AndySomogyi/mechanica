@@ -244,6 +244,8 @@ PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
     return result;
 }
 
+std::ostream& operator<<(std::ostream& os, const PyObject *obj);
+
 
 
 #endif /* SRC_MDCORE_SRC_MXPY_H_ */

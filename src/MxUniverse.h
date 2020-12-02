@@ -74,13 +74,15 @@ struct CAPI_EXPORT MxUniverseConfig {
 
 CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf);
 
-CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs);
+CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **result);
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing3(PyObject *thing, PyObject *a, PyObject *b, PyObject *c);
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject *b);
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a);
+
+PyObject *MxPyUniverse_BindPairwise(PyObject *_args, PyObject *_kwargs);
 
 /**
  * runs the universe a pre-determined period of time, until.

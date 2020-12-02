@@ -133,6 +133,8 @@ typedef struct MxPotential : PyObject {
 
 } MxPotential;
 
+CAPI_FUNC(int) MxPotential_Check(PyObject *obj);
+
 
 /** Fictitious null potential. */
 CAPI_DATA(struct MxPotential) potential_null;

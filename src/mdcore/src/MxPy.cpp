@@ -141,3 +141,20 @@ PyObject* arg<PyObject*>(const char* name, int index, PyObject *_args, PyObject 
     }
 };
 
+std::ostream& operator<<(std::ostream& os, const PyObject *_obj) {
+    if(_obj) {
+        PyObject *obj = const_cast<PyObject*>(_obj);
+        PyObject *str = PyObject_Str(obj);
+        const char* cstr = PyUnicode_AsUTF8(str);
+    
+        os << obj->ob_type->tp_name << "(" << cstr << ")";
+    
+        Py_DECREF(str);
+    }
+    else {
+        os << "NULL";
+    }
+    
+    return os;
+}
+

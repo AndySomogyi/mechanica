@@ -30,7 +30,7 @@ class Virus(m.Particle):
     dynamics = m.Overdamped
 
 # locations of initial receptor positions
-receptor_pts = m.random_point(m.Sphere, receptor_count) * Big.radius + center
+receptor_pts = m.random_points(m.Sphere, receptor_count) * Big.radius + center
 
 pot_rr = m.Potential.soft_sphere(kappa=0.02,    epsilon=0, r0=0.5, eta=2, tol=0.05, min=0.01, max=4)
 pot_vr = m.Potential.soft_sphere(kappa=0.02,    epsilon=0.1, r0=0.6, eta=4, tol=0.05, min=0.01, max=3)

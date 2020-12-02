@@ -59,7 +59,7 @@ m.bind(rforce, Cell)
 
 yolk = Yolk(position=center-[0., 0., yshift])
 
-for i, p in enumerate(m.random_point(m.SolidSphere, count)):
+for i, p in enumerate(m.random_points(m.SolidSphere, count)):
     pos = p * clump_radius + center+[0., 0., cshift]
     Cell(position=pos)
 

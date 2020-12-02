@@ -45,12 +45,26 @@ struct MxParticleList : PyObject {
     
 };
 
+/**
+ * Tries to create a new list from a python list.
+ * if the python list is a list of MxPyParticle, creates a new particle
+ * list from them.
+ *
+ * Returns NULL if list is not a list or doesnt contain particles. 
+ */
+CAPI_FUNC(MxParticleList*) MxParticleList_NewFromList(PyObject *list);
+
 
 /**
  * new list with initial capacity but no items.
  */
 CAPI_FUNC(MxParticleList*) MxParticleList_New(uint16_t init_size,
                                               uint16_t flags);
+
+/**
+ * 
+ */
+CAPI_FUNC(int) MxParticleList_Check(const PyObject *obj);
 
 /**
  * New list, steals the data.

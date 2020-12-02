@@ -2,10 +2,10 @@ import mechanica as m
 import numpy as np
 
 # potential cutoff distance
-cutoff = 3
+cutoff = 10
 
 # number of particles
-count = 6000
+count = 50000
 
 # number of time points we avg things
 avg_pts = 3
@@ -24,30 +24,28 @@ m.Simulator(dim=dim,
             threads=8,
             cells=[5, 5, 5])
 
-clump_radius = 8
 
-class Yolk(m.Particle):
+class Big(m.Particle):
     mass = 500000
     radius = 20
     frozen = True
 
-class Cell(m.Particle):
+class Small(m.Particle):
     mass = 10
-    radius = 1.2
+    radius = 0.25
     target_temperature=0
     dynamics = m.Overdamped
 
-total_height = 2 * Yolk.radius + 2 * clump_radius
-yshift = total_height/2 - Yolk.radius
-cshift = total_height/2  - 1.9 * clump_radius
+pot_yc = m.Potential.glj(e=100, r0=5, m=3, k=500, min=0.1,  max=1.5 * Big.radius, tol=0.1)
+#pot_cc = m.Potential.glj(e=0,   r0=2, m=2, k=10,  min=0.05, max=1 * Big.radius)
+pot_cc = m.Potential.harmonic(r0=0, k=0.1, max=10)
 
-#pot_yc = m.Potential.glj(e=500, r0=10, m=5, k=100, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_yc = m.Potential.glj(e=100, r0=5, m=3, k=500, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_cc = m.Potential.glj(e=1, r0=2, m=2, min=0.05, max=2.2*Cell.radius)
+#pot_yc = m.Potential.glj(e=10, r0=1, m=3, min=0.1, max=50*Small.radius, tol=0.1)
+#pot_cc = m.Potential.glj(e=100, r0=5, m=2, min=0.05, max=0.5*Big.radius)
 
 # bind the potential with the *TYPES* of the particles
-m.Universe.bind(pot_yc, Yolk, Cell)
-m.Universe.bind(pot_cc, Cell, Cell)
+m.Universe.bind(pot_yc, Big, Small)
+m.Universe.bind(pot_cc, Small, Small)
 
 # create a random force. In overdamped dynamcis, we neeed a random force to
 # enable the objects to move around, otherwise they tend to get trapped
@@ -55,19 +53,15 @@ m.Universe.bind(pot_cc, Cell, Cell)
 rforce = m.forces.random(0, 100, durration=0.5)
 
 # bind it just like any other force
-m.bind(rforce, Cell)
+m.bind(rforce, Small)
 
-yolk = Yolk(position=center-[0., 0., yshift])
+yolk = Big(position=center)
 
-import sphericalplot as sp
 
-for p in m.random_points(m.SolidSphere, count):
-    pos = p * clump_radius + center+[0., 0., cshift]
-    Cell(position=pos)
+for p in m.random_points(m.Sphere, count):
+    pos = p * (Big.radius + Small.radius) + center
+    Small(position=pos)
 
-plt = sp.SphericalPlot(Cell.items(), yolk.position)
-
-m.on_time(plt.update, period=0.01)
 
 # run the simulator interactive
 m.Simulator.run()

@@ -2926,3 +2926,7 @@ MxPotential *potential_create_glj(double e, double m, double n, double k,
     /* return it */
     return p;
 }
+
+int MxPotential_Check(PyObject *obj) {
+    return PyObject_IsInstance(obj, (PyObject*)&MxPotential_Type);
+}

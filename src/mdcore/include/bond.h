@@ -43,12 +43,14 @@ typedef enum MxBondFlags {
 
 
 /** The bond structure */
-typedef struct MxBond : PyObject {
+typedef struct MxBond {
 
     uint32_t flags;
 
 	/* ids of particles involved */
 	int32_t i, j;
+    
+    uint32_t id;
 
     uint64_t creation_time;
 
@@ -64,20 +66,35 @@ typedef struct MxBond : PyObject {
 
 } MxBond;
 
+struct MxBondHandle : PyObject {
+    int32_t id;
+};
+
+CAPI_FUNC(MxBondHandle*) MxBondHandle_FromId(int id);
+
 
 
 /**
  * The type of each individual bond.
+ * actually bond handle type.
  */
-CAPI_DATA(PyTypeObject) MxBond_Type;
+CAPI_DATA(PyTypeObject) MxBondHandle_Type;
 
 HRESULT _MxBond_init(PyObject *m);
 
-CAPI_FUNC(MxBond*) MxBond_New(uint32_t flags,
+CAPI_FUNC(MxBondHandle*) MxBondHandle_New(uint32_t flags,
         int32_t i, int32_t j,
         double half_life,
         double bond_energy,
         struct MxPotential* potential);
+
+CAPI_FUNC(PyObject*) MxBond_PairwiseNew(
+        struct MxPotential* potential,
+        struct MxParticleList *parts,
+        float cutoff,
+        PyObject *args,
+        PyObject *kwds
+    );
 
 /* associated functions */
 CAPI_FUNC(int) bond_eval ( struct MxBond *b , int N , struct engine *e , double *epot_out );

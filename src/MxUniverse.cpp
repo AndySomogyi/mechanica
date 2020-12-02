@@ -252,16 +252,26 @@ HRESULT _MxUniverse_init(PyObject* m)
         }
     );
 
-    u.def_static("bind", [](py::args args, py::kwargs kwargs) -> void {
+    u.def_static("bind", [](py::args args, py::kwargs kwargs) -> py::handle {
             UNIVERSE_CHECK();
-            PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr()));
-            return;
+            PyObject *result = NULL;
+            PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr(), &result));
+            if(!result) {
+                Py_RETURN_NONE;
+            }
+            return result;
         }
     );
 
     u.def_static("pressure", [](py::args args, py::kwargs kwargs) -> py::handle {
             UNIVERSE_CHECK();
             return universe_pressure(args.ptr(), kwargs.ptr());
+        }
+    );
+    
+    u.def_static("bind_pairwise", [](py::args args, py::kwargs kwargs) -> py::handle {
+        UNIVERSE_CHECK();
+        return MxPyUniverse_BindPairwise(args.ptr(), kwargs.ptr());
         }
     );
 
@@ -300,8 +310,10 @@ HRESULT _MxUniverse_init(PyObject* m)
 }
 
 
-CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
+HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
 {
+    *out = NULL;
+    
     if(kwargs && PyDict_Size(kwargs) > 0) {
         if((PyDict_Size(kwargs) > 1) ||
             PyUnicode_CompareWithASCIIString(PyList_GET_ITEM(PyDict_Keys(kwargs), 0), "bound") != 0) {
@@ -314,6 +326,23 @@ CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
                                      PyTuple_GetItem(args, 1),
                                      PyTuple_GetItem(args, 2),
                                      PyTuple_GetItem(args, 3));
+    }
+    
+    PyObject *cutoff = NULL;
+    MxParticleList *pl = NULL;
+    if(args && PyTuple_Size(args) == 3 &&
+       kwargs &&
+       (cutoff = PyDict_GetItemString(kwargs, "cutoff")) &&
+       (pl = MxParticleList_NewFromList(PyTuple_GetItem(args, 1)))) {
+        PyObject *pot = PyTuple_GetItem(args, 0);
+        if(MxPotential_Check(pot) && PyNumber_Check(cutoff)) {
+            PyObject *result = MxBond_PairwiseNew((MxPotential*)pot, pl,
+                PyFloat_AsDouble(cutoff), args, kwargs);
+            *out = result;
+            Py_DECREF(pl);
+            return S_OK;
+        }
+        Py_DecRef(pl);
     }
     
     PyObject *bound = NULL;
@@ -337,9 +366,7 @@ CAPI_FUNC(HRESULT) MxUniverse_Bind(PyObject *args, PyObject *kwargs)
     }
     
 
-    
-    
-    
+
     return mx_error(E_FAIL, "bind only implemented for 2 or 3 arguments: bind(thing, a, b)");
 }
 
@@ -408,7 +435,7 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b,
         //        double bond_energy,
         //        struct MxPotential* potential);
 
-        MxBond_New(0, a_part->id, b_part->id,
+        MxBondHandle_New(0, a_part->id, b_part->id,
                 std::numeric_limits<double>::max(),
                 std::numeric_limits<double>::max(),
                 p);
@@ -595,4 +622,78 @@ Magnum::Vector3 universe_center() {
     };
     center = center / 2;
     return center;
+}
+
+
+/**
+ * bind_pairwise(pot, parts, cutoff, *args, **kwargs)
+ */
+PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
+    static const char* names[] = {
+        "potential", "particles", "cutoff"
+    };
+    
+    try {
+        PyObject *ppot = mx::arg(names[0], 0, args, kwds);
+        PyObject *pparts = mx::arg(names[1], 1, args, kwds);
+        PyObject *pcutoff = mx::arg(names[2], 2, args, kwds);
+        
+        MxPotential *pot;
+        MxParticleList *parts;
+        float cutoff;
+        
+        if(MxPotential_Check(ppot)) {
+            pot = (MxPotential*)ppot;
+        }
+        else {
+            c_error(E_FAIL, "argument 0 is not a potential");
+            return NULL;
+        }
+        
+        if((parts = MxParticleList_NewFromList(pparts)) == NULL) {
+            c_error(E_FAIL, "argument 1 is not a particle list");
+            return NULL;
+        }
+        
+        if(PyNumber_Check(pcutoff))  {
+            cutoff = PyFloat_AsDouble(pcutoff);
+        }
+        else {
+            c_error(E_FAIL, "argument 2 is not a number");
+            return NULL;
+        }
+        
+        PyObject *bond_args = NULL;
+
+        // first 3 positional args, if given have to be pot, parts, and cutoff.
+        // if we have more than 3 position args, pass those as additional args to
+        // bonds ctor.
+        
+        if(PyTuple_Size(args) > 3) {
+            bond_args = PyTuple_GetSlice(args, 3, PyTuple_Size(args));
+        }
+        else {
+            bond_args = PyTuple_New(0);
+        }
+        
+        if(kwds) {
+            for(int i = 0; i < 3; ++i) {
+                PyObject *key = PyUnicode_FromString(names[i]);
+                if(PyDict_Contains(kwds, key)) {
+                    PyDict_DelItem(kwds, key);
+                }
+                Py_DECREF(key);
+            }
+        }
+        
+        PyObject *result = MxBond_PairwiseNew(pot, parts, cutoff, bond_args, kwds);
+        
+        Py_DECREF(bond_args);
+        
+        return result;
+    }
+    catch (const std::exception &e) {
+        c_exp(e, "error");
+        return NULL;
+    }
 }

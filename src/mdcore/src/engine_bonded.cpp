@@ -1313,7 +1313,7 @@ int engine_exclusion_add ( struct engine *e , int i , int j ) {
 /**
  * allocates a new bond, returns a pointer to it.
  */
-int engine_bond_alloc (struct engine *e , struct _typeobject *type, MxBond **result ) {
+int engine_bond_alloc (struct engine *e , MxBond **out ) {
 
     struct MxBond *dummy;
 
@@ -1334,27 +1334,15 @@ int engine_bond_alloc (struct engine *e , struct _typeobject *type, MxBond **res
     }
 
     ::memset(&e->bonds[e->nr_bonds], 0, sizeof(MxBond));
-
-
-    if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
-        Py_INCREF(type);
-
-    PyObject_INIT(&e->bonds[e->nr_bonds], type);
-
-    if (PyType_IS_GC(type)) {
-        assert(0 && "should not get here");
-        //  _PyObject_GC_TRACK(obj);
-    }
-
-    *result = &e->bonds[e->nr_bonds];
     
-    // increase the ref count, as the engine owns it.
-    Py_INCREF(&e->bonds[e->nr_bonds]);
+    int result = e->bonds[e->nr_bonds].id = e->nr_bonds;
+
+    *out = &e->bonds[e->nr_bonds];
     
     e->nr_bonds += 1;
 
     /* It's the end of the world as we know it. */
-    return engine_err_ok;
+    return result;
 }
 
 

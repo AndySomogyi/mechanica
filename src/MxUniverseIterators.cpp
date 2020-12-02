@@ -57,7 +57,7 @@ struct PyBondsIterator {
         if (index == _Engine.nr_bonds)
             throw py::stop_iteration();
 
-        PyObject *bond = &_Engine.bonds[index++];
+        PyObject *bond = MxBondHandle_FromId(index++);
 
         return bond;
     }

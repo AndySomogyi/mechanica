@@ -44,7 +44,7 @@ yolk = Yolk(position=center, velocity=[0., 0., 0.])
 
 import sphericalplot as sp
 
-for p in m.random_point(m.SolidSphere, count) * \
+for p in m.random_points(m.SolidSphere, count) * \
     0.5 * Yolk.radius + center + [0, 0, 1.3 * Yolk.radius]:
     Cell(p)
 

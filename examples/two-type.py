@@ -35,7 +35,7 @@ m.Universe.bind(pot_ss, Small, Small)
 
 Big(position=center, velocity=[0., 0., 0.])
 
-for p in m.random_point(m.Disk, count) * \
+for p in m.random_points(m.Disk, count) * \
     2.5 * Big.radius + center + [0, 0, Big.radius + 1]:
     Small(p)
 

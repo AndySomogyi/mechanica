@@ -110,11 +110,16 @@ static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
 }
 
 static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
-    HRESULT result = MxUniverse_Bind(args, kwargs);
+    PyObject *out = NULL;
+    HRESULT result = MxUniverse_Bind(args, kwargs, &out);
 
     if(SUCCEEDED(result)) {
-        Py_RETURN_NONE;
-
+        if(out) {
+            return out;
+        }
+        else {
+            Py_RETURN_NONE;
+        }
     }
     else {
         return NULL;
@@ -143,10 +148,12 @@ static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
  * top level pressure tensor method
  */
 static PyObject* pressure(PyObject *m, PyObject *args, PyObject *kwargs) {
-    
+    return NULL;
 }
 
-
+static PyObject *bind_pairwise(PyObject *mod, PyObject *a, PyObject *k) {
+    return MxPyUniverse_BindPairwise(a, k);
+}
 
 static PyMethodDef methods[] = {
         { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
@@ -158,9 +165,10 @@ static PyMethodDef methods[] = {
         { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
         { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "random_point", (PyCFunction)MxRandomPoints, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "random_points", (PyCFunction)MxRandomPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "points", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "bind_pairwise", (PyCFunction)bind_pairwise, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
         { "pressure", (PyCFunction)pressure, METH_VARARGS | METH_KEYWORDS, NULL },

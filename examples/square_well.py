@@ -24,7 +24,7 @@ class Receptor(m.Particle):
     #dynamics = m.Overdamped
 
 # locations of initial receptor positions
-receptor_pts = m.random_point(m.SolidSphere, receptor_count) * 5  + center
+receptor_pts = m.random_points(m.SolidSphere, receptor_count) * 5  + center
 
 pot_nr = m.Potential.well(k=15, n=3, r0=7)
 pot_rr = m.Potential.soft_sphere(kappa=15, epsilon=0, r0=0.3, eta=2, tol=0.05, min=0.01, max=1)

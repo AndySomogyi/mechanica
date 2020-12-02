@@ -253,3 +253,33 @@ MxParticleList* MxParticleList_NewFromData(uint16_t nr_parts, int32_t *parts) {
     list->nr_parts = nr_parts;
     return list;
 }
+
+int MxParticleList_Check(const PyObject *obj) {
+    return PyObject_IsInstance(const_cast<PyObject*>(obj), (PyObject*)&MxParticleList_Type);
+}
+
+MxParticleList* MxParticleList_NewFromList(PyObject *list) {
+    if(PyList_Check(list) <= 0) {
+        return NULL;
+    }
+    
+    int nr_parts = PyList_Size(list);
+    
+    MxParticleList* pl = (MxParticleList*)PyType_GenericNew(&MxParticleList_Type, NULL, NULL);
+    pl->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    pl->size_parts = nr_parts;
+    pl->parts = (int32_t*)malloc(nr_parts * sizeof(int32_t));;
+    pl->nr_parts = nr_parts;
+    
+    for(int i = 0; i < nr_parts; ++i) {
+        PyObject *obj = PyList_GET_ITEM(list, i);
+        MxParticle *p = MxParticle_Get(obj);
+        if(!p) {
+            Py_DECREF(pl);
+            return NULL;
+        }
+        pl->parts[i] = p->id;
+    }
+    
+    return pl;
+}
