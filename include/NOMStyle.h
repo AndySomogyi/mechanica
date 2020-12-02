@@ -12,7 +12,13 @@
 
 CAPI_STRUCT(NOMStyle);
 
+enum StyleFlags {
+    STYLE_VISIBLE = 1
+};
+
 CAPI_FUNC(HRESULT) NOMStyle_SetColor(NOMStyle *s, PyObject *o);
+
+CAPI_FUNC(HRESULT) NOMStyle_SetFlag(NOMStyle *s, StyleFlags flag, bool value);
 
 CAPI_FUNC(NOMStyle*) NOMStyle_New(PyObject *args, PyObject *kwargs);
 

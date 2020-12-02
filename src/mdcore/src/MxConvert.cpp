@@ -210,10 +210,33 @@ Magnum::Vector3i cast(PyObject *obj) {
     
 template<>
 float cast(PyObject *obj) {
-    if(PyNumber_Check(obj)) {
-        return PyFloat_AsDouble(obj);
+if(PyNumber_Check(obj)) {
+    return PyFloat_AsDouble(obj);
+}
+throw std::domain_error("can not convert to number");
+}
+
+template<>
+PyObject* cast(const float &f) {
+    return PyFloat_FromDouble(f);
+}
+
+template<>
+bool cast(PyObject *obj) {
+    if(PyBool_Check(obj)) {
+        return obj == Py_True ? true : false;
     }
-    throw std::domain_error("can not convert to number");
+    throw std::domain_error("can not convert to boolean");
+}
+
+template<>
+PyObject* cast(const bool &b) {
+    if(b) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
 }
     
 //template PyObject* cast<PyObject*, const Magnum::Vector3&>(const Magnum::Vector3&);
@@ -224,10 +247,7 @@ bool check<bool>(PyObject *o) {
     return PyBool_Check(o);
 }
     
-template<>
-PyObject* cast(const float &f) {
-    return PyFloat_FromDouble(f);
-}
+
     
 PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
     PyObject *kwobj = _kwargs ?  PyDict_GetItemString(_kwargs, name) : NULL;

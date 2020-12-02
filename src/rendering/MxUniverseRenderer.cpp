@@ -178,22 +178,29 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
     largeSphereMesh.setInstanceCount(0);
 }
 
-static inline void render_particle(SphereInstanceData* pData, int i, MxParticle *p, space_cell *c) {
+static inline int render_particle(SphereInstanceData* pData, int i, MxParticle *p, space_cell *c) {
 
     MxParticleType *type = &_Engine.types[p->typeId];
-    Magnum::Vector3 position = {
-        (float)(c->origin[0] + p->x[0]),
-        (float)(c->origin[1] + p->x[1]),
-        (float)(c->origin[2] + p->x[2])
-    };
-    float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
-    pData[i].transformationMatrix =
-    Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
-    pData[i].normalMatrix =
-    pData[i].transformationMatrix.normalMatrix();
-    
     NOMStyle *style = p->style ? p->style : type->style;
-    pData[i].color = Magnum::Color4{style->color, 1};
+    
+    if(style->flags & STYLE_VISIBLE) {
+    
+        Magnum::Vector3 position = {
+            (float)(c->origin[0] + p->x[0]),
+            (float)(c->origin[1] + p->x[1]),
+            (float)(c->origin[2] + p->x[2])
+        };
+        float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
+        pData[i].transformationMatrix =
+        Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
+        pData[i].normalMatrix =
+        pData[i].transformationMatrix.normalMatrix();
+        
+        pData[i].color = Magnum::Color4{style->color, 1};
+        return 1;
+    }
+    
+    return 0;
 }
 
 template<typename T>
@@ -206,31 +213,32 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
 
     _dirty = false;
 
-    sphereMesh.setInstanceCount(_Engine.s.nr_parts - _Engine.s.largeparts.count);
-    largeSphereMesh.setInstanceCount(_Engine.s.largeparts.count);
+    sphereMesh.setInstanceCount(_Engine.s.nr_visable_parts);
+    largeSphereMesh.setInstanceCount(_Engine.s.nr_visable_large_parts);
 
     // invalidate / resize the buffer
     sphereInstanceBuffer.setData({NULL,
-        (_Engine.s.nr_parts - _Engine.s.largeparts.count) * sizeof(SphereInstanceData)},
+        _Engine.s.nr_visable_parts * sizeof(SphereInstanceData)},
             GL::BufferUsage::DynamicDraw);
 
     largeSphereInstanceBuffer.setData({NULL,
-        _Engine.s.largeparts.count * sizeof(SphereInstanceData)},
+        _Engine.s.nr_visable_large_parts * sizeof(SphereInstanceData)},
             GL::BufferUsage::DynamicDraw);
     
 
     // get pointer to data, give me the damned bytes
     SphereInstanceData* pData = (SphereInstanceData*)(void*)sphereInstanceBuffer.map(0,
-            (_Engine.s.nr_parts - _Engine.s.largeparts.count) * sizeof(SphereInstanceData),
+            _Engine.s.nr_visable_parts * sizeof(SphereInstanceData),
             GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
     int i = 0;
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         for (int pid = 0 ; pid < _Engine.s.cells[cid].count ; pid++ ) {
             MxParticle *p  = &_Engine.s.cells[cid].parts[pid];
-            render_particle(pData, i++, p, &_Engine.s.cells[cid]);
+            i += render_particle(pData, i, p, &_Engine.s.cells[cid]);
         }
     }
+    assert(i == _Engine.s.nr_visable_parts);
     sphereInstanceBuffer.unmap();
 
     // get pointer to data, give me the damned bytes
@@ -238,10 +246,12 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             _Engine.s.largeparts.count * sizeof(SphereInstanceData),
             GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
+    i = 0;
     for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
         MxParticle *p  = &_Engine.s.largeparts.parts[pid];
-        render_particle(pLargeData, pid, p, &_Engine.s.largeparts);
+        i += render_particle(pLargeData, i, p, &_Engine.s.largeparts);
     }
+    assert(i == _Engine.s.nr_visable_large_parts);
 
     largeSphereInstanceBuffer.unmap();
     

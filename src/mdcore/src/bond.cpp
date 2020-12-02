@@ -152,7 +152,7 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
             else if ( shift[k] < -1 )
                 shift[k] = 1;
             pix[k] = pi->x[k] + h[k]*shift[k];
-            }
+        }
         r2 = fptype_r2( pix , pj->x , dx );
         
         if ( r2 < pot->a*pot->a || r2 > pot->b*pot->b ) {
@@ -196,13 +196,13 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
                         w = eff[l] * dxq[l*3+k];
                         effi[l][k] -= w;
                         effj[l][k] += w;
-                        }
                     }
+                }
 
                 /* re-set the counter. */
                 icount = 0;
 
-                }
+            }
         #else
             /* evaluate the bond */
             #ifdef EXPLICIT_POTENTIALS
@@ -216,7 +216,7 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
                 w = eff * dx[k];
                 pi->f[k] -= w;
                 pj->f[k] += w;
-                }
+            }
 
             /* tabulate the energy */
             epot += ee;
@@ -269,7 +269,7 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
     /* We're done here. */
     return bond_err_ok;
     
-    }
+}
 
 
 

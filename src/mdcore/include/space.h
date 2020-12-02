@@ -189,6 +189,16 @@ typedef struct space {
 
     /** Number of parts in this space and size of the buffers partlist and celllist. */
     int nr_parts, size_parts;
+    
+    /**
+     * number of visiable particles and large particles.
+     * Yes... mixing rendering and simulation, but put it here
+     * so we only have to go through the list once to get this count.
+     *
+     * updated by engine_advance
+     */
+    int nr_visable_parts;
+    int nr_visable_large_parts;
 
     /** Trigger re-building the cells/sorts. */
     int verlet_rebuild;
@@ -291,6 +301,13 @@ CAPI_FUNC(int) space_get_cellids_for_pos (struct space *s , FPTYPE *x, int *cell
  * particle.
  */
 CAPI_FUNC(HRESULT) space_del_particle ( struct space *s ,  int pid);
+
+
+/**
+ * A style was changed, so need to update any counts the
+ * space object has.
+ */
+CAPI_FUNC(HRESULT) space_update_style( struct space *s );
 
 CAPI_FUNC(int) space_prepare ( struct space *s );
 CAPI_FUNC(int) space_getpos ( struct space *s , int id , FPTYPE *x );

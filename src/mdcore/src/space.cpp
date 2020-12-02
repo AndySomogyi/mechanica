@@ -43,6 +43,7 @@
 #include "task.h"
 #include "space.h"
 #include "engine.h"
+#include "../../rendering/NOMStyle.hpp"
 #include <iostream>
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
@@ -440,7 +441,18 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     if(result) {
         *result = s->partlist[p->id];
     }
-
+    
+    MxParticleType *type = &_Engine.types[p->typeId];
+    NOMStyle *style = p->style ? p->style : type->style;
+    
+    if(style->flags & STYLE_VISIBLE) {
+        if(p->flags & PARTICLE_LARGE) {
+            s->nr_visable_large_parts++;
+        }
+        else {
+            s->nr_visable_parts++;
+        }
+    }
 
     /* end well */
     return space_err_ok;
@@ -1382,6 +1394,18 @@ CAPI_FUNC(HRESULT) space_del_particle(struct space *s, int pid)
     }
 
     s->nr_parts -= 1;
+    
+    MxParticleType *type = &_Engine.types[p->typeId];
+    NOMStyle *style = p->style ? p->style : type->style;
+    
+    if(style->flags & STYLE_VISIBLE) {
+        if(p->flags & PARTICLE_LARGE) {
+            s->nr_visable_large_parts -= 1;
+        }
+        else {
+            s->nr_visable_parts -= 1;
+        }
+    }
 
     return S_OK;
 }
@@ -1408,4 +1432,26 @@ int space_get_cellids_for_pos (struct space *s , FPTYPE *x, int *cellids) {
             return error(space_err_range);
     
     return space_cellid(s,ind[0],ind[1],ind[2]);
+}
+
+
+HRESULT space_update_style( struct space *s ) {
+    s->nr_visable_parts = 0;
+    s->nr_visable_large_parts = 0;
+    
+    for(int i = 0; i < s->nr_parts; ++i) {
+        MxParticle *p = s->partlist[i];
+        MxParticleType *type = &_Engine.types[p->typeId];
+        NOMStyle *style = p->style ? p->style : type->style;
+        
+        if(style->flags & STYLE_VISIBLE) {
+            if(p->flags & PARTICLE_LARGE) {
+                s->nr_visable_large_parts +=1;
+            }
+            else {
+                s->nr_visable_parts += 1;
+            }
+        }
+    }
+    return S_OK;
 }

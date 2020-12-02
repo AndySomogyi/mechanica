@@ -6,8 +6,11 @@
  */
 
 #include <rendering/NOMStyle.hpp>
+#include <engine.h>
+#include <space.h>
 #include <pybind11/pybind11.h>
 #include <MxUtil.h>
+#include <MxConvert.hpp>
 
 static int style_init(PyObject *, PyObject *, PyObject *);
 
@@ -21,6 +24,19 @@ HRESULT NOMStyle_SetColor(NOMStyle *s, PyObject *o) {
     return S_OK;
 }
 
+HRESULT NOMStyle_SetFlag(NOMStyle *s, StyleFlags flag, bool value) {
+    if(flag == STYLE_VISIBLE) {
+        if(value) {
+            s->flags |= STYLE_VISIBLE;
+        }
+        else {
+            s->flags &= ~STYLE_VISIBLE;
+        }
+        return space_update_style(&_Engine.s);
+    }
+    return c_error(E_FAIL, "invalid flag id");
+}
+
 NOMStyle* NOMStyle_New(PyObject *args, PyObject *kwargs) {
     NOMStyle *style = (NOMStyle*)PyType_GenericNew(&NOMStyle_Type, NULL, NULL);
     if(style_init(style, args, kwargs) != 0) {
@@ -30,9 +46,17 @@ NOMStyle* NOMStyle_New(PyObject *args, PyObject *kwargs) {
     return style;
 }
 
+NOMStyle* NOMStyle_NewEx(const Magnum::Color3& color, uint32_t flags) {
+    NOMStyle *style = (NOMStyle*)PyType_GenericNew(&NOMStyle_Type, NULL, NULL);
+    style->color = color;
+    style->flags = flags;
+    return style;
+}
+
 CAPI_FUNC(NOMStyle*) NOMStyle_Clone(NOMStyle* s) {
     NOMStyle *style = (NOMStyle*)PyType_GenericNew(&NOMStyle_Type, NULL, NULL);
     style->color = s->color;
+    style->flags = s->flags;
     return style;
 }
 
@@ -45,6 +69,26 @@ static PyGetSetDef getset[] = {
         },
         .set = [](PyObject *self, PyObject *val, void *p) -> int {
             return NOMStyle_SetColor((NOMStyle*)self, val);
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "visible",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            NOMStyle *self = (NOMStyle*)_obj;
+            bool visible = self->flags & STYLE_VISIBLE;
+            return mx::cast(visible);
+        },
+        .set = [](PyObject *self, PyObject *val, void *p) -> int {
+            try {
+                bool visible = mx::cast<bool>(val);
+                return NOMStyle_SetFlag((NOMStyle*)self, STYLE_VISIBLE, visible);
+            }
+            catch(const std::exception &e) {
+                c_exp(e, "");
+                return -1;
+            }
         },
         .doc = "test doc",
         .closure = NULL
@@ -112,6 +156,8 @@ PyTypeObject NOMStyle_Type = {
 static int style_init(PyObject *_s, PyObject *args, PyObject *kwargs) {
     NOMStyle *self = (NOMStyle*)_s;
     
+    
+    
     if(kwargs) {
         PyObject *color = PyDict_GetItemString(kwargs, "color");
         if(color) {
@@ -123,10 +169,19 @@ static int style_init(PyObject *_s, PyObject *args, PyObject *kwargs) {
             // TODO default color
             self->color = Color3_Parse("steelblue");
         }
+        
+        PyObject *visible = PyDict_GetItemString(kwargs, "visible");
+        if(visible == Py_False) {
+            self->flags &= ~STYLE_VISIBLE;
+        }
+        else {
+            self->flags |= STYLE_VISIBLE;
+        }
     }
     else {
         // TODO default color
         self->color = Color3_Parse("steelblue");
+        self->flags = STYLE_VISIBLE;
     }
     
     return 0;

@@ -1482,8 +1482,7 @@ HRESULT engine_particle_base_init(PyObject *m)
     pt->dynamics = PARTICLE_NEWTONIAN;
     
     // TODO: default particle style...
-    pt->style = NOMStyle_New(NULL, NULL);
-    pt->style->color = Magnum::Color3::fromSrgb(colors[0]);
+    pt->style = NOMStyle_NewEx(Magnum::Color3::fromSrgb(colors[0]));
 
     ::strncpy(pt->name, "Particle", MxParticleType::MAX_NAME);
     ::strncpy(pt->name2, "Particle", MxParticleType::MAX_NAME);
