@@ -7,7 +7,7 @@ center = dim / 2
 
 m.Simulator(example="",
             dim=dim,
-            cutoff=12,
+            cutoff=3,
             integrator=m.FORWARD_EULER,
             dt=0.001)
 

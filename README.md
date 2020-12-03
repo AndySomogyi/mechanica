@@ -18,6 +18,49 @@ course).
 
 History
 =======
+
+Version Alpha 0.0.10-dev1
+-------------------------
+* bug fixes in bond pairwise search
+* improved particle `__repr__`, `__str__`
+* new `style` visible attribute to style to toggle visibility on any 
+  rendered object
+* make show() work in command line mode
+* internal changes for more consistent use of handles vs direct pointers
+* `bind_pairwise` to search a particle list for pairs, and bind them with a
+  bond.
+* new `points` and `random_points` to generate position distributions
+* spherical plot updates
+* new `distance` method on particles
+* implmement `become`  -- now allow dynamic type change
+* big fixes in simulation start right away instead of wait for event
+* basic bond rendering (still lines, will upgrade to cylinders in future
+* render large particles with higher resolution
+* new particle list composite structure, all particles returned
+  to python in this new list type. fast low overhead list.
+* major performance improvment, large object cutoff optimization
+* numpy array conversion bug fix
+* neighbor list for particles in range
+* enumerate all particles of type with 'items()'
+* new c++ <-> python type conversions, getting rid of pybind.
+* better error handling, check space cells are compatible with periodic boundary
+  conditions.
+* add `start`, `stop`, `show`, etc. methods to top-level as convenience.
+* fix ipython interaction with `show`, default is universe not running when showing
+* enable single stepping and visualization with ipython
+* enable start and stop with keyboard space bar. 
+* pressure tensor calculations, add to different objects.
+* new `Universe.center` property
+* better error handling in `Universe.bind`
+* clean up of importing numpy
+* expose periodic boundary conditions to python.
+* periodic on individual axis.
+* new metrics calculations, including center of mass, radius of gyration,
+  centroid, moment of inertia
+* new spherical coords method
+* frozen particles
+* add harmonic term to generalized Lennard-Jones 'glj' potential
+
 Version Alpha 0.0.9-dev4
 ------------------------
 * tweaks in example models
@@ -42,8 +85,6 @@ Version Alpha 0.0.9
 * updated potential plotting
 * more examples
 * fixed major integrator bug
-
-
 
 Version Alpha 0.0.8
 -------------------
