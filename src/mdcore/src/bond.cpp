@@ -702,7 +702,7 @@ static void make_pairlist(const MxParticleList *parts, float cutoff, PairList& p
             r2 = fptype_r2(pix.data(), pjx.data() , dx.data());
             
             if(r2 <= c2) {
-                pairs.push_back(Pair{i,j});
+                pairs.push_back(Pair{part_i->id,part_j->id});
             }
         } /* loop over all other particles */
     } /* loop over all particles */

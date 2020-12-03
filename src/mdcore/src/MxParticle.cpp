@@ -43,6 +43,7 @@
 #include "metrics.h"
 #include "MxConvert.hpp"
 #include "MxParticleList.hpp"
+#include <sstream>
 
 struct Foo {
     int x; int y; int z;
@@ -138,6 +139,8 @@ static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyOb
 static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particletype_items(MxParticleType *self);
+
+static PyObject *particle_repr(MxParticleHandle *obj);
 
 static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
     
@@ -1464,7 +1467,8 @@ HRESULT engine_particle_base_init(PyObject *m)
     ob->tp_finalize =      [] (PyObject *p) -> void {
         // std::cout << "tp_finalize MxPyParticle" << std::endl;
     };
-    
+    ob->tp_str =           (reprfunc)particle_repr;
+    ob->tp_repr =          (reprfunc)particle_repr;
     
 
     if(PyType_Ready(ob) < 0) {
@@ -1569,6 +1573,33 @@ PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *k
         return NULL;
     }
 }
+
+// reprfunc PyTypeObject.tp_repr
+// An optional pointer to a function that implements the built-in function repr().
+//
+// The signature is the same as for PyObject_Repr():
+//
+// PyObject *tp_repr(PyObject *self);
+// The function must return a string or a Unicode object. Ideally, this function should
+// return a string that, when passed to eval(), given a suitable environment, returns an
+// object with the same value. If this is not feasible, it should return a string starting
+// with '<' and ending with '>' from which both the type and the value of the object
+// can be deduced.
+PyObject *particle_repr(MxParticleHandle *obj) {
+    MxParticle *p = obj->part();
+    MxParticleType *type = &_Engine.types[p->typeId];
+    std::stringstream  ss;
+    
+    Magnum::Vector3 pos = p->global_position();
+    
+    ss << type->name << "(";
+    ss << "id=" << p->id << ", ";
+    ss << "position=[" << pos[0] << "," << pos[1] << "," << pos[2] << "]";
+    ss << ")";
+    
+    return PyUnicode_FromString(ss.str().c_str());
+}
+
 
 PyObject *MxParticle_BasicFission(MxParticle *part) {
     Py_RETURN_NONE;

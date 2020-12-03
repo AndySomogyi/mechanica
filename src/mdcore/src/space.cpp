@@ -827,7 +827,9 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     s->verlet_rebuild = 1;
     s->maxdx = 0.0;
     
-    /* init the large particles cell */
+    // init the large particles cell
+    // the large particle cell is at the global origin,
+    // so has zero offset for loc.
     l[0] = l[1] = l[1] = 0;
     
     if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
