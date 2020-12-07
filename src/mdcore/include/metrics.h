@@ -74,6 +74,7 @@ PyObject* MPyCartesianToSpherical(const Magnum::Vector3& postion,
 /**
  * converts cartesian to spherical, writes spherical
  * coords in to result array.
+ * return Magnum::Vector3{radius, theta, phi};
  */
 Magnum::Vector3 MxCartesianToSpherical(const Magnum::Vector3& postion,
                                           const Magnum::Vector3& origin);

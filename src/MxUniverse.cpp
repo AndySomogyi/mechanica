@@ -729,8 +729,8 @@ static int insert_bond(PyListObject *bonds, int nbonds, int a, int b,
 
 
 PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
+    static const float Pi = M_PI;
 
-    
     try {
         //potential
         //*     number of subdivisions
@@ -741,10 +741,13 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         PyObject *pn = mx::arg("n", 1, args, kwds);
         PyObject *pcenter = mx::arg("center", 2, args, kwds);
         PyObject *pradius = mx::arg("radius", 3, args, kwds);
-        PyObject *type = mx::arg("type", 4, args, kwds);
+        PyObject *pphi = mx::arg("phi", 4, args, kwds);
+        PyObject *type = mx::arg("type", 5, args, kwds);
         
         MxPotential *pot;
         int n;
+        float phi0 = 0;
+        float phi1 = Pi;
         
         if(ppot == NULL || !MxPotential_Check(ppot)) {
             throw std::logic_error("no potential given");
@@ -752,6 +755,18 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         
         if(pn == NULL || !PyNumber_Check(pn)) {
             throw std::logic_error("no n number of subdivisions, or n not a number");
+        }
+        
+        if(pphi) {
+            if(!PyTuple_Check(pphi) || PyTuple_Size(pphi) != 2) {
+                throw std::logic_error("phi must be a tuple (phi_0, phi_1)");
+            }
+            phi0 = mx::cast<float>(PyTuple_GetItem(pphi, 0));
+            phi1 = mx::cast<float>(PyTuple_GetItem(pphi, 1));
+            
+            if(phi0 < 0 || phi0 > Pi) throw std::logic_error("phi_0 must be between 0 and pi");
+            if(phi1 < 0 || phi1 > Pi) throw std::logic_error("phi_1 must be between 0 and pi");
+            if(phi1 < phi0) throw std::logic_error("phi_1 must be greater than phi_0");
         }
         
         Magnum::Vector3 center =  pcenter ? mx::cast<Magnum::Vector3>(pcenter) : universe_center();
@@ -768,15 +783,31 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         Magnum::Matrix4 t = Magnum::Matrix4::translation(center);
         Magnum::Matrix4 m = t * s;
         
-        Mx_Icosphere(n, vertices, indices);
+        Mx_Icosphere(n, phi0, phi1, vertices, indices);
         
         Magnum::Vector3 velocity;
         
         MxParticleList *parts = MxParticleList_New(vertices.size());
         parts->nr_parts = vertices.size();
         
-        // Euler formula for graphs: v + f - 2
-        int edges = vertices.size() + (indices.size() / 3) - 2;
+        // Euler formula for graphs:
+        // For a closed polygon -- non-manifold mesh: T−E+V=1 -> E = T + V - 1
+        // for a sphere: T−E+V=2. -> E = T + V - 2
+        
+        int edges;
+        if(phi0 <= 0 && phi1 >= Pi) {
+            edges = vertices.size() + (indices.size() / 3) - 2;
+        }
+        else if(mx::almost_equal(phi0, 0.0f) || mx::almost_equal(phi1, Pi)) {
+            edges = vertices.size() + (indices.size() / 3) - 1;
+        }
+        else {
+            edges = vertices.size() + (indices.size() / 3);
+        }
+        
+        if(edges <= 0) {
+            return PyTuple_Pack(2, Py_None, Py_None);
+        }
         
         PyListObject *bonds = (PyListObject*)PyList_New(edges);
         
@@ -785,6 +816,14 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
             MxParticleHandle *p = MxParticle_NewEx(type, pos, velocity, NULL);
             parts->parts[i] = p->id;
             Py_DecRef(p);
+        }
+        
+        if(vertices.size() > 0 && indices.size() == 0) {
+            PyObject *result = PyTuple_New(2);
+            PyTuple_SET_ITEM(result, 0, (PyObject*)parts);
+            Py_INCREF(Py_None);
+            PyTuple_SET_ITEM(result, 1, (PyObject*)Py_None);
+            return result;
         }
         
         int nbonds = 0;
@@ -798,7 +837,15 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
             nbonds += insert_bond(bonds, nbonds, c, a, pot, parts);
         }
         
-        assert(nbonds == PyList_GET_SIZE(bonds));
+        // TODO: probably excessive error message...
+        if(nbonds != PyList_GET_SIZE(bonds)) {
+            std::string msg = "unknown error in finding edges for sphere mesh, \n";
+            msg += "vertices: " + std::to_string(vertices.size()) + "\n";
+            msg += "indices: " + std::to_string(indices.size()) + "\n";
+            msg += "expected edges: " + std::to_string(edges) + "\n";
+            msg += "found edges: " + std::to_string(nbonds);
+            throw std::overflow_error(msg);
+        }
         
         PyObject *result = PyTuple_New(2);
         PyTuple_SET_ITEM(result, 0, (PyObject*)parts);
@@ -806,7 +853,6 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         
         // at this point, each returned object has a ref count of 1,
         // they're all either lists, or handles to stuff.
-        //return result;
         return (PyObject*)result;
     }
     catch (const std::exception &e) {

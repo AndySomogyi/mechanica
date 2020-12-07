@@ -21,10 +21,13 @@
 #include "Magnum/Trade/ArrayAllocator.h"
 #include "Magnum/Trade/MeshData.h"
 
+#include "metrics.h"
+
 #include  <vector>
 #include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <set>
 
 const char* MxColor3Names[] = {
     "AliceBlue",
@@ -425,7 +428,7 @@ static PyObject* points_sphere(int n) {
     
     std::vector<Magnum::Vector3> vertices;
     std::vector<int32_t> indices;
-    Mx_Icosphere(n, vertices, indices);
+    Mx_Icosphere(n, 0, M_PI, vertices, indices);
     
     
     try {
@@ -763,9 +766,12 @@ constexpr struct VertexSolidStrip {
     {{0.0f, 0.525731f, 0.850651f}}
 };
 
-HRESULT Mx_Icosphere(const int subdivisions,
+HRESULT Mx_Icosphere(const int subdivisions, float phi0, float phi1,
                     std::vector<Magnum::Vector3> &verts,
                     std::vector<int32_t> &inds) {
+    
+    // TODO: sloppy ass code, needs clean up...
+    // total waste computing a whole sphere and throwign large parts away.
     
     const std::size_t indexCount =
         Magnum::Containers::arraySize(Indices) * (1 << subdivisions * 2);
@@ -830,8 +836,8 @@ HRESULT Mx_Icosphere(const int subdivisions,
     Magnum::Containers::StridedArrayView1D<Magnum::Vector3>
         positions{vertices, &vertices[0].position, vertices.size(), sizeof(Vertex)};
     
-    
-    
+    /*
+     * original code
     verts.resize(positions.size());
     inds.resize(indices.size());
     
@@ -842,6 +848,50 @@ HRESULT Mx_Icosphere(const int subdivisions,
     for(int i = 0; i < indices.size(); ++i) {
         inds[i] = indices[i];
     }
+     */
+    
+    // prune the top and bottom vertices 
+    verts.reserve(positions.size());
+    inds.reserve(indices.size());
+    
+    std::vector<int32_t> index_map;
+    index_map.resize(positions.size());
+    
+    std::set<int32_t> discarded_verts;
+    
+    Magnum::Vector3 origin = {0.0, 0.0, 0.0};
+    for(int i = 0; i < positions.size(); ++i) {
+        Magnum::Vector3 position = positions[i];
+        Magnum::Vector3 spherical = MxCartesianToSpherical(position, origin);
+        if(spherical[2] < phi0 || spherical[2] > phi1) {
+            discarded_verts.emplace(i);
+            index_map[i] = -1;
+        }
+        else {
+            index_map[i] = verts.size();
+            verts.push_back(position);
+        }
+    }
+    
+    for(int i = 0; i < indices.size(); i += 3) {
+        int a = indices[i];
+        int b = indices[i+1];
+        int c = indices[i+2];
+        
+        if(discarded_verts.find(a) == discarded_verts.end() &&
+           discarded_verts.find(b) == discarded_verts.end() &&
+           discarded_verts.find(c) == discarded_verts.end()) {
+            a = index_map[a];
+            b = index_map[b];
+            c = index_map[c];
+            assert(a >= 0 && b >= 0 && c >= 0);
+            inds.push_back(a);
+            inds.push_back(b);
+            inds.push_back(c);
+        }
+    }
+
+    return S_OK;
 }
 
 
