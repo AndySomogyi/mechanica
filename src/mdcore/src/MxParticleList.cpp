@@ -8,7 +8,22 @@
 
 #include <MxParticleList.hpp>
 #include "MxParticle.h"
+#include <Magnum/Math/Distance.h>
+#include <Magnum/Math/Matrix3.h>
+#include <MxConvert.hpp>
+#include <metrics.h>
+#include <cstdarg>
 #include <iostream>
+
+static PyObject* list_pressure(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_radius_of_gyration(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_center_of_mass(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_center_of_geometry(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 
 
@@ -77,12 +92,9 @@ uint16_t MxParticleList::remove(int32_t id)
  * type’s tp_free function.
  */
 void particlelist_dealloc(MxParticleList *p) {
-    std::cout << MX_FUNCTION << std::endl;
     if(p->flags & PARTICLELIST_OWNDATA) {
         ::free(p->parts);
     }
-    
-    std::cout << "tp_free: " << MxParticleList_Type.tp_free << std::endl;
     
     if(p->flags * PARTICLELIST_OWNSELF) {
         MxParticleList_Type.tp_free(p);
@@ -162,6 +174,17 @@ static PySequenceMethods sequence_methods =  {
     plist_inplace_repeat  // ssizeargfunc sq_inplace_repeat;
 };
 
+static PyMethodDef list_methods[] = {
+    { "pressure", (PyCFunction)list_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "radius_of_gyration", (PyCFunction)list_radius_of_gyration, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "center_of_mass", (PyCFunction)list_center_of_mass, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "center_of_geometry", (PyCFunction)list_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "centroid", (PyCFunction)list_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "moment_of_inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
+    { NULL, NULL, 0, NULL }
+};
+
 PyTypeObject MxParticleList_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ParticleList",
@@ -190,7 +213,7 @@ PyTypeObject MxParticleList_Type = {
     .tp_weaklistoffset = 0,
     .tp_iter =           0,
     .tp_iternext =       0,
-    .tp_methods =        0,
+    .tp_methods =        list_methods,
     .tp_members =        0,
     .tp_getset =         0,
     .tp_base =           0,
@@ -258,7 +281,13 @@ int MxParticleList_Check(const PyObject *obj) {
     return PyObject_IsInstance(const_cast<PyObject*>(obj), (PyObject*)&MxParticleList_Type);
 }
 
-MxParticleList* MxParticleList_NewFromList(PyObject *list) {
+MxParticleList* MxParticleList_FromList(PyObject *list) {
+    
+    if(MxParticleList_Check(list)) {
+        Py_INCREF(list);
+        return (MxParticleList*)list;
+    }
+    
     if(PyList_Check(list) <= 0) {
         return NULL;
     }
@@ -283,3 +312,110 @@ MxParticleList* MxParticleList_NewFromList(PyObject *list) {
     
     return pl;
 }
+
+
+// TODO: in universe.bind, check keywords are correct, and no extra keyworkds
+// TODO: simulator init, turn off periodoc if only single cell.
+PyObject* list_pressure(MxParticleList *self, PyObject *args, PyObject *kwargs)
+{
+    try {
+        
+        Magnum::Matrix3 mat;
+        
+        HRESULT result = MxParticles_Pressure(self->parts,
+                                              self->nr_parts, 0, mat.data());
+        
+        if(SUCCEEDED(result)) {
+            return mx::cast(mat);
+        }
+        else {
+            // result if failed should set py error.
+            return NULL;
+        }
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* list_radius_of_gyration(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+    try {
+        float result;
+        if(SUCCEEDED(MxParticles_RadiusOfGyration(self->parts, self->nr_parts, &result))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* list_center_of_mass(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+    try {
+        Magnum::Vector3 result;
+        if(SUCCEEDED(MxParticles_CenterOfMass(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* list_center_of_geometry(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+    try {
+        Magnum::Vector3 result;
+        if(SUCCEEDED(MxParticles_CenterOfGeometry(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+    try {
+        Magnum::Matrix3 result;
+        if(SUCCEEDED(MxParticles_MomentOfInertia(self->parts, self->nr_parts, result.data()))) {
+            return mx::cast(result);
+        }
+        return NULL;
+    }
+    catch(const std::exception &e) {
+        c_exp(e, "invalid args");
+        return NULL;
+    }
+}
+
+
+PyObject *MxParticleList_Pack(Py_ssize_t n, ...)
+{
+    Py_ssize_t i;
+    MxParticleList *result;
+    va_list vargs;
+    
+    va_start(vargs, n);
+    result = MxParticleList_New(n);
+    result->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    result->nr_parts = n;
+    if (result == NULL) {
+        va_end(vargs);
+        return NULL;
+    }
+
+    for (i = 0; i < n; i++) {
+        int o = va_arg(vargs, int);
+        result->parts[i] = o;
+    }
+    va_end(vargs);
+    return result;
+}
+

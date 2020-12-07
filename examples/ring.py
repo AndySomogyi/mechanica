@@ -25,4 +25,4 @@ beads = [Bead(p) for p in pts]
 m.bind_pairwise(pot, beads, 1)
 
 # run the model
-m.run()
+m.show()

@@ -155,6 +155,12 @@ static PyObject *bind_pairwise(PyObject *mod, PyObject *a, PyObject *k) {
     return MxPyUniverse_BindPairwise(a, k);
 }
 
+
+static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
+    return MxUniverse_BindSphere(a, k);
+}
+
+
 static PyMethodDef methods[] = {
         { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
         { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_VARARGS, NULL },
@@ -169,6 +175,7 @@ static PyMethodDef methods[] = {
         { "points", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bind_pairwise", (PyCFunction)bind_pairwise, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "bind_sphere", (PyCFunction)bind_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
         { "pressure", (PyCFunction)pressure, METH_VARARGS | METH_KEYWORDS, NULL },

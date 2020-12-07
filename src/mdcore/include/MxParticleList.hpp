@@ -50,16 +50,22 @@ struct MxParticleList : PyObject {
  * if the python list is a list of MxPyParticle, creates a new particle
  * list from them.
  *
+ * If the list is already a MxParticleList, increments it and returns
+ * it.
+ *
+ * The caller is owns a new reference to the list, and is responsible for
+ * freeing it. 
+ *
  * Returns NULL if list is not a list or doesnt contain particles. 
  */
-CAPI_FUNC(MxParticleList*) MxParticleList_NewFromList(PyObject *list);
+CAPI_FUNC(MxParticleList*) MxParticleList_FromList(PyObject *list);
 
 
 /**
  * new list with initial capacity but no items.
  */
 CAPI_FUNC(MxParticleList*) MxParticleList_New(uint16_t init_size,
-                                              uint16_t flags);
+                                              uint16_t flags = PARTICLELIST_OWNDATA |PARTICLELIST_MUTABLE | PARTICLELIST_OWNSELF);
 
 /**
  * 
@@ -70,6 +76,13 @@ CAPI_FUNC(int) MxParticleList_Check(const PyObject *obj);
  * New list, steals the data.
  */
 CAPI_FUNC(MxParticleList*) MxParticleList_NewFromData(uint16_t nr_parts, int32_t *parts);
+
+
+/**
+ * creates a new, packed particle list.
+ * initial flags are PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF
+ */
+CAPI_FUNC(PyObject*) MxParticleList_Pack(Py_ssize_t n, ...);
 
 
 /**

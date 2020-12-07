@@ -2119,6 +2119,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     if ( ( e->bonds = (struct MxBond *)malloc( sizeof( struct MxBond ) * e->bonds_size ) ) == NULL )
         return error(engine_err_malloc);
     e->nr_bonds = 0;
+    e->nr_active_bonds = 0;
 
     /* Init the exclusions array. */
     e->exclusions_size = 100;
@@ -2339,6 +2340,12 @@ CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
     HRESULT hr = type->del_part(pid);
     if(!SUCCEEDED(hr)) {
         return hr;
+    }
+    
+    std::vector<int32_t> bonds = MxBond_IdsForParticle(pid);
+    
+    for(int i = 0; i < bonds.size(); ++i) {
+        MxBond_Destroy(&_Engine.bonds[bonds[i]]);
     }
     
     return space_del_particle(&e->s, pid);

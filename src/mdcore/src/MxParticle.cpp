@@ -93,8 +93,11 @@ unsigned int *MxParticle_Colors = colors;
 //template <typename C, typename D, typename... Extra>
 //class_ &def_readwrite(const char *name, D C::*pm, const Extra&... extra) {
 
+static int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds);
 
-    
+static int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
+                            const Magnum::Vector3 &velocity,
+                            struct MxParticle *cluster);
     
 template<typename C, typename T>
 void f(T C::*pm)
@@ -784,92 +787,7 @@ static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwar
     return PyType_GenericNew(type, args, kwargs);
 }
 
-static int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
-    // std::cout << MX_FUNCTION << std::endl;
-    
-    MxParticleType *type = (MxParticleType*)self->ob_type;
-    
-    MxParticle part = {};
-    part.position = {};
-    part.velocity = {};
-    part.force = {};
-    part.persistent_force = {};
-    part.q = 0;
-    part.radius = type->radius;
-    part.mass = type->mass;
-    part.imass = type->imass;
-    part.id = engine_next_partid(&_Engine);
-    part.vid = 0;
-    part.typeId = type->id;
-    part.flags = type->particle_flags;
-    part._pyparticle = NULL;
-    part.parts = NULL;
-    part.nr_parts = 0;
-    part.size_parts = 0;
-    part.creation_time = _Engine.time;
-    part.style = NULL;
-    part.clusterId = -1;
-    
-    if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
-        std::cout << "making cluster" << std::endl;
-        part.flags |= PARTICLE_CLUSTER;
-    }
 
-
-    try {
-        pybind11::detail::loader_life_support ls{};
-        pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
-        pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
-        
-        // make a random initial position
-        std::uniform_real_distribution<float> x(_Engine.s.origin[0], _Engine.s.dim[0]);
-        std::uniform_real_distribution<float> y(_Engine.s.origin[1], _Engine.s.dim[1]);
-        std::uniform_real_distribution<float> z(_Engine.s.origin[2], _Engine.s.dim[2]);
-        Magnum::Vector3 iniPos = {x(CRandom), y(CRandom), z(CRandom)};
-        
-        // initial velocity, chosen to fit target temperature
-        std::uniform_real_distribution<float> v(-1.0, 1.0);
-        Magnum::Vector3 vel = {v(CRandom), v(CRandom), v(CRandom)};
-        float v2 = Magnum::Math::dot(vel, vel);
-        float x2 = (type->target_energy * 2. / (type->mass * v2));
-        vel *= std::sqrt(x2);
-        
-        part.position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), iniPos);
-        part.velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), vel);
-        
-        if(part.radius > _Engine.s.cutoff) {
-            part.flags |= PARTICLE_LARGE;
-        }
-        
-        MxParticle *p = NULL;
-        double pos[] = {part.position[0], part.position[1], part.position[2]};
-        int result = engine_addpart (&_Engine, &part, pos, &p);
-        
-        if(result < 0) {
-            PyErr_SetString(PyExc_Exception, engine_err_msg[-engine_err]);
-            return result;
-        }
-        
-        self->id = p->id;
-        
-        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
-        if(cluster) {
-            p->flags |= PARTICLE_BOUND;
-            cluster->addpart(p->id);
-        } else {
-            p->clusterId = -1;
-        }
-        
-        Py_INCREF(self);
-        p->_pyparticle = self;
-        
-        return 0;
-    }
-    catch (const pybind11::builtin_exception &e) {
-        e.set_error();
-        return -1;
-    }
-}
 
 
 /**
@@ -1462,10 +1380,10 @@ HRESULT engine_particle_base_init(PyObject *m)
     ob->tp_new =           particle_new;
     ob->tp_as_sequence =   &MxCluster_Sequence;
     ob->tp_del =           [] (PyObject *p) -> void {
-        std::cout << "tp_del MxPyParticle" << std::endl;
+        std::cout << "tp_del MxParticleHandle" << std::endl;
     };
     ob->tp_finalize =      [] (PyObject *p) -> void {
-        // std::cout << "tp_finalize MxPyParticle" << std::endl;
+        std::cout << "tp_finalize MxParticleHandle" << std::endl;
     };
     ob->tp_str =           (reprfunc)particle_repr;
     ob->tp_repr =          (reprfunc)particle_repr;
@@ -1969,6 +1887,131 @@ static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyOb
     Magnum::Vector3 opos = other->global_position();
     float d = (opos - pos).length();
     return PyFloat_FromDouble(d);
+}
+
+
+int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
+    
+    try {
+        MxParticleType *type = (MxParticleType*)self->ob_type;
+        
+        pybind11::detail::loader_life_support ls{};
+        pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
+        pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
+        
+        // make a random initial position
+        std::uniform_real_distribution<float> x(_Engine.s.origin[0], _Engine.s.dim[0]);
+        std::uniform_real_distribution<float> y(_Engine.s.origin[1], _Engine.s.dim[1]);
+        std::uniform_real_distribution<float> z(_Engine.s.origin[2], _Engine.s.dim[2]);
+        Magnum::Vector3 iniPos = {x(CRandom), y(CRandom), z(CRandom)};
+        
+        // initial velocity, chosen to fit target temperature
+        std::uniform_real_distribution<float> v(-1.0, 1.0);
+        Magnum::Vector3 vel = {v(CRandom), v(CRandom), v(CRandom)};
+        float v2 = Magnum::Math::dot(vel, vel);
+        float x2 = (type->target_energy * 2. / (type->mass * v2));
+        vel *= std::sqrt(x2);
+        
+        Magnum::Vector3 position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), iniPos);
+        Magnum::Vector3 velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), vel);
+        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
+        
+        return particle_init_ex(self, position, velocity, cluster);
+        
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return -1;
+    }
+}
+
+int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
+                     const Magnum::Vector3 &velocity,
+                     struct MxParticle *cluster) {
+    
+    MxParticleType *type = (MxParticleType*)self->ob_type;
+    
+    MxParticle part = {};
+    part.position = {};
+    part.velocity = {};
+    part.force = {};
+    part.persistent_force = {};
+    part.q = 0;
+    part.radius = type->radius;
+    part.mass = type->mass;
+    part.imass = type->imass;
+    part.id = engine_next_partid(&_Engine);
+    part.vid = 0;
+    part.typeId = type->id;
+    part.flags = type->particle_flags;
+    part._pyparticle = NULL;
+    part.parts = NULL;
+    part.nr_parts = 0;
+    part.size_parts = 0;
+    part.creation_time = _Engine.time;
+    part.style = NULL;
+    part.clusterId = -1;
+    
+    if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
+        std::cout << "making cluster" << std::endl;
+        part.flags |= PARTICLE_CLUSTER;
+    }
+    
+    part.position = position;
+    part.velocity = velocity;
+    
+    if(part.radius > _Engine.s.cutoff) {
+        part.flags |= PARTICLE_LARGE;
+    }
+    
+    MxParticle *p = NULL;
+    double pos[] = {part.position[0], part.position[1], part.position[2]};
+    int result = engine_addpart (&_Engine, &part, pos, &p);
+    
+    if(result < 0) {
+        PyErr_SetString(PyExc_Exception, engine_err_msg[-engine_err]);
+        return result;
+    }
+    
+    self->id = p->id;
+    
+    
+    if(cluster) {
+        p->flags |= PARTICLE_BOUND;
+        cluster->addpart(p->id);
+    } else {
+        p->clusterId = -1;
+    }
+    
+    Py_INCREF(self);
+    p->_pyparticle = self;
+    
+    return 0;
+}
+
+
+MxParticleHandle* MxParticle_NewEx(PyObject *type,
+                           const Magnum::Vector3 &pos, const Magnum::Vector3 &velocity,
+                           struct MxParticle *cluster) {
+    
+    if(!PyType_Check(type)) {
+        return NULL;
+    }
+    
+    if(!PyObject_IsSubclass(type, (PyObject*)MxParticle_GetType())) {
+        return NULL;
+    }
+    
+    // make a new pyparticle
+    MxParticleHandle *pyPart = (MxParticleHandle*)PyType_GenericNew((PyTypeObject*)type, NULL, NULL);
+    
+
+    if(particle_init_ex((MxParticleHandle*)pyPart, pos, velocity, cluster) < 0) {
+        std::cout << "bad stuff" << std::endl;
+        return NULL;
+    }
+
+    return pyPart;
 }
 
 

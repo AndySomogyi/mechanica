@@ -12,6 +12,7 @@
 #include <MxPy.h>
 #include <MxSimulator.h>
 #include <MxConvert.hpp>
+#include <MxUtil.h>
 #include <metrics.h>
 #include <limits>
 
@@ -333,7 +334,7 @@ HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
     if(args && PyTuple_Size(args) == 3 &&
        kwargs &&
        (cutoff = PyDict_GetItemString(kwargs, "cutoff")) &&
-       (pl = MxParticleList_NewFromList(PyTuple_GetItem(args, 1)))) {
+       (pl = MxParticleList_FromList(PyTuple_GetItem(args, 1)))) {
         PyObject *pot = PyTuple_GetItem(args, 0);
         if(MxPotential_Check(pot) && PyNumber_Check(cutoff)) {
             PyObject *result = MxBond_PairwiseNew((MxPotential*)pot, pl,
@@ -650,7 +651,7 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
             return NULL;
         }
         
-        if((parts = MxParticleList_NewFromList(pparts)) == NULL) {
+        if((parts = MxParticleList_FromList(pparts)) == NULL) {
             c_error(E_FAIL, "argument 1 is not a particle list");
             return NULL;
         }
@@ -691,6 +692,122 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
         Py_DECREF(bond_args);
         
         return result;
+    }
+    catch (const std::exception &e) {
+        c_exp(e, "error");
+        return NULL;
+    }
+}
+
+static bool contains_bond(PyListObject *bonds, int nbonds, int a, int b) {
+    for(int i = 0; i < nbonds; ++i) {
+        assert(i < PyList_GET_SIZE(bonds));
+        MxBondHandle *h = (MxBondHandle*)PyList_GET_ITEM(bonds, i);
+        MxBond *bond = &_Engine.bonds[h->id];
+        if((bond->i == a && bond->j == b) || (bond->i == b && bond->j == a)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static int insert_bond(PyListObject *bonds, int nbonds, int a, int b,
+                       MxPotential *pot, MxParticleList *parts) {
+    int p1 = parts->parts[a];
+    int p2 = parts->parts[b];
+    if(!contains_bond(bonds, nbonds, p1, p2)) {
+        MxBondHandle *bond = MxBondHandle_New(0, p1, p2,
+                                              std::numeric_limits<double>::max(),
+                                              std::numeric_limits<double>::max(),
+                                              pot);
+        assert(nbonds < PyList_GET_SIZE(bonds));
+        PyList_SET_ITEM(bonds, nbonds, bond);
+        return 1;
+    }
+    return 0;
+}
+
+
+PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
+
+    
+    try {
+        //potential
+        //*     number of subdivisions
+        //*     tuple of starting / stopping theta (polar angle)
+        //*     center of sphere
+        //*     radius of sphere
+        PyObject *ppot = mx::arg("potential", 0, args, kwds);
+        PyObject *pn = mx::arg("n", 1, args, kwds);
+        PyObject *pcenter = mx::arg("center", 2, args, kwds);
+        PyObject *pradius = mx::arg("radius", 3, args, kwds);
+        PyObject *type = mx::arg("type", 4, args, kwds);
+        
+        MxPotential *pot;
+        int n;
+        
+        if(ppot == NULL || !MxPotential_Check(ppot)) {
+            throw std::logic_error("no potential given");
+        }
+        
+        if(pn == NULL || !PyNumber_Check(pn)) {
+            throw std::logic_error("no n number of subdivisions, or n not a number");
+        }
+        
+        Magnum::Vector3 center =  pcenter ? mx::cast<Magnum::Vector3>(pcenter) : universe_center();
+        
+        float radius = pradius ? mx::cast<float>(pradius) : 1;
+        
+        pot = (MxPotential*)ppot;
+        n = PyLong_AsLong(pn);
+        
+        std::vector<Magnum::Vector3> vertices;
+        std::vector<int32_t> indices;
+        
+        Magnum::Matrix4 s = Magnum::Matrix4::scaling(Magnum::Vector3{radius, radius, radius});
+        Magnum::Matrix4 t = Magnum::Matrix4::translation(center);
+        Magnum::Matrix4 m = t * s;
+        
+        Mx_Icosphere(n, vertices, indices);
+        
+        Magnum::Vector3 velocity;
+        
+        MxParticleList *parts = MxParticleList_New(vertices.size());
+        parts->nr_parts = vertices.size();
+        
+        // Euler formula for graphs: v + f - 2
+        int edges = vertices.size() + (indices.size() / 3) - 2;
+        
+        PyListObject *bonds = (PyListObject*)PyList_New(edges);
+        
+        for(int i = 0; i < vertices.size(); ++i) {
+            Magnum::Vector3 pos = m.transformPoint(vertices[i]);
+            MxParticleHandle *p = MxParticle_NewEx(type, pos, velocity, NULL);
+            parts->parts[i] = p->id;
+            Py_DecRef(p);
+        }
+        
+        int nbonds = 0;
+        for(int i = 0; i < indices.size(); i += 3) {
+            int a = indices[i];
+            int b = indices[i+1];
+            int c = indices[i+2];
+            
+            nbonds += insert_bond(bonds, nbonds, a, b, pot, parts);
+            nbonds += insert_bond(bonds, nbonds, b, c, pot, parts);
+            nbonds += insert_bond(bonds, nbonds, c, a, pot, parts);
+        }
+        
+        assert(nbonds == PyList_GET_SIZE(bonds));
+        
+        PyObject *result = PyTuple_New(2);
+        PyTuple_SET_ITEM(result, 0, (PyObject*)parts);
+        PyTuple_SET_ITEM(result, 1, (PyObject*)bonds);
+        
+        // at this point, each returned object has a ref count of 1,
+        // they're all either lists, or handles to stuff.
+        //return result;
+        return (PyObject*)result;
     }
     catch (const std::exception &e) {
         c_exp(e, "error");

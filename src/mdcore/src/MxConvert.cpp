@@ -260,8 +260,35 @@ PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
     
     return aobj ? aobj : kwobj;
 }
-
     
+    
+template<>
+PyObject* cast(const double &f){
+    return PyFloat_FromDouble(f);
+}
+
+template<>
+double cast(PyObject *obj) {
+if(PyNumber_Check(obj)) {
+    return PyFloat_AsDouble(obj);
+}
+    throw std::domain_error("can not convert to number");
+}
+
+template<>
+PyObject* cast(const int &i) {
+    return PyLong_FromLong(i);
+}
+
+template<>
+int cast(PyObject *obj){
+    if(PyNumber_Check(obj)) {
+        return PyLong_AsLong(obj);
+    }
+    throw std::domain_error("can not convert to number");
+}
+    
+
 }
 
 

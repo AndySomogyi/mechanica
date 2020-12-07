@@ -12,6 +12,7 @@
 
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Color.h>
+#include <Magnum/Math/Vector3.h>
 
 enum MxPointsType {
     Sphere,
@@ -32,6 +33,10 @@ PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs);
 PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs);
 
 extern const char* MxColor3Names[];
+
+HRESULT Mx_Icosphere(const int subdivisions,
+                     std::vector<Magnum::Vector3> &verts,
+                     std::vector<int32_t> &inds);
 
 
 HRESULT _MxUtil_init(PyObject *m);

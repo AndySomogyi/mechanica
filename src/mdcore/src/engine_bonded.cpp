@@ -1316,30 +1316,41 @@ int engine_exclusion_add ( struct engine *e , int i , int j ) {
 int engine_bond_alloc (struct engine *e , MxBond **out ) {
 
     struct MxBond *dummy;
-
+    int bond_id = -1;
+    
     /* Check inputs. */
     if ( e == NULL )
         return error(engine_err_null);
-    /* if ( i > e->s.nr_parts || j > e->s.nr_parts )
-        return error(engine_err_range); */
-
-    /* Do we need to grow the bonds array? */
-    if ( e->nr_bonds == e->bonds_size ) {
-        e->bonds_size  *= 1.414;
-        if ( ( dummy = (struct MxBond *)malloc( sizeof(struct MxBond) * e->bonds_size ) ) == NULL )
-            return error(engine_err_malloc);
-        memcpy( dummy , e->bonds , sizeof(struct MxBond) * e->nr_bonds );
-        free( e->bonds );
-        e->bonds = dummy;
+    
+    // first check if we have any deleted bonds we can re-use
+    if(e->nr_active_bonds < e->nr_bonds) {
+        for(int i = 0; i < e->nr_bonds; ++i) {
+            if(!(e->bonds[i].flags & BOND_ACTIVE)) {
+                bond_id = i;
+                break;
+            }
+        }
+        assert(bond_id > 0 && bond_id < e->bonds_size);
+    }
+    else {
+        /* Do we need to grow the bonds array? */
+        if ( e->nr_bonds == e->bonds_size ) {
+            e->bonds_size  *= 1.414;
+            if ( ( dummy = (struct MxBond *)malloc( sizeof(struct MxBond) * e->bonds_size ) ) == NULL )
+                return error(engine_err_malloc);
+            memcpy( dummy , e->bonds , sizeof(struct MxBond) * e->nr_bonds );
+            free( e->bonds );
+            e->bonds = dummy;
+        }
+        bond_id = e->nr_bonds;
+        e->nr_bonds += 1;
     }
 
-    ::memset(&e->bonds[e->nr_bonds], 0, sizeof(MxBond));
+    bzero(&e->bonds[bond_id], sizeof(MxBond));
     
-    int result = e->bonds[e->nr_bonds].id = e->nr_bonds;
+    int result = e->bonds[bond_id].id = bond_id;
 
-    *out = &e->bonds[e->nr_bonds];
-    
-    e->nr_bonds += 1;
+    *out = &e->bonds[bond_id];
 
     /* It's the end of the world as we know it. */
     return result;

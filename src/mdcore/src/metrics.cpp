@@ -583,7 +583,7 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
         return E_FAIL;
     }
     
-    std::cout << "origin cell: " << cid << "(" << ijk[0] << "," << ijk[1] << "," << ijk[2] << ")" << std::endl;
+    // std::cout << "origin cell: " << cid << "(" << ijk[0] << "," << ijk[1] << "," << ijk[2] << ")" << std::endl;
     
     // the current cell
     space_cell *c = &s->cells[cid];
@@ -661,8 +661,8 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
                     shift = shift * -1;
                 }
                 
-                std::cout << id2 << ":(" << ii << "," << jj << "," << kk << "), ("
-                 << shift[0] << ", " << shift[1] << ", " << shift[2] << ")" << std::endl;
+                //std::cout << id2 << ":(" << ii << "," << jj << "," << kk << "), ("
+                // << shift[0] << ", " << shift[1] << ", " << shift[2] << ")" << std::endl;
                 
                 HRESULT result = enum_particles (local_origin, radius, cj, typeIds, shift, ids);
             } /* for every neighbouring cell in the z-axis... */

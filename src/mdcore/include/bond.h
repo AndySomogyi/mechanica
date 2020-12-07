@@ -37,8 +37,9 @@ typedef enum MxBondFlags {
     // none type bonds are initial state, and can be
     // re-assigned if ref count is 1 (only owned by engine).
     BOND_NONE                   = 0,
+    // a non-active and will be over-written in the
+    // next bond_alloc call.
     BOND_ACTIVE                 = 1 << 0,
-    BOND_FOO   = 1 << 1,
 } MxBondFlags;
 
 
@@ -68,11 +69,12 @@ typedef struct MxBond {
 
 struct MxBondHandle : PyObject {
     int32_t id;
+    inline MxBond *get() {
+        return &_Engine.bonds[this->id];
+    };
 };
 
 CAPI_FUNC(MxBondHandle*) MxBondHandle_FromId(int id);
-
-
 
 /**
  * The type of each individual bond.
@@ -96,9 +98,24 @@ CAPI_FUNC(PyObject*) MxBond_PairwiseNew(
         PyObject *kwds
     );
 
+/**
+ * deletes, marks a bond ready for deleteion, removes the potential,
+ * other vars, clears the bond, and makes is ready to be
+ * over-written.
+ */
+CAPI_FUNC(HRESULT) MxBond_Destroy(struct MxBond *b);
+
+HRESULT MxBond_Energy (MxBond *b, double *epot_out);
+
 /* associated functions */
 CAPI_FUNC(int) bond_eval ( struct MxBond *b , int N , struct engine *e , double *epot_out );
 CAPI_FUNC(int) bond_evalf ( struct MxBond *b , int N , struct engine *e , FPTYPE *f , double *epot_out );
+
+
+/**
+ * find all the bonds that interact with the given particle id
+ */
+std::vector<int32_t> MxBond_IdsForParticle(int32_t pid);
 
 
 #endif // INCLUDE_BOND_H_

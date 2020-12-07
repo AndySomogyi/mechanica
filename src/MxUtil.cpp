@@ -14,6 +14,14 @@
 #include <MxPy.h>
 #include <MxNumpy.h>
 
+#include "Magnum/Mesh.h"
+#include "Magnum/Math/Vector3.h"
+#include "Magnum/MeshTools/RemoveDuplicates.h"
+#include "Magnum/MeshTools/Subdivide.h"
+#include "Magnum/Trade/ArrayAllocator.h"
+#include "Magnum/Trade/MeshData.h"
+
+#include  <vector>
 #include <algorithm>
 #include <string>
 #include <unordered_map>
@@ -161,6 +169,7 @@ const char* MxColor3Names[] = {
     "YellowGreen",
     NULL
 };
+
 
 
 
@@ -412,6 +421,44 @@ static PyObject* points_ring(int n) {
     }
 }
 
+static PyObject* points_sphere(int n) {
+    
+    std::vector<Magnum::Vector3> vertices;
+    std::vector<int32_t> indices;
+    Mx_Icosphere(n, vertices, indices);
+    
+    
+    try {
+        int nd = 2;
+        npy_intp dims[] = {vertices.size(),3};
+        int typenum = NPY_DOUBLE;
+        
+        PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+        
+        double *data = (double*)PyArray_DATA(array);
+        
+        for(int i = 0; i < vertices.size(); ++i) {
+            Magnum::Vector3 vec = vertices[i];
+            
+            
+            data[i * 3 + 0] = vec.x();
+            data[i * 3 + 1] = vec.y();
+            data[i * 3 + 2] = vec.z();
+        }
+        
+        return (PyObject*)array;
+        
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(pybind11::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 
 
 
@@ -455,6 +502,8 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
         switch(kind) {
             case MxPointsType::Ring:
                 return points_ring(n);
+            case MxPointsType::Sphere:
+                return points_sphere(n);
             default:
                 PyErr_SetString(PyExc_ValueError, "invalid kind");
                 return NULL;
@@ -667,6 +716,132 @@ Magnum::Color3 Color3_Parse(const std::string &s)
     PyErr_WarnEx(PyExc_Warning, warning.c_str(), 0);
 
     return Magnum::Color3{};
+}
+
+constexpr uint32_t Indices[]{
+    1, 2, 6,
+    1, 7, 2,
+    3, 4, 5,
+    4, 3, 8,
+    6, 5, 11,
+    
+    5, 6, 10,
+    9, 10, 2,
+    10, 9, 3,
+    7, 8, 9,
+    8, 7, 0,
+    
+    11, 0, 1,
+    0, 11, 4,
+    6, 2, 10,
+    1, 6, 11,
+    3, 5, 10,
+    
+    5, 4, 11,
+    2, 7, 9,
+    7, 1, 0,
+    3, 9, 8,
+    4, 8, 0
+};
+
+/* Can't be just an array of Vector3 because MSVC 2015 is special. See
+ Crosshair.cpp for details. */
+constexpr struct VertexSolidStrip {
+    Magnum::Vector3 position;
+} Vertices[] {
+    {{0.0f, -0.525731f, 0.850651f}},
+    {{0.850651f, 0.0f, 0.525731f}},
+    {{0.850651f, 0.0f, -0.525731f}},
+    {{-0.850651f, 0.0f, -0.525731f}},
+    {{-0.850651f, 0.0f, 0.525731f}},
+    {{-0.525731f, 0.850651f, 0.0f}},
+    {{0.525731f, 0.850651f, 0.0f}},
+    {{0.525731f, -0.850651f, 0.0f}},
+    {{-0.525731f, -0.850651f, 0.0f}},
+    {{0.0f, -0.525731f, -0.850651f}},
+    {{0.0f, 0.525731f, -0.850651f}},
+    {{0.0f, 0.525731f, 0.850651f}}
+};
+
+HRESULT Mx_Icosphere(const int subdivisions,
+                    std::vector<Magnum::Vector3> &verts,
+                    std::vector<int32_t> &inds) {
+    
+    const std::size_t indexCount =
+        Magnum::Containers::arraySize(Indices) * (1 << subdivisions * 2);
+    
+    const std::size_t vertexCount =
+        Magnum::Containers::arraySize(Vertices) +
+        ((indexCount - Magnum::Containers::arraySize(Indices))/3);
+    
+    Magnum::Containers::Array<char> indexData{indexCount*sizeof(uint32_t)};
+    
+    auto indices = Magnum::Containers::arrayCast<uint32_t>(indexData);
+    
+    std::memcpy(indices.begin(), Indices, sizeof(Indices));
+    
+    struct Vertex {
+        Magnum::Vector3 position;
+        Magnum::Vector3 normal;
+    };
+    
+    Magnum::Containers::Array<char> vertexData;
+    Magnum::Containers::arrayResize<Magnum::Trade::ArrayAllocator>(
+        vertexData, Magnum::Containers::NoInit, sizeof(Vertex)*vertexCount);
+    
+    /* Build up the subdivided positions */
+    {
+        auto vertices = Magnum::Containers::arrayCast<Vertex>(vertexData);
+        Magnum::Containers::StridedArrayView1D<Magnum::Vector3>
+            positions{vertices, &vertices[0].position, vertices.size(), sizeof(Vertex)};
+        
+        for(std::size_t i = 0; i != Magnum::Containers::arraySize(Vertices); ++i)
+            positions[i] = Vertices[i].position;
+        
+        for(std::size_t i = 0; i != subdivisions; ++i) {
+            const std::size_t iterationIndexCount =
+                Magnum::Containers::arraySize(Indices)*(1 << (i + 1)*2);
+            
+            const std::size_t iterationVertexCount =
+                Magnum::Containers::arraySize(Vertices) +
+                ((iterationIndexCount - Magnum::Containers::arraySize(Indices))/3);
+            
+            Magnum::MeshTools::subdivideInPlace(
+                indices.prefix(iterationIndexCount),
+                positions.prefix(iterationVertexCount),
+                [](const Magnum::Vector3& a, const Magnum::Vector3& b) {
+                    return (a+b).normalized();
+                }
+            );
+        }
+        
+        /** @todo i need arrayShrinkAndGiveUpMemoryIfItDoesntCauseRealloc() */
+        Magnum::Containers::arrayResize<Magnum::Trade::ArrayAllocator>(
+            vertexData,
+            Magnum::MeshTools::removeDuplicatesIndexedInPlace(
+                Magnum::Containers::stridedArrayView(indices),
+                Magnum::Containers::arrayCast<2, char>(positions))*sizeof(Vertex)
+        );
+    }
+    
+    /* Build up the views again with correct size, fill the normals */
+    auto vertices = Magnum::Containers::arrayCast<Vertex>(vertexData);
+    
+    Magnum::Containers::StridedArrayView1D<Magnum::Vector3>
+        positions{vertices, &vertices[0].position, vertices.size(), sizeof(Vertex)};
+    
+    
+    
+    verts.resize(positions.size());
+    inds.resize(indices.size());
+    
+    for(int i = 0; i < positions.size(); ++i) {
+        verts[i] = positions[i];
+    }
+    
+    for(int i = 0; i < indices.size(); ++i) {
+        inds[i] = indices[i];
+    }
 }
 
 

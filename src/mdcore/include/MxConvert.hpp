@@ -40,8 +40,6 @@ PyObject* cast(const Magnum::Vector3 &v);
 template<>
 PyObject* cast(const Magnum::Matrix3 &m);
     
-
-    
 template<>
 Magnum::Vector3 cast(PyObject *obj);
     
@@ -56,9 +54,21 @@ float cast(PyObject *obj);
     
 template<>
 PyObject* cast(const bool &f);
-
+    
 template<>
 bool cast(PyObject *obj);
+    
+template<>
+PyObject* cast(const double &f);
+    
+template<>
+double cast(PyObject *obj);
+
+template<>
+PyObject* cast(const int &i);
+    
+template<>
+int cast(PyObject *obj);
     
     
 /**

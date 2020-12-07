@@ -255,8 +255,8 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
 
     largeSphereInstanceBuffer.unmap();
     
-    if(_Engine.nr_bonds > 0) {
-        int vertexCount = _Engine.nr_bonds * 2;
+    if(_Engine.nr_active_bonds > 0) {
+        int vertexCount = _Engine.nr_active_bonds * 2;
         bondsMesh.setCount(vertexCount);
         
         bondsVertexBuffer.setData(
@@ -274,17 +274,18 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         int i = 0;
         for(int j = 0; j < _Engine.nr_bonds; ++j) {
             MxBond *bond = &_Engine.bonds[j];
-            MxParticle *pi = _Engine.s.partlist[bond->i];
-            MxParticle *pj = _Engine.s.partlist[bond->j];
-            bondData[i].position = pi->global_position();
-            bondData[i++].color = Magnum::Color3::yellow();
-            bondData[i].position = pj->global_position();
-            bondData[i++].color = Magnum::Color3::yellow();
+            if(bond->flags & BOND_ACTIVE) {
+                MxParticle *pi = _Engine.s.partlist[bond->i];
+                MxParticle *pj = _Engine.s.partlist[bond->j];
+                bondData[i].position = pi->global_position();
+                bondData[i++].color = Magnum::Color3::yellow();
+                bondData[i].position = pj->global_position();
+                bondData[i++].color = Magnum::Color3::yellow();
+            }
         }
+        assert(i == 2 * _Engine.nr_active_bonds);
         bondsVertexBuffer.unmap();
         
-        
-
         flatShader
         .setTransformationProjectionMatrix(camera->projectionMatrix() * camera->cameraMatrix() * modelViewMat)
         .draw(bondsMesh);

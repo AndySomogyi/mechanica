@@ -243,8 +243,21 @@ typedef struct engine {
 	/** List of bonds. */
 	struct MxBond *bonds;
 
-	/** Nr. of bonds. */
-	int nr_bonds, bonds_size;
+	/**
+     * total number of bonds, active or not.
+     */
+    int nr_bonds;
+    
+    /**
+     * number of active bonds.
+     * note, active bonds are not necessarily in contigous order.
+     */
+    int nr_active_bonds;
+    
+    /**
+     * allocate size of bonds array
+     */
+    int bonds_size;
 
 	/** List of exclusions. */
 	struct exclusion *exclusions;

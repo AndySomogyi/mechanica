@@ -82,6 +82,19 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject 
 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a);
 
+
+/**
+ * generate a surface mesh and bind it with a potential.
+ *
+ * args:
+ *     potential
+ *     number of subdivisions
+ *     tuple of starting / stopping theta (polar angle)
+ *     center of sphere
+ *     radius of sphere
+ */
+CAPI_FUNC(PyObject*) MxUniverse_BindSphere(PyObject *thing, PyObject *a);
+
 PyObject *MxPyUniverse_BindPairwise(PyObject *_args, PyObject *_kwargs);
 
 /**

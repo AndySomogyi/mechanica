@@ -36,7 +36,7 @@ beads = [Green(p)  for p in pts]
 # list of particles. The bind_pairwise method
 # searches for all possible pairs within a cutoff
 # distance and connects them with a bond.
-m.bind_pairwise(pot, beads, 0.7)
+#m.bind_pairwise(pot, beads, 0.7)
 
 rforce = m.forces.random(0, 0.01, durration=0.1)
 
@@ -44,6 +44,8 @@ rforce = m.forces.random(0, 0.01, durration=0.1)
 #m.bind(rforce, Green)
 m.bind(pot_yc, Big, Green)
 m.bind(pot_cc, Green, Green)
+
+m.bind_pairwise(pot, [p for p in m.Universe.particles if p.position[1] < m.Universe.center[1]], 1)
 
 # run the model
 m.show()

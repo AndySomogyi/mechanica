@@ -449,6 +449,10 @@ CAPI_FUNC(PyObject*) MxParticle_FissionSimple(MxParticle *part,
 
 CAPI_FUNC(PyObject*) MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs);
 
+CAPI_FUNC(MxParticleHandle*) MxParticle_NewEx(PyObject *type,
+    const Magnum::Vector3 &pos, const Magnum::Vector3 &velocity,
+    struct MxParticle *cluster);
+
 /**
  * Change the type of one particle to another.
  *
