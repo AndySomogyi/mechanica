@@ -308,7 +308,6 @@ double potential_create_harmonic_dfdr ( double r ) {
 double potential_create_harmonic_d6fdr6 ( double r ) {
 	return 0;
 }
-
 /**
  * @brief Creates a harmonic bond #potential
  *
@@ -347,6 +346,62 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 	/* return it */
 			return p;
 
+}
+
+
+
+double potential_create_linear_k;
+
+/* the potential functions */
+double potential_create_linear_f ( double r ) {
+    return potential_create_linear_k * r;
+}
+
+double potential_create_linear_dfdr ( double r ) {
+    return potential_create_linear_k;
+}
+
+double potential_create_linear_d6fdr6 ( double r ) {
+    return 0;
+}
+/**
+ * @brief Creates a harmonic bond #potential
+ *
+ * @param a The smallest radius for which the potential will be constructed.
+ * @param b The largest radius for which the potential will be constructed.
+ * @param K The energy of the bond.
+ * @param r0 The minimum energy distance.
+ * @param tol The tolerance to which the interpolation should match the exact
+ *      potential.
+ *
+ * @return A newly-allocated #potential representing the potential
+ *      @f$ K(r-r_0)^2 @f$ in @f$[a,b]@f$
+ *      or @c NULL on error (see #potential_err).
+ */
+
+struct MxPotential *potential_create_linear (double a , double b ,
+                                             double k ,
+                                             double tol ) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  POTENTIAL_R2 ;
+    
+    /* fill this potential */
+    potential_create_linear_k = k;
+    if ( potential_init( p , &potential_create_linear_f , NULL , &potential_create_linear_d6fdr6 , a , b , tol ) < 0 ) {
+        CAligned_Free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
 }
 
 
@@ -2302,6 +2357,26 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
     }
 }
 
+static PyObject *_linear(PyObject *_self, PyObject *_args, PyObject *_kwargs){
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double k =     arg<double>("k", 0, _args, _kwargs);
+        double min =   arg<double>("min", 1, _args, _kwargs, std::numeric_limits<double>::epsilon());
+        double max =   arg<double>("max", 2, _args, _kwargs, 10);
+        double tol =   arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
+        return potential_checkerr(potential_create_linear(min, max, k, tol));
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
 
@@ -2465,6 +2540,12 @@ static PyMethodDef potential_methods[] = {
     {
         "harmonic",
         (PyCFunction)_harmonic,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        ""
+    },
+    {
+        "linear",
+        (PyCFunction)_linear,
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         ""
     },

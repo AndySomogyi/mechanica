@@ -176,6 +176,11 @@ CAPI_FUNC(struct MxPotential *) potential_create_Coulomb ( double a , double b ,
 CAPI_FUNC(struct MxPotential *) potential_create_harmonic ( double a , double b ,
 															double K , double r0 ,
 															double tol );
+
+CAPI_FUNC(struct MxPotential *) potential_create_linear ( double a , double b ,
+                                                           double k , double tol );
+
+
 CAPI_FUNC(struct MxPotential *) potential_create_harmonic_angle ( double a , double b ,
 																  double K , double theta0 ,
 																  double tol );
