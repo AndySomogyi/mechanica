@@ -12,13 +12,13 @@ start = Universe.start
 
 __version__ = _mechanica.__version__
 
-def _plot_potential(p, show=True, *args, **kwargs):
+def _plot_potential(p, show=True, ymin=None, ymax=None, *args, **kwargs):
     import matplotlib.pyplot as plt
     import numpy as n
 
     xx = None
 
-    min = kwargs["min"] if "min" in kwargs else p.min
+    min = kwargs["min"] if "min" in kwargs else 0
     max = kwargs["max"] if "max" in kwargs else p.max
     step = kwargs["step"] if "step" in kwargs else (max-min)/1000.
     range = kwargs["range"] if "range" in kwargs else (min, max, step)
@@ -35,8 +35,14 @@ def _plot_potential(p, show=True, *args, **kwargs):
         y = [p(x) for x in xx]
 
 
-    miny = n.amin(y)
-    plt.ylim(1.1*miny, -5*miny)
+    if ymin is None:
+        ymin = n.amin(y)
+
+    if ymax is None:
+        ymax = n.amax(y)
+
+
+    plt.ylim(ymin, ymax)
     p = plt.plot(xx, y)
 
     if show:

@@ -19,6 +19,25 @@ course).
 History
 =======
 
+Version Alpha 0.0.11-dev1
+-------------------------
+* new linear potential
+* triagulated surface mesh generation for spheres, triangulate sphere
+  surfaces with particles and bonds, returns the set. 
+* banded spherical mesh generation
+* bug fixes in making particle list from python list
+* points works with spherical geometry
+* internal refactoring and updates
+* Dynamic Bonds! can dynamically create and destory bonds
+* lots of changes to deal with variable bond numbers
+* rendering updates for dyanmic bonds
+* particle init refactor
+* added metrics (pressure, center of mass, etc...) to particle lists
+* add properties and methods to Python bond API
+* bond energy calcs avail in python
+* bond_str and repr
+* automatically delete delete bond if particle is deleted
+
 Version Alpha 0.0.10-dev1
 -------------------------
 * bug fixes in bond pairwise search
