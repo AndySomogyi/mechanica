@@ -433,7 +433,7 @@ static PyObject* points_sphere(int n) {
     
     try {
         int nd = 2;
-        npy_intp dims[] = {vertices.size(),3};
+        npy_intp dims[] = {(int)vertices.size(),3};
         int typenum = NPY_DOUBLE;
         
         PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);

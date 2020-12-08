@@ -4,16 +4,20 @@
  *  Created on: Sep 7, 2019
  *      Author: andy
  */
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#endif
 
 #include <MxUniverse.h>
 #include <MxUniverseIterators.h>
-#include <iostream>
 #include <MxForce.h>
 #include <MxPy.h>
 #include <MxSimulator.h>
 #include <MxConvert.hpp>
 #include <MxUtil.h>
 #include <metrics.h>
+#include <cmath>
+#include <iostream>
 #include <limits>
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
