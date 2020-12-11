@@ -1544,11 +1544,11 @@ int potential_init (struct MxPotential *p ,
 		/* Clean up. */
 		CAligned_Free(xi_l);
         
-        double test_n = p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]);
+        // double test_n = p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]);
         
-        int ttn = test_n;
+        //int ttn = test_n;
         
-        int tttn = int(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])));
+        //int tttn = int(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2])));
         
         
         assert(int(FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + p->b * (p->alpha[1] + p->b * p->alpha[2]))) < p->n + 1);

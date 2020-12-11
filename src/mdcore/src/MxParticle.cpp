@@ -145,14 +145,14 @@ static PyObject* particletype_items(MxParticleType *self);
 
 static PyObject *particle_repr(MxParticleHandle *obj);
 
-static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
-    
-    PyObject *s = PyObject_Str(name);
-    PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
-    const char *cstr = PyBytes_AS_STRING(pyStr);
-    std::cout << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
-    return PyObject_GenericGetAttr(obj, name);
-}
+//static PyObject *particle_getattro(PyObject* obj, PyObject *name) {
+//
+//    PyObject *s = PyObject_Str(name);
+//    PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
+//    const char *cstr = PyBytes_AS_STRING(pyStr);
+//    std::cout << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
+//    return PyObject_GenericGetAttr(obj, name);
+//}
 
 
 
@@ -860,9 +860,9 @@ static getattrofunc savedFunc = NULL;
 
 static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
     
-    PyObject *s = PyObject_Str(name);
-    PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
-    const char *cstr = PyBytes_AS_STRING(pyStr);
+    // PyObject *s = PyObject_Str(name);
+    // PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
+    //const char *cstr = PyBytes_AS_STRING(pyStr);
     //std::cout << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
     return savedFunc(obj, name);
 }
@@ -921,7 +921,6 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     std::cout << MX_FUNCTION << "(type: " << t << ", args: " << a << ", kwargs: " << k << ")" << std::endl;
     
     PyTypeObject *result;
-    PyObject *fields;
 
     /* create the new instance (which is a class,
            since we are a metatype!) */
@@ -964,12 +963,12 @@ static PyGetSetDef particle_type_getset[] = {
     {NULL},
 };
 
-static PyObject *
-particle_type_descr_get(PyMemberDescrObject *descr, PyObject *obj, PyObject *type)
-{
-    std::cout << "PyType_Type.tp_descr_get: " << PyType_Type.tp_descr_get << std::endl;
-    return PyType_Type.tp_descr_get((PyObject*)descr, obj, type);
-}
+//static PyObject *
+//particle_type_descr_get(PyMemberDescrObject *descr, PyObject *obj, PyObject *type)
+//{
+//    std::cout << "PyType_Type.tp_descr_get: " << PyType_Type.tp_descr_get << std::endl;
+//    return PyType_Type.tp_descr_get((PyObject*)descr, obj, type);
+//}
 
 static int particle_type_init(MxParticleType *self, PyObject *_args, PyObject *kwds) {
     
@@ -1051,25 +1050,25 @@ int particle_err = PARTICLE_ERR_OK;
 
 
 
-static void printTypeInfo(const char* name, PyTypeObject *p) {
-    
-    uint32_t is_gc = p->tp_flags & Py_TPFLAGS_HAVE_GC;
-
-    
-    std::cout << "type: {" << std::endl;
-    std::cout << "  name: " << name << std::endl;
-    std::cout << "  type_name: " << Py_TYPE(p)->tp_name << std::endl;
-    std::cout << "  basetype_name:" << p->tp_base->tp_name << std::endl;
-    std::cout << "  have gc: " << std::to_string((bool)PyType_IS_GC(p)) << std::endl;
-    std::cout << "}" << std::endl;
-    
-    /*
-    if(p->tp_getattro) {
-        PyObject *o = PyUnicode_FromString("foo");
-        p->tp_getattro((PyObject*)p, o);
-    }
-     */
-}
+//static void printTypeInfo(const char* name, PyTypeObject *p) {
+//
+//    uint32_t is_gc = p->tp_flags & Py_TPFLAGS_HAVE_GC;
+//
+//
+//    std::cout << "type: {" << std::endl;
+//    std::cout << "  name: " << name << std::endl;
+//    std::cout << "  type_name: " << Py_TYPE(p)->tp_name << std::endl;
+//    std::cout << "  basetype_name:" << p->tp_base->tp_name << std::endl;
+//    std::cout << "  have gc: " << std::to_string((bool)PyType_IS_GC(p)) << std::endl;
+//    std::cout << "}" << std::endl;
+//
+//    /*
+//    if(p->tp_getattro) {
+//        PyObject *o = PyUnicode_FromString("foo");
+//        p->tp_getattro((PyObject*)p, o);
+//    }
+//     */
+//}
 
 HRESULT _MxParticle_init(PyObject *m)
 {
@@ -1836,8 +1835,9 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
             radius = _Engine.s.cutoff;
         }
         
-        
         MxParticle *self = MxParticle_Get(_self);
+        
+        radius += self->radius;
         
         uint16_t nr_parts;
         int32_t *parts;

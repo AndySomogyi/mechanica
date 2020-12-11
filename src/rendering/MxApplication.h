@@ -247,7 +247,10 @@ public:
     virtual HRESULT postEmptyEvent() = 0;
 
 
-    virtual HRESULT mainLoopIteration(double timeout) { return E_NOTIMPL; };
+    virtual HRESULT mainLoopIteration(double timeout) {
+        C_UNSUSED(timeout)
+        return E_NOTIMPL;
+    };
 
 
     virtual HRESULT setSwapInterval(int si) = 0;
@@ -258,9 +261,16 @@ public:
         return NULL;
     }
 
-    virtual int windowAttribute(MxWindowAttributes attr) { return E_NOTIMPL;};
+    virtual int windowAttribute(MxWindowAttributes attr) {
+        C_UNSUSED(attr)
+        return E_NOTIMPL;
+    };
 
-    virtual HRESULT setWindowAttribute(MxWindowAttributes attr, int val) { return E_NOTIMPL;};
+    virtual HRESULT setWindowAttribute(MxWindowAttributes attr, int val) {
+        C_UNSUSED(attr)
+        C_UNSUSED(val)
+        return E_NOTIMPL;
+    };
 
 
     virtual MxUniverseRenderer *getRenderer() {

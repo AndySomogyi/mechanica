@@ -183,8 +183,8 @@ PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
 
 
     // Convert lambda 'la' to function pointer 'ptr':
-    auto la = []( int a ) { return a + 1; };
-    int (*ptr)( int ) = la;
+    // auto la = []( int a ) { return a + 1; };
+    // int (*ptr)( int ) = la;
 
     //    The get function takes one PyObject* parameter (the instance) and a
     //    function pointer (the associated closure):

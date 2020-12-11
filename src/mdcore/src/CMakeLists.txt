@@ -31,7 +31,6 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/MxPotential.h"
   "${MDCORE_SOURCE_DIR}/include/platform.h"
   "${MDCORE_SOURCE_DIR}/include/space_cell.h"
-  "${MDCORE_SOURCE_DIR}/include/spme.h"
   "${MDCORE_SOURCE_DIR}/include/task.h"
   "${MDCORE_SOURCE_DIR}/include/queue.h"
   "${MDCORE_SOURCE_DIR}/include/space.h"
@@ -53,6 +52,10 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/metrics.h"
   "${MDCORE_SOURCE_DIR}/include/MxConvert.hpp"
   "${MDCORE_SOURCE_DIR}/include/MxParticleList.hpp"
+  "${MDCORE_SOURCE_DIR}/include/Vertex.hpp"
+  "${MDCORE_SOURCE_DIR}/include/Edge.hpp"
+  "${MDCORE_SOURCE_DIR}/include/Polygon.hpp"
+  "${MDCORE_SOURCE_DIR}/include/Cell.hpp"
   )
 
 set(PRIVATE_HEADERS
@@ -93,7 +96,6 @@ SET(SOURCES
   queue.cpp
   runner_dosort.cpp
   task.cpp
-  spme.cpp
   runner_verlet.cpp
   MxPy.cpp
   MxForce.cpp
@@ -104,6 +106,10 @@ SET(SOURCES
   metrics.cpp
   MxConvert.cpp
   MxParticleList.cpp
+  Vertex.cpp
+  Edge.cpp
+  Polygon.cpp
+  Cell.cpp
   )
 
 if(MDCORE_USE_MPI)

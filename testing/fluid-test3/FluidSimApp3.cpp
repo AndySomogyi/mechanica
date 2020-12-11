@@ -31,6 +31,8 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     PSTR lpCmdLine, INT nCmdShow) {
 #else
 int main(int argc, char** argv) {
+    C_UNSUSED(argc)
+    C_UNSUSED(argv)
 #endif
 
     Mx_Initialize(0);

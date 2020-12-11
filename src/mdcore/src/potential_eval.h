@@ -23,6 +23,7 @@
 #define _MDCORE_POTENTIAL_EVAL_H_
 
 #include "MxPotential.h"
+#include "engine.h"
 
 
 /* This file contains the potential evaluation function als "extern inline",
@@ -1544,7 +1545,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4double_r ( struc
         
 }
 
-static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
+inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
     int index = _Engine.max_type * a->typeId + b->typeId;
     if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
         return _Engine.p_bound[index];
@@ -1553,6 +1554,5 @@ static inline MxPotential *get_potential(const MxParticle *a, const MxParticle *
         return _Engine.p[index];
     }
 }
-
 
 #endif

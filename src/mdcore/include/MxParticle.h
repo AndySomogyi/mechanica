@@ -24,7 +24,6 @@
 #include "carbon.h"
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
-#include "engine.h"
 #include "space_cell.h"
 #include "MxParticleList.hpp"
 
@@ -201,25 +200,16 @@ struct MxParticle  {
      */
     HRESULT removepart(int32_t uid);
     
-    inline MxParticle *particle(int i) {
-        return _Engine.s.partlist[this->parts[i]];
-    }
+    inline MxParticle *particle(int i);
 
     // style pointer, set at object construction time.
     // may be re-set by users later.
     // the base particle type has a default style. 
     NOMStyle *style;
     
+    inline Magnum::Vector3 global_position();
     
-    inline Magnum::Vector3 global_position() {
-        double *o = _Engine.s.celllist[this->id]->origin;
-        return this->position + Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
-    }
-    
-    inline void set_global_position(const Magnum::Vector3& pos) {
-        double *o = _Engine.s.celllist[this->id]->origin;
-        this->position = pos - Magnum::Vector3{(float)o[0], (float)o[1], (float)o[2]};
-    }
+    inline void set_global_position(const Magnum::Vector3& pos);
 };
 
 
@@ -235,9 +225,7 @@ struct MxParticle  {
  */
 struct MxParticleHandle : PyObject {
     int id;
-    inline MxParticle *part() {
-        return _Engine.s.partlist[this->id];
-    };
+    inline MxParticle *part();
 };
 
 /**
@@ -325,9 +313,7 @@ struct MxParticleType : PyHeapTypeObject {
     /**
      * get the i'th particle that's a member of this type.
      */
-    inline MxParticle *particle(int i) {
-        return _Engine.s.partlist[this->parts.parts[i]];
-    }
+    inline MxParticle *particle(int i);
 };
 
 typedef MxParticleType MxParticleData;
@@ -410,10 +396,6 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
  * (4) null otherwise.
  */
 CAPI_FUNC(MxParticleType*) MxParticleType_Get(PyObject *obj);
-
-inline MxParticle *MxParticle_FromId(int id) {
-    return _Engine.s.partlist[id];
-}
 
 /**
  * checks if a python object is a particle, and returns the

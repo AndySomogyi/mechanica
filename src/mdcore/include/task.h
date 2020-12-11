@@ -49,7 +49,6 @@ enum {
 enum {
 	task_subtype_none = 0,
 	task_subtype_real,
-	task_subtype_spme,
 	task_subtype_count
 };
 

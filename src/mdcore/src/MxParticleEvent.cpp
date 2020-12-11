@@ -47,7 +47,8 @@ PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
 
 
 MxParticleTimeEvent *MxParticleTimeEvent_New(PyObject *args, PyObject *kwargs) {
-    
+    throw std::logic_error("not impleented");
+    return NULL;
 }
 
 HRESULT _MxTimeEvent_Init(PyObject *m)

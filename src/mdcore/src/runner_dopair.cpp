@@ -571,7 +571,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
                 
                 for ( k = 0 ; k < 3 ; k++ ) {
-                    w = f * dx[k];
+                    w = f * dx[k];  // f is force / r, so multiply by dx to get unit vector. 
                     pif[k] -= w;
                     part_j->f[k] += w;
                 }

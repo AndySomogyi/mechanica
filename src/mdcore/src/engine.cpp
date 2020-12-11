@@ -1464,8 +1464,6 @@ int engine_advance_runge_kutta_4 ( struct engine *e ) {
     double epot = 0.0, epot_local;
     int toofast;
 
-    Magnum::Vector3  dx, v, neg;
-
     /* Get a grip on the space. */
     s = &(e->s);
     dt = e->dt;
@@ -1731,7 +1729,7 @@ int engine_advance_runge_kutta_4 ( struct engine *e ) {
 
 int engine_step ( struct engine *e ) {
 
-	ticks tic, tic_step = getticks();
+    ticks tic = getticks(), tic_step = tic;
 
 	/* increase the time stepper */
 	e->time += 1;
@@ -1794,7 +1792,7 @@ int engine_step ( struct engine *e ) {
 
 int engine_force(struct engine *e) {
 
-    ticks tic, tic_step = getticks();
+    ticks tic = getticks();
 
     // clear the energy on the types
     // TODO: should go in prepare space for better performance

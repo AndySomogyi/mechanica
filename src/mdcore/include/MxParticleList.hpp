@@ -73,6 +73,11 @@ CAPI_FUNC(MxParticleList*) MxParticleList_New(uint16_t init_size,
 CAPI_FUNC(int) MxParticleList_Check(const PyObject *obj);
 
 /**
+ *
+ */
+CAPI_FUNC(MxParticleList*) MxParticleList_Copy(const PyObject *obj);
+
+/**
  * New list, steals the data.
  */
 CAPI_FUNC(MxParticleList*) MxParticleList_NewFromData(uint16_t nr_parts, int32_t *parts);

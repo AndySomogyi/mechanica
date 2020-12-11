@@ -66,7 +66,7 @@ public:
      * on those platforms. You can use the window refresh callback to redraw the
      * contents of your window when necessary during such operations.
      */
-    virtual HRESULT pollEvents ();
+     HRESULT pollEvents () override;
 
     /**
      *   This function puts the calling thread to sleep until at least one
@@ -84,7 +84,7 @@ public:
      *  those platforms. You can use the window refresh callback to redraw the
      *  contents of your window when necessary during such operations.
      */
-    virtual HRESULT waitEvents ();
+     HRESULT waitEvents () override;
 
     /**
      * This function puts the calling thread to sleep until at least
@@ -106,7 +106,7 @@ public:
      * contents of your window when necessary during such operations.
      */
 
-    virtual HRESULT waitEventsTimeout(double  timeout);
+    HRESULT waitEventsTimeout(double  timeout) override;
 
 
     /**

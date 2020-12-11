@@ -13,6 +13,7 @@
 #include <MxUtil.h>
 #include <MxPy.h>
 #include <MxNumpy.h>
+#include <MxConvert.hpp>
 
 #include "Magnum/Mesh.h"
 #include "Magnum/Math/Vector3.h"
@@ -28,6 +29,7 @@
 #include <string>
 #include <unordered_map>
 #include <set>
+#include <iostream>
 
 const char* MxColor3Names[] = {
     "AliceBlue",
@@ -173,8 +175,29 @@ const char* MxColor3Names[] = {
     NULL
 };
 
+typedef float (*force_2body_fn)(struct EnergyMinimizer* p, Magnum::Vector3 *x1, Magnum::Vector3 *x2,
+Magnum::Vector3 *f1, Magnum::Vector3 *f2);
 
+typedef float (*force_1body_fn)(struct EnergyMinimizer* p, Magnum::Vector3 *p1,
+Magnum::Vector3 *f1);
 
+struct EnergyMinimizer {
+    force_1body_fn force_1body;
+    force_2body_fn force_2body;
+    int max_outer_iter;
+    int max_inner_iter;
+    float outer_de;
+    float inner_de;
+    float cutoff;
+};
+
+static void energy_minimize(EnergyMinimizer *p, std::vector<Magnum::Vector3> &points);
+
+static float sphere_2body(EnergyMinimizer* p, Magnum::Vector3 *x1, Magnum::Vector3 *x2,
+                          Magnum::Vector3 *f1, Magnum::Vector3 *f2);
+
+static float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
+                          Magnum::Vector3 *f1) ;
 
 static PyObject *random_point_disk(int n) {
 
@@ -216,10 +239,9 @@ static PyObject *random_point_disk(int n) {
 static PyObject* random_point_sphere(int n) {
 
     try {
-
+        std::vector<Magnum::Vector3> points(n);
+        
         double radius = 1.0;
-
-
 
         std::uniform_real_distribution<double> uniform01(0.0, 1.0);
 
@@ -228,7 +250,6 @@ static PyObject* random_point_sphere(int n) {
         int typenum = NPY_DOUBLE;
 
         npy_intp dims[] = {n,3};
-
 
         PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
 
@@ -241,9 +262,21 @@ static PyObject* random_point_sphere(int n) {
             double y = radius * sin(phi) * sin(theta);
             double z = radius * cos(phi);
 
-            data[i * 3 + 0] = x;
-            data[i * 3 + 1] = y;
-            data[i * 3 + 2] = z;
+            points[i] = Magnum::Vector3{x, y, z};
+        }
+        
+        EnergyMinimizer em;
+        em.force_1body = sphere_1body;
+        em.force_2body = sphere_2body;
+        em.max_outer_iter = 10;
+        em.cutoff = 0.2;
+        
+        energy_minimize(&em, points);
+        
+        for(int i = 0; i < n; ++i) {
+            data[i * 3 + 0] = points[i].x();
+            data[i * 3 + 1] = points[i].y();
+            data[i * 3 + 2] = points[i].z();
         }
 
         return (PyObject*)array;
@@ -300,6 +333,57 @@ static PyObject* random_point_solidsphere(int n) {
         e.restore();
         return NULL;
     }
+}
+
+static PyObject* random_point_solidsphere_shell(int n, PyObject *_dr, PyObject *_phi) {
+    float dr = 1.0;
+    
+    if(_dr) {
+        dr = mx::cast<float>(_dr);
+    }
+    
+    float phi0 = 0;
+    float phi1 = M_PI;
+    
+    if(_phi) {
+        if(!PyTuple_Check(_phi) || PyTuple_Size(_phi) != 2) {
+            throw std::logic_error("phi must be a tuple of (phi0, phi1)");
+        }
+        phi0 = mx::cast<float>(PyTuple_GET_ITEM(_phi, 0));
+        phi1 = mx::cast<float>(PyTuple_GET_ITEM(_phi, 1));
+    }
+    
+
+    double cos0 = std::cos(phi0);
+    double cos1 = std::cos(phi1);
+    
+    std::uniform_real_distribution<double> uniform01(0.0, 1.0);
+    
+    int nd = 2;
+    
+    int typenum = NPY_DOUBLE;
+    
+    npy_intp dims[] = {n,3};
+    
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+    
+    double *data = (double*)PyArray_DATA(array);
+    
+    for(int i = 0; i < n; ++i) {
+        double theta = 2 * M_PI * uniform01(CRandom);
+        // double phi = acos(1 - 2 * uniform01(CRandom));
+        double phi = acos(cos0 - (cos0-cos1) * uniform01(CRandom));
+        double r = std::cbrt((1-dr) + dr * uniform01(CRandom));
+        double x = r * sin(phi) * cos(theta);
+        double y = r * sin(phi) * sin(theta);
+        double z = r * cos(phi);
+        
+        data[i * 3 + 0] = x;
+        data[i * 3 + 1] = y;
+        data[i * 3 + 2] = z;
+    }
+    
+    return (PyObject*)array;
 }
 
 static PyObject* random_point_solidcube(int n) {
@@ -478,8 +562,11 @@ PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
             return random_point_disk(n);
         case MxPointsType::SolidCube:
             return random_point_solidcube(n);
-        case MxPointsType::SolidSphere:
-            return random_point_solidsphere(n);
+        case MxPointsType::SolidSphere: {
+            PyObject *phi = mx::arg("phi", 2, args, kwargs);
+            PyObject *dr = mx::arg("dr", 3, args, kwargs);
+            return random_point_solidsphere_shell(n, dr, phi);
+        }
         default:
             PyErr_SetString(PyExc_ValueError, "invalid kind");
             return NULL;
@@ -894,7 +981,134 @@ HRESULT Mx_Icosphere(const int subdivisions, float phi0, float phi1,
     return S_OK;
 }
 
+static void energy_find_neighborhood(std::vector<Magnum::Vector3> const &points,
+                                     const int part,
+                                     float r,
+                                     std::vector<int32_t> &nbor_inds,
+                                     std::vector<int32_t> &boundary_inds) {
+    
+    nbor_inds.resize(0);
+    boundary_inds.resize(0);
+  
+    float r2 = r * r;
+    float br2 = 4 * r * r;
+    
+    Magnum::Vector3 pt = points[part];
+    for(int i = 0; i < points.size(); ++i) {
+
+        Magnum::Vector3 dx = pt - points[i];
+        float dx2 = dx.dot();
+        if(dx2 <= r2) {
+            nbor_inds.push_back(i);
+        }
+        if(dx2 > r2 && dx2 <= br2) {
+            boundary_inds.push_back(i);
+        }
+    }
+}
+
+float energy_minimize_neighborhood(EnergyMinimizer *p,
+                                   std::vector<int32_t> &indices,
+                                   std::vector<int32_t> &boundary_indices,
+                                   std::vector<Magnum::Vector3> &points,
+                                   std::vector<Magnum::Vector3> &forces) {
+
+    float etot = 0;
+
+    for(int i = 0; i < 10; i++) {
+    
+        float e = 0;
+        
+        for(int j = 0; j < indices.size(); ++j) {
+            forces[indices[j]] = {0.0f, 0.0f, 0.0f};
+        }
+        
+        for(int j = 0; j < indices.size(); ++j) {
+            int32_t jj = indices[j];
+            // one-body force
+            e += p->force_1body(p, &points[jj], &forces[jj]);
+            
+            // two-body force in local neighborhood
+            for(int k = j+1; k < indices.size(); ++k) {
+                int32_t kk = indices[k];
+                e += p->force_2body(p, &points[jj], &points[kk], &forces[jj], &forces[kk]);
+            }
+            
+            // two-body force from boundaries
+            for(int k = j+1; k < boundary_indices.size(); ++k) {
+                int32_t kk = boundary_indices[k];
+                e += p->force_2body(p, &points[jj], &points[kk], &forces[jj], nullptr) / 2;
+            }
+        }
+        
+        for(int i = 0; i < indices.size(); ++i) {
+            int32_t ii = indices[i];
+            points[ii] += 1 * forces[ii];
+        }
+        
+        etot += e;
+    }
+    return etot;
+}
+
+void energy_minimize(EnergyMinimizer *p, std::vector<Magnum::Vector3> &points) {
+    std::vector<int32_t> nindices(points.size()/2);
+    std::vector<int32_t> bindices(points.size()/2);
+    std::vector<Magnum::Vector3> forces(points.size());
+    std::uniform_int_distribution<> distrib(0, points.size() - 1);
+    
+    float etot[3] = {0, 0, 0};
+    float de[3] = {0, 0, 0};
+    int ntot = 0;
+    float de_avg = 0;
+    int i = 0;
+    
+    do {
+        for(int k = 0; k < points.size(); ++k) {
+            int32_t partId = k;
+            energy_find_neighborhood(points, partId, p->cutoff, nindices, bindices);
+            etot[i] = energy_minimize_neighborhood(p, nindices, bindices, points, forces);
+        }
+        i = (i + 1) % 3;
+        ntot += 1;
+        de[0] = etot[0] - etot[1];
+        de[1] = etot[1] - etot[2];
+        de[2] = etot[2] - etot[0];
+        de_avg = (de[0]*de[0] + de[1]*de[1] + de[2]*de[2])/3;
+        std::cout << "n:" << ntot << ", de:" << de_avg << std::endl;
+    }
+    while(ntot < 3 && (ntot < p->max_outer_iter));
+}
 
 
+float sphere_2body(EnergyMinimizer* p, Magnum::Vector3 *x1, Magnum::Vector3 *x2,
+                   Magnum::Vector3 *f1, Magnum::Vector3 *f2) {
+    Magnum::Vector3 dx = (*x2 - *x1); // vector from x1 -> x2
+    float r = dx.length() + 0.01; // softness factor.
+    if(r > p->cutoff) {
+        return 0;
+    }
+    
+    float f = 0.0001 / (r * r);
+    
+    *f1 = *f1 - f * dx / (2 * r);
+    
+    if(f2) {
+        *f2 = *f2 + f * dx / (2 * r);
+    }
+    
+    return std::abs(f);
+}
+
+float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
+                   Magnum::Vector3 *f1) {
+    float r = (*p1).length();
+
+    float f = 1 * (1.0 - r); // magnitude of force.
+    
+    *f1 = *f1 + (f/r) * (*p1);
+    
+    return std::abs(f);
+}
 
 

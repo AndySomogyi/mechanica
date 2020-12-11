@@ -45,6 +45,11 @@
 #include "MxConvert.hpp"
 #include "MxParticleList.hpp"
 
+#include "Vertex.hpp"
+#include "Edge.hpp"
+#include "Polygon.hpp"
+#include "Cell.hpp"
+
 
 #include <c_util.h>
 
@@ -402,6 +407,12 @@ static PyObject * moduleinit(void)
     _MxBond_init(m);
     
     _MxAngle_init(m);
+    
+
+    _vertex_init(m);
+    _edge_init(m);
+    _polygon_init(m);
+    _cell_init(m);
 
     mechanicaModule = m;
 

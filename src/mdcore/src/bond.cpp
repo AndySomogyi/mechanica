@@ -56,6 +56,10 @@
 
 #include <MxPy.h>
 #include <MxConvert.hpp>
+#include <../../rendering/NOMStyle.hpp>
+
+
+NOMStyle MxBond_Style;
 
 /* Global variables. */
 /** The ID of the last error. */
@@ -73,6 +77,13 @@ const char *bond_err_msg[2] = {
 
 static PyObject* bond_destroy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
 static PyObject* bond_energy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
+
+
+/**
+ * check if a type pair is in a list of pairs
+ * pairs has to be a python list of tuples of types
+ */
+static bool pair_check(PyObject *pairs, short a_typeid, short b_typeid);
 
 /**
  * @brief Evaluate a list of bonded interactoins
@@ -753,7 +764,9 @@ struct Pair {
 
 typedef std::vector<Pair> PairList;
 
-static void make_pairlist(const MxParticleList *parts, float cutoff, PairList& pairs) {
+static void make_pairlist(const MxParticleList *parts,
+                          float cutoff, PyObject *paircheck_list,
+                          PairList& pairs) {
     int i, j;
     struct MxParticle *part_i, *part_j;
     Magnum::Vector4 dx;
@@ -796,7 +809,7 @@ static void make_pairlist(const MxParticleList *parts, float cutoff, PairList& p
             /* get the distance between both particles */
             r2 = fptype_r2(pix.data(), pjx.data() , dx.data());
             
-            if(r2 <= c2) {
+            if(r2 <= c2 && pair_check(paircheck_list, part_i->typeId, part_j->typeId)) {
                 pairs.push_back(Pair{part_i->id,part_j->id});
             }
         } /* loop over all other particles */
@@ -807,18 +820,19 @@ PyObject* MxBond_PairwiseNew(
     struct MxPotential* pot,
     struct MxParticleList *parts,
     float cutoff,
+    PyObject *ppairs,
     PyObject *args,
     PyObject *kwds) {
     
     PairList pairs;
     PyObject *bonds = NULL;
     MxBondHandle *bond = NULL;
-    make_pairlist(parts, cutoff, pairs);
-    
-    bonds = PyList_New(pairs.size());
-    std::cout << "list size: " << PyList_Size(bonds) << std::endl;
     
     try {
+        make_pairlist(parts, cutoff, ppairs, pairs);
+        
+        bonds = PyList_New(pairs.size());
+        std::cout << "list size: " << PyList_Size(bonds) << std::endl;
         
         double half_life = arg<double>("half_life", 3, args, kwds, std::numeric_limits<double>::max());
         double bond_energy = arg<double>("bond_energy", 4, args, kwds, std::numeric_limits<double>::max());
@@ -992,4 +1006,25 @@ std::vector<int32_t> MxBond_IdsForParticle(int32_t pid) {
         }
     }
     return bonds;
+}
+
+
+bool pair_check(PyObject *pairs, short a_typeid, short b_typeid) {
+    if(!pairs) {
+        return true;
+    }
+    
+    PyObject *a = (PyObject*)&_Engine.types[a_typeid];
+    PyObject *b = (PyObject*)&_Engine.types[b_typeid];
+    
+    for (int i = 0; i < PyList_Size(pairs); ++i) {
+        PyObject *o = PyList_GetItem(pairs, i);
+        if(PyTuple_Check(o) && PyTuple_Size(o) == 2) {
+            if((a == PyTuple_GET_ITEM(o, 0) && b == PyTuple_GET_ITEM(o, 1)) ||
+               (b == PyTuple_GET_ITEM(o, 0) && a == PyTuple_GET_ITEM(o, 1))) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

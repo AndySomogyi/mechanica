@@ -93,7 +93,7 @@
 
 #define INLINE_ELAPSED(INL) static INL double elapsed(ticks t1, ticks t0) \
 {									  \
-     return (double)t1 - (double)t0;					  \
+     return static_cast<double>(t1) - static_cast<double>(t0);					  \
 }
 
 /*----------------------------------------------------------------*/
@@ -226,7 +226,7 @@ static __inline__ ticks getticks(void)
 {
      unsigned a, d; 
      asm volatile("rdtsc" : "=a" (a), "=d" (d)); 
-     return ((ticks)a) | (((ticks)d) << 32); 
+     return (static_cast<ticks>(a)) | ((static_cast<ticks>(d)) << 32);
 }
 
 INLINE_ELAPSED(__inline__)

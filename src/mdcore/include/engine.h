@@ -625,5 +625,43 @@ CAPI_DATA(engine) _Engine;
 
 CAPI_FUNC(struct engine*) engine_get();
 
+// inline definitions...
+
+#include <MxParticle.h>
+
+inline MxParticle *MxParticle::particle(int i) {
+    return _Engine.s.partlist[this->parts[i]];
+};
+
+inline Magnum::Vector3 MxParticle::global_position() {
+    double *o = _Engine.s.celllist[this->id]->origin;
+    return this->position + Magnum::Vector3 {
+        static_cast<float>(o[0]), static_cast<float>(o[1]), static_cast<float>(o[2])
+    };
+}
+
+inline void MxParticle::set_global_position(const Magnum::Vector3& pos) {
+    double *o = _Engine.s.celllist[this->id]->origin;
+    // TODO: need to update cells...
+    this->position = pos - Magnum::Vector3 {
+        static_cast<float>(o[0]), static_cast<float>(o[1]), static_cast<float>(o[2])
+    };
+}
+
+inline MxParticle *MxParticleHandle::part() {
+    return _Engine.s.partlist[this->id];
+};
+
+inline MxParticle *MxParticle_FromId(int id) {
+    return _Engine.s.partlist[id];
+}
+
+/**
+ * get the i'th particle that's a member of this type.
+ */
+inline MxParticle *MxParticleType::particle(int i) {
+    return _Engine.s.partlist[this->parts.parts[i]];
+}
+
 #endif // INCLUDE_ENGINE_H_
 

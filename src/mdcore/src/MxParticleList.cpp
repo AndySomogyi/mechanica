@@ -7,7 +7,7 @@
 
 
 #include <MxParticleList.hpp>
-#include "MxParticle.h"
+#include "engine.h"
 #include <Magnum/Math/Distance.h>
 #include <Magnum/Math/Matrix3.h>
 #include <MxConvert.hpp>
@@ -24,6 +24,8 @@ static PyObject* list_center_of_mass(MxParticleList *self, PyObject *args, PyObj
 static PyObject* list_center_of_geometry(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 static PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_copy(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 
 
@@ -182,6 +184,7 @@ static PyMethodDef list_methods[] = {
     { "centroid", (PyCFunction)list_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
     { "moment_of_inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
     { "inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "copy", (PyCFunction)list_copy, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -393,6 +396,16 @@ PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject 
         c_exp(e, "invalid args");
         return NULL;
     }
+}
+
+CAPI_FUNC(MxParticleList*) MxParticleList_Copy(const PyObject *obj) {
+    MxParticleList *self = (MxParticleList*)obj;
+    
+    return MxParticleList_NewFromData(self->nr_parts, self->parts);
+}
+
+PyObject* list_copy(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+    return MxParticleList_Copy(self);
 }
 
 

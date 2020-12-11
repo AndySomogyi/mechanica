@@ -64,14 +64,20 @@ typedef struct MxBond {
 	double bond_energy;
 
 	struct MxPotential *potential;
+    
+    
+    struct NOMStyle *style;
 
 } MxBond;
 
 struct MxBondHandle : PyObject {
     int32_t id;
+    
+    #ifdef INCLUDE_ENGINE_H_
     inline MxBond *get() {
         return &_Engine.bonds[this->id];
     };
+    #endif
 };
 
 CAPI_FUNC(MxBondHandle*) MxBondHandle_FromId(int id);
@@ -81,6 +87,11 @@ CAPI_FUNC(MxBondHandle*) MxBondHandle_FromId(int id);
  * actually bond handle type.
  */
 CAPI_DATA(PyTypeObject) MxBondHandle_Type;
+
+/**
+ * shared global bond style
+ */
+CAPI_DATA(NOMStyle*) MxBond_StylePtr;
 
 HRESULT _MxBond_init(PyObject *m);
 
@@ -94,9 +105,9 @@ CAPI_FUNC(PyObject*) MxBond_PairwiseNew(
         struct MxPotential* potential,
         struct MxParticleList *parts,
         float cutoff,
+        PyObject *pairs,
         PyObject *args,
-        PyObject *kwds
-    );
+        PyObject *kwds);
 
 /**
  * deletes, marks a bond ready for deleteion, removes the potential,

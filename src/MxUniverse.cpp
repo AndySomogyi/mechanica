@@ -342,7 +342,7 @@ HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
         PyObject *pot = PyTuple_GetItem(args, 0);
         if(MxPotential_Check(pot) && PyNumber_Check(cutoff)) {
             PyObject *result = MxBond_PairwiseNew((MxPotential*)pot, pl,
-                PyFloat_AsDouble(cutoff), args, kwargs);
+                PyFloat_AsDouble(cutoff), NULL, args, kwargs);
             *out = result;
             Py_DECREF(pl);
             return S_OK;
@@ -635,13 +635,14 @@ Magnum::Vector3 universe_center() {
  */
 PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
     static const char* names[] = {
-        "potential", "particles", "cutoff"
+        "potential", "particles", "cutoff", "pairs"
     };
     
     try {
         PyObject *ppot = mx::arg(names[0], 0, args, kwds);
         PyObject *pparts = mx::arg(names[1], 1, args, kwds);
         PyObject *pcutoff = mx::arg(names[2], 2, args, kwds);
+        PyObject *pairs = mx::arg(names[3], 3, args, kwds);
         
         MxPotential *pot;
         MxParticleList *parts;
@@ -682,7 +683,7 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
         }
         
         if(kwds) {
-            for(int i = 0; i < 3; ++i) {
+            for(int i = 0; i < 4; ++i) {
                 PyObject *key = PyUnicode_FromString(names[i]);
                 if(PyDict_Contains(kwds, key)) {
                     PyDict_DelItem(kwds, key);
@@ -691,7 +692,7 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
             }
         }
         
-        PyObject *result = MxBond_PairwiseNew(pot, parts, cutoff, bond_args, kwds);
+        PyObject *result = MxBond_PairwiseNew(pot, parts, cutoff, pairs, bond_args, kwds);
         
         Py_DECREF(bond_args);
         
