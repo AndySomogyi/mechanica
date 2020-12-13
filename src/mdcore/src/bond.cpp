@@ -54,12 +54,14 @@
 #include "engine.h"
 #include <bond.h>
 
+
 #include <MxPy.h>
 #include <MxConvert.hpp>
+#include <../../MxUtil.h>
 #include <../../rendering/NOMStyle.hpp>
 
 
-NOMStyle MxBond_Style;
+NOMStyle *MxBond_StylePtr = NULL;
 
 /* Global variables. */
 /** The ID of the last error. */
@@ -503,6 +505,8 @@ static int _bond_init(MxBondHandle *self, uint32_t flags, int32_t i, int32_t j,
     bond->j = j;
     bond->half_life = half_life;
     bond->bond_energy = bond_energy;
+    bond->style = MxBond_StylePtr;
+    Py_IncRef(bond->style);
     
     if(bond->i >= 0 && bond->j >= 0) {
         bond->flags = bond->flags | BOND_ACTIVE;
@@ -643,6 +647,27 @@ static PyGetSetDef bond_getset[] = {
         .doc = "test doc",
         .closure = NULL
     },
+    {
+        .name = "style",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxBond *bond = ((MxBondHandle*)_obj)->get();
+            Py_INCREF(bond->style);
+            return bond->style;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            if(!NOMStyle_Check(val)) {
+                PyErr_SetString(PyExc_TypeError, "style must be a Style object");
+                return -1;
+            }
+            MxBond *bond = ((MxBondHandle*)_obj)->get();
+            Py_DECREF(bond->style);
+            bond->style = (NOMStyle*)val;
+            Py_INCREF(bond->style);
+            return 0;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {NULL}
 };
 
@@ -720,7 +745,7 @@ static struct PyModuleDef moduledef = {
         methods
 };
 
-static PyObject *module;
+static PyObject *bonds_module = NULL;
 
 HRESULT _MxBond_init(PyObject *m)
 {
@@ -729,7 +754,7 @@ HRESULT _MxBond_init(PyObject *m)
         return E_FAIL;
     }
 
-    module = PyModule_Create(&moduledef);
+    bonds_module = PyModule_Create(&moduledef);
 
     Py_INCREF(&MxBondHandle_Type);
     if (PyModule_AddObject(m, "Bond", (PyObject *)&MxBondHandle_Type) < 0) {
@@ -737,10 +762,16 @@ HRESULT _MxBond_init(PyObject *m)
         return E_FAIL;
     }
 
-    if (PyModule_AddObject(m, "bonds", (PyObject *)module) < 0) {
+    if (PyModule_AddObject(m, "bonds", (PyObject *)bonds_module) < 0) {
         Py_DECREF(&MxBondHandle_Type);
-        Py_DECREF(&module);
+        Py_DECREF(&bonds_module);
         return E_FAIL;
+    }
+    
+    MxBond_StylePtr = NOMStyle_NewEx(Color3_Parse("lime"));
+    
+    if(MxBondHandle_Type.tp_dict) {
+        PyDict_SetItemString(MxBondHandle_Type.tp_dict, "style", MxBond_StylePtr);
     }
 
     return S_OK;

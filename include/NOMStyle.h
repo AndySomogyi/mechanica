@@ -25,6 +25,7 @@ CAPI_FUNC(NOMStyle*) NOMStyle_New(PyObject *args, PyObject *kwargs);
 
 CAPI_FUNC(NOMStyle*) NOMStyle_Clone(NOMStyle* s);
 
+CAPI_FUNC(int) NOMStyle_Check(const PyObject *obj);
 
 /**
  * The the NOMStyle type type

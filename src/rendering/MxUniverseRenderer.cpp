@@ -272,15 +272,17 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         );
         
         int i = 0;
+        Magnum::Vector3 *color;
         for(int j = 0; j < _Engine.nr_bonds; ++j) {
             MxBond *bond = &_Engine.bonds[j];
             if(bond->flags & BOND_ACTIVE) {
+                color = &bond->style->color;
                 MxParticle *pi = _Engine.s.partlist[bond->i];
                 MxParticle *pj = _Engine.s.partlist[bond->j];
                 bondData[i].position = pi->global_position();
-                bondData[i++].color = Magnum::Color3::yellow();
+                bondData[i++].color = *color;
                 bondData[i].position = pj->global_position();
-                bondData[i++].color = Magnum::Color3::yellow();
+                bondData[i++].color = *color;
             }
         }
         assert(i == 2 * _Engine.nr_active_bonds);

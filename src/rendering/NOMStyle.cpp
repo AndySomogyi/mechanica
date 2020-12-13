@@ -187,6 +187,10 @@ static int style_init(PyObject *_s, PyObject *args, PyObject *kwargs) {
     return 0;
 }
 
+int NOMStyle_Check(const PyObject *o) {
+    return o && PyObject_IsInstance(const_cast<PyObject*>(o), (PyObject*)&NOMStyle_Type);
+}
+
 
 
 HRESULT _NOMStyle_init(PyObject *m)
