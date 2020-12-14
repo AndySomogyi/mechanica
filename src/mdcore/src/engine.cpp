@@ -79,6 +79,63 @@ static int engine_advance_forward_euler ( struct engine *e );
 static int engine_advance_runge_kutta_4 ( struct engine *e );
 static int engine_force(struct engine *e);
 
+static bool engine_enforce_boundary(engine *e, MxParticle *p, space_cell *c) {
+    
+#define ENFORCE_BC(i)                                                   \
+    if(ppos[i] < 0) {                                                   \
+        p->position[i] += (0 - ppos[i])* (restitution + 1.0f);          \
+        p->velocity[i] *= -restitution;                                 \
+        enforced = true;                                                \
+    }                                                                   \
+    else if(ppos[i] > e->s.dim[i]) {                                    \
+        p->position[i] -= (ppos[i] - e->s.dim[i])*(restitution + 1.0f); \
+        p->velocity[i] *= -restitution;                                 \
+        enforced = true;                                                \
+    }                                                                   \
+    
+    
+    float restitution = 1.0;
+    /* Enforce particle position to be within the given boundary */
+    bool enforced = false;
+    
+    if(!(e->s.period & SPACE_FREESLIP_FULL)) {
+        return false;
+    }
+    
+    double *o = c->origin;
+    Magnum::Vector3 ppos = {
+        static_cast<float>(o[0]) + p->position[0],
+        static_cast<float>(o[1]) + p->position[1],
+        static_cast<float>(o[2]) + p->position[2]
+    };
+    
+    if(e->s.period & SPACE_FREESLIP_X) {
+        ENFORCE_BC(0);
+    }
+    if(e->s.period & SPACE_FREESLIP_Y) {
+        ENFORCE_BC(1);
+    }
+    if(e->s.period & SPACE_FREESLIP_Z) {
+        ENFORCE_BC(2);
+    }
+    
+    /*
+    for(int i = 0; i != 3; ++i) {
+        if(ppos[i] < _lowerDomainBound[i]) {
+            ppos[i] += (_lowerDomainBound[i] - ppos[i])*(restitution + 1.0f);
+            pvel[i] *= -restitution;
+            bVelChanged = true;
+        } else if(ppos[i] > _upperDomainBound[i]) {
+            ppos[i] -= (ppos[i] - _upperDomainBound[i])*(restitution + 1.0f);
+            pvel[i] *= -restitution;
+            bVelChanged = true;
+        }
+    }
+     */
+    
+    return enforced;
+};
+
 /** ID of the last error. */
 int engine_err = engine_err_ok;
 
@@ -1333,30 +1390,40 @@ int engine_advance_forward_euler ( struct engine *e ) {
 
                     /* do we have to move this particle? */
                     // TODO: consolidate moving to one method.
+                    
+                    // if delta is non-zero, need to check boundary conditions, and
+                    // if moved out of cell, or out of bounds.
                     if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
-                        for ( k = 0 ; k < 3 ; k++ ) {
-                            p->x[k] -= delta[k] * h[k];
-                            p->p0[k] -= delta[k] * h[k];
+                        
+                        // if we enforce boundary, reflect back into same cell
+                        if(engine_enforce_boundary(e, p, c)) {
+                            pid += 1;
                         }
+                        // otherwise move to different cell
+                        else {
+                            for ( k = 0 ; k < 3 ; k++ ) {
+                                p->x[k] -= delta[k] * h[k];
+                                p->p0[k] -= delta[k] * h[k];
+                            }
+                            c_dest = &( s->cells[ space_cellid( s ,
+                                    (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
+                                    (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
+                                    (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
 
-                        c_dest = &( s->cells[ space_cellid( s ,
-                                (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
-                                (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
-                                (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
+                            pthread_mutex_lock(&c_dest->cell_mutex);
+                            space_cell_add_incomming( c_dest , p );
+                            pthread_mutex_unlock(&c_dest->cell_mutex);
 
-                        pthread_mutex_lock(&c_dest->cell_mutex);
-                        space_cell_add_incomming( c_dest , p );
-                        pthread_mutex_unlock(&c_dest->cell_mutex);
+                            s->celllist[ p->id ] = c_dest;
 
-                        s->celllist[ p->id ] = c_dest;
-
-                        // remove a particle from a cell. if the part was the last in the
-                        // cell, simply dec the count, otherwise, move the last part
-                        // in the cell to the ejected part's prev loc.
-                        c->count -= 1;
-                        if ( pid < c->count ) {
-                            c->parts[pid] = c->parts[c->count];
-                            s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
+                            // remove a particle from a cell. if the part was the last in the
+                            // cell, simply dec the count, otherwise, move the last part
+                            // in the cell to the ejected part's prev loc.
+                            c->count -= 1;
+                            if ( pid < c->count ) {
+                                c->parts[pid] = c->parts[c->count];
+                                s->partlist[ c->parts[pid].id ] = &( c->parts[pid] );
+                            }
                         }
                     }
                     else {

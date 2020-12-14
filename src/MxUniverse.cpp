@@ -88,7 +88,6 @@ MxUniverseConfig::MxUniverseConfig() :
     origin {0, 0, 0},
     dim {10, 10, 10},
     spaceGridSize {4, 4, 4},
-    boundaryConditions{1, 1, 1},
     cutoff{1},
     flags{0},
     maxTypes{64},
@@ -97,7 +96,7 @@ MxUniverseConfig::MxUniverseConfig() :
     nParticles{100},
     threads{4},
     integrator{EngineIntegrator::FORWARD_EULER},
-    periodic{PeriodicFlags::space_periodic_full},
+    boundaryConditions{PeriodicFlags::space_periodic_full},
     max_distance(-1)
 {
 }
@@ -306,7 +305,6 @@ HRESULT _MxUniverse_init(PyObject* m)
     uc.def_readwrite("origin", &MxUniverseConfig::origin);
     uc.def_readwrite("dim", &MxUniverseConfig::dim);
     uc.def_readwrite("space_grid_size", &MxUniverseConfig::spaceGridSize);
-    uc.def_readwrite("boundary_conditions", &MxUniverseConfig::boundaryConditions);
     uc.def_readwrite("cutoff", &MxUniverseConfig::cutoff);
     uc.def_readwrite("flags", &MxUniverseConfig::flags);
 

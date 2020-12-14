@@ -58,7 +58,6 @@ struct CAPI_EXPORT MxUniverseConfig {
     Magnum::Vector3 origin;
     Magnum::Vector3 dim;
     Magnum::Vector3i spaceGridSize;
-    Magnum::Vector3ui boundaryConditions;
     double cutoff;
     uint32_t flags;
     uint32_t maxTypes;
@@ -67,7 +66,7 @@ struct CAPI_EXPORT MxUniverseConfig {
     int nParticles;
     int threads;
     EngineIntegrator integrator;
-    uint32_t periodic;
+    uint32_t boundaryConditions;
     double max_distance;
     MxUniverseConfig();
 };

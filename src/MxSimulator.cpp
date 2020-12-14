@@ -209,8 +209,12 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
         conf.universeConfig.dt = py::cast<double>(kwargs["dt"]);
     }
     
-    if(kwargs.contains("periodic")) {
-        conf.universeConfig.periodic = py::cast<unsigned>(kwargs["periodic"]);
+    if(kwargs.contains("boundary_conditions")) {
+        conf.universeConfig.boundaryConditions = py::cast<unsigned>(kwargs["boundary_conditions"]);
+    }
+    
+    if(kwargs.contains("bc")) {
+        conf.universeConfig.boundaryConditions = py::cast<unsigned>(kwargs["bc"]);
     }
     
     if(kwargs.contains("max_distance")) {
@@ -443,6 +447,10 @@ HRESULT _MxSimulator_init(PyObject* m) {
         .value("PERIODIC_GHOST_Y",    space_periodic_ghost_y)
         .value("PERIODIC_GHOST_Z",    space_periodic_ghost_z)
         .value("PERIODIC_GHOST_FULL", space_periodic_ghost_full)
+        .value("FREESLIP_X",          SPACE_FREESLIP_X)
+        .value("FREESLIP_Y",          SPACE_FREESLIP_Y)
+        .value("FREESLIP_Z",          SPACE_FREESLIP_Z)
+        .value("FREESLIP_FULL",       SPACE_FREESLIP_FULL)
         .export_values();
 
     py::class_<MxSimulator::Config> sc(sim, "Config");
@@ -460,9 +468,6 @@ HRESULT _MxSimulator_init(PyObject* m) {
     
     sc.def_property("space_grid_size", [](const MxSimulator::Config &conf) { return conf.universeConfig.spaceGridSize; },
                     [](MxSimulator::Config &conf, Magnum::Vector3i& vec) {conf.universeConfig.spaceGridSize = vec;});
-    
-    sc.def_property("boundary_conditions", [](const MxSimulator::Config &conf) { return conf.universeConfig.boundaryConditions; },
-                    [](MxSimulator::Config &conf, Magnum::Vector3ui& vec) {conf.universeConfig.boundaryConditions = vec;});
     
     sc.def_property("cutoff", [](const MxSimulator::Config &conf) { return conf.universeConfig.cutoff; },
                     [](MxSimulator::Config &conf, double v) {conf.universeConfig.cutoff = v;});
@@ -612,19 +617,19 @@ int universe_init (const MxUniverseConfig &conf ) {
     Magnum::Vector3d length{tmp[0], tmp[1], tmp[2]};
     Magnum::Vector3i cells = conf.spaceGridSize;
     
-    if(cells[0] < 3 && (conf.periodic & space_periodic_x)) {
+    if(cells[0] < 3 && (conf.boundaryConditions & space_periodic_x)) {
         cells[0] = 3;
         std::string msg = "requested periodic_x and " + std::to_string(cells[0]) +
         " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
         PyErr_WarnEx(NULL, msg.c_str(), 0);
     }
-    if(cells[1] < 3 && (conf.periodic & space_periodic_y)) {
+    if(cells[1] < 3 && (conf.boundaryConditions & space_periodic_y)) {
         cells[1] = 3;
         std::string msg = "requested periodic_x and " + std::to_string(cells[1]) +
         " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
         PyErr_WarnEx(NULL, msg.c_str(), 0);
     }
-    if(cells[2] < 3 && (conf.periodic & space_periodic_z)) {
+    if(cells[2] < 3 && (conf.boundaryConditions & space_periodic_z)) {
         cells[2] = 3;
         std::string msg = "requested periodic_x and " + std::to_string(cells[2]) +
         " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
@@ -655,16 +660,19 @@ int universe_init (const MxUniverseConfig &conf ) {
     printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
     printf("engine: requesting cutoff = %22.16e.\n", cutoff);
     
-    printf("engine periodic x : %s\n", conf.periodic & space_periodic_x ? "true" : "false");
-    printf("engine periodic y : %s\n", conf.periodic & space_periodic_y ? "true" : "false");
-    printf("engine periodic z : %s\n", conf.periodic & space_periodic_z ? "true" : "false");
-    printf("engine periodic ghost x : %s\n", conf.periodic & space_periodic_ghost_x ? "true" : "false");
-    printf("engine periodic ghost y : %s\n", conf.periodic & space_periodic_ghost_y ? "true" : "false");
-    printf("engine periodic ghost z : %s\n", conf.periodic & space_periodic_ghost_z ? "true" : "false");
+    printf("engine periodic x : %s\n", conf.boundaryConditions & space_periodic_x ? "true" : "false");
+    printf("engine periodic y : %s\n", conf.boundaryConditions & space_periodic_y ? "true" : "false");
+    printf("engine periodic z : %s\n", conf.boundaryConditions & space_periodic_z ? "true" : "false");
+    printf("engine freeslip x : %s\n", conf.boundaryConditions & SPACE_FREESLIP_X ? "true" : "false");
+    printf("engine freeslip y : %s\n", conf.boundaryConditions & SPACE_FREESLIP_Y ? "true" : "false");
+    printf("engine freeslip z : %s\n", conf.boundaryConditions & SPACE_FREESLIP_Z ? "true" : "false");
+    printf("engine periodic ghost x : %s\n", conf.boundaryConditions & space_periodic_ghost_x ? "true" : "false");
+    printf("engine periodic ghost y : %s\n", conf.boundaryConditions & space_periodic_ghost_y ? "true" : "false");
+    printf("engine periodic ghost z : %s\n", conf.boundaryConditions & space_periodic_ghost_z ? "true" : "false");
     
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , conf.periodic ,
+    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , conf.boundaryConditions ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
         printf("main: engine_init failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
