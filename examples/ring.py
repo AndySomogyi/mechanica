@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dim=[20., 20., 20.], cutoff=8, periodic=m.PERIODIC_NONE)
+m.Simulator(dim=[20., 20., 20.], cutoff=8, bc=m.BOUNDARY_NONE)
 
 class Bead(m.Particle):
     mass = 1

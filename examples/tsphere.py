@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dim=[25., 25., 25.], dt=0.0005, cutoff=3, periodic=m.PERIODIC_NONE)
+m.Simulator(dim=[25., 25., 25.], dt=0.0005, cutoff=3, bc=m.BOUNDARY_NONE)
 
 class Green(m.Particle):
     mass = 1

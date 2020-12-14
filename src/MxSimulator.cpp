@@ -438,7 +438,7 @@ HRESULT _MxSimulator_init(PyObject* m) {
             .export_values();
 
     py::enum_<PeriodicFlags>(m, "BoundaryConditions", py::arithmetic())
-        .value("PERIODIC_NONE",       space_periodic_none)
+        .value("BOUNDARY_NONE",       space_periodic_none)
         .value("PERIODIC_X",          space_periodic_x)
         .value("PERIODIC_Y",          space_periodic_y)
         .value("PERIODIC_Z",          space_periodic_z)
