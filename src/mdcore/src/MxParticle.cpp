@@ -133,7 +133,7 @@ static PyObject* particle_spherical(MxParticleHandle *part, PyObject *args);
 
 static PyObject* particle_fission(MxParticleHandle *part, PyObject *args, PyObject *kwargs);
 
-static PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
+static PyObject* particle_virial(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particle_become(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
@@ -767,7 +767,7 @@ static PyMethodDef particle_methods[] = {
         { "split", (PyCFunction)particle_fission, METH_VARARGS, NULL }, // alias name
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { "spherical", (PyCFunction)particle_spherical, METH_VARARGS, NULL },
-        { "pressure", (PyCFunction)particle_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "virial", (PyCFunction)particle_virial, METH_VARARGS | METH_KEYWORDS, NULL },
         { "become", (PyCFunction)particle_become, METH_VARARGS | METH_KEYWORDS, NULL },
         { "neighbors", (PyCFunction)particle_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
         { "distance", (PyCFunction)particle_distance, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -1460,7 +1460,7 @@ PyObject* particle_spherical(MxParticleHandle *_self, PyObject *args)
     }
 }
 
-PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *kwargs)
+PyObject* particle_virial(MxParticleHandle *_self, PyObject *args, PyObject *kwargs)
 {
     try {
         MxParticle *self = MxParticle_Get(_self);
@@ -1481,7 +1481,7 @@ PyObject* particle_pressure(MxParticleHandle *_self, PyObject *args, PyObject *k
             typeIds.emplace(i);
         }
         
-        HRESULT result = MxCalculatePressure(pos.data(), radius, typeIds, mat.data());
+        HRESULT result = MxCalculateVirial(pos.data(), radius, typeIds, mat.data());
         
         return mx::cast(mat);
     }

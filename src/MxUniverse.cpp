@@ -42,7 +42,7 @@ static HRESULT universe_bind_potential(MxPotential *pot, PyObject *a, PyObject *
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a);
 
-static PyObject *universe_pressure(PyObject *_args, PyObject *_kwargs);
+static PyObject *universe_virial(PyObject *_args, PyObject *_kwargs);
 
 static Magnum::Vector3 universe_center();
 
@@ -267,9 +267,9 @@ HRESULT _MxUniverse_init(PyObject* m)
         }
     );
 
-    u.def_static("pressure", [](py::args args, py::kwargs kwargs) -> py::handle {
+    u.def_static("virial", [](py::args args, py::kwargs kwargs) -> py::handle {
             UNIVERSE_CHECK();
-            return universe_pressure(args.ptr(), kwargs.ptr());
+            return universe_virial(args.ptr(), kwargs.ptr());
         }
     );
     
@@ -551,7 +551,7 @@ void print_performance_counters() {
 }
 
 
-PyObject *universe_pressure(PyObject *_args, PyObject *_kwargs) {
+PyObject *universe_virial(PyObject *_args, PyObject *_kwargs) {
     try {
         PyObject *_origin = mx::arg("origin", 0, _args, _kwargs);
         PyObject *_radius = mx::arg("radius", 1, _args, _kwargs);
@@ -603,7 +603,7 @@ PyObject *universe_pressure(PyObject *_args, PyObject *_kwargs) {
             }
         }
         Magnum::Matrix3 m;
-        HRESULT result = MxCalculatePressure(origin.data(),
+        HRESULT result = MxCalculateVirial(origin.data(),
                                              radius,
                                              typeIds,
                                              m.data());

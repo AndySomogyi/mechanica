@@ -50,7 +50,7 @@ static MxParticle *remove_particle_at_index(MxCluster *cluster, int index);
 
 static PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plane);
 
-static PyObject* cluster_pressure(PyObject *_self, PyObject *args, PyObject *kwargs);
+static PyObject* cluster_virial(PyObject *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* cluster_radius_of_gyration(PyObject *_self, PyObject *args, PyObject *kwargs);
 
@@ -503,7 +503,7 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
 static PyMethodDef cluster_methods[] = {
     { "fission", (PyCFunction)cluster_fission, METH_VARARGS | METH_KEYWORDS, NULL },
     { "split", (PyCFunction)cluster_fission, METH_VARARGS | METH_KEYWORDS, NULL }, // alias name
-    { "pressure", (PyCFunction)cluster_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "virial", (PyCFunction)cluster_virial, METH_VARARGS | METH_KEYWORDS, NULL },
     { "radius_of_gyration", (PyCFunction)cluster_radius_of_gyration, METH_VARARGS | METH_KEYWORDS, NULL },
     { "center_of_mass", (PyCFunction)cluster_center_of_mass, METH_VARARGS | METH_KEYWORDS, NULL },
     { "center_of_geometry", (PyCFunction)cluster_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -757,14 +757,14 @@ int MxCluster_Check(PyObject *p) {
 
 // TODO: in universe.bind, check keywords are correct, and no extra keyworkds
 // TODO: simulator init, turn off periodoc if only single cell. 
-PyObject* cluster_pressure(PyObject *_self, PyObject *args, PyObject *kwargs)
+PyObject* cluster_virial(PyObject *_self, PyObject *args, PyObject *kwargs)
 {
     try {
         MxParticle *self = MxParticle_Get(_self);
         
         Magnum::Matrix3 mat;
         
-        HRESULT result = MxParticles_Pressure(self->parts,
+        HRESULT result = MxParticles_Virial(self->parts,
                                               self->nr_parts, 0, mat.data());
         
         if(SUCCEEDED(result)) {

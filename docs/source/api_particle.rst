@@ -75,7 +75,7 @@ Particles and Clusters
                              uses the center of the simulation domain as the
                              origin. 
 
-   .. method:: pressure()
+   .. method:: virial()
 
 
    .. method:: neighbors([distance], [types])
@@ -122,9 +122,9 @@ Particles and Clusters
       :param point: (length 3 vector (,optional)) - if given, uses this point to
                     determine the point-normal form for the clevage plane. 
 
-   .. method:: pressure()
+   .. method:: virial()
 
-      Computes the :ref:`Pressure Tensor` for the particles in this cluster. 
+      Computes the :ref:`Virial Tensor` for the particles in this cluster. 
 
    .. method:: radius_of_gyration()
 

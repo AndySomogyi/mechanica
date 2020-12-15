@@ -150,9 +150,9 @@ static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
 }
 
 /**
- * top level pressure tensor method
+ * top level virial tensor method
  */
-static PyObject* pressure(PyObject *m, PyObject *args, PyObject *kwargs) {
+static PyObject* virial(PyObject *m, PyObject *args, PyObject *kwargs) {
     return NULL;
 }
 
@@ -183,7 +183,7 @@ static PyMethodDef methods[] = {
         { "bind_sphere", (PyCFunction)bind_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "pressure", (PyCFunction)pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 

@@ -17,7 +17,7 @@
 #include "potential_eval.h"
 
 
-static HRESULT pressure_pair (float cutoff,
+static HRESULT virial_pair (float cutoff,
                               const std::set<short int> &typeIds,
                               space_cell *cell_i,
                               space_cell *cell_j,
@@ -36,7 +36,7 @@ static HRESULT enum_particles(const Magnum::Vector3 &origin,
                               std::vector<int32_t> &ids);
 
 
-HRESULT MxCalculatePressure(FPTYPE *_origin,
+HRESULT MxCalculateVirial(FPTYPE *_origin,
                             FPTYPE radius,
                             const std::set<short int> &typeIds,
                             FPTYPE *tensor) {
@@ -125,7 +125,7 @@ HRESULT MxCalculatePressure(FPTYPE *_origin,
                 cj = &s->cells[id2];
                 sid = space_getsid(s , &c , &cj , shift.data());
                 
-                HRESULT result = pressure_pair (radius, typeIds, c, cj, sid, shift, m);
+                HRESULT result = virial_pair (radius, typeIds, c, cj, sid, shift, m);
             } /* for every neighbouring cell in the z-axis... */
         } /* for every neighbouring cell in the y-axis... */
     } /* for every neighbouring cell in the x-axis... */
@@ -164,7 +164,7 @@ Magnum::Vector3 MxCartesianToSpherical(const Magnum::Vector3& pos,
 }
 
 
-static HRESULT pressure_pair (float cutoff,
+static HRESULT virial_pair (float cutoff,
                               const std::set<short int> &typeIds,
                               space_cell *cell_i,
                               space_cell *cell_j,
@@ -463,7 +463,7 @@ HRESULT MxParticles_MomentOfInertia(int32_t *parts, uint16_t nr_parts,
 
 
 
-CAPI_FUNC(HRESULT) MxParticles_Pressure(int32_t *parts,
+CAPI_FUNC(HRESULT) MxParticles_Virial(int32_t *parts,
                                                    uint16_t nr_parts,
                                                    uint32_t flags,
                                                    FPTYPE *tensor) {

@@ -16,7 +16,7 @@
 
 /**
  * @origin [in] origin of the sphere where we will comptute
- * the local pressure tensor.
+ * the local virial tensor.
  * @radius [in] include all partices a given radius in calculation. 
  * @typeIds [in] vector of type ids to indlude in calculation,
  * if empty, includes all particles.
@@ -26,19 +26,19 @@
  * If periodoc, we don't include the periodic image cells, because we only
  * calculate the forces within the simulation volume.
  */
-CAPI_FUNC(HRESULT) MxCalculatePressure(FPTYPE *origin,
+CAPI_FUNC(HRESULT) MxCalculateVirial(FPTYPE *origin,
                                        FPTYPE radius,
                                        const std::set<short int> &typeIds,
                                        FPTYPE *tensor);
 
 /**
- * calculate the pressure tensor for a specific list of particles.
+ * calculate the virial tensor for a specific list of particles.
  * currently uses center of mass as origin, may change in the
  * future with different flags.
  *
  * flags currently ignored.
  */
-CAPI_FUNC(HRESULT) MxParticles_Pressure(int32_t *parts,
+CAPI_FUNC(HRESULT) MxParticles_Virial(int32_t *parts,
                                         uint16_t nr_parts,
                                         uint32_t flags,
                                         FPTYPE *tensor);

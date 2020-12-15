@@ -7,8 +7,8 @@ quantities. Some of these are top-level metrics, and depend on the entire
 simulation volume, and others are localized to individual objects. :any:`Simulator`
 
 
-Pressure Tensor
----------------
+Pressure and Virial Tensors
+---------------------------
 For a system of N particles in a volume V, we can compute the  surface tension
 from the diagonal components of the pressure tensor
 :math:`P_{\alpha,\alpha}(\alpha=x,y,z)`. The :math:`P_{xx}` components are:
@@ -33,12 +33,32 @@ tensor calculation, it specifically excludes any external force. The pressure
 tensor here is a measure of how much *internal* force exists in the specified
 set of particles.
 
-We provide a number of different options for calculating the pressure
+.. _virial:
+
+We comonly refer to the right hand side above as the `virial`, it represents
+half of the the product of the stress due to the net force between pairs of
+particles and the distance between them. We formally define the virial tensor
+components as
+
+.. math::
+
+   V_{\alpha,\beta} = \sum^{N-1}_{i=1} \
+       \sum^{N}_{j>i} \
+       (\mathbf{r}_{ij})_{\alpha} \
+       (\mathbf{f}_{ij})_{\beta}.
+
+
+The volume of a group of particles is not well defined, as such we separate out
+computing the virial component, and the volume, and give users the flexiblity of
+using different volume metrics. 
+
+
+We provide a number of different options for calculating the virial
 tensor. You can compute the pressure tensor for the entire simulation domain, or
-a specific region using the :meth:`Universe.pressure` method. Can compute the
-pressure tensor for a specific cluster using the :meth:`Cluster.pressure` method,
+a specific region using the :meth:`Universe.virial` method. Can compute the
+pressure tensor for a specific cluster using the :meth:`Cluster.virial` method,
 or can compute the tensor at a specific particle location using
-:meth:`Particle.pressure` method. 
+:meth:`Particle.virial` method. 
 
 
 

@@ -91,18 +91,18 @@ Universe
                  stepping, optional. 
 
 
-   .. staticmethod:: pressure([origin], [radius], [types])
+   .. staticmethod:: virial([origin], [radius], [types])
 
-      Computes the :ref:`Pressure Tensor` for the either the entire simulation
-      domain, or a specific local pressure tensor at a location and
+      Computes the :ref:`Virial Tensor` for the either the entire simulation
+      domain, or a specific local virial tensor at a location and
       radius. Optionally can accept a list of particle types to restrict the
-      pressure calculation for specify types.
+      virial calculation for specify types.
 
       :param origin: An optional length-3 array for the origin. Defaults to the
                      center of the simulation domain if not given.
 
       :param radius: An optional number specifying the size of the region to
-                     compute the pressure tensor for. Defaults to the entire
+                     compute the virial tensor for. Defaults to the entire
                      simulation domain.
 
       :param types: An optional list of :class:`Particle` types to include in

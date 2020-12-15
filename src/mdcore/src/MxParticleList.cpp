@@ -15,7 +15,7 @@
 #include <cstdarg>
 #include <iostream>
 
-static PyObject* list_pressure(MxParticleList *self, PyObject *args, PyObject *kwargs);
+static PyObject* list_virial(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 static PyObject* list_radius_of_gyration(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
@@ -177,7 +177,7 @@ static PySequenceMethods sequence_methods =  {
 };
 
 static PyMethodDef list_methods[] = {
-    { "pressure", (PyCFunction)list_pressure, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "virial", (PyCFunction)list_virial, METH_VARARGS | METH_KEYWORDS, NULL },
     { "radius_of_gyration", (PyCFunction)list_radius_of_gyration, METH_VARARGS | METH_KEYWORDS, NULL },
     { "center_of_mass", (PyCFunction)list_center_of_mass, METH_VARARGS | METH_KEYWORDS, NULL },
     { "center_of_geometry", (PyCFunction)list_center_of_geometry, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -319,13 +319,13 @@ MxParticleList* MxParticleList_FromList(PyObject *list) {
 
 // TODO: in universe.bind, check keywords are correct, and no extra keyworkds
 // TODO: simulator init, turn off periodoc if only single cell.
-PyObject* list_pressure(MxParticleList *self, PyObject *args, PyObject *kwargs)
+PyObject* list_virial(MxParticleList *self, PyObject *args, PyObject *kwargs)
 {
     try {
         
         Magnum::Matrix3 mat;
         
-        HRESULT result = MxParticles_Pressure(self->parts,
+        HRESULT result = MxParticles_Virial(self->parts,
                                               self->nr_parts, 0, mat.data());
         
         if(SUCCEEDED(result)) {

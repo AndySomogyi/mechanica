@@ -98,6 +98,14 @@ type, or a instance of a subclass of it.
 
 
 
+Boundary Conditions
+-------------------
+
+We can specify a variety of different boundary conditions via the `bc` argument
+to the :any:`Simulator` constructor. We offer a range of boundary condition
+options in the :ref:`Boundary Condition Constants` section.
+
+
 Controlling Temperature
 -----------------------
 
