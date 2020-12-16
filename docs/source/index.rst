@@ -28,6 +28,7 @@ Contents:
    potentials
    metrics
    become
+   style
    flux
    bonded_interactions
    continuum-reactions

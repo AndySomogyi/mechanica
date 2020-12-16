@@ -50,6 +50,12 @@ Particles and Clusters
 
    .. attribute:: style
 
+      ``Style`` -- gets / sets the style of an object. When we create a new
+      particle instance, it's style points to the style attribute of the
+      particle's type, so that if we change something in the particle type, this
+      changes every instance of that type. For more details, see the
+      :ref:`style-label` section. 
+
 
    .. attribute:: frozen
 

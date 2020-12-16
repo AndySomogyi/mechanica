@@ -2,6 +2,31 @@ Style
 -----
 
 
+.. class:: Style(object)
+
+   The Style object contains all of the rendering visual style attribute of an
+   object. Most simulation objects in Mechanica have a `style` attribute.
+
+   .. attribute:: color
+
+      ``Color4`` -- gets / sets the color of the style. This is actually a
+      ``Color4`` object, but we can set it's color value either as a Color
+      object, or via one of the color strings from :ref:`Colors`, i.e. ::
+
+        >>> c = m.Style()
+        >>> c.color = "DeepSkyBlue"
+
+      The color string is not case sensitive.
+
+
+   .. attribute:: visible
+
+      ``boolean`` -- gets / sets the visible property. This toggles the
+      visibility of any rendered object.
+
+
+
+
 Colors
 ^^^^^^
 
@@ -166,8 +191,6 @@ For example, to make some colors::
 
 As it's easy to make a mistake with color names, we simply issue a warnign,
 instead of an error if the color name can't be found. 
-
-.. module::  mechanica
 
 
 .. class:: Color3
