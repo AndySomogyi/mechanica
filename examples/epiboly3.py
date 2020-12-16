@@ -64,6 +64,7 @@ B.style.visible = False
 
 
 
+c.neighbors(distance=1, types=(A))
 
 def update(e):
     print(B.items().center_of_mass())

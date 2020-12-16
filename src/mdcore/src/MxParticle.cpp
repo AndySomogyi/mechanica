@@ -1641,6 +1641,11 @@ PyObject* particle_fission(MxParticleHandle *part, PyObject *args,
     }
 }
 
+int MxParticleType_Check(PyObject* obj) {
+    PyTypeObject *ptype = (PyTypeObject*)MxParticle_GetType();
+    return PyType_IsSubtype((PyTypeObject *)obj, ptype);
+}
+
 MxParticle* MxParticle_Get(PyObject* obj) {
     if(MxParticle_Check(obj)) {
         MxParticleHandle *pypart = (MxParticleHandle*)obj;
@@ -1835,23 +1840,47 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
             radius = _Engine.s.cutoff;
         }
         
-        MxParticle *self = MxParticle_Get(_self);
-        
-        radius += self->radius;
-        
-        uint16_t nr_parts;
-        int32_t *parts;
+        PyObject *ptypes = mx::arg("types", 1, args, kwargs);
         
         std::set<short int> types;
         
-        // get the type ids, we're a particle, so only select other particles
-        // by default
-        for(int i = 0; i < _Engine.nr_types; ++i) {
-            if(PyType_IsSubtype((PyTypeObject*)&_Engine.types[i], (PyTypeObject*)MxCluster_GetType())) {
-                continue;
+        if(ptypes) {
+            if(MxParticleType_Check(ptypes)) {
+                // only have a single type in the list
+                types.insert(((MxParticleType*)ptypes)->id);
             }
-            types.insert(i);
+            else if(PyTuple_Check(ptypes)) {
+                int len = PyTuple_Size(ptypes);
+                for(int i = 0; i < len; ++i) {
+                    MxParticleType *o = (MxParticleType*)PyTuple_GetItem(ptypes, i);
+                    if(!MxParticleType_Check((PyObject*)o)) {
+                        throw std::invalid_argument("type must be a Particle derived type");
+                    }
+                    types.insert(o->id);
+                }
+            }
+            else {
+                throw std::invalid_argument("types must be a tuple, or a Particle derived type");
+            }
         }
+        else {
+            // get the type ids, we're a particle, so only select other particles
+            // by default
+            for(int i = 0; i < _Engine.nr_types; ++i) {
+                if(PyType_IsSubtype((PyTypeObject*)&_Engine.types[i], (PyTypeObject*)MxCluster_GetType())) {
+                    continue;
+                }
+                types.insert(i);
+            }
+        }
+        
+        MxParticle *self = MxParticle_Get(_self);
+        
+        // take into account the radius of this particle.
+        radius += self->radius;
+        
+        uint16_t nr_parts = 0;
+        int32_t *parts = NULL;
         
         MxParticles_AtLocation(self->global_position().data(), radius, &types, &nr_parts, &parts);
         

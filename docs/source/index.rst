@@ -27,6 +27,7 @@ Contents:
    cleavage
    potentials
    metrics
+   become
    flux
    bonded_interactions
    continuum-reactions

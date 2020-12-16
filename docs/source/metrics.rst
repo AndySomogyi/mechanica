@@ -1,7 +1,6 @@
 Metrics and Derived Quantities
 ==============================
 
-
 Mechanica provides numerous methods to compute a range of derived
 quantities. Some of these are top-level metrics, and depend on the entire
 simulation volume, and others are localized to individual objects. :any:`Simulator`
@@ -41,17 +40,18 @@ particles and the distance between them. We formally define the virial tensor
 components as
 
 .. math::
-
    V_{\alpha,\beta} = \sum^{N-1}_{i=1} \
        \sum^{N}_{j>i} \
        (\mathbf{r}_{ij})_{\alpha} \
        (\mathbf{f}_{ij})_{\beta}.
+   :label: eqn-virial
 
 
 The volume of a group of particles is not well defined, as such we separate out
 computing the virial component, and the volume, and give users the flexiblity of
 using different volume metrics. 
 
+.. _my-reference-label:
 
 We provide a number of different options for calculating the virial
 tensor. You can compute the pressure tensor for the entire simulation domain, or

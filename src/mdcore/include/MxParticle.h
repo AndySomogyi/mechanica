@@ -403,7 +403,7 @@ CAPI_FUNC(MxParticleType*) MxParticleType_Get(PyObject *obj);
  */
 CAPI_FUNC(MxParticle*) MxParticle_Get(PyObject* obj);
 
-CAPI_FUNC(int) MxParticle_Check(PyObject* obj);
+CAPI_FUNC(int) MxParticleType_Check(PyObject* obj);
 
 
 /**

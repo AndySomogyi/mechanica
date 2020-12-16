@@ -2,8 +2,6 @@ Particles and Clusters
 ----------------------
 
 
-
-
 .. class:: Particle(object)
 
    The particle is the most basic physical object we provide. All other physical
@@ -13,17 +11,19 @@ Particles and Clusters
 
    .. attribute:: position
 
+      ``vector3`` -- gets / sets the global position of the particle
 
    .. attribute:: velocity
 
+      ``vector3`` -- returns the velocity of the particle, read-only
 
    .. attribute:: force
 
-
-
+      ``vector3`` -- returns the net force that acts on this particle
 
    .. attribute:: charge
 
+      ``number`` -- gets the total charge of the particle. 
 
    .. attribute:: mass
 
@@ -39,6 +39,11 @@ Particles and Clusters
 
    .. attribute:: dynamics
 
+      ``number`` -- one of the :ref:`Integrator Constants` that specifies the
+      time evolution of this particle. Particles can be either intertial
+      particles that obey Newtonian dynamics, :math:`F=ma` or overdamped
+      dynamics, :math:`F \propto mv`. 
+
 
    .. attribute:: age
 
@@ -48,6 +53,9 @@ Particles and Clusters
 
    .. attribute:: frozen
 
+      Get / sets the `frozen` attribute. Frozen particles are fixed in place,
+      and will not move if any force acts on them. 
+
    .. attribute:: id
 
    .. attribute:: type_id
@@ -55,12 +63,34 @@ Particles and Clusters
 
    .. attribute:: flags
 
-   .. method:: fission()
+   .. method:: become(type)
 
+      Dynamically changes the *type* of an object. We can change the type of a
+      :any:`Particle` derived object to anyther pre-existing :any:`Particle`
+      derived type. What this means is that if we have an object of say type
+      *A*, we can change it to another type, say *B*, and and all of the forces
+      and processes that acted on objects of type A stip and the forces and
+      processes defined for type B now take over. See section :ref:`Changing
+      Type` for more details. 
+
+      :param type: (Type) 
+
+   
    .. method:: split()
 
+      Splits a single particle into two, for more details, see section
+      :ref:`Splitting and Cleavage`. The particle version of `split` is fairly
+      simple, however the :meth:`Cluster.split` offers many more options. 
 
-   .. method:: destroy
+   .. method:: fission()
+
+      synonym for :meth:`split`
+
+   .. method:: destroy()
+
+      Destroys the particle, and removes it form inventory. The present object
+      is handle that now references an empty particle. Calling any method after
+      `destroy` will result in an error. 
 
    .. method:: spherical([origin])
 
@@ -75,7 +105,15 @@ Particles and Clusters
                              uses the center of the simulation domain as the
                              origin. 
 
-   .. method:: virial()
+   .. method:: virial([distance])
+
+      Computes the virial tensor, see :ref:`Pressure and Virial Tensors`. 
+
+      :param distance: (number (,optional)) distance from the center of this
+                       particle to include the other particles to use for the
+                       virial calculation. 
+
+      :rtype: 3x3 matrix
 
 
    .. method:: neighbors([distance], [types])
@@ -84,16 +122,21 @@ Particles and Clusters
       default, we list all the nearest particles that interact with the current
       one via forces.
 
-      :param axis: (length 3 vector (,optional)) - An optional cut-off
+      :param distance: (number (,optional)) - An optional search
                    distance, if specified will get all objects within the given
-                   distance.
+                   distance. Defaults to the global simulation cutoff distance. 
 
-      :param types: ([types], (,optional)) -- If specified, can provide a list
+      :param types: (tuple, (,optional)) -- If specified, can provide a tuple
                     of types to include in the neighbor search. If types are
                     provides, this method will return all non-cluster particles
-                    within a certain distance. 
+                    within a certain distance. Defaults to all types. 
 
+      For example, to search for all objects of type `A` and `B` a distance of 1
+      unit away from a particle `p`, we would::
 
+        >>> nbrs = p.neighbors(distance=1, types=(A, B))
+        >>> print(len(nbrs))
+  
 
 
 .. class:: Cluster(Particle)
@@ -105,7 +148,7 @@ Particles and Clusters
       Splits the cluster into two clusters, where the first one is the original
       cluster and the new one is a new 'daughter' cluster.
 
-      split is discussed in detail in :ref:`Mitosis and Events`
+      split is discussed in detail in :ref:`Splitting and Cleavage`
 
 
       :param axis: (length 3 vector (,optional)) - orientation axis for a
