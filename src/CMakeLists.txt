@@ -392,6 +392,10 @@ target_include_directories(mechanica_py PRIVATE
 
 target_include_directories(mechanica_py PRIVATE ${PYBIND11_INCLUDE_DIR})
 
+target_link_libraries(mechanica_py PUBLIC
+  Carbon::Static
+  )
+
 target_link_libraries(mechanica_py PRIVATE
   Carbon::Static
   mdcore_single
@@ -406,11 +410,8 @@ target_link_libraries(mechanica_py PRIVATE
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools
+  LibSBML::LibSBML
   ${MX_JPEG_LIBRARIES}
-  )
-
-target_link_libraries(mechanica_py PUBLIC
-  Carbon::Static
   )
 
 if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
@@ -512,14 +513,8 @@ target_link_libraries(mechanica_shared
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools
+  LibSBML::LibSBML
   ${MX_JPEG_LIBRARIES}
-  )
-
-
-
-
-target_link_libraries(mechanica_shared PUBLIC
-  Carbon::Static
   )
 
 

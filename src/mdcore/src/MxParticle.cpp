@@ -43,6 +43,11 @@
 #include "metrics.h"
 #include "MxConvert.hpp"
 #include "MxParticleList.hpp"
+
+#include <CSpecies.hpp>
+#include <CSpeciesList.hpp>
+#include <CStateVector.hpp>
+
 #include <sstream>
 
 struct Foo {
@@ -758,7 +763,23 @@ PyGetSetDef particle_getsets[] = {
         .doc = "test doc",
         .closure = NULL
     },
-    
+    {
+        .name = "species",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxParticle *part = MxParticle_Get(obj);
+            if(part->state_vector) {
+                Py_INCREF(part->state_vector);
+                return part->state_vector;
+            }
+            Py_RETURN_NONE;
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {NULL}
 };
 
@@ -960,6 +981,23 @@ static PyGetSetDef particle_type_getset[] = {
     gs_type_target_temperature,
     gs_style,
     gs_frozen,
+    {
+        .name = "species",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxParticleType *type = (MxParticleType*)obj;
+            if(type->species) {
+                Py_INCREF(type->species);
+                return type->species;
+            }
+            Py_RETURN_NONE;
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {NULL},
 };
 
@@ -1256,6 +1294,13 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 colors[(_Engine.nr_types - 1) % (sizeof(colors)/sizeof(unsigned))]);
         }
         
+        if(dict.contains("species")) {
+            self->species = CSpeciesList_NewFromPyArgs(dict["species"].ptr());
+        }
+        else {
+            self->species = NULL;
+        }
+        
         // pybind does not seem to wrap deleting item from dict, WTF?!?
         if(self->ht_type.tp_dict) {
             
@@ -1297,6 +1342,10 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             if(PyDict_Contains(_dict, key.ptr())) {
                 PyDict_DelItem(_dict, key.ptr());
             }
+            key = pybind11::cast("species");
+            if(PyDict_Contains(_dict, key.ptr())) {
+                PyDict_DelItem(_dict, key.ptr());
+            }
         }
         
         if(CDict_ContainsItemString(_dict, "events")) {
@@ -1305,7 +1354,6 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
 
         // bind all the events that are in the type dictionary
         MyParticleType_BindEvents(self, PyDict_Values(_dict));
-        
         
         // special stuff for cluster types
         if(PyType_IsSubtype(self->ht_type.tp_base, (PyTypeObject*)MxCluster_GetType())) {
@@ -1642,8 +1690,11 @@ PyObject* particle_fission(MxParticleHandle *part, PyObject *args,
 }
 
 int MxParticleType_Check(PyObject* obj) {
-    PyTypeObject *ptype = (PyTypeObject*)MxParticle_GetType();
-    return PyType_IsSubtype((PyTypeObject *)obj, ptype);
+    if(PyType_Check(obj)) {
+        PyTypeObject *ptype = (PyTypeObject*)MxParticle_GetType();
+        return PyType_IsSubtype((PyTypeObject *)obj, ptype);
+    }
+    return 0;
 }
 
 MxParticle* MxParticle_Get(PyObject* obj) {
@@ -1960,26 +2011,20 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
-    MxParticle part = {};
-    part.position = {};
-    part.velocity = {};
-    part.force = {};
-    part.persistent_force = {};
-    part.q = 0;
+    MxParticle part;
+    bzero(&part, sizeof(MxParticle));
     part.radius = type->radius;
     part.mass = type->mass;
     part.imass = type->imass;
     part.id = engine_next_partid(&_Engine);
-    part.vid = 0;
     part.typeId = type->id;
     part.flags = type->particle_flags;
-    part._pyparticle = NULL;
-    part.parts = NULL;
-    part.nr_parts = 0;
-    part.size_parts = 0;
     part.creation_time = _Engine.time;
-    part.style = NULL;
     part.clusterId = -1;
+    
+    if(type->species) {
+        part.state_vector = CStateVector_New(type->species, 0, 0, 0);
+    }
     
     if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
         std::cout << "making cluster" << std::endl;
