@@ -2,17 +2,14 @@ import mechanica as m
 
 m.Simulator()
 
-class Foo(m.Particle):
+class A(m.Particle):
     species = ['S1', 'S2', 'S3']
 
-
-print("Foo.species:")
-print(Foo.species)
+print("A.species:")
+print(A.species)
 
 print("making f")
-f = Foo()
+a = A()
 
 print("f.species")
-print(f.species)
-
-m.show()
+print(a.species)

@@ -9,6 +9,8 @@ irun = Simulator.irun
 step = Universe.step
 stop = Universe.stop
 start = Universe.start
+Species = carbon.Species
+SpeciesList = carbon.SpeciesList
 
 __version__ = _mechanica.__version__
 

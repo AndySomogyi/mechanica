@@ -1,5 +1,5 @@
-Flux and Transport 
-------------------
+Chemical Reactions, Flux and Transport 
+=======================================
 
 Unlike a traditional micro-scale molecular dynamics approach, where each
 computational particle represents an individual physical atom, a DPD is
@@ -15,31 +15,145 @@ the main particles represent the bulk medium, or the 'solvent', and these carry
 along, or advect attached solutes. We introduce the term 'cargo' to refer to the
 localized chemical solutes at each particle.
 
+Before we cover spatial transport, we first cover adding chemical reaction
+networks to objects. 
 
-Here we discuss tDPD formalism and demonstrate how to implement a tDPD model using
-Mechanica.
-
-To attach chemical cargo to a particle, we simply add a ``Species`` specifier to
+To attach chemical cargo to a particle, we simply add a ``species`` specifier to
 the particle type definition as::
 
   class A(m.Particle):
     species = ['S1', 'S2', S3']
 
-This automatically attaches instance variables ``S1``, ``S2`` and ``S3`` to the
-type ``A``, so that every instance of this type has the species attached to
-it. Internally Mechanica stores all species in a separate memory block, and the
-species symbols are really just accessors. So with the above particle, we can
-easily access these values by::
+This defines the three chemical species, `S1`, `S2`, and `S3` in the *type*
+definition. Thus, when we create an *instance* of the object, that instance will
+have a vector of chemical species attached to it, and is accessible via the
+:any:`Particle.species` attribute. Internally, we allocate a memory block for
+each object instance, and users can attach a set of reactions to define the time
+evolution of these attached chemical species.
 
-  a = A()
-  a.S1 = 23
-  print(a.S2)
+If we access this species list from the *type*, we get::
 
-This simple version of the ``species`` keyword defaults to create a set of *floating*
-species, or species who's value varies in time, and they participate in reaction
-and flux processes. We also allow other kinds species such as *boundary*, or
-have initial values, but we refer to these more advanced uses in the
-:ref:`Species` section. 
+  >>> print(A.species)
+  SpeciesList(['S1', 'S2', 'S3'])
+
+This is a special list of SBML species definitions. It's important to note that
+once we've defined the list of species in each time, that list is
+immutable. Creating a list of species with just their names is the simplest
+example, if we need more control, we can create a list from more complex species
+definition strings in :ref:`Species`.
+
+If a *type* is defined with a `species` definition, every *instance* of that
+type will get a *StateVector*, of these substances. Internally, a state vector
+is really just a contiguous block of numbers, and we can attach a reaction
+network or rate rules to define their time evolution. 
+
+Each *instance* of a type with a `species` identifier gets a `species`
+attribute, and we can access the values here. In the instance, the `species`
+attribute acts a bit like an array, in that we can get it's length, and use
+numeric indices to read values::
+
+  >>> a = A()
+  >>> print(a.species)
+  StateVector([S1:0, S2:0, S3:0])
+
+As we can see, the state vector is array like, but in addition to the numerical
+values of the species, it contains a lot of meta-data of the species
+definitions. We can access individual values using array indexing as::
+
+  >>> print(a.species[0])
+  0.0
+
+  >>> a.species[0] = 1
+  >>> print(a.species[0])
+  1.0
+
+The state vector also automatically gets accessors for each of the species
+names, and we can access them just like standard Python attributes::
+
+  >>> print(a.species.S1)
+  1.0
+
+  >>> a.species.S1 = 5
+  >>> print(a.species.S1)
+  5.0
+
+We can even get all of the original species attributes directly from the
+instance state vector like::
+
+  >>> print(a.species[1].id)
+  'S2'
+  >>> print(a.species.S2.id)
+  'S2'
+
+In most cases, when we access the species values, we are accessing the
+*concentration* value. See the SBML documentation, but the basic idea is that we
+internally work with amounts, but each of these species exists in a physical
+region of space (remember, a particle defines a region of space), so the value
+we return in the amount divided by the volume of the object that the species is
+in. Sometimes we want to work with amounts, or we explicitly want to work with
+concentrations. As such, we can access these with the `amount` or `conc`
+attributes on the state vector objects as such::
+
+  >>> print(a.species.amount)
+  1.0
+
+  >>> print(a.species.conc)
+  0.5
+
+
+
+.. _species-label:
+
+Species
+-------
+This simple version of the `species` definition defaults to create a set of
+*floating* species, or species who's value varies in time, and they participate
+in reaction and flux processes. We also allow other kinds species such as
+*boundary*, or have initial values. 
+
+The Mechanica :any:`Species` object is *essentially* a Python binding around the
+libSBML Species class, but provides some Pythonic conveniences. For example, in
+our binding, we use convential Python `snake_case` sytax, and all of the sbml
+properties are avialable via simple properties on the objects. Many SBML
+concepts such as `initial_amount`, `constant`, etc. are optional values that may
+or may not be set. In the standard libSBML binding, users need to use a variety
+of `isBoundaryConditionSet()`, `unsetBoundaryCondition()`, etc... methods that
+are a direct python binding to the native C++ API. As a convience to our
+users, our methods simply return a Python `None` if the field is not set,
+otherwise returns the value, i.e. to get an initial amount::
+
+  >>> print(a.initial_amount)
+  None
+  >>> a.initial_amount = 5.0
+
+This internally updates the libSBML `Species` object that we use. As such, if
+the user wants to save this sbml, all of these values are set accordingly. 
+
+The simplest species object simply takes the name of the species as the only
+argument::
+
+  >>> s = Species("S1")
+
+We can make a `boundary` species, that is, one that acts like a boundary
+condition with a "$" in the argument as::
+
+  >>> bs = Species("$S1")
+  >>> print(bs.id)
+  'S1'
+  >>> print(bs.boundary)
+  True
+
+The Species constructor also supports initial values, we specify these by adding
+a "= value" right hand side expression to the species string::
+
+  >>> ia = Species("S1 = 1.2345")
+  >>> print(ia.id)
+  'S1'
+  >>> print(ia.initial_amount)
+  1.2345
+
+Spatial Transport and Flux
+--------------------------
 
 Recall that the bulk or solvent particles don't represent a single molecule,
 but rather a parcel of fluid. As such, dissolved chemical solutes (cargo) in each
