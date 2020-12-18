@@ -2,20 +2,20 @@
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
  * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
 #ifndef INCLUDE_PARTICLE_H_
 #define INCLUDE_PARTICLE_H_
@@ -112,18 +112,17 @@ struct MxParticle  {
         FPTYPE f[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 force __attribute__ ((aligned (16))) = {0,0,0};
     };
-    
+
     /** random force force */
     union {
         Magnum::Vector3 persistent_force __attribute__ ((aligned (16))) = {0,0,0};
     };
-    
 
     // inverse mass
     double imass;
 
     float radius;
-    
+
     double mass;
 
 	/** individual particle charge, if needed. */
@@ -134,22 +133,15 @@ struct MxParticle  {
 	Magnum::Vector3 v0;
 	Magnum::Vector3 xk[4];
 	Magnum::Vector3 vk[4];
-    
 
-	/** 
-	 * Particle id, virtual id 
+	/**
+	 * Particle id, virtual id
 	 * TODO: not sure what virtual id is...
 	 */
 	int id, vid;
 
 	/** particle type. */
 	short int typeId;
-
-	/**
-	 * Id of the space cell that this particle belongs to.
-	 */
-	short int cellId;
-
 
 	/**
 	 * Id of this parts
@@ -159,12 +151,6 @@ struct MxParticle  {
 	/** Particle flags */
 	uint16_t flags;
 
-	/**
-	 * particle / potential interaction flags. Is one of the
-	 * PotentialFlags enumeration.
-	 */
-	//uint16_t potential_flags;
-    
     /**
      * pointer to the python 'wrapper'. Need this because the particle data
      * gets moved around between cells, and python can't hold onto that directly,
@@ -172,10 +158,9 @@ struct MxParticle  {
      * when this object gets moved.
      *
      * initialzied to null, and only set when .
-     
      */
     struct MxParticleHandle *_pyparticle;
-    
+
     /**
      * public way of getting the pyparticle. Creates and caches one if
      * it's not there.
@@ -188,27 +173,32 @@ struct MxParticle  {
     int32_t *parts;
     uint16_t nr_parts;
     uint16_t size_parts;
-    
+
     /**
      * add a particle (id) to this type
-     */    
+     */
     HRESULT addpart(int32_t uid);
-    
+
     /**
      * removes a particle from this cluster. Sets the particle cluster id
      * to -1, and removes if from this cluster's list.
      */
     HRESULT removepart(int32_t uid);
-    
+
     inline MxParticle *particle(int i);
 
     // style pointer, set at object construction time.
     // may be re-set by users later.
-    // the base particle type has a default style. 
+    // the base particle type has a default style.
     NOMStyle *style;
-    
+
+    /**
+     * pointer to state vector (optional)
+     */
+    struct CStateVector *state_vector;
+
     inline Magnum::Vector3 global_position();
-    
+
     inline void set_global_position(const Magnum::Vector3& pos);
 };
 
@@ -238,12 +228,12 @@ struct MxParticleHandle : PyObject {
  * gets allocated, its a python thing.
  */
 struct MxParticleType : PyHeapTypeObject {
-    
+
     static const int MAX_NAME = 64;
-    
+
     /** ID of this type */
     int id;
-    
+
     /**
      *  type flags
      */
@@ -254,24 +244,23 @@ struct MxParticleType : PyHeapTypeObject {
      * all new particle instances get a copy of these.
      */
     uint16_t particle_flags;
-    
-    
+
     /** Constant physical characteristics */
     double mass, imass, charge;
-    
+
     /** default radius for particles that don't define their own radius */
     double radius;
-    
+
     /**
      * energy and potential energy of this type, this is updated by the engine
      * each time step.
      */
     double kinetic_energy;
-    
+
     double potential_energy;
-    
+
     double target_energy;
-    
+
     /**
      * minimum radius, if a fission event occurs, it will not spit a particle
      * such that it's radius gets less than this value.
@@ -282,34 +271,39 @@ struct MxParticleType : PyHeapTypeObject {
 
     /** Nonbonded interaction parameters. */
     double eps, rmin;
-    
+
     /**
      * what kind of propator does this particle type use?
      */
     unsigned char dynamics;
-    
+
     /** Name of this particle type. */
     char name[MAX_NAME], name2[MAX_NAME];
-    
+
     /**
      * list of particles that belong to this type.
      */
     MxParticleList parts;
-    
+
     // style pointer, optional.
     NOMStyle *style;
-    
+
+    /**
+     * optional pointer to species list. This is the metadata for the species, define it in the type.
+     */
+    struct CSpeciesList *species;
+
     /**
      * add a particle (id) to this type
      */
     HRESULT addpart(int32_t id);
-    
-    
+
+
     /**
      * remove a particle id from this type
      */
     HRESULT del_part(int32_t id);
-    
+
     /**
      * get the i'th particle that's a member of this type.
      */
