@@ -1,54 +1,38 @@
 import mechanica as m
 import numpy as np
 
-# dimensions of universe
-dim=np.array([30., 30., 30.])
-
 m.Simulator()
 
 class A(m.Particle):
-    radius=0.2
+    radius=0.1
     dynamics = m.Overdamped
     mass=5
     style={"color":"MediumSeaGreen"}
 
 class B(m.Particle):
-    radius=0.2
+    radius=0.1
     dynamics = m.Overdamped
     mass=10
     style={"color":"skyblue"}
 
-p   = m.Potential.glj(e=8, m=3, max=1.0)
+p = m.Potential.coulomb(q=2, min=0.01, max=3)
 
 m.bind(p, A, A)
 m.bind(p, B, B)
 m.bind(p, A, B)
 
-r = m.forces.random(0, 5)
+r = m.forces.random(0, 1)
 
 m.bind(r, A)
 
-pos_a = m.random_points(m.SolidSphere, 6000, dr=0.45, phi=(0, 0.65 * np.pi)) * ((1 + 0.45/2) * C.radius)  + m.Universe.center
+pos = m.random_points(m.SolidCube, 50000) * 10 + m.Universe.center
 
-parts, bonds = m.bind_sphere(h, type=B, n=4, phi=(0.6 * np.pi, 0.7 * np.pi), radius = C.radius + B.radius)
+[A(p) for p in pos]
 
-[A(p) for p in pos_a]
+a = A.items()[0]
 
-#m.bind_pairwise(h, c.neighbors(2* A.radius), cutoff=2*A.radius, pairs=[(A,B)])
+[p.become(B) for p in a.neighbors(3)]
 
-C.style.visible = False
-B.style.visible = False
-#A.style.visible = False
-
-
-
-c.neighbors(distance=1, types=(A))
-
-def update(e):
-    print(B.items().center_of_mass())
-
-m.on_time(update, period=0.01)
-
-
+a.radius = 2
 
 m.show()

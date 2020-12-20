@@ -47,6 +47,23 @@ Boundary Condition Constants
 
    free slip in all directions
 
+.. _geometry_constants_label
+
+Geometry
+^^^^^^^^
+
+.. py:data:: Sphere
+
+.. py:data:: SolidSphere
+
+.. py:data:: Disk
+
+.. py:data:: SolidCube
+
+.. py:data:: Cube
+
+.. py:data:: Ring
+
 
 Integrator Constants
 ^^^^^^^^^^^^^^^^^^^^

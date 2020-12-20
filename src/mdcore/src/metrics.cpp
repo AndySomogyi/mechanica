@@ -613,8 +613,17 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
         ii = ijk[0] + l[0];
         
         /* wrap or abort if not periodic */
-        if (ii < 0 || ii >= s->cdim[0]) {
-            continue;
+        if ( ii < 0 ) {
+            if (s->period & space_periodic_x)
+                ii += s->cdim[0];
+            else
+                continue;
+        }
+        else if ( ii >= s->cdim[0] ) {
+            if (s->period & space_periodic_x)
+                ii -= s->cdim[0];
+            else
+                continue;
         }
         
         /* for every neighbouring cell in the y-axis... */
@@ -624,8 +633,17 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
             jj = ijk[1] + l[1];
             
             /* wrap or abort if not periodic */
-            if ( jj < 0 || jj >= s->cdim[1] ) {
-                continue;
+            if ( jj < 0 ) {
+                if (s->period & space_periodic_y)
+                    jj += s->cdim[1];
+                else
+                    continue;
+            }
+            else if ( jj >= s->cdim[1] ) {
+                if (s->period & space_periodic_y)
+                    jj -= s->cdim[1];
+                else
+                    continue;
             }
             
             /* for every neighbouring cell in the z-axis... */
@@ -635,8 +653,17 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
                 kk = ijk[2] + l[2];
                 
                 /* wrap or abort if not periodic */
-                if ( kk < 0  ||  kk >= s->cdim[2] ) {
-                    continue;
+                if ( kk < 0 ) {
+                    if (s->period & space_periodic_z)
+                        kk += s->cdim[2];
+                    else
+                        continue;
+                }
+                else if ( kk >= s->cdim[2] ) {
+                    if (s->period & space_periodic_z)
+                        kk -= s->cdim[2];
+                    else
+                        continue;
                 }
                 
                 /* Are these cells within the cutoff of each other? */
