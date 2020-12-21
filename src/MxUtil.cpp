@@ -15,6 +15,8 @@
 #include <MxNumpy.h>
 #include <MxConvert.hpp>
 
+#include <CConvert.hpp>
+
 #include "Magnum/Mesh.h"
 #include "Magnum/Math/Vector3.h"
 #include "Magnum/MeshTools/RemoveDuplicates.h"
@@ -30,6 +32,13 @@
 #include <unordered_map>
 #include <set>
 #include <iostream>
+
+
+
+#include <iostream>
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 
 const char* MxColor3Names[] = {
     "AliceBlue",
@@ -1110,5 +1119,714 @@ float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
     
     return std::abs(f);
 }
+
+
+
+#ifdef __GNUC__
+
+void __cpuid(int* cpuinfo, int info)
+{
+    __asm__ __volatile__(
+            "xchg %%ebx, %%edi;"
+            "cpuid;"
+            "xchg %%ebx, %%edi;"
+            :"=a" (cpuinfo[0]), "=D" (cpuinfo[1]), "=c" (cpuinfo[2]), "=d" (cpuinfo[3])
+             :"0" (info)
+    );
+}
+
+unsigned long long _xgetbv(unsigned int index)
+{
+    unsigned int eax, edx;
+    __asm__ __volatile__(
+            "xgetbv;"
+            : "=a" (eax), "=d"(edx)
+              : "c" (index)
+    );
+    return ((unsigned long long)edx << 32) | eax;
+}
+
+
+
+#endif
+
+#ifndef _MSC_VER
+// adapted from https://github.com/01org/linux-sgx/blob/master/common/inc/internal/linux/cpuid_gnu.h
+void __cpuidex(int cpuid[4], int func_id, int subfunc_id)
+{
+#if defined(__x86_64__)
+    asm volatile ("cpuid"
+                  : "=a" (cpuid[0]), "=b" (cpuid[1]), "=c" (cpuid[2]), "=d" (cpuid[3])
+                  : "0" (func_id), "2" (subfunc_id));
+#else // on 32bit, ebx can NOT be used as PIC code
+    asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1"
+                  : "=a" (cpuid[0]), "=r" (cpuid[1]), "=c" (cpuid[2]), "=d" (cpuid[3])
+                  : "0" (func_id), "2" (subfunc_id));
+#endif
+}
+#endif
+
+
+
+int check()
+{
+    bool sseSupportted = false;
+    bool sse2Supportted = false;
+    bool sse3Supportted = false;
+    bool ssse3Supportted = false;
+    bool sse4_1Supportted = false;
+    bool sse4_2Supportted = false;
+    bool sse4aSupportted = false;
+    bool sse5Supportted = false;
+    bool avxSupportted = false;
+
+    int cpuinfo[4];
+    __cpuid(cpuinfo, 1);
+
+    // Check SSE, SSE2, SSE3, SSSE3, SSE4.1, and SSE4.2 support
+    sseSupportted        = cpuinfo[3] & (1 << 25) || false;
+    sse2Supportted        = cpuinfo[3] & (1 << 26) || false;
+    sse3Supportted        = cpuinfo[2] & (1 << 0) || false;
+    ssse3Supportted        = cpuinfo[2] & (1 << 9) || false;
+    sse4_1Supportted    = cpuinfo[2] & (1 << 19) || false;
+    sse4_2Supportted    = cpuinfo[2] & (1 << 20) || false;
+
+    // ----------------------------------------------------------------------
+
+    // Check AVX support
+    // References
+    // http://software.intel.com/en-us/blogs/2011/04/14/is-avx-enabled/
+    // http://insufficientlycomplicated.wordpress.com/2011/11/07/detecting-intel-advanced-vector-extensions-avx-in-visual-studio/
+
+    avxSupportted = cpuinfo[2] & (1 << 28) || false;
+    bool osxsaveSupported = cpuinfo[2] & (1 << 27) || false;
+    if (osxsaveSupported && avxSupportted)
+    {
+        // _XCR_XFEATURE_ENABLED_MASK = 0
+        unsigned long long xcrFeatureMask = _xgetbv(0);
+        avxSupportted = (xcrFeatureMask & 0x6) == 0x6;
+    }
+
+    // ----------------------------------------------------------------------
+
+    // Check SSE4a and SSE5 support
+
+    // Get the number of valid extended IDs
+    __cpuid(cpuinfo, 0x80000000);
+    int numExtendedIds = cpuinfo[0];
+    if (numExtendedIds >= 0x80000001)
+    {
+        __cpuid(cpuinfo, 0x80000001);
+        sse4aSupportted = cpuinfo[2] & (1 << 6) || false;
+        sse5Supportted = cpuinfo[2] & (1 << 11) || false;
+    }
+
+    // ----------------------------------------------------------------------
+
+    std::cout << "SSE:" << (sseSupportted ? 1 : 0) << std::endl;
+    std::cout << "SSE2:" << (sse2Supportted ? 1 : 0) << std::endl;
+    std::cout << "SSE3:" << (sse3Supportted ? 1 : 0) << std::endl;
+    std::cout << "SSE4.1:" << (sse4_1Supportted ? 1 : 0) << std::endl;
+    std::cout << "SSE4.2:" << (sse4_2Supportted ? 1 : 0) << std::endl;
+    std::cout << "SSE4a:" << (sse4aSupportted ? 1 : 0) << std::endl;
+    std::cout << "SSE5:" << (sse5Supportted ? 1 : 0) << std::endl;
+    std::cout << "AVX:" << (avxSupportted ? 1 : 0) << std::endl;
+
+    return 0;
+}
+
+
+
+
+#if defined(__INTEL_COMPILER) && (__INTEL_COMPILER >= 1300)
+
+#include <immintrin.h>
+
+int check_4th_gen_intel_core_features()
+{
+    const int the_4th_gen_features =
+            (_FEATURE_AVX2 | _FEATURE_FMA | _FEATURE_BMI | _FEATURE_LZCNT | _FEATURE_MOVBE);
+    return _may_i_use_cpu_feature( the_4th_gen_features );
+}
+
+#else /* non-Intel compiler */
+
+#include <stdint.h>
+#if defined(_MSC_VER)
+# include <intrin.h>
+#endif
+
+void run_cpuid(uint32_t eax, uint32_t ecx, uint32_t* abcd)
+{
+#if defined(_MSC_VER)
+    __cpuidex(abcd, eax, ecx);
+#else
+    uint32_t ebx, edx;
+# if defined( __i386__ ) && defined ( __PIC__ )
+    /* in case of PIC under 32-bit EBX cannot be clobbered */
+    __asm__ ( "movl %%ebx, %%edi \n\t cpuid \n\t xchgl %%ebx, %%edi" : "=D" (ebx),
+# else
+            __asm__ ( "cpuid" : "+b" (ebx),
+# endif
+                    "+a" (eax), "+c" (ecx), "=d" (edx) );
+    abcd[0] = eax; abcd[1] = ebx; abcd[2] = ecx; abcd[3] = edx;
+#endif
+}
+
+int check_xcr0_ymm()
+{
+    uint32_t xcr0;
+#if defined(_MSC_VER)
+    xcr0 = (uint32_t)_xgetbv(0);  /* min VS2010 SP1 compiler is required */
+#else
+    __asm__ ("xgetbv" : "=a" (xcr0) : "c" (0) : "%edx" );
+#endif
+    return ((xcr0 & 6) == 6); /* checking if xmm and ymm state are enabled in XCR0 */
+}
+
+
+int check_4th_gen_intel_core_features()
+{
+    uint32_t abcd[4];
+    uint32_t fma_movbe_osxsave_mask = ((1 << 12) | (1 << 22) | (1 << 27));
+    uint32_t avx2_bmi12_mask = (1 << 5) | (1 << 3) | (1 << 8);
+
+    /* CPUID.(EAX=01H, ECX=0H):ECX.FMA[bit 12]==1   &&
+       CPUID.(EAX=01H, ECX=0H):ECX.MOVBE[bit 22]==1 &&
+       CPUID.(EAX=01H, ECX=0H):ECX.OSXSAVE[bit 27]==1
+     */
+    run_cpuid( 1, 0, abcd );
+    if ( (abcd[2] & fma_movbe_osxsave_mask) != fma_movbe_osxsave_mask )
+        return 0;
+
+    if ( ! check_xcr0_ymm() )
+        return 0;
+
+    /*  CPUID.(EAX=07H, ECX=0H):EBX.AVX2[bit 5]==1  &&
+        CPUID.(EAX=07H, ECX=0H):EBX.BMI1[bit 3]==1  &&
+        CPUID.(EAX=07H, ECX=0H):EBX.BMI2[bit 8]==1  */
+    run_cpuid( 7, 0, abcd );
+    if ( (abcd[1] & avx2_bmi12_mask) != avx2_bmi12_mask )
+        return 0;
+
+    /* CPUID.(EAX=80000001H):ECX.LZCNT[bit 5]==1 */
+    run_cpuid( 0x80000001, 0, abcd );
+    if ( (abcd[2] & (1 << 5)) == 0)
+        return 0;
+
+    return 1;
+}
+
+#endif /* non-Intel compiler */
+
+
+static int can_use_intel_core_4th_gen_features()
+{
+    static int the_4th_gen_features_available = -1;
+    /* test is performed once */
+    if (the_4th_gen_features_available < 0 )
+        the_4th_gen_features_available = check_4th_gen_intel_core_features();
+
+    return the_4th_gen_features_available;
+}
+
+#include <stdio.h>
+
+int c2(int argc, char** argv)
+{
+    if ( can_use_intel_core_4th_gen_features() )
+        printf("This CPU supports ISA extensions introduced in Haswell\n");
+    else
+        printf("This CPU does not support all ISA extensions introduced in Haswell\n");
+
+    return 1;
+}
+             
+             
+             
+             
+             
+             
+             
+// InstructionSet.cpp
+// Compile by using: cl /EHsc /W4 InstructionSet.cpp
+// processor: x86, x64
+// Uses the __cpuid intrinsic to get information about
+// CPU extended instruction set support.
+
+#include <iostream>
+#include <vector>
+#include <bitset>
+#include <array>
+#include <string>
+
+class InstructionSet
+{
+    // forward declarations
+    class InstructionSet_Internal;
+
+public:
+    // getters
+    static std::string Vendor(void)
+    {
+        return CPU_Rep.vendor_;
+    }
+    static std::string Brand(void)
+    {
+        return CPU_Rep.brand_;
+    }
+
+    static bool SSE3(void)
+    {
+        return CPU_Rep.f_1_ECX_[0];
+    }
+    static bool PCLMULQDQ(void)
+    {
+        return CPU_Rep.f_1_ECX_[1];
+    }
+    static bool MONITOR(void)
+    {
+        return CPU_Rep.f_1_ECX_[3];
+    }
+    static bool SSSE3(void)
+    {
+        return CPU_Rep.f_1_ECX_[9];
+    }
+    static bool FMA(void)
+    {
+        return CPU_Rep.f_1_ECX_[12];
+    }
+    static bool CMPXCHG16B(void)
+    {
+        return CPU_Rep.f_1_ECX_[13];
+    }
+    static bool SSE41(void)
+    {
+        return CPU_Rep.f_1_ECX_[19];
+    }
+    static bool SSE42(void)
+    {
+        return CPU_Rep.f_1_ECX_[20];
+    }
+    static bool MOVBE(void)
+    {
+        return CPU_Rep.f_1_ECX_[22];
+    }
+    static bool POPCNT(void)
+    {
+        return CPU_Rep.f_1_ECX_[23];
+    }
+    static bool AES(void)
+    {
+        return CPU_Rep.f_1_ECX_[25];
+    }
+    static bool XSAVE(void)
+    {
+        return CPU_Rep.f_1_ECX_[26];
+    }
+    static bool OSXSAVE(void)
+    {
+        return CPU_Rep.f_1_ECX_[27];
+    }
+    static bool AVX(void)
+    {
+        return CPU_Rep.f_1_ECX_[28];
+    }
+    static bool F16C(void)
+    {
+        return CPU_Rep.f_1_ECX_[29];
+    }
+    static bool RDRAND(void)
+    {
+        return CPU_Rep.f_1_ECX_[30];
+    }
+
+    static bool MSR(void)
+    {
+        return CPU_Rep.f_1_EDX_[5];
+    }
+    static bool CX8(void)
+    {
+        return CPU_Rep.f_1_EDX_[8];
+    }
+    static bool SEP(void)
+    {
+        return CPU_Rep.f_1_EDX_[11];
+    }
+    static bool CMOV(void)
+    {
+        return CPU_Rep.f_1_EDX_[15];
+    }
+    static bool CLFSH(void)
+    {
+        return CPU_Rep.f_1_EDX_[19];
+    }
+    static bool MMX(void)
+    {
+        return CPU_Rep.f_1_EDX_[23];
+    }
+    static bool FXSR(void)
+    {
+        return CPU_Rep.f_1_EDX_[24];
+    }
+    static bool SSE(void)
+    {
+        return CPU_Rep.f_1_EDX_[25];
+    }
+    static bool SSE2(void)
+    {
+        return CPU_Rep.f_1_EDX_[26];
+    }
+
+    static bool FSGSBASE(void)
+    {
+        return CPU_Rep.f_7_EBX_[0];
+    }
+    static bool BMI1(void)
+    {
+        return CPU_Rep.f_7_EBX_[3];
+    }
+    static bool HLE(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[4];
+    }
+    static bool AVX2(void)
+    {
+        return CPU_Rep.f_7_EBX_[5];
+    }
+    static bool BMI2(void)
+    {
+        return CPU_Rep.f_7_EBX_[8];
+    }
+    static bool ERMS(void)
+    {
+        return CPU_Rep.f_7_EBX_[9];
+    }
+    static bool INVPCID(void)
+    {
+        return CPU_Rep.f_7_EBX_[10];
+    }
+    static bool RTM(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[11];
+    }
+    static bool AVX512F(void)
+    {
+        return CPU_Rep.f_7_EBX_[16];
+    }
+    static bool RDSEED(void)
+    {
+        return CPU_Rep.f_7_EBX_[18];
+    }
+    static bool ADX(void)
+    {
+        return CPU_Rep.f_7_EBX_[19];
+    }
+    static bool AVX512PF(void)
+    {
+        return CPU_Rep.f_7_EBX_[26];
+    }
+    static bool AVX512ER(void)
+    {
+        return CPU_Rep.f_7_EBX_[27];
+    }
+    static bool AVX512CD(void)
+    {
+        return CPU_Rep.f_7_EBX_[28];
+    }
+    static bool SHA(void)
+    {
+        return CPU_Rep.f_7_EBX_[29];
+    }
+
+    static bool PREFETCHWT1(void)
+    {
+        return CPU_Rep.f_7_ECX_[0];
+    }
+
+    static bool LAHF(void)
+    {
+        return CPU_Rep.f_81_ECX_[0];
+    }
+    static bool LZCNT(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_ECX_[5];
+    }
+    static bool ABM(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[5];
+    }
+    static bool SSE4a(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[6];
+    }
+    static bool XOP(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[11];
+    }
+    static bool TBM(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[21];
+    }
+
+    static bool SYSCALL(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[11];
+    }
+    static bool MMXEXT(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[22];
+    }
+    static bool RDTSCP(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[27];
+    }
+    static bool _3DNOWEXT(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[30];
+    }
+    static bool _3DNOW(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[31];
+    }
+
+private:
+    static const InstructionSet_Internal CPU_Rep;
+
+    class InstructionSet_Internal
+    {
+    public:
+        InstructionSet_Internal() :
+                nIds_ { 0 }, nExIds_ { 0 }, isIntel_ { false }, isAMD_ { false }, f_1_ECX_ {
+                        0 }, f_1_EDX_ { 0 }, f_7_EBX_ { 0 }, f_7_ECX_ { 0 }, f_81_ECX_ {
+                        0 }, f_81_EDX_ { 0 }, data_ { }, extdata_ { }
+        {
+            //int cpuInfo[4] = {-1};
+            std::array<int, 4> cpui;
+
+            // Calling __cpuid with 0x0 as the function_id argument
+            // gets the number of the highest valid function ID.
+            __cpuid(cpui.data(), 0);
+            nIds_ = cpui[0];
+
+            for (int i = 0; i <= nIds_; ++i) {
+                __cpuidex(cpui.data(), i, 0);
+                data_.push_back(cpui);
+            }
+
+            // Capture vendor string
+            char vendor[0x20];
+            memset(vendor, 0, sizeof(vendor));
+            *reinterpret_cast<int*>(vendor) = data_[0][1];
+            *reinterpret_cast<int*>(vendor + 4) = data_[0][3];
+            *reinterpret_cast<int*>(vendor + 8) = data_[0][2];
+            vendor_ = vendor;
+            if (vendor_ == "GenuineIntel") {
+                isIntel_ = true;
+            } else if (vendor_ == "AuthenticAMD") {
+                isAMD_ = true;
+            }
+
+            // load bitset with flags for function 0x00000001
+            if (nIds_ >= 1) {
+                f_1_ECX_ = data_[1][2];
+                f_1_EDX_ = data_[1][3];
+            }
+
+            // load bitset with flags for function 0x00000007
+            if (nIds_ >= 7) {
+                f_7_EBX_ = data_[7][1];
+                f_7_ECX_ = data_[7][2];
+            }
+
+            // Calling __cpuid with 0x80000000 as the function_id argument
+            // gets the number of the highest valid extended ID.
+            __cpuid(cpui.data(), 0x80000000);
+            nExIds_ = cpui[0];
+
+            char brand[0x40];
+            memset(brand, 0, sizeof(brand));
+
+            for (int i = 0x80000000; i <= nExIds_; ++i) {
+                __cpuidex(cpui.data(), i, 0);
+                extdata_.push_back(cpui);
+            }
+
+            // load bitset with flags for function 0x80000001
+            if (nExIds_ >= 0x80000001) {
+                f_81_ECX_ = extdata_[1][2];
+                f_81_EDX_ = extdata_[1][3];
+            }
+
+            // Interpret CPU brand string if reported
+            if (nExIds_ >= 0x80000004) {
+                memcpy(brand, extdata_[2].data(), sizeof(cpui));
+                memcpy(brand + 16, extdata_[3].data(), sizeof(cpui));
+                memcpy(brand + 32, extdata_[4].data(), sizeof(cpui));
+                brand_ = brand;
+            }
+        }
+        ;
+
+        int nIds_;
+        int nExIds_;
+        std::string vendor_;
+        std::string brand_;
+        bool isIntel_;
+        bool isAMD_;
+        std::bitset<32> f_1_ECX_;
+        std::bitset<32> f_1_EDX_;
+        std::bitset<32> f_7_EBX_;
+        std::bitset<32> f_7_ECX_;
+        std::bitset<32> f_81_ECX_;
+        std::bitset<32> f_81_EDX_;
+        std::vector<std::array<int, 4>> data_;
+        std::vector<std::array<int, 4>> extdata_;
+    };
+};
+
+// Initialize static member data
+const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
+
+          
+PyObject *MxInstructionSetFeatruesDict() {
+     
+     PyObject *dict = PyDict_New();
+     
+     // Defining Lambda function and
+     // Capturing Local variables by Value
+     auto add_item = [dict] (const char* key, bool value) {
+         PyDict_SetItemString(dict, key, PyBool_FromLong(value));
+     };
+     
+     PyObject *s = carbon::cast(InstructionSet::Vendor());
+     PyDict_SetItemString(dict, "VENDOR", s);
+     Py_DecRef(s);
+     
+     s = carbon::cast(InstructionSet::Brand());
+     PyDict_SetItemString(dict, "ID", s);
+     Py_DecRef(s);
+     
+     add_item("3DNOW", InstructionSet::_3DNOW());
+     add_item("3DNOWEXT", InstructionSet::_3DNOWEXT());
+     add_item("ABM", InstructionSet::ABM());
+     add_item("ADX", InstructionSet::ADX());
+     add_item("AES", InstructionSet::AES());
+     add_item("AVX", InstructionSet::AVX());
+     add_item("AVX2", InstructionSet::AVX2());
+     add_item("AVX512CD", InstructionSet::AVX512CD());
+     add_item("AVX512ER", InstructionSet::AVX512ER());
+     add_item("AVX512F", InstructionSet::AVX512F());
+     add_item("AVX512PF", InstructionSet::AVX512PF());
+     add_item("BMI1", InstructionSet::BMI1());
+     add_item("BMI2", InstructionSet::BMI2());
+     add_item("CLFSH", InstructionSet::CLFSH());
+     add_item("CMPXCHG16B", InstructionSet::CMPXCHG16B());
+     add_item("CX8", InstructionSet::CX8());
+     add_item("ERMS", InstructionSet::ERMS());
+     add_item("F16C", InstructionSet::F16C());
+     add_item("FMA", InstructionSet::FMA());
+     add_item("FSGSBASE", InstructionSet::FSGSBASE());
+     add_item("FXSR", InstructionSet::FXSR());
+     add_item("HLE", InstructionSet::HLE());
+     add_item("INVPCID", InstructionSet::INVPCID());
+     add_item("LAHF", InstructionSet::LAHF());
+     add_item("LZCNT", InstructionSet::LZCNT());
+     add_item("MMX", InstructionSet::MMX());
+     add_item("MMXEXT", InstructionSet::MMXEXT());
+     add_item("MONITOR", InstructionSet::MONITOR());
+     add_item("MOVBE", InstructionSet::MOVBE());
+     add_item("MSR", InstructionSet::MSR());
+     add_item("OSXSAVE", InstructionSet::OSXSAVE());
+     add_item("PCLMULQDQ", InstructionSet::PCLMULQDQ());
+     add_item("POPCNT", InstructionSet::POPCNT());
+     add_item("PREFETCHWT1", InstructionSet::PREFETCHWT1());
+     add_item("RDRAND", InstructionSet::RDRAND());
+     add_item("RDSEED", InstructionSet::RDSEED());
+     add_item("RDTSCP", InstructionSet::RDTSCP());
+     add_item("RTM", InstructionSet::RTM());
+     add_item("SEP", InstructionSet::SEP());
+     add_item("SHA", InstructionSet::SHA());
+     add_item("SSE", InstructionSet::SSE());
+     add_item("SSE2", InstructionSet::SSE2());
+     add_item("SSE3", InstructionSet::SSE3());
+     add_item("SSE4.1", InstructionSet::SSE41());
+     add_item("SSE4.2", InstructionSet::SSE42());
+     add_item("SSE4a", InstructionSet::SSE4a());
+     add_item("SSSE3", InstructionSet::SSSE3());
+     add_item("SYSCALL", InstructionSet::SYSCALL());
+     add_item("TBM", InstructionSet::TBM());
+     add_item("XOP", InstructionSet::XOP());
+     add_item("XSAVE", InstructionSet::XSAVE());
+     
+     return dict;
+ }
+ 
+ uint64_t MxInstructionSetFeatures() {
+     
+     uint64_t result = 0;
+     
+     auto add_item = [&result] (uint64_t key, bool value) {
+         if(value) {
+             result |= key;
+         }
+     };
+     
+     add_item(IS_3DNOW, InstructionSet::_3DNOW());
+     add_item(IS_3DNOWEXT, InstructionSet::_3DNOWEXT());
+     add_item(IS_ABM, InstructionSet::ABM());
+     add_item(IS_ADX, InstructionSet::ADX());
+     add_item(IS_AES, InstructionSet::AES());
+     add_item(IS_AVX, InstructionSet::AVX());
+     add_item(IS_AVX2, InstructionSet::AVX2());
+     add_item(IS_AVX512CD, InstructionSet::AVX512CD());
+     add_item(IS_AVX512ER, InstructionSet::AVX512ER());
+     add_item(IS_AVX512F, InstructionSet::AVX512F());
+     add_item(IS_AVX512PF, InstructionSet::AVX512PF());
+     add_item(IS_BMI1, InstructionSet::BMI1());
+     add_item(IS_BMI2, InstructionSet::BMI2());
+     add_item(IS_CLFSH, InstructionSet::CLFSH());
+     add_item(IS_CMPXCHG16B, InstructionSet::CMPXCHG16B());
+     add_item(IS_CX8, InstructionSet::CX8());
+     add_item(IS_ERMS, InstructionSet::ERMS());
+     add_item(IS_F16C, InstructionSet::F16C());
+     add_item(IS_FMA, InstructionSet::FMA());
+     add_item(IS_FSGSBASE, InstructionSet::FSGSBASE());
+     add_item(IS_FXSR, InstructionSet::FXSR());
+     add_item(IS_HLE, InstructionSet::HLE());
+     add_item(IS_INVPCID, InstructionSet::INVPCID());
+     add_item(IS_LAHF, InstructionSet::LAHF());
+     add_item(IS_LZCNT, InstructionSet::LZCNT());
+     add_item(IS_MMX, InstructionSet::MMX());
+     add_item(IS_MMXEXT, InstructionSet::MMXEXT());
+     add_item(IS_MONITOR, InstructionSet::MONITOR());
+     add_item(IS_MOVBE, InstructionSet::MOVBE());
+     add_item(IS_MSR, InstructionSet::MSR());
+     add_item(IS_OSXSAVE, InstructionSet::OSXSAVE());
+     add_item(IS_PCLMULQDQ, InstructionSet::PCLMULQDQ());
+     add_item(IS_POPCNT, InstructionSet::POPCNT());
+     add_item(IS_PREFETCHWT1, InstructionSet::PREFETCHWT1());
+     add_item(IS_RDRAND, InstructionSet::RDRAND());
+     add_item(IS_RDSEED, InstructionSet::RDSEED());
+     add_item(IS_RDTSCP, InstructionSet::RDTSCP());
+     add_item(IS_RTM, InstructionSet::RTM());
+     add_item(IS_SEP, InstructionSet::SEP());
+     add_item(IS_SHA, InstructionSet::SHA());
+     add_item(IS_SSE, InstructionSet::SSE());
+     add_item(IS_SSE2, InstructionSet::SSE2());
+     add_item(IS_SSE3, InstructionSet::SSE3());
+     add_item(IS_SSE41, InstructionSet::SSE41());
+     add_item(IS_SSE42, InstructionSet::SSE42());
+     add_item(IS_SSE4a, InstructionSet::SSE4a());
+     add_item(IS_SSSE3, InstructionSet::SSSE3());
+     add_item(IS_SYSCALL, InstructionSet::SYSCALL());
+     add_item(IS_TBM, InstructionSet::TBM());
+     add_item(IS_XOP, InstructionSet::XOP());
+     add_item(IS_XSAVE, InstructionSet::XSAVE());
+     
+     return result;
+ }
+
+             
 
 

@@ -34,6 +34,25 @@ set(CMAKE_CXX_STANDARD 17)
 # we're compiling a bunch of shared libs, all should be pos independent.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+
+option(MX_OPENMP "Enable OpenMP parallelism" OFF)
+
+if(MX_OPENMP)
+  find_package(OpenMP)
+
+  message("OpenMP_FOUND: ${OpenMP_FOUND}")
+
+  message("OpenMP_CXX_INCLUDE_DIRS: ${OpenMP_CXX_INCLUDE_DIRS}")
+
+  message("OpenMP_CXX_LIBRARIES: ${OpenMP_CXX_INCLUDE_DIRS}")
+
+  option(MX_OPENMP_BONDS "Enable OpenMP bonds" OFF)
+  option(MX_OPENMP_INTEGRATOR "Enable OpenMP integrator" OFF)
+
+endif()
+
+option(MX_VECTORIZE_FLUX "Enable vector flux calculations (AVX instructions)" OFF)
+
 # quiet linker warnings on Apple
 # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
@@ -101,7 +120,7 @@ else()
   find_package(Threads REQUIRED)
 endif()
 
-find_package(Python 3.5 COMPONENTS Development NumPy)
+find_package(Python 3.7.0...3.7.99 COMPONENTS Development NumPy)
 
 message("Python_FOUND: ${Python_FOUND}")
 message("Python_Interpeter_FOUND: ${Python_Interpeter_FOUND}")

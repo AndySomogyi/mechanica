@@ -8,6 +8,14 @@
 #ifndef INCLUDE_MDCORE_CONFIG_H_
 #define INCLUDE_MDCORE_CONFIG_H_
 
+// TODO: this needs to move to central mechanica config...
+#cmakedefine01 MX_OPENMP
+#cmakedefine01 MX_OPENMP_BONDS
+#cmakedefine01 MX_OPENMP_INTEGRATOR
+#cmakedefine01 MX_VECTORIZE_FLUX
+
+
+
 /* Global defines. */
 #ifndef FPTYPE_DEFINED
     #ifdef FPTYPE_DOUBLE

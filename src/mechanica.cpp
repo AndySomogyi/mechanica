@@ -133,20 +133,9 @@ static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
 
 static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
     
-    Magnum::Matrix3 mat;
+    c5();
     
-    int k = 0;
-    for(int i = 0; i < 3; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            mat[i][j] = k++;
-        }
-    }
-    
-    Magnum::Vector3 vec;
-    
-    
-    
-    return mx::cast(vec);
+    Py_RETURN_NONE;
 }
 
 /**
@@ -187,6 +176,13 @@ static PyMethodDef methods[] = {
         { NULL, NULL, 0, NULL }
 };
 
+
+
+static PyMethodDef version_methods[] = {
+    { "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
+    { NULL, NULL, 0, NULL }
+};
+
 static struct PyModuleDef mechanica_module = {
         PyModuleDef_HEAD_INIT,
         "_mechanica",   /* name of module */
@@ -202,13 +198,11 @@ static struct PyModuleDef version_module = {
     NULL, /* module documentation, may be NULL */
     -1,       /* size of per-interpreter state of the module,
                or -1 if the module keeps state in global variables. */
-    NULL
+    version_methods
 };
 
 static PyObject *version_create() {
     PyObject *m = PyModule_Create(&version_module);
-
-
 
     if(PyModule_AddObject(m, "version", PyUnicode_FromString(version_str().c_str())) != 0) {
         std::cout << "could not add version info string" << std::endl;

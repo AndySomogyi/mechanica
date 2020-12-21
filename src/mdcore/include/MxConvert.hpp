@@ -90,6 +90,21 @@ PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs);
         
 }
 
+#define MX_BASIC_PYTHON_TYPE_INIT(type) \
+HRESULT _Mx ## type ## _Init(PyObject* m) { \
+if (PyType_Ready((PyTypeObject*)&Mx ## type ## _Type) < 0) { \
+return E_FAIL; \
+} \
+\
+Py_INCREF(&Mx ## type ## _Type); \
+if (PyModule_AddObject(m, #type, (PyObject *)&Mx ## type ## _Type) < 0) { \
+Py_DECREF(&Mx ## type ## _Type); \
+return E_FAIL; \
+} \
+\
+return S_OK;\
+}
+
 
 
 

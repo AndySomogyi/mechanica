@@ -56,6 +56,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/Edge.hpp"
   "${MDCORE_SOURCE_DIR}/include/Polygon.hpp"
   "${MDCORE_SOURCE_DIR}/include/Cell.hpp"
+  "${MDCORE_SOURCE_DIR}/include/Flux.hpp"
   )
 
 set(PRIVATE_HEADERS
@@ -110,6 +111,7 @@ SET(SOURCES
   Edge.cpp
   Polygon.cpp
   Cell.cpp
+  Flux.cpp
   )
 
 if(MDCORE_USE_MPI)
