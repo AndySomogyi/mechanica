@@ -248,7 +248,7 @@ public:
 
 
     virtual HRESULT mainLoopIteration(double timeout) {
-        C_UNSUSED(timeout)
+        C_UNUSED(timeout)
         return E_NOTIMPL;
     };
 
@@ -262,13 +262,13 @@ public:
     }
 
     virtual int windowAttribute(MxWindowAttributes attr) {
-        C_UNSUSED(attr)
+        C_UNUSED(attr)
         return E_NOTIMPL;
     };
 
     virtual HRESULT setWindowAttribute(MxWindowAttributes attr, int val) {
-        C_UNSUSED(attr)
-        C_UNSUSED(val)
+        C_UNUSED(attr)
+        C_UNUSED(val)
         return E_NOTIMPL;
     };
 
