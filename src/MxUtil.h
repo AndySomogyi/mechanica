@@ -118,9 +118,6 @@ PyObject *MxInstructionSetFeatruesDict();
 uint64_t MxInstructionSetFeatures();
 
 
-
-int c5();
-
 HRESULT _MxUtil_init(PyObject *m);
 
 

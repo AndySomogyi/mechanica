@@ -133,8 +133,6 @@ static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
 
 static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
     
-    c5();
-    
     Py_RETURN_NONE;
 }
 
