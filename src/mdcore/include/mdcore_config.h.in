@@ -16,6 +16,12 @@
 #cmakedefine01 MX_VECTORIZE_FORCE
 #cmakedefine01 MX_VECTORIZE_BONDS
 #cmakedefine01 MX_VECTORIZE_INTEGRATOR
+#cmakedefine01 MX_AVX2
+#cmakedefine01 MX_AVX
+#cmakedefine01 MX_SSE42
+#define MX_SIMD_SIZE @MX_SIMD_SIZE@
+
+
 
 /* Global defines. */
 #ifndef FPTYPE_DEFINED

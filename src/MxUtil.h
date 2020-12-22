@@ -115,6 +115,8 @@ enum Mx_InstructionSet {
 
 PyObject *MxInstructionSetFeatruesDict();
 
+PyObject *MxCompileFlagsDict();
+
 uint64_t MxInstructionSetFeatures();
 
 

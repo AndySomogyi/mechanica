@@ -178,6 +178,7 @@ static PyMethodDef methods[] = {
 
 static PyMethodDef version_methods[] = {
     { "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
+    { "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

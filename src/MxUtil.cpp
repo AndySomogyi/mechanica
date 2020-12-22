@@ -16,6 +16,7 @@
 #include <MxConvert.hpp>
 
 #include <CConvert.hpp>
+#include <mdcore_config.h>
 
 #include "Magnum/Mesh.h"
 #include "Magnum/Math/Vector3.h"
@@ -1502,6 +1503,64 @@ private:
 // Initialize static member data
 const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
 
+PyObject *MxCompileFlagsDict() {
+    PyObject *dict = PyDict_New();
+    
+    // Defining Lambda function and
+    // Capturing Local variables by Value
+    auto add_item = [dict] (const char* key, bool value) {
+        PyDict_SetItemString(dict, key, PyBool_FromLong(value));
+    };
+    
+    add_item("MX_OPENMP", MX_OPENMP);
+    add_item("MX_OPENMP_BONDS", MX_OPENMP_BONDS);
+    add_item("MX_OPENMP_INTEGRATOR", MX_OPENMP_INTEGRATOR);
+    add_item("MX_VECTORIZE_FLUX", MX_VECTORIZE_FLUX);
+    add_item("MX_VECTORIZE_FORCE", MX_VECTORIZE_FORCE);
+    add_item("MX_SSE42", MX_SSE42);
+    add_item("MX_AVX", MX_AVX);
+    add_item("MX_AVX2", MX_AVX2);
+    
+    PyDict_SetItemString(dict, "MX_SIMD_SIZE", PyLong_FromLong(MX_SIMD_SIZE));
+
+#ifdef __SSE__
+    add_item("__SSE__", __SSE__);
+#else
+    add_item("__SSE__", 0);
+#endif
+    
+#ifdef __SSE2__
+    add_item("__SSE2__", __SSE2__);
+#else
+    add_item("__SSE2__", 0);
+#endif
+    
+#ifdef __SSE3__
+    add_item("__SSE3__", __SSE3__);
+#else
+    add_item("__SSE3__", 0);
+#endif
+    
+#ifdef __SSE4_2__
+    add_item("__SSE4_2__", __SSE4_2__);
+#else
+    add_item("__SSE4_2__", 0);
+#endif
+    
+#ifdef __AVX__
+    add_item("__AVX__", __AVX__);
+#else
+    add_item("__AVX__", 0);
+#endif
+    
+#ifdef __AVX2__
+    add_item("__AVX2__", __AVX2__);
+#else
+    add_item("__AVX2__", 0);
+#endif
+    
+    return dict;
+}
           
 PyObject *MxInstructionSetFeatruesDict() {
      
