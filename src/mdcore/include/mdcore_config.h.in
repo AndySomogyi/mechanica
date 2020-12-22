@@ -13,8 +13,9 @@
 #cmakedefine01 MX_OPENMP_BONDS
 #cmakedefine01 MX_OPENMP_INTEGRATOR
 #cmakedefine01 MX_VECTORIZE_FLUX
-
-
+#cmakedefine01 MX_VECTORIZE_FORCE
+#cmakedefine01 MX_VECTORIZE_BONDS
+#cmakedefine01 MX_VECTORIZE_INTEGRATOR
 
 /* Global defines. */
 #ifndef FPTYPE_DEFINED

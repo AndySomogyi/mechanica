@@ -51,7 +51,10 @@ if(MX_OPENMP)
 
 endif()
 
-option(MX_VECTORIZE_FLUX "Enable vector flux calculations (AVX instructions)" OFF)
+option(MX_VECTORIZE_FLUX       "Enable vector flux calculations (AVX instructions)" OFF)
+option(MX_VECTORIZE_FORCE      "Enable vector force calculations (AVX instructions)" OFF)
+option(MX_VECTORIZE_BONDS      "Enable vector bonded interactions (AVX instructions)" OFF)
+option(MX_VECTORIZE_INTEGRATOR "Enable vector integrator  (AVX instructions)" OFF)
 
 # quiet linker warnings on Apple
 # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
