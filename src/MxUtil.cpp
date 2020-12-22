@@ -1123,18 +1123,39 @@ float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
 
 #ifndef _MSC_VER
 // adapted from https://github.com/01org/linux-sgx/blob/master/common/inc/internal/linux/cpuid_gnu.h
-void __cpuidex(int cpuid[4], int func_id, int subfunc_id)
+/* This is a PIC-compliant version of CPUID */
+static inline void cpuid(int *eax, int *ebx, int *ecx, int *edx)
 {
 #if defined(__x86_64__)
-    asm volatile ("cpuid"
-                  : "=a" (cpuid[0]), "=b" (cpuid[1]), "=c" (cpuid[2]), "=d" (cpuid[3])
-                  : "0" (func_id), "2" (subfunc_id));
-#else // on 32bit, ebx can NOT be used as PIC code
+    asm("cpuid"
+            : "=a" (*eax),
+            "=b" (*ebx),
+            "=c" (*ecx),
+            "=d" (*edx)
+            : "0" (*eax), "2" (*ecx));
+
+#else
+    /*on 32bit, ebx can NOT be used as PIC code*/
     asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1"
-                  : "=a" (cpuid[0]), "=r" (cpuid[1]), "=c" (cpuid[2]), "=d" (cpuid[3])
-                  : "0" (func_id), "2" (subfunc_id));
+            : "=a" (*eax), "=r" (*ebx), "=c" (*ecx), "=d" (*edx)
+            : "0" (*eax), "2" (*ecx));
 #endif
 }
+
+static inline void __cpuid(int a[4], int b)
+{
+    a[0] = b;
+    a[2] = 0;
+    cpuid(&a[0], &a[1], &a[2], &a[3]);
+}
+
+static inline void __cpuidex(int a[4], int b, int c)
+{
+    a[0] = b;
+    a[2] = c;
+    cpuid(&a[0], &a[1], &a[2], &a[3]);
+}
+
 #else
 #include <intrin.h>
 #endif
