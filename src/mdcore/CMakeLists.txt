@@ -39,4 +39,7 @@ set(MDCORE_INCLUDE_DIR
 
 
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if(MDCORE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
