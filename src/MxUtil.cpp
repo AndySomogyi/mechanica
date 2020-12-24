@@ -1122,10 +1122,10 @@ float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
 }
 
 
-#ifndef _MSC_VER
+#if 1
 // adapted from https://github.com/01org/linux-sgx/blob/master/common/inc/internal/linux/cpuid_gnu.h
 /* This is a PIC-compliant version of CPUID */
-static inline void cpuid(int *eax, int *ebx, int *ecx, int *edx)
+static inline void __mx_cpuid(int *eax, int *ebx, int *ecx, int *edx)
 {
 #if defined(__x86_64__)
     asm("cpuid"
@@ -1143,18 +1143,18 @@ static inline void cpuid(int *eax, int *ebx, int *ecx, int *edx)
 #endif
 }
 
-static inline void __cpuid(int a[4], int b)
+static inline void mx_cpuid(int a[4], int b)
 {
     a[0] = b;
     a[2] = 0;
-    cpuid(&a[0], &a[1], &a[2], &a[3]);
+    __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
 }
 
-static inline void __cpuidex(int a[4], int b, int c)
+static inline void mx_cpuidex(int a[4], int b, int c)
 {
     a[0] = b;
     a[2] = c;
-    cpuid(&a[0], &a[1], &a[2], &a[3]);
+    __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
 }
 
 #else
@@ -1177,236 +1177,9 @@ static inline void __cpuidex(int a[4], int b, int c)
 
 class InstructionSet
 {
-    // forward declarations
-    class InstructionSet_Internal;
-
-public:
-    // getters
-    static std::string Vendor(void)
-    {
-        return CPU_Rep.vendor_;
-    }
-    static std::string Brand(void)
-    {
-        return CPU_Rep.brand_;
-    }
-
-    static bool SSE3(void)
-    {
-        return CPU_Rep.f_1_ECX_[0];
-    }
-    static bool PCLMULQDQ(void)
-    {
-        return CPU_Rep.f_1_ECX_[1];
-    }
-    static bool MONITOR(void)
-    {
-        return CPU_Rep.f_1_ECX_[3];
-    }
-    static bool SSSE3(void)
-    {
-        return CPU_Rep.f_1_ECX_[9];
-    }
-    static bool FMA(void)
-    {
-        return CPU_Rep.f_1_ECX_[12];
-    }
-    static bool CMPXCHG16B(void)
-    {
-        return CPU_Rep.f_1_ECX_[13];
-    }
-    static bool SSE41(void)
-    {
-        return CPU_Rep.f_1_ECX_[19];
-    }
-    static bool SSE42(void)
-    {
-        return CPU_Rep.f_1_ECX_[20];
-    }
-    static bool MOVBE(void)
-    {
-        return CPU_Rep.f_1_ECX_[22];
-    }
-    static bool POPCNT(void)
-    {
-        return CPU_Rep.f_1_ECX_[23];
-    }
-    static bool AES(void)
-    {
-        return CPU_Rep.f_1_ECX_[25];
-    }
-    static bool XSAVE(void)
-    {
-        return CPU_Rep.f_1_ECX_[26];
-    }
-    static bool OSXSAVE(void)
-    {
-        return CPU_Rep.f_1_ECX_[27];
-    }
-    static bool AVX(void)
-    {
-        return CPU_Rep.f_1_ECX_[28];
-    }
-    static bool F16C(void)
-    {
-        return CPU_Rep.f_1_ECX_[29];
-    }
-    static bool RDRAND(void)
-    {
-        return CPU_Rep.f_1_ECX_[30];
-    }
-
-    static bool MSR(void)
-    {
-        return CPU_Rep.f_1_EDX_[5];
-    }
-    static bool CX8(void)
-    {
-        return CPU_Rep.f_1_EDX_[8];
-    }
-    static bool SEP(void)
-    {
-        return CPU_Rep.f_1_EDX_[11];
-    }
-    static bool CMOV(void)
-    {
-        return CPU_Rep.f_1_EDX_[15];
-    }
-    static bool CLFSH(void)
-    {
-        return CPU_Rep.f_1_EDX_[19];
-    }
-    static bool MMX(void)
-    {
-        return CPU_Rep.f_1_EDX_[23];
-    }
-    static bool FXSR(void)
-    {
-        return CPU_Rep.f_1_EDX_[24];
-    }
-    static bool SSE(void)
-    {
-        return CPU_Rep.f_1_EDX_[25];
-    }
-    static bool SSE2(void)
-    {
-        return CPU_Rep.f_1_EDX_[26];
-    }
-
-    static bool FSGSBASE(void)
-    {
-        return CPU_Rep.f_7_EBX_[0];
-    }
-    static bool BMI1(void)
-    {
-        return CPU_Rep.f_7_EBX_[3];
-    }
-    static bool HLE(void)
-    {
-        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[4];
-    }
-    static bool AVX2(void)
-    {
-        return CPU_Rep.f_7_EBX_[5];
-    }
-    static bool BMI2(void)
-    {
-        return CPU_Rep.f_7_EBX_[8];
-    }
-    static bool ERMS(void)
-    {
-        return CPU_Rep.f_7_EBX_[9];
-    }
-    static bool INVPCID(void)
-    {
-        return CPU_Rep.f_7_EBX_[10];
-    }
-    static bool RTM(void)
-    {
-        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[11];
-    }
-    static bool AVX512F(void)
-    {
-        return CPU_Rep.f_7_EBX_[16];
-    }
-    static bool RDSEED(void)
-    {
-        return CPU_Rep.f_7_EBX_[18];
-    }
-    static bool ADX(void)
-    {
-        return CPU_Rep.f_7_EBX_[19];
-    }
-    static bool AVX512PF(void)
-    {
-        return CPU_Rep.f_7_EBX_[26];
-    }
-    static bool AVX512ER(void)
-    {
-        return CPU_Rep.f_7_EBX_[27];
-    }
-    static bool AVX512CD(void)
-    {
-        return CPU_Rep.f_7_EBX_[28];
-    }
-    static bool SHA(void)
-    {
-        return CPU_Rep.f_7_EBX_[29];
-    }
-
-    static bool PREFETCHWT1(void)
-    {
-        return CPU_Rep.f_7_ECX_[0];
-    }
-
-    static bool LAHF(void)
-    {
-        return CPU_Rep.f_81_ECX_[0];
-    }
-    static bool LZCNT(void)
-    {
-        return CPU_Rep.isIntel_ && CPU_Rep.f_81_ECX_[5];
-    }
-    static bool ABM(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[5];
-    }
-    static bool SSE4a(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[6];
-    }
-    static bool XOP(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[11];
-    }
-    static bool TBM(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[21];
-    }
-
-    static bool SYSCALL(void)
-    {
-        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[11];
-    }
-    static bool MMXEXT(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[22];
-    }
-    static bool RDTSCP(void)
-    {
-        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[27];
-    }
-    static bool _3DNOWEXT(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[30];
-    }
-    static bool _3DNOW(void)
-    {
-        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[31];
-    }
 
 private:
-    static const InstructionSet_Internal CPU_Rep;
+    
 
     class InstructionSet_Internal
     {
@@ -1419,13 +1192,13 @@ private:
             //int cpuInfo[4] = {-1};
             std::array<int, 4> cpui;
 
-            // Calling __cpuid with 0x0 as the function_id argument
+            // Calling mx_cpuid with 0x0 as the function_id argument
             // gets the number of the highest valid function ID.
-            __cpuid(cpui.data(), 0);
+            mx_cpuid(cpui.data(), 0);
             nIds_ = cpui[0];
 
             for (int i = 0; i <= nIds_; ++i) {
-                __cpuidex(cpui.data(), i, 0);
+                mx_cpuidex(cpui.data(), i, 0);
                 data_.push_back(cpui);
             }
 
@@ -1454,16 +1227,16 @@ private:
                 f_7_ECX_ = data_[7][2];
             }
 
-            // Calling __cpuid with 0x80000000 as the function_id argument
+            // Calling mx_cpuid with 0x80000000 as the function_id argument
             // gets the number of the highest valid extended ID.
-            __cpuid(cpui.data(), 0x80000000);
+            mx_cpuid(cpui.data(), 0x80000000);
             nExIds_ = cpui[0];
 
             char brand[0x40];
             memset(brand, 0, sizeof(brand));
 
             for (int i = 0x80000000; i <= nExIds_; ++i) {
-                __cpuidex(cpui.data(), i, 0);
+                mx_cpuidex(cpui.data(), i, 0);
                 extdata_.push_back(cpui);
             }
 
@@ -1480,8 +1253,8 @@ private:
                 memcpy(brand + 32, extdata_[4].data(), sizeof(cpui));
                 brand_ = brand;
             }
-        }
-        ;
+        };
+
 
         int nIds_;
         int nExIds_;
@@ -1498,10 +1271,238 @@ private:
         std::vector<std::array<int, 4>> data_;
         std::vector<std::array<int, 4>> extdata_;
     };
+
+    const InstructionSet_Internal CPU_Rep;
+
+
+public:
+    // getters
+    std::string Vendor(void)
+    {
+        return CPU_Rep.vendor_;
+    }
+    std::string Brand(void)
+    {
+        return CPU_Rep.brand_;
+    }
+
+    bool SSE3(void)
+    {
+        return CPU_Rep.f_1_ECX_[0];
+    }
+    bool PCLMULQDQ(void)
+    {
+        return CPU_Rep.f_1_ECX_[1];
+    }
+    bool MONITOR(void)
+    {
+        return CPU_Rep.f_1_ECX_[3];
+    }
+    bool SSSE3(void)
+    {
+        return CPU_Rep.f_1_ECX_[9];
+    }
+    bool FMA(void)
+    {
+        return CPU_Rep.f_1_ECX_[12];
+    }
+    bool CMPXCHG16B(void)
+    {
+        return CPU_Rep.f_1_ECX_[13];
+    }
+    bool SSE41(void)
+    {
+        return CPU_Rep.f_1_ECX_[19];
+    }
+    bool SSE42(void)
+    {
+        return CPU_Rep.f_1_ECX_[20];
+    }
+    bool MOVBE(void)
+    {
+        return CPU_Rep.f_1_ECX_[22];
+    }
+    bool POPCNT(void)
+    {
+        return CPU_Rep.f_1_ECX_[23];
+    }
+    bool AES(void)
+    {
+        return CPU_Rep.f_1_ECX_[25];
+    }
+    bool XSAVE(void)
+    {
+        return CPU_Rep.f_1_ECX_[26];
+    }
+    bool OSXSAVE(void)
+    {
+        return CPU_Rep.f_1_ECX_[27];
+    }
+    bool AVX(void)
+    {
+        return CPU_Rep.f_1_ECX_[28];
+    }
+    bool F16C(void)
+    {
+        return CPU_Rep.f_1_ECX_[29];
+    }
+    bool RDRAND(void)
+    {
+        return CPU_Rep.f_1_ECX_[30];
+    }
+
+    bool MSR(void)
+    {
+        return CPU_Rep.f_1_EDX_[5];
+    }
+    bool CX8(void)
+    {
+        return CPU_Rep.f_1_EDX_[8];
+    }
+    bool SEP(void)
+    {
+        return CPU_Rep.f_1_EDX_[11];
+    }
+    bool CMOV(void)
+    {
+        return CPU_Rep.f_1_EDX_[15];
+    }
+    bool CLFSH(void)
+    {
+        return CPU_Rep.f_1_EDX_[19];
+    }
+    bool MMX(void)
+    {
+        return CPU_Rep.f_1_EDX_[23];
+    }
+    bool FXSR(void)
+    {
+        return CPU_Rep.f_1_EDX_[24];
+    }
+    bool SSE(void)
+    {
+        return CPU_Rep.f_1_EDX_[25];
+    }
+    bool SSE2(void)
+    {
+        return CPU_Rep.f_1_EDX_[26];
+    }
+
+    bool FSGSBASE(void)
+    {
+        return CPU_Rep.f_7_EBX_[0];
+    }
+    bool BMI1(void)
+    {
+        return CPU_Rep.f_7_EBX_[3];
+    }
+    bool HLE(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[4];
+    }
+    bool AVX2(void)
+    {
+        return CPU_Rep.f_7_EBX_[5];
+    }
+    bool BMI2(void)
+    {
+        return CPU_Rep.f_7_EBX_[8];
+    }
+    bool ERMS(void)
+    {
+        return CPU_Rep.f_7_EBX_[9];
+    }
+    bool INVPCID(void)
+    {
+        return CPU_Rep.f_7_EBX_[10];
+    }
+    bool RTM(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_7_EBX_[11];
+    }
+    bool AVX512F(void)
+    {
+        return CPU_Rep.f_7_EBX_[16];
+    }
+    bool RDSEED(void)
+    {
+        return CPU_Rep.f_7_EBX_[18];
+    }
+    bool ADX(void)
+    {
+        return CPU_Rep.f_7_EBX_[19];
+    }
+    bool AVX512PF(void)
+    {
+        return CPU_Rep.f_7_EBX_[26];
+    }
+    bool AVX512ER(void)
+    {
+        return CPU_Rep.f_7_EBX_[27];
+    }
+    bool AVX512CD(void)
+    {
+        return CPU_Rep.f_7_EBX_[28];
+    }
+    bool SHA(void)
+    {
+        return CPU_Rep.f_7_EBX_[29];
+    }
+
+    bool PREFETCHWT1(void)
+    {
+        return CPU_Rep.f_7_ECX_[0];
+    }
+
+    bool LAHF(void)
+    {
+        return CPU_Rep.f_81_ECX_[0];
+    }
+    bool LZCNT(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_ECX_[5];
+    }
+    bool ABM(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[5];
+    }
+    bool SSE4a(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[6];
+    }
+    bool XOP(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[11];
+    }
+    bool TBM(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_ECX_[21];
+    }
+
+    bool SYSCALL(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[11];
+    }
+    bool MMXEXT(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[22];
+    }
+    bool RDTSCP(void)
+    {
+        return CPU_Rep.isIntel_ && CPU_Rep.f_81_EDX_[27];
+    }
+    bool _3DNOWEXT(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[30];
+    }
+    bool _3DNOW(void)
+    {
+        return CPU_Rep.isAMD_ && CPU_Rep.f_81_EDX_[31];
+    }
 };
 
 // Initialize static member data
-const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
+//const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
 
 PyObject *MxCompileFlagsDict() {
     PyObject *dict = PyDict_New();
@@ -1565,6 +1566,8 @@ PyObject *MxCompileFlagsDict() {
 PyObject *MxInstructionSetFeatruesDict() {
      
      PyObject *dict = PyDict_New();
+
+     InstructionSet is;
      
      // Defining Lambda function and
      // Capturing Local variables by Value
@@ -1572,70 +1575,72 @@ PyObject *MxInstructionSetFeatruesDict() {
          PyDict_SetItemString(dict, key, PyBool_FromLong(value));
      };
      
-     PyObject *s = carbon::cast(InstructionSet::Vendor());
+     PyObject *s = carbon::cast(is.Vendor());
      PyDict_SetItemString(dict, "VENDOR", s);
      Py_DecRef(s);
      
-     s = carbon::cast(InstructionSet::Brand());
+     s = carbon::cast(is.Brand());
      PyDict_SetItemString(dict, "ID", s);
      Py_DecRef(s);
      
-     add_item("3DNOW", InstructionSet::_3DNOW());
-     add_item("3DNOWEXT", InstructionSet::_3DNOWEXT());
-     add_item("ABM", InstructionSet::ABM());
-     add_item("ADX", InstructionSet::ADX());
-     add_item("AES", InstructionSet::AES());
-     add_item("AVX", InstructionSet::AVX());
-     add_item("AVX2", InstructionSet::AVX2());
-     add_item("AVX512CD", InstructionSet::AVX512CD());
-     add_item("AVX512ER", InstructionSet::AVX512ER());
-     add_item("AVX512F", InstructionSet::AVX512F());
-     add_item("AVX512PF", InstructionSet::AVX512PF());
-     add_item("BMI1", InstructionSet::BMI1());
-     add_item("BMI2", InstructionSet::BMI2());
-     add_item("CLFSH", InstructionSet::CLFSH());
-     add_item("CMPXCHG16B", InstructionSet::CMPXCHG16B());
-     add_item("CX8", InstructionSet::CX8());
-     add_item("ERMS", InstructionSet::ERMS());
-     add_item("F16C", InstructionSet::F16C());
-     add_item("FMA", InstructionSet::FMA());
-     add_item("FSGSBASE", InstructionSet::FSGSBASE());
-     add_item("FXSR", InstructionSet::FXSR());
-     add_item("HLE", InstructionSet::HLE());
-     add_item("INVPCID", InstructionSet::INVPCID());
-     add_item("LAHF", InstructionSet::LAHF());
-     add_item("LZCNT", InstructionSet::LZCNT());
-     add_item("MMX", InstructionSet::MMX());
-     add_item("MMXEXT", InstructionSet::MMXEXT());
-     add_item("MONITOR", InstructionSet::MONITOR());
-     add_item("MOVBE", InstructionSet::MOVBE());
-     add_item("MSR", InstructionSet::MSR());
-     add_item("OSXSAVE", InstructionSet::OSXSAVE());
-     add_item("PCLMULQDQ", InstructionSet::PCLMULQDQ());
-     add_item("POPCNT", InstructionSet::POPCNT());
-     add_item("PREFETCHWT1", InstructionSet::PREFETCHWT1());
-     add_item("RDRAND", InstructionSet::RDRAND());
-     add_item("RDSEED", InstructionSet::RDSEED());
-     add_item("RDTSCP", InstructionSet::RDTSCP());
-     add_item("RTM", InstructionSet::RTM());
-     add_item("SEP", InstructionSet::SEP());
-     add_item("SHA", InstructionSet::SHA());
-     add_item("SSE", InstructionSet::SSE());
-     add_item("SSE2", InstructionSet::SSE2());
-     add_item("SSE3", InstructionSet::SSE3());
-     add_item("SSE4.1", InstructionSet::SSE41());
-     add_item("SSE4.2", InstructionSet::SSE42());
-     add_item("SSE4a", InstructionSet::SSE4a());
-     add_item("SSSE3", InstructionSet::SSSE3());
-     add_item("SYSCALL", InstructionSet::SYSCALL());
-     add_item("TBM", InstructionSet::TBM());
-     add_item("XOP", InstructionSet::XOP());
-     add_item("XSAVE", InstructionSet::XSAVE());
+     add_item("3DNOW", is._3DNOW());
+     add_item("3DNOWEXT", is._3DNOWEXT());
+     add_item("ABM", is.ABM());
+     add_item("ADX", is.ADX());
+     add_item("AES", is.AES());
+     add_item("AVX", is.AVX());
+     add_item("AVX2", is.AVX2());
+     add_item("AVX512CD", is.AVX512CD());
+     add_item("AVX512ER", is.AVX512ER());
+     add_item("AVX512F", is.AVX512F());
+     add_item("AVX512PF", is.AVX512PF());
+     add_item("BMI1", is.BMI1());
+     add_item("BMI2", is.BMI2());
+     add_item("CLFSH", is.CLFSH());
+     add_item("CMPXCHG16B", is.CMPXCHG16B());
+     add_item("CX8", is.CX8());
+     add_item("ERMS", is.ERMS());
+     add_item("F16C", is.F16C());
+     add_item("FMA", is.FMA());
+     add_item("FSGSBASE", is.FSGSBASE());
+     add_item("FXSR", is.FXSR());
+     add_item("HLE", is.HLE());
+     add_item("INVPCID", is.INVPCID());
+     add_item("LAHF", is.LAHF());
+     add_item("LZCNT", is.LZCNT());
+     add_item("MMX", is.MMX());
+     add_item("MMXEXT", is.MMXEXT());
+     add_item("MONITOR", is.MONITOR());
+     add_item("MOVBE", is.MOVBE());
+     add_item("MSR", is.MSR());
+     add_item("OSXSAVE", is.OSXSAVE());
+     add_item("PCLMULQDQ", is.PCLMULQDQ());
+     add_item("POPCNT", is.POPCNT());
+     add_item("PREFETCHWT1", is.PREFETCHWT1());
+     add_item("RDRAND", is.RDRAND());
+     add_item("RDSEED", is.RDSEED());
+     add_item("RDTSCP", is.RDTSCP());
+     add_item("RTM", is.RTM());
+     add_item("SEP", is.SEP());
+     add_item("SHA", is.SHA());
+     add_item("SSE", is.SSE());
+     add_item("SSE2", is.SSE2());
+     add_item("SSE3", is.SSE3());
+     add_item("SSE4.1", is.SSE41());
+     add_item("SSE4.2", is.SSE42());
+     add_item("SSE4a", is.SSE4a());
+     add_item("SSSE3", is.SSSE3());
+     add_item("SYSCALL", is.SYSCALL());
+     add_item("TBM", is.TBM());
+     add_item("XOP", is.XOP());
+     add_item("XSAVE", is.XSAVE());
      
      return dict;
  }
  
  uint64_t MxInstructionSetFeatures() {
+
+     InstructionSet is;
      
      uint64_t result = 0;
      
@@ -1645,57 +1650,57 @@ PyObject *MxInstructionSetFeatruesDict() {
          }
      };
      
-     add_item(IS_3DNOW, InstructionSet::_3DNOW());
-     add_item(IS_3DNOWEXT, InstructionSet::_3DNOWEXT());
-     add_item(IS_ABM, InstructionSet::ABM());
-     add_item(IS_ADX, InstructionSet::ADX());
-     add_item(IS_AES, InstructionSet::AES());
-     add_item(IS_AVX, InstructionSet::AVX());
-     add_item(IS_AVX2, InstructionSet::AVX2());
-     add_item(IS_AVX512CD, InstructionSet::AVX512CD());
-     add_item(IS_AVX512ER, InstructionSet::AVX512ER());
-     add_item(IS_AVX512F, InstructionSet::AVX512F());
-     add_item(IS_AVX512PF, InstructionSet::AVX512PF());
-     add_item(IS_BMI1, InstructionSet::BMI1());
-     add_item(IS_BMI2, InstructionSet::BMI2());
-     add_item(IS_CLFSH, InstructionSet::CLFSH());
-     add_item(IS_CMPXCHG16B, InstructionSet::CMPXCHG16B());
-     add_item(IS_CX8, InstructionSet::CX8());
-     add_item(IS_ERMS, InstructionSet::ERMS());
-     add_item(IS_F16C, InstructionSet::F16C());
-     add_item(IS_FMA, InstructionSet::FMA());
-     add_item(IS_FSGSBASE, InstructionSet::FSGSBASE());
-     add_item(IS_FXSR, InstructionSet::FXSR());
-     add_item(IS_HLE, InstructionSet::HLE());
-     add_item(IS_INVPCID, InstructionSet::INVPCID());
-     add_item(IS_LAHF, InstructionSet::LAHF());
-     add_item(IS_LZCNT, InstructionSet::LZCNT());
-     add_item(IS_MMX, InstructionSet::MMX());
-     add_item(IS_MMXEXT, InstructionSet::MMXEXT());
-     add_item(IS_MONITOR, InstructionSet::MONITOR());
-     add_item(IS_MOVBE, InstructionSet::MOVBE());
-     add_item(IS_MSR, InstructionSet::MSR());
-     add_item(IS_OSXSAVE, InstructionSet::OSXSAVE());
-     add_item(IS_PCLMULQDQ, InstructionSet::PCLMULQDQ());
-     add_item(IS_POPCNT, InstructionSet::POPCNT());
-     add_item(IS_PREFETCHWT1, InstructionSet::PREFETCHWT1());
-     add_item(IS_RDRAND, InstructionSet::RDRAND());
-     add_item(IS_RDSEED, InstructionSet::RDSEED());
-     add_item(IS_RDTSCP, InstructionSet::RDTSCP());
-     add_item(IS_RTM, InstructionSet::RTM());
-     add_item(IS_SEP, InstructionSet::SEP());
-     add_item(IS_SHA, InstructionSet::SHA());
-     add_item(IS_SSE, InstructionSet::SSE());
-     add_item(IS_SSE2, InstructionSet::SSE2());
-     add_item(IS_SSE3, InstructionSet::SSE3());
-     add_item(IS_SSE41, InstructionSet::SSE41());
-     add_item(IS_SSE42, InstructionSet::SSE42());
-     add_item(IS_SSE4a, InstructionSet::SSE4a());
-     add_item(IS_SSSE3, InstructionSet::SSSE3());
-     add_item(IS_SYSCALL, InstructionSet::SYSCALL());
-     add_item(IS_TBM, InstructionSet::TBM());
-     add_item(IS_XOP, InstructionSet::XOP());
-     add_item(IS_XSAVE, InstructionSet::XSAVE());
+     add_item(IS_3DNOW, is._3DNOW());
+     add_item(IS_3DNOWEXT, is._3DNOWEXT());
+     add_item(IS_ABM, is.ABM());
+     add_item(IS_ADX, is.ADX());
+     add_item(IS_AES, is.AES());
+     add_item(IS_AVX, is.AVX());
+     add_item(IS_AVX2, is.AVX2());
+     add_item(IS_AVX512CD, is.AVX512CD());
+     add_item(IS_AVX512ER, is.AVX512ER());
+     add_item(IS_AVX512F, is.AVX512F());
+     add_item(IS_AVX512PF, is.AVX512PF());
+     add_item(IS_BMI1, is.BMI1());
+     add_item(IS_BMI2, is.BMI2());
+     add_item(IS_CLFSH, is.CLFSH());
+     add_item(IS_CMPXCHG16B, is.CMPXCHG16B());
+     add_item(IS_CX8, is.CX8());
+     add_item(IS_ERMS, is.ERMS());
+     add_item(IS_F16C, is.F16C());
+     add_item(IS_FMA, is.FMA());
+     add_item(IS_FSGSBASE, is.FSGSBASE());
+     add_item(IS_FXSR, is.FXSR());
+     add_item(IS_HLE, is.HLE());
+     add_item(IS_INVPCID, is.INVPCID());
+     add_item(IS_LAHF, is.LAHF());
+     add_item(IS_LZCNT, is.LZCNT());
+     add_item(IS_MMX, is.MMX());
+     add_item(IS_MMXEXT, is.MMXEXT());
+     add_item(IS_MONITOR, is.MONITOR());
+     add_item(IS_MOVBE, is.MOVBE());
+     add_item(IS_MSR, is.MSR());
+     add_item(IS_OSXSAVE, is.OSXSAVE());
+     add_item(IS_PCLMULQDQ, is.PCLMULQDQ());
+     add_item(IS_POPCNT, is.POPCNT());
+     add_item(IS_PREFETCHWT1, is.PREFETCHWT1());
+     add_item(IS_RDRAND, is.RDRAND());
+     add_item(IS_RDSEED, is.RDSEED());
+     add_item(IS_RDTSCP, is.RDTSCP());
+     add_item(IS_RTM, is.RTM());
+     add_item(IS_SEP, is.SEP());
+     add_item(IS_SHA, is.SHA());
+     add_item(IS_SSE, is.SSE());
+     add_item(IS_SSE2, is.SSE2());
+     add_item(IS_SSE3, is.SSE3());
+     add_item(IS_SSE41, is.SSE41());
+     add_item(IS_SSE42, is.SSE42());
+     add_item(IS_SSE4a, is.SSE4a());
+     add_item(IS_SSSE3, is.SSSE3());
+     add_item(IS_SYSCALL, is.SYSCALL());
+     add_item(IS_TBM, is.TBM());
+     add_item(IS_XOP, is.XOP());
+     add_item(IS_XSAVE, is.XSAVE());
      
      return result;
  }

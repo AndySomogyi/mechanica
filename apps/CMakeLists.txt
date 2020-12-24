@@ -47,6 +47,8 @@ add_executable(
   ${CMAKE_CURRENT_BINARY_DIR}/mx-pyrun.h
   )
 
+target_include_directories(mx-pyrun PRIVATE ${Python_INCLUDE_DIRS})
+
 target_include_directories(mx-pyrun PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if(WIN32 OR CYGWIN)

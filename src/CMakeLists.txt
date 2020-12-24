@@ -392,9 +392,9 @@ target_include_directories(mechanica_py PRIVATE
 
 target_include_directories(mechanica_py PRIVATE ${PYBIND11_INCLUDE_DIR})
 
-target_link_libraries(mechanica_py PUBLIC
-  Carbon::Static
-  )
+#target_link_libraries(mechanica_py PUBLIC
+#  Carbon::Static
+#  )
 
 target_link_libraries(mechanica_py PRIVATE
   Carbon::Static

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-#include <c_port.h>
+#include <Python.h>
 #include <stddef.h>
 #include "mx-pyrun.h"
 
