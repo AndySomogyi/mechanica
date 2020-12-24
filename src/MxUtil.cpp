@@ -1122,7 +1122,10 @@ float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
 }
 
 
-#if 1
+// Yes, Windows has the __cpuid and __cpuidx macros in the #include <intrin.h>
+// header file, but it seg-faults when we try to call them from clang.
+// this version of the cpuid seems to work with clang on both Windows and mac.
+
 // adapted from https://github.com/01org/linux-sgx/blob/master/common/inc/internal/linux/cpuid_gnu.h
 /* This is a PIC-compliant version of CPUID */
 static inline void __mx_cpuid(int *eax, int *ebx, int *ecx, int *edx)
@@ -1157,11 +1160,6 @@ static inline void mx_cpuidex(int a[4], int b, int c)
     __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
 }
 
-#else
-#include <intrin.h>
-#endif
-
-  
              
 // InstructionSet.cpp
 // Compile by using: cl /EHsc /W4 InstructionSet.cpp
