@@ -216,6 +216,7 @@ set(HEADERS
   rendering/NOMStyle.hpp
 
   rendering/MxColorMapper.hpp
+  rendering/colormaps/colormaps.h
 
   shaders/ParticleSphereShader.h
   )
