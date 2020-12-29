@@ -333,7 +333,7 @@ find_package(Magnum REQUIRED
 
 add_subdirectory(apps)
 add_subdirectory(testing)
-add_subdirectory(magnum_examples)
+#add_subdirectory(magnum_examples)
 add_subdirectory(examples)
 
 # try to make eclipse see the system python include dir.

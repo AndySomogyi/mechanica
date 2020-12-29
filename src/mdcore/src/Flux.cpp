@@ -10,10 +10,10 @@
 
 
 
-PyTypeObject MxFlux_Type = {
+PyTypeObject MxFluxes_Type = {
     CVarObject_HEAD_INIT(NULL, 0)
     "Flux"                                , // .tp_name
-    sizeof(MxFlux)                        , // .tp_basicsize
+    sizeof(MxFluxes)                        , // .tp_basicsize
     sizeof(int32_t)                       , // .tp_itemsize
     (destructor )0         , // .tp_dealloc
     0                                     , // .tp_print
@@ -70,5 +70,5 @@ PyTypeObject MxFlux_Type = {
 
 
 
-MX_BASIC_PYTHON_TYPE_INIT(Flux)
+MX_BASIC_PYTHON_TYPE_INIT(Fluxes)
 

@@ -124,6 +124,8 @@ set(SRC
   rendering/ArcBall.cpp
   rendering/NOMStyle.cpp
 
+  rendering/MxColorMapper.cpp
+
   shaders/ParticleSphereShader.cpp
 
   test_sequences_and_iterators.cpp
@@ -212,6 +214,8 @@ set(HEADERS
   rendering/ArcBallCamera.h
   rendering/ArcBall.h
   rendering/NOMStyle.hpp
+
+  rendering/MxColorMapper.hpp
 
   shaders/ParticleSphereShader.h
   )

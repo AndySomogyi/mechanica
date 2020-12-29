@@ -391,6 +391,8 @@ MxParticleType *MxParticleType_New(const char *_name, PyObject *dict);
  */
 CAPI_FUNC(MxParticleType*) MxParticleType_Get(PyObject *obj);
 
+CAPI_FUNC(MxParticleType*) MxParticleType_FindFromName(const char* name);
+
 /**
  * checks if a python object is a particle, and returns the
  * corresponding particle pointer, NULL otherwise

@@ -196,7 +196,7 @@ static inline int render_particle(SphereInstanceData* pData, int i, MxParticle *
         pData[i].normalMatrix =
         pData[i].transformationMatrix.normalMatrix();
         
-        pData[i].color = Magnum::Color4{style->color, 1};
+        pData[i].color = style->map_color(p);
         return 1;
     }
     

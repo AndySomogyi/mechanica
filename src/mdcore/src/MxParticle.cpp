@@ -1281,8 +1281,15 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             }
         }
         
+        if(dict.contains("species")) {
+            self->species = CSpeciesList_NewFromPyArgs(dict["species"].ptr());
+        }
+        else {
+            self->species = NULL;
+        }
+        
         if(dict.contains("style")) {
-            self->style = NOMStyle_New(NULL, dict["style"].ptr());
+            self->style = NOMStyle_New((PyObject*)self, dict["style"].ptr());
         }
         else {
             // copy base class style
@@ -1294,12 +1301,7 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 colors[(_Engine.nr_types - 1) % (sizeof(colors)/sizeof(unsigned))]);
         }
         
-        if(dict.contains("species")) {
-            self->species = CSpeciesList_NewFromPyArgs(dict["species"].ptr());
-        }
-        else {
-            self->species = NULL;
-        }
+
         
         // pybind does not seem to wrap deleting item from dict, WTF?!?
         if(self->ht_type.tp_dict) {
@@ -1348,12 +1350,16 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
             }
         }
         
+        /*
+         * move these to make an event decorator.
+        
         if(CDict_ContainsItemString(_dict, "events")) {
             MyParticleType_BindEvents(self, PyDict_GetItemString(_dict, "events"));
         }
 
         // bind all the events that are in the type dictionary
         MyParticleType_BindEvents(self, PyDict_Values(_dict));
+         */
         
         // special stuff for cluster types
         if(PyType_IsSubtype(self->ht_type.tp_base, (PyTypeObject*)MxCluster_GetType())) {
@@ -2086,6 +2092,17 @@ MxParticleHandle* MxParticle_NewEx(PyObject *type,
     }
 
     return pyPart;
+}
+
+
+MxParticleType* MxParticleType_FindFromName(const char* name) {
+    for(int i = 0; i < _Engine.nr_types; ++i) {
+        MxParticleType *type = &_Engine.types[i];
+        if(std::strncmp(name, type->name, sizeof(MxParticleType::name)) == 0) {
+            return type;
+        }
+    }
+    return NULL;
 }
 
 

@@ -11,6 +11,7 @@
 #include <pybind11/pybind11.h>
 #include <MxUtil.h>
 #include <MxConvert.hpp>
+#include "MxColorMapper.hpp"
 
 static int style_init(PyObject *, PyObject *, PyObject *);
 
@@ -176,6 +177,15 @@ static int style_init(PyObject *_s, PyObject *args, PyObject *kwargs) {
         }
         else {
             self->flags |= STYLE_VISIBLE;
+        }
+        
+        PyObject *cmap = PyDict_GetItemString(kwargs, "colormap");
+        if(cmap) {
+            self->mapper = MxColorMapper_New(args, cmap);
+            if(self->mapper) {
+                self->mapper_func = self->mapper->map;
+            }
+            
         }
     }
     else {

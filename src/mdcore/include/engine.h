@@ -216,6 +216,12 @@ typedef struct engine {
 	 * by type id.
 	 */
 	struct MxForce **p_singlebody;
+    
+    /**
+     * interaction matrix of pointers to fluxes, same layout as
+     * potential matrix p.
+     */
+    struct MxFluxes **fluxes;
 
 	/** Mutexes, conditions and counters for the barrier */
 	pthread_mutex_t barrier_mutex;
