@@ -32,11 +32,11 @@ PyObject *MxInvokeTime(PyObject *module, PyObject *obj, PyObject *args);
 HRESULT MxParticleType_BindEvent(struct MxParticleType *type, PyObject *e);
 
 /**
- * Check if a given PyFunction object is defined within a
+ * Check if a given object is a function or method defined within a
  * Particle derived type. If so, return the type pointer,
- * NULL otherwise. 
+ * NULL otherwise.
  */
-CAPI_FUNC(MxParticleType*) MxParticleType_FromPyFunction(PyObject *e);
+CAPI_FUNC(MxParticleType*) MxParticleType_FromFunction(PyObject *e);
 
 HRESULT _MxTimeEvent_Init(PyObject *m);
 

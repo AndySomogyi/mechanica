@@ -102,7 +102,7 @@ static int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwd
 
 static int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
                             const Magnum::Vector3 &velocity,
-                            struct MxParticle *cluster);
+                            int clusterId);
     
 template<typename C, typename T>
 void f(T C::*pm)
@@ -1196,6 +1196,30 @@ MxParticleType* MxParticleType_New(const char *_name, PyObject *dict)
     return result;
 }
 
+static HRESULT particletype_copy_base_descriptors(PyTypeObject *new_type, PyObject *base_dict) {
+    PyObject *new_dict = new_type->tp_dict;
+    PyObject *values = PyDict_Values(base_dict);
+    int size = PyList_Size(values);
+    
+    for(int i = 0; i < size; ++i) {
+        PyObject *o = PyList_GetItem(values, i);
+        
+        if(Py_TYPE(o) == &PyMethodDescr_Type) {
+            PyMethodDescrObject *desc_obj = (PyMethodDescrObject*)o;
+            
+            if(PyDict_GetItem(new_dict, desc_obj->d_common.d_name) == NULL) {
+                
+                o = PyDescr_NewMethod(new_type, desc_obj->d_method);
+                PyDict_SetItem(new_dict, desc_obj->d_common.d_name, o);
+            }
+        }
+    }
+    
+    return S_OK;
+}
+    
+
+
 HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
 {
     assert(self->ht_type.tp_base &&
@@ -1301,8 +1325,6 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 colors[(_Engine.nr_types - 1) % (sizeof(colors)/sizeof(unsigned))]);
         }
         
-
-        
         // pybind does not seem to wrap deleting item from dict, WTF?!?
         if(self->ht_type.tp_dict) {
             
@@ -1349,6 +1371,9 @@ HRESULT MxParticleType_Init(MxParticleType *self, PyObject *_dict)
                 PyDict_DelItem(_dict, key.ptr());
             }
         }
+        
+        particletype_copy_base_descriptors((PyTypeObject*)self, base->ht_type.tp_dict);
+        
         
         /*
          * move these to make an event decorator.
@@ -1704,7 +1729,7 @@ int MxParticleType_Check(PyObject* obj) {
 }
 
 MxParticle* MxParticle_Get(PyObject* obj) {
-    if(MxParticle_Check(obj)) {
+    if(obj && MxParticle_Check(obj)) {
         MxParticleHandle *pypart = (MxParticleHandle*)obj;
         return _Engine.s.partlist[pypart->id];
     }
@@ -2000,9 +2025,13 @@ int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
         
         Magnum::Vector3 position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), iniPos);
         Magnum::Vector3 velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), vel);
-        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
         
-        return particle_init_ex(self, position, velocity, cluster);
+        // particle_init_ex will allocate a new particle, this can re-assign the pointers in
+        // the engine particles, so need to pass cluster by id.
+        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
+        int clusterId = cluster ? cluster->id : -1;
+        
+        return particle_init_ex(self, position, velocity, clusterId);
         
     }
     catch (const pybind11::builtin_exception &e) {
@@ -2013,7 +2042,7 @@ int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
 
 int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
                      const Magnum::Vector3 &velocity,
-                     struct MxParticle *cluster) {
+                     int clusterId) {
     
     MxParticleType *type = (MxParticleType*)self->ob_type;
     
@@ -2026,7 +2055,7 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     part.typeId = type->id;
     part.flags = type->particle_flags;
     part.creation_time = _Engine.time;
-    part.clusterId = -1;
+    part.clusterId = clusterId;
     
     if(type->species) {
         part.state_vector = CStateVector_New(type->species, 0, 0, 0);
@@ -2056,7 +2085,8 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     self->id = p->id;
     
     
-    if(cluster) {
+    if(clusterId >= 0) {
+        MxParticle *cluster = _Engine.s.partlist[clusterId];
         p->flags |= PARTICLE_BOUND;
         cluster->addpart(p->id);
     } else {
@@ -2072,7 +2102,7 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
 
 MxParticleHandle* MxParticle_NewEx(PyObject *type,
                            const Magnum::Vector3 &pos, const Magnum::Vector3 &velocity,
-                           struct MxParticle *cluster) {
+                           int clusterId) {
     
     if(!PyType_Check(type)) {
         return NULL;
@@ -2086,7 +2116,7 @@ MxParticleHandle* MxParticle_NewEx(PyObject *type,
     MxParticleHandle *pyPart = (MxParticleHandle*)PyType_GenericNew((PyTypeObject*)type, NULL, NULL);
     
 
-    if(particle_init_ex((MxParticleHandle*)pyPart, pos, velocity, cluster) < 0) {
+    if(particle_init_ex((MxParticleHandle*)pyPart, pos, velocity, clusterId) < 0) {
         std::cout << "bad stuff" << std::endl;
         return NULL;
     }

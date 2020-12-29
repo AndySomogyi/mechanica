@@ -22,6 +22,9 @@ static HRESULT particletimeevent_exponential_setnexttime(CTimeEvent *event, doub
 
 static HRESULT particletimeevent_fixed_setnexttime(CTimeEvent *event, double time);
 
+
+MxParticleType *MxParticleType_FromMethod(PyObject *e);
+
 PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
 {
     std::cout << MX_FUNCTION << std::endl;
@@ -38,7 +41,7 @@ PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
     
     CMulticastTimeEvent_Add(_Engine.on_time, event);
     
-    MxParticleType *partType = MxParticleType_FromPyFunction(event->method);
+    MxParticleType *partType = MxParticleType_FromFunction(event->method);
     
     if(partType) {
         MxParticleType_BindEvent(partType, event);
@@ -96,52 +99,68 @@ static std::vector<std::string> split(const std::string& s, char seperator)
 }
 
 
-MxParticleType *MxParticleType_FromPyFunction(PyObject *e) {
+MxParticleType *MxParticleType_FromFunction(PyObject *e) {
     
-    if(!PyFunction_Check(e)) {
-        return NULL;
-    }
-    
-    PyFunctionObject *func = (PyFunctionObject*)e;
-    
-    if(func->func_module == NULL ||
-       func->func_qualname == NULL ||
-       func->func_name == NULL) {
-        return NULL;
-    }
-    
-    try {
-        std::string name = carbon::cast<std::string>(func->func_name);
-        std::string qualname = carbon::cast<std::string>(func->func_qualname);
+    if(PyFunction_Check(e)) {
         
-        PyObject *module = PyImport_GetModule(func->func_module);
+        PyFunctionObject *func = (PyFunctionObject*)e;
         
-        std::vector<std::string> names = split(qualname, '.');
-        
-        if(names.size() > 1) {
-            
-            PyObject *module_dict = PyModule_GetDict(module);
-            
-            std::string ownerName = names[names.size() - 2];
-            
-            PyObject *owner = PyDict_GetItemString(module_dict, ownerName.c_str());
-            
-            // if the owner name is not empty, but looking up the name in the function
-            // module is null, that means that on_time was called inside
-            // a class defition.
-            // TODO: don't support this yet, but can
-            // add a decorator and process them when the type gets
-            // created. 
-            
-            MxParticleType *type = MxParticleType_Get(owner);
-            
-            return type;
+        if(func->func_module == NULL ||
+           func->func_qualname == NULL ||
+           func->func_name == NULL) {
+            return NULL;
         }
+        
+        try {
+            std::string name = carbon::cast<std::string>(func->func_name);
+            std::string qualname = carbon::cast<std::string>(func->func_qualname);
+            
+            PyObject *module = PyImport_GetModule(func->func_module);
+            
+            std::vector<std::string> names = split(qualname, '.');
+            
+            if(names.size() > 1) {
+                
+                PyObject *module_dict = PyModule_GetDict(module);
+                
+                std::string ownerName = names[names.size() - 2];
+                
+                PyObject *owner = PyDict_GetItemString(module_dict, ownerName.c_str());
+                
+                // if the owner name is not empty, but looking up the name in the function
+                // module is null, that means that on_time was called inside
+                // a class defition.
+                // TODO: don't support this yet, but can
+                // add a decorator and process them when the type gets
+                // created.
+                
+                if(owner &&
+                   PyType_Check(owner) &&
+                   PyObject_IsSubclass(owner, (PyObject*)MxParticle_GetType()) > 0) {
+                    return (MxParticleType*)owner;
+                }
+            }
+        }
+        catch(const std::exception &e) {
+        }
+        
+        return NULL;
     }
-    catch(const std::exception &e) {
+    else if (Py_TYPE(e) == &PyMethodDescr_Type) {
+        
+        PyDescrObject *d = (PyDescrObject*)e;
+        
+        if(PyType_Check(d->d_type) &&
+           PyObject_IsSubclass((PyObject*)d->d_type, (PyObject*)MxParticle_GetType()) > 0) {
+            return (MxParticleType*)d->d_type;
+        }
+        
+        return NULL;
     }
     return NULL;
 }
+
+
 
 HRESULT MxParticleType_BindEvent(MxParticleType *type, PyObject *e) {
     

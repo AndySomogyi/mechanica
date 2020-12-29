@@ -14,7 +14,8 @@ class Cell(m.Particle):
     mass = 20
     target_temperature = 0
     radius=0.5
-    events = [m.on_time(m.Particle.fission, period=1, distribution='exponential')]
+
+m.on_time(Cell.fission, period=1, distribution='exponential')
 
 m.Universe.bind(pot, Cell, Cell)
 

@@ -26,9 +26,8 @@ class C(m.Cluster):
         print("axis: " + str(axis))
         m.Cluster.split(self, axis=axis)
 
-    events = [m.on_time(split,
-                        period=0.2,
-                        predicate="largest")]
+
+m.on_time(C.split, period=0.2, predicate="largest")
 
 class Yolk(m.Particle):
     radius = 10

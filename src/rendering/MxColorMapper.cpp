@@ -15,16 +15,40 @@
 #include "colormaps/colormaps.h"
 
 static Magnum::Color4 bgyr_35_85_c72(MxColorMapper *cm, struct MxParticle *part) {
-    float s = part->state_vector->fvec[0];
+    float s = part->state_vector->fvec[cm->species_index];
     return Magnum::Color4{colormaps::all::bgyr_35_85_c72(s), 1};
 }
 
 MxColorMapper *MxColorMapper_New(struct MxParticleType *partType,
                                  const char* speciesName,
                                  const char* name, float min, float max) {
+    
+    if(partType->species == NULL) {
+        std::string msg = "can not create color map for particle type \"";
+        msg += partType->name;
+        msg += "\" without any species defined";
+        PyErr_WarnEx(PyExc_Warning, msg.c_str(), 2);
+        return NULL;
+    }
+    
+    int index = partType->species->index_of(speciesName);
+    
+    if(index < 0) {
+        std::string msg = "can not create color map for particle type \"";
+        msg += partType->name;
+        msg += "\", does not contain species \"";
+        msg += speciesName;
+        msg += "\"";
+        PyErr_WarnEx(PyExc_Warning, msg.c_str(), 2);
+        return NULL;
+    }
+    
     MxColorMapper *obj = new MxColorMapper();
     
+    obj->species_index = index;
     obj->map = bgyr_35_85_c72;
+    obj->min_val = min;
+    obj->max_val = max;
     
     return obj;
 }
@@ -58,12 +82,7 @@ MxColorMapper *MxColorMapper_New(PyObject *args, PyObject *kwargs) {
         
         std::string map = pmap ? carbon::cast<std::string>(pmap) : "rainbow";
         
-        return MxColorMapper_New(type,
-                          species.c_str(),
-                                 map.c_str(),
-                                 0, 1);
-        
-        
+        return MxColorMapper_New(type, species.c_str(), map.c_str(), 0, 1);
     }
     catch(const std::exception &ex) {
         delete obj;

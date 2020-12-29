@@ -816,7 +816,7 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         
         for(int i = 0; i < vertices.size(); ++i) {
             Magnum::Vector3 pos = m.transformPoint(vertices[i]);
-            MxParticleHandle *p = MxParticle_NewEx(type, pos, velocity, NULL);
+            MxParticleHandle *p = MxParticle_NewEx(type, pos, velocity, -1);
             parts->parts[i] = p->id;
             Py_DecRef(p);
         }

@@ -616,6 +616,7 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
     int clusterId = p->id;
     float radius = p->radius;
     p = NULL;
+    PyObject *result = NULL;
 
     // type of nested particle
     PyTypeObject *ptype = (PyTypeObject*)wrapped;
@@ -625,16 +626,8 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
         int count = PyLong_AsLong(PyTuple_GetItem(args, 0));
         PyObject *newArgs = PyTuple_GetSlice(args, 1, PyTuple_Size(args));
         
-        if(kwds == NULL) {
-            kwds = PyDict_New();
-        }
-        else {
-            Py_IncRef(kwds);
-        }
-        
         for(int i = 0; i < count; ++i) {
             // adds a particle to our particles list
-            
             
             // set postion
             Magnum::Vector3 pos;
@@ -642,20 +635,19 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
             pos = random_point_solid_sphere(radius) + pos;
             PyObject *pypos = pybind11::cast(pos).release().ptr();
             PyDict_SetItemString(kwds, "position", pypos);
-            PyObject *result = PyObject_Call((PyObject*)ptype, newArgs, kwds);
-            MxParticle *part = MxParticle_Get(result);
+            PyObject *part = PyObject_Call((PyObject*)ptype, newArgs, kwds);
             assert(part);
+            Py_DECREF(part);
             Py_DECREF(pypos);
         }
         
-        Py_DECREF(kwds);
-        
         Py_DecRef(newArgs);
-        Py_RETURN_NONE;
+        result = Py_None;
+        Py_INCREF(result);
     }
-    
-
-    PyObject *result = PyObject_Call((PyObject*)ptype, args, kwds);
+    else {
+        result = PyObject_Call((PyObject*)ptype, args, kwds);
+    }
     
     Py_DECREF(kwds);
     return result;

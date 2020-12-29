@@ -16,6 +16,7 @@
 struct MxColorMapper
 {
     ColorMapperFunc map;
+    int species_index;
     
     float min_val;
     float max_val;
