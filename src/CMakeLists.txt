@@ -123,6 +123,7 @@ set(SRC
   rendering/FluidSimTest.cpp
   rendering/ArcBall.cpp
   rendering/NOMStyle.cpp
+  rendering/MxKeyEvent.cpp
 
   rendering/MxColorMapper.cpp
 
@@ -214,6 +215,7 @@ set(HEADERS
   rendering/ArcBallCamera.h
   rendering/ArcBall.h
   rendering/NOMStyle.hpp
+  rendering/MxKeyEvent.hpp
 
   rendering/MxColorMapper.hpp
   rendering/colormaps/colormaps.h

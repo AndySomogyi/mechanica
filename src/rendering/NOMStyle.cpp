@@ -11,6 +11,7 @@
 #include <pybind11/pybind11.h>
 #include <MxUtil.h>
 #include <MxConvert.hpp>
+#include <CConvert.hpp>
 #include "MxColorMapper.hpp"
 
 static int style_init(PyObject *, PyObject *, PyObject *);
@@ -90,6 +91,35 @@ static PyGetSetDef getset[] = {
                 c_exp(e, "");
                 return -1;
             }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "colormap",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            NOMStyle *self = (NOMStyle*)_obj;
+            if(self->mapper) {
+                Py_INCREF(self->mapper);
+                return self->mapper;
+            }
+        },
+        .set = [](PyObject *_self, PyObject *val, void *p) -> int {
+            try {
+                NOMStyle *self = (NOMStyle*)_self;
+                if(self->mapper) {
+                    if(carbon::check<std::string>(val)) {
+                        std::string s = carbon::cast<std::string>(val);
+                        self->mapper->set_colormap(s);
+                        self->mapper_func = self->mapper->map;
+                    }
+                }
+            }
+            catch(const std::exception &e) {
+                c_exp(e, "");
+                return -1;
+            }
+            return 0;
         },
         .doc = "test doc",
         .closure = NULL

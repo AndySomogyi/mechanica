@@ -44,6 +44,8 @@
 #include "MxConstraint.hpp"
 #include "MxConvert.hpp"
 #include "MxParticleList.hpp"
+#include <rendering/MxColorMapper.hpp>
+#include <rendering/MxKeyEvent.hpp>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -162,6 +164,7 @@ static PyMethodDef methods[] = {
         { "testWin", (PyCFunction)PyTestWin, METH_VARARGS, NULL },
         { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
         { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "on_keypress", (PyCFunction)MxKeyEvent_AddDelegate, METH_VARARGS | METH_KEYWORDS, NULL },
         { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
         { "random_points", (PyCFunction)MxRandomPoints, METH_VARARGS | METH_KEYWORDS, NULL },
         { "points", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -387,6 +390,9 @@ static PyObject * moduleinit(void)
     MxWindowProxy_init(m);
     MxWindowHost_init(m);
     MyUniverseRenderer_Init(m);
+    _MxColormap_Init(m);
+    
+    _MxKeyEvent_Init(m);
     
     
 

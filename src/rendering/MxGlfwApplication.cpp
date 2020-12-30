@@ -1,5 +1,6 @@
 
 #include "MxGlfwApplication.h"
+#include "MxKeyEvent.hpp"
 
 #include <cstring>
 #include <tuple>
@@ -323,6 +324,12 @@ void MxGlfwApplication::viewportEvent(ViewportEvent &event)
 
 void MxGlfwApplication::keyPressEvent(KeyEvent &event)
 {
+    MxKeyEvent_Invoke(event);
+    
+    if(event.isAccepted()) {
+        return;
+    }
+    
     bool handled = false;
     switch(event.key()) {
         case Platform::GlfwApplication::KeyEvent::Key::Space: {
