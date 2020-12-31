@@ -35,6 +35,9 @@ struct MxFluxes : PyVarObject
     int32_t *indices_b;
     float *coef;
     
+    int32_t size;
+    int32_t alloc_size;
+    
     static int32_t init;
 };
 

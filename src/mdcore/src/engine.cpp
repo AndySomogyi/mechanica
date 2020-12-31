@@ -2221,15 +2221,19 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* allocate the interaction matrices */
     if ( ( e->p = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
+    
+    /* allocate the flux interaction matrices */
+    if ( ( e->fluxes = ( MxFluxes **)malloc( sizeof(MxFluxes*) * e->max_type * e->max_type ) ) == NULL )
+        return error(engine_err_malloc);
 
     if ( ( e->p_bound = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
             return error(engine_err_malloc);
 
-
     bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
+    
+    bzero( e->fluxes , sizeof(struct MxFluxes *) * e->max_type * e->max_type );
 
     bzero( e->p_bound , sizeof(struct MxPotential *) * e->max_type * e->max_type );
-
 
     e->dihedralpots_size = 100;
     if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)

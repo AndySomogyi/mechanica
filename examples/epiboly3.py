@@ -58,8 +58,8 @@ parts, bonds = m.bind_sphere(h, type=B, n=4, phi=(0.6 * np.pi, 0.7 * np.pi), rad
 
 #m.bind_pairwise(h, c.neighbors(2* A.radius), cutoff=2*A.radius, pairs=[(A,B)])
 
-C.style.visible = False
-B.style.visible = False
+C.style.visible = True
+B.style.visible = True
 #A.style.visible = False
 
 

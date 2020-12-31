@@ -48,6 +48,7 @@
 #include "space.h"
 #include <MxPotential.h>
 #include "potential_eval.h"
+#include "flux_eval.hpp"
 #include "engine.h"
 #include "runner.h"
 #include "MxForce.h"
@@ -85,7 +86,8 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     struct space *s;
     int i, j, k;
     struct MxParticle *parts_i, *parts_j;
-    struct MxPotential *pot, **pots;
+    struct MxPotential *pot;
+    MxFluxes *fluxes;
     struct engine *eng;
     int dmaxdist, dnshift;
     FPTYPE cutoff, cutoff2, r2, w;
@@ -116,7 +118,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     /* get the space and cutoff */
     eng = r->e;
     s = &(eng->s);
-    pots = eng->p;
     cutoff = s->cutoff;
     cutoff2 = cutoff*cutoff;
     bias = sqrt( s->h[0]*s->h[0] + s->h[1]*s->h[1] + s->h[2]*s->h[2] );
@@ -174,8 +175,10 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 
             /* fetch the potential, if any */
             pot = get_potential(part_i, part_j);
-            if ( pot == NULL )
+            fluxes = get_flux(part_i, part_j);
+            if ( pot == NULL && fluxes == NULL ) {
                 continue;
+            }
 
             /* get the distance between both particles */
             r2 = fptype_r2( pix , part_j->x , dx );
@@ -228,21 +231,27 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 
                     }
             #else
+            
+                /* eval the flux if we have any */
+                if(fluxes) {
+                    flux_eval_ex(fluxes, r2, part_i, part_j);
+                }
+            
                 /* evaluate the interaction */
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-            /* update the forces if part in range */
-            if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
-                
-                for ( k = 0 ; k < 3 ; k++ ) {
-                    w = f * dx[k];
-                    pif[k] -= w;
-                    part_j->f[k] += w;
+                /* update the forces if part in range */
+                if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                    
+                    for ( k = 0 ; k < 3 ; k++ ) {
+                        w = f * dx[k];
+                        pif[k] -= w;
+                        part_j->f[k] += w;
+                    }
+                    /* tabulate the energy */
+                    epot += e;
                 }
-                /* tabulate the energy */
-                epot += e;
-            }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE
 

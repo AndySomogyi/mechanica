@@ -63,6 +63,7 @@ set(PRIVATE_HEADERS
   "btree.h"
   "mainpage.h"
   "potential_eval.h"
+  "flux_eval.hpp"
   "reader.h"
   "MxConstraint.hpp"
   "MxCluster.hpp"

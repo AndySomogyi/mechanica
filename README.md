@@ -19,8 +19,27 @@ course).
 History
 =======
 
-Version Alpha 0.0.11-dev1
--------------------------
+Version Alpha 0.0.13
+--------------------
+* preliminary SBML species per object support
+* SBML parsing, create state vector per object
+* cpuinfo to determine instruction set support
+* neighbor list bug fixes
+* improve and simplify events
+* on_keypress event
+* colormap support per SBML species
+
+Version Alpha 0.0.12
+--------------------
+* free-slip boundary conditions
+* rendering updates
+* energy minimizer in initial condition generator
+* updates to init condition code
+* initial vertex model support
+
+
+Version Alpha 0.0.11
+--------------------
 * new linear potential
 * triagulated surface mesh generation for spheres, triangulate sphere
   surfaces with particles and bonds, returns the set. 
