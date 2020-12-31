@@ -27,19 +27,18 @@
 
 #include "metrics.h"
 
-#include  <vector>
+#include <vector>
 #include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <set>
 #include <iostream>
+#include <vector>
+#include <bitset>
+#include <array>
+#include <string>
 
 
-
-#include <iostream>
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 const char* MxColor3Names[] = {
     "AliceBlue",
@@ -1146,19 +1145,52 @@ static inline void __mx_cpuid(int *eax, int *ebx, int *ecx, int *edx)
 #endif
 }
 
-static inline void mx_cpuid(int a[4], int b)
+#ifdef _WIN32
+
+// TODO: PATHETIC HACK for windows. 
+// don't know why, but calling cpuid in release mode, and ONLY in release 
+// mode causes a segfault. Hack is to flush stdout, push some junk on the stack. 
+// and force a task switch. 
+// dont know why this works, but if any of these are not here, then it segfaults
+// in release mode. 
+// this also seems to work, but force it non-inline and return random
+// number. 
+// Maybe the optimizer is inlining it, and inlining causes issues
+// calling cpuid??? 
+
+static __declspec(noinline) int mx_cpuid(int a[4], int b)
+{
+    a[0] = b;
+    a[2] = 0;
+    __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
+    return std::rand();
+}
+
+static __declspec(noinline) int mx_cpuidex(int a[4], int b, int c)
+{
+    a[0] = b;
+    a[2] = c;
+    __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
+    return std::rand();
+}
+
+#else 
+
+static  void mx_cpuid(int a[4], int b)
 {
     a[0] = b;
     a[2] = 0;
     __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
 }
 
-static inline void mx_cpuidex(int a[4], int b, int c)
+static void mx_cpuidex(int a[4], int b, int c)
 {
     a[0] = b;
     a[2] = c;
     __mx_cpuid(&a[0], &a[1], &a[2], &a[3]);
 }
+
+#endif
 
              
 // InstructionSet.cpp
@@ -1167,11 +1199,10 @@ static inline void mx_cpuidex(int a[4], int b, int c)
 // Uses the __cpuid intrinsic to get information about
 // CPU extended instruction set support.
 
-#include <iostream>
-#include <vector>
-#include <bitset>
-#include <array>
-#include <string>
+
+
+typedef Magnum::Vector4i VectorType;
+
 
 class InstructionSet
 {
@@ -1187,8 +1218,7 @@ private:
                         0 }, f_1_EDX_ { 0 }, f_7_EBX_ { 0 }, f_7_ECX_ { 0 }, f_81_ECX_ {
                         0 }, f_81_EDX_ { 0 }, data_ { }, extdata_ { }
         {
-            //int cpuInfo[4] = {-1};
-            std::array<int, 4> cpui;
+            VectorType cpui;
 
             // Calling mx_cpuid with 0x0 as the function_id argument
             // gets the number of the highest valid function ID.
@@ -1266,8 +1296,8 @@ private:
         std::bitset<32> f_7_ECX_;
         std::bitset<32> f_81_ECX_;
         std::bitset<32> f_81_EDX_;
-        std::vector<std::array<int, 4>> data_;
-        std::vector<std::array<int, 4>> extdata_;
+        std::vector<VectorType> data_;
+        std::vector<VectorType> extdata_;
     };
 
     const InstructionSet_Internal CPU_Rep;
@@ -1510,7 +1540,13 @@ PyObject *MxCompileFlagsDict() {
     auto add_item = [dict] (const char* key, bool value) {
         PyDict_SetItemString(dict, key, PyBool_FromLong(value));
     };
-    
+
+#ifdef _DEBUG
+    add_item("_DEBUG", true);
+#else
+    add_item("_DEBUG", 0);
+#endif 
+
     add_item("MX_OPENMP", MX_OPENMP);
     add_item("MX_OPENMP_BONDS", MX_OPENMP_BONDS);
     add_item("MX_OPENMP_INTEGRATOR", MX_OPENMP_INTEGRATOR);

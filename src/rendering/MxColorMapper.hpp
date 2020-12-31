@@ -11,6 +11,7 @@
 #include <rendering/NOMStyle.hpp>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Color.h>
+#include <string>
 
 
 struct MxColorMapper : PyObject
