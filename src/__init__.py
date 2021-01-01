@@ -1,6 +1,8 @@
 from ._mechanica import *
+from . import lattice
 
-__all__ = ['forces', 'math']
+__all__ = ['forces', 'math', 'lattice']
+
 
 close = Simulator.close
 run = Simulator.run

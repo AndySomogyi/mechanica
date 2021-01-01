@@ -495,14 +495,18 @@ endif()
 #add_custom_target(mechanica.py
 #  DEPENDS mechanica.py)
 
-add_custom_command(
-  TARGET mechanica_py
-  DEPENDS __init__.py
-  POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${MX_PYPKG_DIR}/__init__.py
-  )
+#add_custom_command(
+#  TARGET mechanica_py
+#  DEPENDS __init__.py
+#  POST_BUILD
+#  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py ${MX_PYPKG_DIR}/__init__.py
+#  )
 
 file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY __init__.py DESTINATION ${MX_PYPKG_DIR})
+file(COPY mechanica.py DESTINATION ${MX_PYPKG_DIR})
+file(COPY lattice.py DESTINATION ${MX_PYPKG_DIR})
+
 
 target_link_libraries(mechanica_shared
   PUBLIC
