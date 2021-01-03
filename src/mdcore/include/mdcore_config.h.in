@@ -16,6 +16,7 @@
 #cmakedefine01 MX_VECTORIZE_FORCE
 #cmakedefine01 MX_VECTORIZE_BONDS
 #cmakedefine01 MX_VECTORIZE_INTEGRATOR
+#cmakedefine01 MX_THREADING
 #cmakedefine01 MX_AVX2
 #cmakedefine01 MX_AVX
 #cmakedefine01 MX_SSE42

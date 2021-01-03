@@ -391,8 +391,6 @@ typedef struct engine_comm {
 /* associated functions */
 CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
 CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i );
-CAPI_FUNC(int) engine_advance ( struct engine *e );
-
 
 /**
  * allocates a new angle, returns a pointer to it.
@@ -573,6 +571,10 @@ CAPI_FUNC(int) engine_verlet_update ( struct engine *e );
  */
 CAPI_FUNC(int) engine_next_partid(struct engine *e);
 
+/**
+ * internal method to caluculate force on all objects
+ */
+int engine_force(struct engine *e);
 
 /**
  * Deletes a particle from the engine based on particle id.

@@ -58,6 +58,8 @@ option(MX_VECTORIZE_INTEGRATOR "Enable vector integrator  (AVX instructions)" OF
 option(MX_ENABLE_AVX2          "Enable AVX2 instructions" OFF)
 option(MX_ENABLE_AVX           "Enable AVX  instructions" ON)
 option(MX_ENABLE_SSE4          "Enable SSE4 instructions" ON)
+option(MX_THREADING            "Enable multi-threaded flux and force calculations" ON)
+
 
 if(MX_ENABLE_AVX2)
   set(MX_AVX2 ON)

@@ -67,12 +67,16 @@ set(PRIVATE_HEADERS
   "reader.h"
   "MxConstraint.hpp"
   "MxCluster.hpp"
+  "engine_advance.h"
   )
+
+if(MX_THREADING)
+  list(APPEND PRIVATE_HEADERS "MxThreadPool.hpp")
+  list(APPEND PRIVATE_HEADERS "MxTaskScheduler.hpp")
+endif()
 
 #add_library(${_target} ${ARGN} ${_header_list})
 #target_include_directories(${_target} PRIVATE "${MDCORE_SOURCE_DIR}/include")
-
-
 
 # List required headers
 
@@ -94,6 +98,7 @@ SET(SOURCES
   engine_io.cpp
   engine_bonded.cpp
   engine_rigid.cpp
+  engine_advance.cpp
   runner_dopair.cpp
   queue.cpp
   runner_dosort.cpp

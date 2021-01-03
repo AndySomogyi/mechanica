@@ -337,6 +337,9 @@ void MxGlfwApplication::keyPressEvent(KeyEvent &event)
             MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, !current);
             break;
         }
+        case Platform::GlfwApplication::KeyEvent::KeyEvent::Key::S: {
+            MxUniverse_Step(0, 0);
+        }
         default:
             break;
     }

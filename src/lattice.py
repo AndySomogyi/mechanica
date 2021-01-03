@@ -361,6 +361,54 @@ def hex(a, types=None):
                     dimensions=2);
 
 
+def hcp(a, c=None, types=None):
+    R""" Create a hexagonal close pack cell
+
+    Args:
+        a (float): Lattice constant.
+        type_name (str): Particle type name.
+
+    :py:class:`hcp` creates a hexagonal lattice in a rectangular box.
+    It has 6 particles, one at the corner and one at the center of the rectangle.
+    This is not the primitive unit cell, but is more convenient to
+    work with because of its shape.
+
+    .. math::
+        :nowrap:
+
+        \begin{eqnarray*}
+        \vec{r}& =& \left(\begin{array}{ccc} 0 & 0 \\
+                                             \frac{a}{2} & \sqrt{3} \frac{a}{2} \\
+                             \end{array}\right)
+        \end{eqnarray*}
+
+    And the box matrix:
+
+    .. math::
+        :nowrap:
+
+        \begin{eqnarray*}
+        \mathbf{h}& =& \left(\begin{array}{ccc} a & 0 \\
+                                                0 & \sqrt{3} a \\
+                                                0 & 0 \\
+                             \end{array}\right)
+        \end{eqnarray*}
+    """
+
+    if c is None:
+        c = a
+
+
+    return unitcell(N=6,
+                    types=_make_types(6, types),
+                    position=[[0,0,0],[a/2,math.sqrt(3)*a/2,0]],
+                    a1=[a,0,0],
+                    a2=[a/2,math.sqrt(3)*a/2,0],
+                    a3=[0,0,c],
+                    dimensions=3);
+
+
+
 def create_lattice(unitcell, n, origin=None):
     R""" Create a lattice.
     Args:

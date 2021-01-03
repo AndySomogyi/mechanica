@@ -51,6 +51,7 @@
 #include "Edge.hpp"
 #include "Polygon.hpp"
 #include "Cell.hpp"
+#include "Flux.hpp"
 
 
 #include <c_util.h>
@@ -154,6 +155,10 @@ static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
     return MxUniverse_BindSphere(a, k);
 }
 
+static PyObject* flux(PyObject *m, PyObject *args, PyObject *kwargs) {
+    return MxFluxes_FluxPy(args, kwargs);
+}
+
 
 static PyMethodDef methods[] = {
         { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
@@ -174,6 +179,7 @@ static PyMethodDef methods[] = {
         { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
         { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
         { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "flux", (PyCFunction)flux, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 

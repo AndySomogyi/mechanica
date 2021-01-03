@@ -28,19 +28,44 @@
  *
  * aloocate Flux as a single block, member pointers point to
  * offsets in these blocks.
+ *
+ * Allocated size is:
+ * sizeof(MxFluxes) + 2 * alloc_size * sizeof(int32) + alloc_size * sizeof(float)
  */
-struct MxFluxes : PyVarObject
+struct MxFluxes : PyObject
 {
+    int32_t size;          // size of how many fluxes this object has
+    int32_t alloc_size;    // size of how much space we have for fluxes.
+    static int32_t init;
+    
     int32_t *indices_a;
     int32_t *indices_b;
     float *coef;
-    
-    int32_t size;
-    int32_t alloc_size;
-    
-    static int32_t init;
 };
 
+MxFluxes *MxFluxes_New(int32_t init_size);
+
+
+MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k);
+
+
+/**
+ * The global mechanica.flux function.
+ *
+ * python interface to add fluxes
+ *
+ * args a:ParticleType, b:ParticleType, s:String, k:Float
+ *
+ * looks for a fluxes between types a and b, adds a flux for the
+ * species named 's' with coef k.
+ */
+CAPI_FUNC(PyObject*) MxFluxes_FluxPy(PyObject *args, PyObject *kwargs);
+
+
+/**
+ * integrate all of the fluxes for a space cell.
+ */
+HRESULT MxFluxes_Integrate(int cellId);
 
 CAPI_DATA(PyTypeObject) MxFluxes_Type;
 

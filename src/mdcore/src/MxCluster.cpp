@@ -667,10 +667,16 @@ MxParticleType *MxParticleType_Get(PyObject *obj) {
     if(obj == NULL) {
         return NULL;
     }
-    if(PyType_Check(obj) && PyObject_IsSubclass(obj, (PyObject*)MxParticle_GetType()) > 0) {
-        return (MxParticleType*)obj;
+    if(PyType_Check(obj)) {
+        int res = PyObject_IsSubclass(obj, (PyObject*)MxParticle_GetType());
+        if (res < 0) {
+            PyErr_Print();
+        }
+        if(res > 0) {
+            return (MxParticleType*)obj;
+        }
     }
-    else if(PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType())) {
+    if(PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType())) {
         return (MxParticleType*)obj->ob_type;
     }
     else if(PyObject_IsInstance(obj, (PyObject*)&PyWrapperDescr_Type)) {

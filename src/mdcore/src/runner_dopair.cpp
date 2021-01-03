@@ -175,7 +175,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 
             /* fetch the potential, if any */
             pot = get_potential(part_i, part_j);
-            fluxes = get_flux(part_i, part_j);
+            fluxes = get_fluxes(part_i, part_j);
             if ( pot == NULL && fluxes == NULL ) {
                 continue;
             }
@@ -242,7 +242,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
                 /* update the forces if part in range */
-                if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                if (pot && potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
                     
                     for ( k = 0 ; k < 3 ; k++ ) {
                         w = f * dx[k];
@@ -445,6 +445,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     struct MxParticle *parts;
     double epot = 0.0;
     struct MxPotential *pot, **pots;
+    MxFluxes *fluxes;
     // single body force and forces
     MxForce *psb, **psbs;
     struct engine *eng;
@@ -513,7 +514,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             part_j = &(parts[j]);
                         
             pot = get_potential(part_i, part_j);
-            if ( pot == NULL ) {
+            fluxes = get_fluxes(part_i, part_j);
+            if ( pot == NULL && fluxes == NULL ) {
                 continue;
             }
 
@@ -571,13 +573,20 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                     icount = 0;
 
                     }
-            #else
+            #else // defined(VECTORIZE)
+            
+                /* eval the flux if we have any */
+                if(fluxes) {
+                    flux_eval_ex(fluxes, r2, part_i, part_j);
+                }
+            
                 /* evaluate the interaction */
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
+            
             /* update the forces if part in range */
-            if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+            if (pot && potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
                 
                 for ( k = 0 ; k < 3 ; k++ ) {
                     w = f * dx[k];  // f is force / r, so multiply by dx to get unit vector. 

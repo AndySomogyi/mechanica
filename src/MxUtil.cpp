@@ -14,6 +14,7 @@
 #include <MxPy.h>
 #include <MxNumpy.h>
 #include <MxConvert.hpp>
+#include <MxThreadPool.hpp>
 
 #include <CConvert.hpp>
 #include <mdcore_config.h>
@@ -1555,6 +1556,14 @@ PyObject *MxCompileFlagsDict() {
     add_item("MX_SSE42", MX_SSE42);
     add_item("MX_AVX", MX_AVX);
     add_item("MX_AVX2", MX_AVX2);
+    
+#ifdef MX_THREADING
+    add_item("MX_THREADING", true);
+    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(mx::ThreadPool::hardwareThreadSize()));
+#else
+    add_item("MX_THREADING", false);
+    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(0));
+#endif
     
     PyDict_SetItemString(dict, "MX_SIMD_SIZE", PyLong_FromLong(MX_SIMD_SIZE));
 
