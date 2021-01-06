@@ -223,15 +223,80 @@ A potential can be treated just like any python callable object to evaluate it::
             larger the potential becomes narrower and sharper, and approaches
             the hard sphere potential.
 
+                  
+
+      .. staticmethod:: overlapping_sphere(mu=1, [kc=1], [kh=0], [r0=0], [min=0.001], max=[10], [tol=0.001])
 
 
+         :param mu: interaction strength, represents the potential energy peak
+                    value.
+         :param kc: decay strength of long range attraction. Larger values make
+                    a shorter ranged function.  
+         :param kh: Optionally add a harmonic long-range attraction, same as
+                    :meth:`glj` function.
+         :param r0: Optional harmonic rest length, only used if `kh` is
+                    non-zero. 
+         :param min: Minimum value potential is computed for. 
+         :param max: Potential cutoff values.
+         :param tol: Tolerance, defaults to 0.001.
 
 
- 
+         The `overlapping_sphere` function implements the `Overlapping Sphere`,
+         from :cite:`Osborne:2017hk`. This is a soft sphere, from our
+         testing, it appears *too soft*, probably better suited for 2D
+         models. This potential appears to allow particles to collapse too
+         closely, probably needs more paramater fiddling.
+
+         .. note::
+            From the equation below, we can see that there is a :math:`\log`
+            term as the short range repulsion term. The logarithm is the radial
+            Green's function for cylindrical (2D) geometry, however the Green's
+            function for 3D is the :math:`1/r` function. This is possibly why
+            Osborne has success in 2D but it's unclear if this was used in 3D
+            geometries. 
 
 
+         .. math::
 
+            \mathbf{F}_{ij}= 
+            \begin{cases}
+              \mu_{ij} s_{ij}(t) \hat{\mathbf{r}}_{ij} \log 
+                \left(
+                1 + \frac{||\mathbf{r}_{ij}|| - s_{ij}(t)}{s_{ij}(t)}
+                \right) ,& \text{if } ||\mathbf{r}_{ij}|| < s_{ij}(t) \\
+              \mu_{ij}\left(||\mathbf{r}_{ij}|| - s_{ij}(t)\right) \hat{\mathbf{r}}_{ij} 
+                \exp \left( 
+                -k_c \frac{||\mathbf{r}_{ij}|| - s_{ij}(t)}{s_{ij}(t)}
+                \right) ,&
+                \text{if } s_{ij}(t) \leq ||\mathbf{r}_{ij}|| \leq r_{max} \\
+              0,              & \text{otherwise} \\
+            \end{cases}
 
+         Osborne refers to :math:`\mu_{ij}` as a "spring constant", this
+         controls the size of the force, and is the potential energy peak value.
+         :math:`\hat{\mathbf{r}}_{ij}`  is the unit vector from particle
+         :math:`i` center to particle :math:`j` center, :math:`k_C` is a
+         parameter that defines decay of the attractive force. Larger values of
+         :math:`k_C` result in a shaper peaked attraction, and thus a shorter
+         ranged force. :math:`s_{ij}(t)` is the is the sum of the radii of the
+         two particles.
+
+         We can plot the overlapping sphere function to get an idea of it's
+         behavior::
+
+         >>> import mechanica as m
+         >>> p = m.Potential.overlapping_sphere(mu=10, max=20)
+         >>> p.plot(s=2, force=True, potential=True, ymin=-10, ymax=8)
+
+      .. figure:: overlapping_sphere.png
+         :width: 500px
+         :align: center
+         :alt: alternate text
+         :figclass: align-center
+
+         We can plot the overlapping sphere function like any other function.
+
+         
    
  
 

@@ -56,6 +56,9 @@ extensions = [
     'sphinx.ext.autosectionlabel'
 ]
 
+
+bibtex_bibfiles = ['papers.bib', 'bibdesk.bib']
+
 numfig = True
 
 # Add any paths that contain templates here, relative to this directory.
