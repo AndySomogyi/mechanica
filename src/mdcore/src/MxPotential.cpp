@@ -30,6 +30,7 @@
 #include <MxPy.h>
 #include <string.h>
 #include <carbon.h>
+#include <CConvert.hpp>
 
 
 /* include local headers */
@@ -334,17 +335,22 @@ struct MxPotential *potential_create_harmonic ( double a , double b , double K ,
 	}
 
     p->flags = POTENTIAL_HARMONIC & POTENTIAL_R2 ;
+    p->name = "Harmonic";
 
 	/* fill this potential */
 	potential_create_harmonic_K = K;
 	potential_create_harmonic_r0 = r0;
-	if ( potential_init( p , &potential_create_harmonic_f , NULL , &potential_create_harmonic_d6fdr6 , a , b , tol ) < 0 ) {
+	if ( potential_init(p,
+                        &potential_create_harmonic_f,
+                        &potential_create_harmonic_dfdr,
+                        &potential_create_harmonic_d6fdr6,
+                        a , b , tol ) < 0 ) {
 		CAligned_Free(p);
 		return NULL;
 	}
 
 	/* return it */
-			return p;
+    return p;
 
 }
 
@@ -392,6 +398,7 @@ struct MxPotential *potential_create_linear (double a , double b ,
     }
     
     p->flags =  POTENTIAL_R2 ;
+    p->name = "Linear";
     
     /* fill this potential */
     potential_create_linear_k = k;
@@ -484,6 +491,7 @@ struct MxPotential *potential_create_harmonic_dihedral ( double K , int n , doub
 	}
 
     p->flags =   POTENTIAL_R | POTENTIAL_HARMONIC | POTENTIAL_DIHEDRAL;
+    p->name = "Harmonic Dihedral";
 
 	/* fill this potential */
 	potential_create_harmonic_dihedral_K = K;
@@ -550,6 +558,7 @@ struct MxPotential *potential_create_harmonic_angle ( double a , double b , doub
 	}
 
     p->flags = POTENTIAL_ANGLE | POTENTIAL_HARMONIC ;
+    p->name = "Harmonic Angle";
 
 	/* Adjust a and b accordingly. */
 	if ( a < 0.0 )
@@ -622,6 +631,7 @@ struct MxPotential *potential_create_Ewald ( double a , double b , double q , do
 	}
 
     p->flags =  POTENTIAL_R2 | POTENTIAL_EWALD ;
+    p->name = "Ewald";
 
 	/* fill this potential */
 	potential_create_Ewald_q = q;
@@ -688,6 +698,7 @@ struct MxPotential *potential_create_LJ126_Ewald ( double a , double b , double 
 	}
 
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 |  POTENTIAL_EWALD ;
+    p->name = "Lennard-Jones Ewald";
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_A = A;
@@ -760,6 +771,7 @@ struct MxPotential *potential_create_LJ126_Ewald_switch ( double a , double b , 
 	}
 
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_EWALD | POTENTIAL_SWITCH ;
+    p->name = "Lennard-Jones Ewald Switch";
 
 	/* fill this potential */
 	potential_create_LJ126_Ewald_switch_A = A;
@@ -821,6 +833,7 @@ struct MxPotential *potential_create_Coulomb ( double a , double b , double q , 
 	}
 
     p->flags =  POTENTIAL_R2 |  POTENTIAL_COULOMB ;
+    p->name = "Coulomb";
 
 	/* fill this potential */
 	potential_create_Coulomb_q = q;
@@ -886,6 +899,7 @@ struct MxPotential *potential_create_LJ126_Coulomb ( double a , double b , doubl
 	}
 
     p->flags =  POTENTIAL_R2 | POTENTIAL_COULOMB | POTENTIAL_LJ126  ;
+    p->name = "Lennard-Jones Coulomb";
 
 	/* fill this potential */
 	potential_create_LJ126_Coulomb_q = q;
@@ -946,6 +960,7 @@ struct MxPotential *potential_create_LJ126 ( double a , double b , double A , do
  	}
 
     p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 ;
+    p->name = "Lennard-Jones";
 
 	/* fill this potential */
 	potential_create_LJ126_A = A;
@@ -1008,6 +1023,7 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 	}
 
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
+    p->name = "Lennard-Jones Switch";
 
 	/* fill this potential */
 	potential_create_LJ126_switch_A = A;
@@ -1027,6 +1043,8 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 
 
 #define Power(base, exp) std::pow(base, exp)
+
+#define Log(x) std::log(x)
 
 static double potential_create_SS_e;
 static double potential_create_SS_k;
@@ -1096,6 +1114,7 @@ struct MxPotential *potential_create_SS1(double k, double e, double r0, double a
     }
     
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
+    p->name = "Soft Sphere 1";
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1179,6 +1198,7 @@ struct MxPotential *potential_create_SS2(double k, double e, double r0, double a
     }
     
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
+    p->name = "Soft Sphere 2";
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1263,6 +1283,7 @@ struct MxPotential *potential_create_SS3(double k, double e, double r0, double a
     }
     
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
+    p->name = "Soft Sphere 3";
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1348,6 +1369,7 @@ struct MxPotential *potential_create_SS4(double k, double e, double r0, double a
     }
     
     p->flags =  POTENTIAL_R2 | POTENTIAL_LJ126 | POTENTIAL_SWITCH ;
+    p->name = "Soft Sphere 4";
     
     potential_create_SS_e = e;
     potential_create_SS_k = k;
@@ -1416,6 +1438,116 @@ void potential_clear ( struct MxPotential *p ) {
 	p->c = NULL;
 
 }
+
+
+static double overlapping_sphere_k;
+static double overlapping_sphere_mu;
+static double overlapping_sphere_k_harmonic;
+static double overlapping_sphere_harmonic_r0;
+static double overlapping_sphere_harmonic_k;
+
+// overlapping sphere f
+//Piecewise(List(List(-x + x*Log(x),x <= 1)),-1 + Power(k,-2) - (Power(E,k - k*x)*(1 + k*(-1 + x)))/Power(k,2)),
+static double overlapping_sphere_f ( double x ) {
+    double k = overlapping_sphere_k;
+    double mu = overlapping_sphere_mu;
+    double harmonic_r0 = overlapping_sphere_harmonic_r0;
+    double harmonic_k = overlapping_sphere_harmonic_k;
+    
+    double result;
+    if(x <= 1) {
+        result =  -x + x*Log(x);
+    }
+    else {
+        result =  -1 + Power(k,-2) - (Power(M_E,k - k*x)*(1 + k*(-1 + x)))/Power(k,2);
+    }
+    
+    //std::cout << "fdata = Append[fdata, {" << x << ", " << result << "}];" << std::endl;
+    return mu * result + harmonic_k*Power(-x + harmonic_r0,2);
+    //return harmonic_k*Power(-x + harmonic_r0,2);
+}
+
+// overlapping sphere fp
+//Piecewise(List(List(Log(x),x < 1),List(Power(E,k*(1 - x))*(-1 + x),x >= 1)),0),
+static double overlapping_sphere_fp ( double x ) {
+    double k = overlapping_sphere_k;
+    double mu = overlapping_sphere_mu;
+    double harmonic_r0 = overlapping_sphere_harmonic_r0;
+    double harmonic_k = overlapping_sphere_harmonic_k;
+    double result;
+    if(x <= 1) {
+        result = Log(x);
+    }
+    else {
+        result =  Power(M_E,k*(1 - x))*(-1 + x);
+    }
+    
+    //std::cout << "fpdata = Append[fpdata, {" << x << ", " << result << "}];" << std::endl;
+    return  mu * result + 2*harmonic_k*(-x + harmonic_r0);
+    //return 2*harmonic_k*(-x + harmonic_r0);
+}
+
+// overlapping sphere f6p
+//Piecewise(List(List(24/Power(x,5),x < 1),List(Power(E,k - k*x)*Power(k,4) -
+//    Power(E,k - k*x)*Power(k,4)*(-4 - k + k*x),x > 1)),Indeterminate)
+static double overlapping_sphere_f6p ( double x ) {
+    
+    double k = overlapping_sphere_k;
+    double mu = overlapping_sphere_mu;
+    double result;
+    if(x <= 1) {
+        result =  24/Power(x,5);
+    }
+    else {
+        result =  Power(M_E,k - k*x)*Power(k,4) - Power(M_E,k - k*x)*Power(k,4)*(-4 - k + k*x);
+    }
+    //std::cout << "fp6data = Append[fp6data, {" << x << ", " << result << "}];" << std::endl;
+    return mu * result;
+    //return 0;
+}
+
+struct MxPotential *potential_create_overlapping_sphere(double mu, double k,
+    double harmonic_k, double harmonic_r0,
+    double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    overlapping_sphere_mu = mu;
+    overlapping_sphere_k = k;
+    overlapping_sphere_harmonic_k = harmonic_k;
+    overlapping_sphere_harmonic_r0 = harmonic_r0;
+    
+    
+    p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 | POTENTIAL_SCALED;
+    
+    if(harmonic_k == 0.0) {
+        p->name = "Overlapping Sphere";
+    }
+    else {
+        p->name = "Overlapping Sphere with Harmonic";
+    }
+    
+    int err = 0;
+    
+    if((err = potential_init(p ,&overlapping_sphere_f,
+                             &overlapping_sphere_fp ,
+                             &overlapping_sphere_f6p , a , b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        CAligned_Free(p);
+        return NULL;
+    }
+    
+    /* return it */
+    return p;
+}
+
 
 
 /**
@@ -2149,6 +2281,20 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
             rj = self->r0 / 2;
         }
         
+        // if no r args are given, we pull the r0 from the potential,
+        // and use the ri, rj to cancel them out.
+        if((self->flags & POTENTIAL_SCALED)) {
+            double s = arg<double>("s",  1, _args, _kwargs, -1);
+            if(s < 0) {
+                PyErr_Warn(PyExc_Warning, "calling scaled potential without s, sum of particle radii");
+                ri = 1 / 2;
+                rj = 1 / 2;
+            }
+            else {
+                ri = rj = s / 2;
+            }
+        }
+        
         float e = 0;
         float f = 0;
         
@@ -2159,7 +2305,13 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
             potential_eval_ex(self, ri, rj, r*r, &e, &f);
         }
         
-        return py::cast(e).release().ptr();
+        f = f * r;
+        
+        PyObject *res = PyTuple_New(2);
+        PyTuple_SET_ITEM(res, 0, PyFloat_FromDouble(e));
+        PyTuple_SET_ITEM(res, 1, PyFloat_FromDouble(f));
+        
+        return res;
     }
     catch (const pybind11::builtin_exception &e) {
         e.set_error();
@@ -2471,6 +2623,30 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return NULL;
     }
 }
+static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double mu =   arg<double>("mu",   0, _args, _kwargs, 1);
+        double kc = arg<double>("kc", 1, _args, _kwargs, 1);
+        double kh = arg<double>("kh", 2, _args, _kwargs, 0.0);
+        double r0 = arg<double>("r0", 3, _args, _kwargs, 0.0);
+        double min = arg<double>("min", 4, _args, _kwargs, 0.001);
+        double max = arg<double>("max", 5, _args, _kwargs, 10);
+        double tol = arg<double>("tol", 6, _args, _kwargs, 0.001);
+        
+        return potential_checkerr(potential_create_overlapping_sphere(mu, kc, kh, r0, min, max, tol));
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 
 
 static PyObject *_potential_set_value(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
@@ -2574,6 +2750,18 @@ static PyMethodDef potential_methods[] = {
         "Generalized Lennard-Joned potential"
     },
     {
+        "os",
+        (PyCFunction)_overlapping_sphere,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "Overlapping Sphere (soft) potential"
+    },
+    {
+        "overlapping_sphere",
+        (PyCFunction)_overlapping_sphere,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+       "Overlapping Sphere (soft) potential"
+    },
+    {
         "_set_dict_value",
         (PyCFunction)_potential_set_value,
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
@@ -2591,6 +2779,19 @@ static PyMethodDef potential_methods[] = {
 
 
 static PyGetSetDef potential_getset[] = {
+    {
+        .name = "name",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return carbon::cast(std::string(obj->name));
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
     {
         .name = "min",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
@@ -2903,6 +3104,7 @@ MxPotential *potential_create_well(double k, double n, double r0, double tol, do
     }
 
     p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 ;
+    p->name = "Well";
 
     /* fill this potential */
     potential_create_well_k = k;
@@ -2981,6 +3183,7 @@ MxPotential *potential_create_glj(double e, double m, double n, double k,
     }
     
     p->flags =  POTENTIAL_R2  | POTENTIAL_LJ126 | POTENTIAL_SCALED;
+    p->name = "Generalized Lennard-Jones";
     
     /* fill this potential */
     potential_create_glj_e = e;

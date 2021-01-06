@@ -121,7 +121,10 @@ typedef struct MxPotential : PyObject {
     FPTYPE r0;
 
 	/** Interval edges. */
-	double a, b;
+    double a, b;
+    
+    /** potential scaling constant */
+    FPTYPE mu;
 
 	/** Flags. */
 	unsigned int flags;
@@ -130,6 +133,11 @@ typedef struct MxPotential : PyObject {
 	int n;
     
     MxPotentialCreate create_func;
+    
+    /**
+     * pointer to what kind of potential this is.
+     */
+    const char* name;
 
 } MxPotential;
 

@@ -406,14 +406,12 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("irun", [] () { PY_CHECK(MxSimulator_InteractiveRun()); });
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
     sim.def_static("close", [] () { PY_CHECK(MxSimulator_Close()); });
-
-
-    //sim.def_property_readonly_static("renderer", [](py::object) -> py::handle {
-    //        PYSIMULATOR_CHECK();
-    //        return py::handle(Simulator->app->getRenderer());
-    //    }
-    //);
-
+    
+    sim.def_property_readonly_static("threads", [] (py::object) -> int {
+        PYSIMULATOR_CHECK();
+        return _Engine.nr_runners;
+    });
+    
     sim.def_property_readonly_static("window", [](py::object) -> py::handle {
             PYSIMULATOR_CHECK();
             return py::handle(Simulator->app->getWindow());

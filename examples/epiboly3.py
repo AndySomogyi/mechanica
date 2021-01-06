@@ -13,17 +13,17 @@ dr = 0.7
 
 # epiboly_percent: percentage coverage of the yolk by epetheilial cells, betwen 0 and 1. Smaller
 # numbers make the sheet smaller, larger means more initial coverage
-epiboly_percent = 0.4
+epiboly_percent = 0.5
 
 # percent of the *reamining* yolk that is covered by actin mesh
-actin_percent = 0.8
+actin_percent = 0.2
 
 # potential from yolk to other types. 'e' is the interaction strentgh, larger
 # e will cause the other objects to get pulled in harder aganst the yolk
 # The 'k' term here is the strength of the long-range harmonic attractin
 # of the yolk and other objects, we use this longer range attractioin
 # to model the effects of the external eveloping membrane
-p_yolk  = m.Potential.glj(e=15, m=2, k = 5, max=5)
+p_yolk  = m.Potential.glj(e=5, m=2, k = 1, max=5)
 
 # potential between the cell objects. Increasing e here makes the cell sheet want
 # to pull in and clump up into a ball. Decreasing it makes the cell sheet softer,
@@ -31,17 +31,17 @@ p_yolk  = m.Potential.glj(e=15, m=2, k = 5, max=5)
 #
 # max (cutoff) distance here is very important, too large a value makes the
 # cell sheet pull into itself and compress, but small lets it tear.
-p_cell   = m.Potential.glj(e=5, m=2, max=1.6)
+p_cell   = m.Potential.glj(e=2, m=2, max=1.6)
 
 # potential between the actin and the cell. Can vary this parameter to see
 # how strongly the actin mesh binds to the cells.
-p_cellactin  = m.Potential.harmonic(k=50, r0=0, min=0.01, max=0.55)
+p_cellactin  = m.Potential.harmonic(k=100, r0=1, min=0.01, max=0.55)
 
 # simple harmonic potential to pull particles
 # strength of the key here determines how strongly the actin mesh pulls in
 # if this is too high, it pulls in too fast, and tears the cell sheet,
 # if this is too low, the mesh does not pull in fast enough.
-p_actin = m.Potential.harmonic(k=200, r0=0.001, max = 5)
+p_actin = m.Potential.harmonic(k=400, r0=0.001, max = 5)
 
 
 # dimensions of universe
@@ -106,7 +106,7 @@ cell_positions = m.random_points(m.SolidSphere, 6000, dr=dr, phi=(0, epiboly_per
     * ((1 + dr/2) * Yolk.radius)  + yolk.position
 
 # create an actin mesh that covers a section of a sphere.
-parts, bonds = m.bind_sphere(p_actin, type=Actin, n=4, \
+parts, bonds = m.bind_sphere(p_actin, type=Actin, n=3, \
                              phi=(0.9 * epiboly_percent * np.pi, \
                                   (epiboly_percent + actin_percent * (1 - epiboly_percent)) * np.pi), \
                              radius = Yolk.radius + Actin.radius)
@@ -119,7 +119,7 @@ parts, bonds = m.bind_sphere(p_actin, type=Actin, n=4, \
 # set visiblity on the different objects
 Yolk.style.visible = True
 Actin.style.visible = True
-#Cell.style.visible = False
+Cell.style.visible = True
 
 # display function to write out values, any code can go here.
 def update(e):
