@@ -26,6 +26,7 @@
 #include <Magnum/Math/Vector4.h>
 #include "space_cell.h"
 #include "MxParticleList.hpp"
+#include <set>
 
 
 CAPI_STRUCT(NOMStyle);
@@ -400,6 +401,18 @@ CAPI_FUNC(MxParticleType*) MxParticleType_FindFromName(const char* name);
 CAPI_FUNC(MxParticle*) MxParticle_Get(PyObject* obj);
 
 CAPI_FUNC(int) MxParticleType_Check(PyObject* obj);
+
+
+/**
+ * checks of the given python object is a sequence of some sort,
+ * and checks that every element is a MxParticleType, fills the
+ * result set.
+ *
+ * Every object in the given object must be a type, if it finds
+ * a non-particle type object in the python sequence,
+ * returns an error conditions.
+ */
+HRESULT MxParticleType_IdsFromPythonObj(PyObject *obj, std::set<short int>& ids);
 
 
 /**

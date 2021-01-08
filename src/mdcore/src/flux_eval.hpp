@@ -63,17 +63,14 @@ __attribute__ ((always_inline)) INLINE void flux_eval_ex(
     term = term * term;
     
     for(int i = 0; i < f->size; ++i) {
-        
-        float q = f->coef[i] * term * (si[ii[i]] - sj[ij[i]]);
-        qi[ii[i]] -= q;
+        float ssi = si[ii[i]];
+        float ssj = sj[ij[i]];
+        float q = f->coef[i] * term * (ssi - ssj);
+        float decay = f->decay_coef[i] * ssi;
+        qi[ii[i]] -= (q + decay);
         qj[ij[i]] += q;
-
     }
 }
-
-
-
-
 
 inline MxFluxes *get_fluxes(const MxParticle *a, const MxParticle *b) {
     int index = _Engine.max_type * a->typeId + b->typeId;

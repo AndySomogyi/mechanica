@@ -68,6 +68,7 @@ set(PRIVATE_HEADERS
   "MxConstraint.hpp"
   "MxCluster.hpp"
   "engine_advance.h"
+  "MxSecreteUptake.hpp"
   )
 
 if(MX_THREADING)
@@ -118,6 +119,7 @@ SET(SOURCES
   Polygon.cpp
   Cell.cpp
   Flux.cpp
+  MxSecreteUptake.cpp
   )
 
 if(MDCORE_USE_MPI)

@@ -53,12 +53,15 @@ struct MxParticleList : PyObject {
  * If the list is already a MxParticleList, increments it and returns
  * it.
  *
+ * The pyobject can be a single MxParticleHandle, if so, this constructs a list
+ * containing a single element.
+ *
  * The caller is owns a new reference to the list, and is responsible for
- * freeing it. 
+ * freeing it.
  *
  * Returns NULL if list is not a list or doesnt contain particles. 
  */
-CAPI_FUNC(MxParticleList*) MxParticleList_FromList(PyObject *list);
+CAPI_FUNC(MxParticleList*) MxParticleList_FromPyObject(PyObject *obj);
 
 
 /**

@@ -284,17 +284,7 @@ int MxParticleList_Check(const PyObject *obj) {
     return PyObject_IsInstance(const_cast<PyObject*>(obj), (PyObject*)&MxParticleList_Type);
 }
 
-MxParticleList* MxParticleList_FromList(PyObject *list) {
-    
-    if(MxParticleList_Check(list)) {
-        Py_INCREF(list);
-        return (MxParticleList*)list;
-    }
-    
-    if(PyList_Check(list) <= 0) {
-        return NULL;
-    }
-    
+static MxParticleList* particlelist_from_list(PyObject *list) {
     int nr_parts = PyList_Size(list);
     
     MxParticleList* pl = (MxParticleList*)PyType_GenericNew(&MxParticleList_Type, NULL, NULL);
@@ -314,6 +304,61 @@ MxParticleList* MxParticleList_FromList(PyObject *list) {
     }
     
     return pl;
+}
+
+static MxParticleList* particlelist_from_tuple(PyObject *tuple) {
+    int nr_parts = PyTuple_Size(tuple);
+    
+    MxParticleList* pl = (MxParticleList*)PyType_GenericNew(&MxParticleList_Type, NULL, NULL);
+    pl->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    pl->size_parts = nr_parts;
+    pl->parts = (int32_t*)malloc(nr_parts * sizeof(int32_t));;
+    pl->nr_parts = nr_parts;
+    
+    for(int i = 0; i < nr_parts; ++i) {
+        PyObject *obj = PyTuple_GET_ITEM(tuple, i);
+        MxParticle *p = MxParticle_Get(obj);
+        if(!p) {
+            Py_DECREF(pl);
+            return NULL;
+        }
+        pl->parts[i] = p->id;
+    }
+    
+    return pl;
+}
+
+
+MxParticleList* MxParticleList_FromPyObject(PyObject *obj) {
+    if(obj == NULL) {
+        return NULL;
+    }
+    
+    if(MxParticleList_Check(obj)) {
+        Py_INCREF(obj);
+        return (MxParticleList*)obj;
+    }
+    
+    if(PyList_Check(obj) > 0) {
+        return particlelist_from_list(obj);
+    }
+    
+    if(PyTuple_Check(obj) > 0) {
+        return particlelist_from_tuple(obj);
+    }
+    
+    MxParticle *p = MxParticle_Get(obj);
+    if(p) {
+        MxParticleList* pl = (MxParticleList*)PyType_GenericNew(&MxParticleList_Type, NULL, NULL);
+        pl->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+        pl->size_parts = 1;
+        pl->parts = (int32_t*)malloc(pl->size_parts * sizeof(int32_t));;
+        pl->nr_parts = pl->size_parts;
+        pl->parts[0] = p->id;
+        return pl;
+    }
+    
+    return NULL;
 }
 
 

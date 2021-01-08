@@ -41,12 +41,13 @@ struct MxFluxes : PyObject
     int32_t *indices_a;
     int32_t *indices_b;
     float *coef;
+    float *decay_coef;
 };
 
 MxFluxes *MxFluxes_New(int32_t init_size);
 
 
-MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k);
+MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k, float decay);
 
 
 /**

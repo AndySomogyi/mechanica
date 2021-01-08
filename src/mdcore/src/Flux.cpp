@@ -26,7 +26,8 @@ PyTypeObject MxFluxes_Type = {
     CObject_HEAD_INIT(NULL)
     "Fluxes"                              , // .tp_name
     sizeof(MxFluxes)                      , // .tp_basicsize
-    2 * sizeof(int32_t) + sizeof(float)   , // .tp_itemsize
+                                            // .tp_itemsize
+    2 * sizeof(int32_t) + 2 * sizeof(float),
     (destructor )0                        , // .tp_dealloc
     0                                     , // .tp_print
     0                                     , // .tp_getattr
@@ -162,7 +163,7 @@ HRESULT _MxFlux_Init(PyObject* m) {
     return S_OK;
 }
 
-PyObject* MxFluxes_FluxEx(PyObject *_a, PyObject *_b, PyObject *sname, PyObject *_k) {
+PyObject* MxFluxes_FluxEx(PyObject *_a, PyObject *_b, PyObject *sname, PyObject *_k, PyObject *_decay) {
     
     MxParticleType *a = MxParticleType_Get(_a);
     MxParticleType *b = MxParticleType_Get(_b);
@@ -178,6 +179,8 @@ PyObject* MxFluxes_FluxEx(PyObject *_a, PyObject *_b, PyObject *sname, PyObject 
     }
     
     float k = carbon::cast<float>(_k);
+    
+    float decay = _decay ? carbon::cast<float>(_decay) : 0;
     
     if(!a->species) {
         std::string msg = std::string("particle type ") + a->name + " does not have any defined species";
@@ -211,31 +214,44 @@ PyObject* MxFluxes_FluxEx(PyObject *_a, PyObject *_b, PyObject *sname, PyObject 
     int fluxes_index1 = _Engine.max_type * a->id + b->id;
     int fluxes_index2 = _Engine.max_type * b->id + a->id;
     
-    MxFluxes *fluxes = _Engine.fluxes[fluxes_index1];
+    MxFluxes *fluxes1 = _Engine.fluxes[fluxes_index1];
+    MxFluxes *fluxes2 = _Engine.fluxes[fluxes_index2];
     
-    if(fluxes == NULL) {
-        fluxes = MxFluxes_New(8);
+    if(fluxes1 == NULL) {
+        fluxes1 = MxFluxes_New(8);
     }
     
-    fluxes = MxFluxes_AddFlux(fluxes,  index_a,  index_b,  k);
+    if(fluxes2 == NULL) {
+        fluxes2 = MxFluxes_New(8);
+    }
     
-    _Engine.fluxes[fluxes_index1] = fluxes;
-    _Engine.fluxes[fluxes_index2] = fluxes;
+    fluxes1 = MxFluxes_AddFlux(fluxes1,  index_a,  index_b,  k, decay);
+    fluxes2 = MxFluxes_AddFlux(fluxes2,  index_b,  index_a,  k, decay);
+    
+    // TODO: probably need to flip order of indexa, indexb...
+    _Engine.fluxes[fluxes_index1] = fluxes1;
+    _Engine.fluxes[fluxes_index2] = fluxes2;
     
     
-    return Py_INCREF(fluxes), fluxes;
+    return Py_INCREF(fluxes1), fluxes1;
 }
 
 PyObject* MxFluxes_FluxPy(PyObject *args, PyObject *kwargs) {
+    PyObject *decay = NULL;
     
-    if(PyTuple_Size(args) != 4) {
+    if(PyTuple_Size(args) < 4) {
         PyErr_SetString(PyExc_TypeError, "invalid number of args, flux(A, B, species_name, k)");
+    }
+    
+    if(PyTuple_Size(args) >= 5) {
+        decay = PyTuple_GetItem(args, 4);
     }
     
     return MxFluxes_FluxEx(PyTuple_GetItem(args, 0),
                            PyTuple_GetItem(args, 1),
                            PyTuple_GetItem(args, 2),
-                           PyTuple_GetItem(args, 3));
+                           PyTuple_GetItem(args, 3),
+                           decay);
 }
 
 static void integrate_statevector(CStateVector *s) {
@@ -265,7 +281,7 @@ HRESULT MxFluxes_Integrate(int cellId) {
     return S_OK;
 }
 
-MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k) {
+MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k, float decay) {
     int i = 0;
     if(fluxes->size + 1 < fluxes->alloc_size) {
         i = fluxes->size;
@@ -275,6 +291,7 @@ MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, f
     fluxes->indices_a[i] = index_a;
     fluxes->indices_b[i] = index_b;
     fluxes->coef[i] = k;
+    fluxes->decay_coef[i] = decay;
     
     return fluxes;
 }
@@ -306,9 +323,10 @@ MxFluxes *MxFluxes_New(int32_t init_size) {
     int32_t *pi = (int32_t*)obj;
      */
 
-    obj->indices_a = (int32_t*)((std::byte*)obj + type->tp_basicsize);
-    obj->indices_b = (int32_t*)((std::byte*)obj + type->tp_basicsize + init_size * sizeof(int32_t));
-    obj->coef      = (float*)  ((std::byte*)obj + type->tp_basicsize + 2 * init_size * sizeof(int32_t));
+    obj->indices_a  = (int32_t*)((std::byte*)obj + type->tp_basicsize);
+    obj->indices_b  = (int32_t*)((std::byte*)obj + type->tp_basicsize + init_size * sizeof(int32_t));
+    obj->coef       = (float*)  ((std::byte*)obj + type->tp_basicsize + 2 * init_size * sizeof(int32_t));
+    obj->decay_coef = (float*)  ((std::byte*)obj + type->tp_basicsize + 2 * init_size * sizeof(int32_t) + init_size * sizeof(float));
     
     /*
     std::cout << "diff: " << (std::byte*)obj->indices_a - (std::byte*)obj << std::endl;
@@ -336,7 +354,6 @@ MxFluxes *MxFluxes_New(int32_t init_size) {
     }
 
     return obj;
-    
 }
 
 

@@ -9,7 +9,7 @@ class A (m.Particle):
                            "map" : "rainbow",
                            "range" : "auto"}}
 
-m.flux(A, A, "S1", 5)
+m.flux(A, A, "S1", 5, 0.001)
 
 uc = m.lattice.sc(0.25, A)
 

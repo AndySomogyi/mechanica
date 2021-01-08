@@ -337,7 +337,7 @@ HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
     if(args && PyTuple_Size(args) == 3 &&
        kwargs &&
        (cutoff = PyDict_GetItemString(kwargs, "cutoff")) &&
-       (pl = MxParticleList_FromList(PyTuple_GetItem(args, 1)))) {
+       (pl = MxParticleList_FromPyObject(PyTuple_GetItem(args, 1)))) {
         PyObject *pot = PyTuple_GetItem(args, 0);
         if(MxPotential_Check(pot) && PyNumber_Check(cutoff)) {
             PyObject *result = MxBond_PairwiseNew((MxPotential*)pot, pl,
@@ -655,7 +655,7 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
             return NULL;
         }
         
-        if((parts = MxParticleList_FromList(pparts)) == NULL) {
+        if((parts = MxParticleList_FromPyObject(pparts)) == NULL) {
             c_error(E_FAIL, "argument 1 is not a particle list");
             return NULL;
         }

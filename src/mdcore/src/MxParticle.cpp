@@ -1887,6 +1887,19 @@ HRESULT MxParticle_Become(MxParticle *part, MxParticleType *type) {
     
     part->typeId = type->id;
     
+    if(part->state_vector) {
+        CStateVector *oldState = part->state_vector;
+        
+        if(type->species) {
+            part->state_vector = CStateVector_New(type->species, pypart, oldState, 0, 0, 0);
+        }
+        else {
+            part->state_vector = NULL;
+        }
+        
+        Py_DECREF(oldState);
+    }
+    
     assert(type == &_Engine.types[part->typeId]);
     
     // TODO: bad things will happen if we convert between cluster and atomic types.
@@ -1911,6 +1924,51 @@ static PyObject* particle_become(MxParticleHandle *_self, PyObject *args, PyObje
     Py_RETURN_NONE;
 }
 
+/**
+ * checks of the given python object is a sequence of some sort,
+ * and checks that every element is a MxParticleType, fills the
+ * result set.
+ *
+ * Every object in the given object must be a type, otherwise
+ * returns an empty set.
+ */
+HRESULT MxParticleType_IdsFromPythonObj(PyObject *obj, std::set<short int>& ids) {
+    if(obj == NULL) {
+        // get the type ids, we're a particle, so only select other particles
+        // by default
+        for(int i = 0; i < _Engine.nr_types; ++i) {
+            if(PyType_IsSubtype((PyTypeObject*)&_Engine.types[i], (PyTypeObject*)MxCluster_GetType())) {
+                continue;
+            }
+            ids.insert(i);
+        }
+        return S_OK;
+    }
+    
+    if(PySequence_Check(obj)) {
+        int len = PySequence_Length(obj);
+        for(int i = 0; i < len; ++i) {
+            PyObject *o = PySequence_GetItem(obj, i);
+            if(MxParticleType_Check(o)) {
+                MxParticleType *type = (MxParticleType*)o;
+                ids.insert(type->id);
+            }
+            else {
+                return E_FAIL;
+            }
+        }
+        return S_OK;
+    }
+    
+    else if(MxParticleType_Check(obj)) {
+        MxParticleType *type = (MxParticleType*)obj;
+        ids.insert(type->id);
+        return S_OK;
+    }
+    
+    return E_FAIL;
+}
+
 static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
     try {
         float radius;
@@ -1925,37 +1983,11 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
         PyObject *ptypes = mx::arg("types", 1, args, kwargs);
         
         std::set<short int> types;
-        
-        if(ptypes) {
-            if(MxParticleType_Check(ptypes)) {
-                // only have a single type in the list
-                types.insert(((MxParticleType*)ptypes)->id);
-            }
-            else if(PyTuple_Check(ptypes)) {
-                int len = PyTuple_Size(ptypes);
-                for(int i = 0; i < len; ++i) {
-                    MxParticleType *o = (MxParticleType*)PyTuple_GetItem(ptypes, i);
-                    if(!MxParticleType_Check((PyObject*)o)) {
-                        throw std::invalid_argument("type must be a Particle derived type");
-                    }
-                    types.insert(o->id);
-                }
-            }
-            else {
-                throw std::invalid_argument("types must be a tuple, or a Particle derived type");
-            }
+   
+        if(FAILED(MxParticleType_IdsFromPythonObj(ptypes, types))) {
+            throw std::invalid_argument("types must be a tuple, or a Particle derived type");
         }
-        else {
-            // get the type ids, we're a particle, so only select other particles
-            // by default
-            for(int i = 0; i < _Engine.nr_types; ++i) {
-                if(PyType_IsSubtype((PyTypeObject*)&_Engine.types[i], (PyTypeObject*)MxCluster_GetType())) {
-                    continue;
-                }
-                types.insert(i);
-            }
-        }
-        
+
         MxParticle *self = MxParticle_Get(_self);
         
         // take into account the radius of this particle.
@@ -1964,7 +1996,7 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
         uint16_t nr_parts = 0;
         int32_t *parts = NULL;
         
-        MxParticles_AtLocation(self->global_position().data(), radius, &types, &nr_parts, &parts);
+        MxParticle_Neighbors(self, radius, &types, &nr_parts, &parts);
         
         return (PyObject*)MxParticleList_NewFromData(nr_parts, parts);
     }
@@ -2058,7 +2090,7 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     part.clusterId = clusterId;
     
     if(type->species) {
-        part.state_vector = CStateVector_New(type->species, 0, 0, 0);
+        part.state_vector = CStateVector_New(type->species, self, NULL, 0, 0, 0);
     }
     
     if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {

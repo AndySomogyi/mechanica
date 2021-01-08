@@ -10,11 +10,7 @@
 // only source module that calls import_array()
 #define MX_IMPORTING_NUMPY_ARRAY
 
-
-
 #include "mechanica_private.h"
-
-
 
 #include "MxModule.h"
 #include "MxModel.h"
@@ -46,6 +42,7 @@
 #include "MxParticleList.hpp"
 #include <rendering/MxColorMapper.hpp>
 #include <rendering/MxKeyEvent.hpp>
+#include <MxSecreteUptake.hpp>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -79,8 +76,6 @@ static std::string version_str() {
     std::string version = std::string(MX_VERSION) + dev;
     return version;
 }
-
-
 
 
 static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
@@ -283,9 +278,9 @@ static PyObject * moduleinit(void)
     import_array();
     
     PyObject *m;
-
+    
+    // need to initialize the base carbon library first.
     PyObject *carbonModule = PyInit_carbon();
-
 
     if(carbonModule == NULL) {
         std::cout << "could not initialize carbon: "  << std::endl;
@@ -313,39 +308,12 @@ static PyObject * moduleinit(void)
         std::cout << "could not add carbon module "  << std::endl;
         return NULL;
     }
-
-    /*
-
-    if (empty_tuple == NULL)
-        empty_tuple = PyTuple_New(0);
-
-    ProxyType.tp_free = _PyObject_GC_Del;
-
-    if (PyType_Ready(&ProxyType) < 0)
-        return NULL;
-
-    Py_INCREF(&ProxyType);
-    PyModule_AddObject(m, "ProxyBase", (PyObject *)&ProxyType);
-
-    if (api_object == NULL) {
-        api_object = PyCObject_FromVoidPtr(&wrapper_capi, NULL);
-        if (api_object == NULL)
-        return NULL;
-    }
-    Py_INCREF(api_object);
-    PyModule_AddObject(m, "_CAPI", api_object);
-
-     */
+    
+    // ugh, still usign pybind11, TODO: GET RID OF THIS PYBIND!!!
 
     pybind11::module rootModule = pybind11::reinterpret_borrow<pybind11::module>(m);
 
-    //pybind11::module rootModule(rootHandle);
-
-
     pybind11::module math = rootModule.def_submodule("math", "math module");
-
-    //pybind11::module math = rootModule.def_submodule("math");
-
 
     // Create the Magnum math objects and put them in the top-level Mechanica
     // module
@@ -378,9 +346,6 @@ static PyObject * moduleinit(void)
     MxModel_init(m);
     MxSystem_init(m);
     MxPropagator_init(m);
-    //CObject_init(m);
-    //CObject_init(m);
-
 
     _MxSimulator_init(m);
     MxSurfaceSimulator_init(m);
@@ -400,8 +365,6 @@ static PyObject * moduleinit(void)
     
     _MxKeyEvent_Init(m);
     
-    
-
     MxPyTest_init(m);
 
     test_sequences(m);
@@ -413,11 +376,12 @@ static PyObject * moduleinit(void)
     
     _MxAngle_init(m);
     
-
     _vertex_init(m);
     _edge_init(m);
     _polygon_init(m);
     _cell_init(m);
+    
+    _MxSecreteUptake_Init(m);
 
     mechanicaModule = m;
 

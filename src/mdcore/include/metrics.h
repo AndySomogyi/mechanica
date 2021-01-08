@@ -90,7 +90,7 @@ Magnum::Vector3 MxCartesianToSpherical(const Magnum::Vector3& postion,
  * @param nr_parts, out, number of parts
  * @param parts, out, newly allocated buffer of particle ids.
  */
-CAPI_FUNC(HRESULT) MxParticles_AtLocation(FPTYPE *origin,
+CAPI_FUNC(HRESULT) MxParticle_Neighbors(struct MxParticle *part,
                                           FPTYPE radius,
                                           const std::set<short int> *typeIds,
                                           uint16_t *nr_parts,

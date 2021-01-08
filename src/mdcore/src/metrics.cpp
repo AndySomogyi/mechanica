@@ -32,6 +32,7 @@ static HRESULT enum_particles(const Magnum::Vector3 &origin,
                               float radius,
                               space_cell *cell,
                               const std::set<short int> *typeIds,
+                              int32_t exceptPartId,
                               const Magnum::Vector3 &shift,
                               std::vector<int32_t> &ids);
 
@@ -553,14 +554,13 @@ CAPI_FUNC(HRESULT) MxParticles_Virial(int32_t *parts,
 }
 
 
-HRESULT MxParticles_AtLocation(FPTYPE *_origin,
+HRESULT MxParticle_Neighbors(MxParticle *part,
                                FPTYPE radius,
                                const std::set<short int> *typeIds,
                                uint16_t *nr_parts,
                                int32_t **pparts)  {
-    
     // origin in global space
-    Magnum::Vector3 origin = Magnum::Vector3::from(_origin);
+    Magnum::Vector3 origin = part->global_position();
     
     // cell id of target cell
     int cid, ijk[3];
@@ -691,7 +691,7 @@ HRESULT MxParticles_AtLocation(FPTYPE *_origin,
                 //std::cout << id2 << ":(" << ii << "," << jj << "," << kk << "), ("
                 // << shift[0] << ", " << shift[1] << ", " << shift[2] << ")" << std::endl;
                 
-                HRESULT result = enum_particles (local_origin, radius, cj, typeIds, shift, ids);
+                HRESULT result = enum_particles (local_origin, radius, cj, typeIds, part->id, shift, ids);
             } /* for every neighbouring cell in the z-axis... */
         } /* for every neighbouring cell in the y-axis... */
     } /* for every neighbouring cell in the x-axis... */
@@ -709,6 +709,7 @@ HRESULT enum_particles(const Magnum::Vector3 &_origin,
                        float radius,
                        space_cell *cell,
                        const std::set<short int> *typeIds,
+                       int32_t exceptPartId,
                        const Magnum::Vector3 &shift,
                        std::vector<int32_t> &ids) {
     
@@ -743,7 +744,10 @@ HRESULT enum_particles(const Magnum::Vector3 &_origin,
         /* get the other particle */
         part = &(parts[i]);
         
-        /* fetch the potential, if any */
+        if(part->id == exceptPartId) {
+            continue;
+        }
+        
         /* get the distance between both particles */
         r2 = fptype_r2(origin.data() , part->x , dx.data() );
         

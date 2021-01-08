@@ -30,6 +30,7 @@ Contents:
    become
    style
    flux
+   secrete_uptake
    bonded_interactions
    continuum-reactions
    network-object-model
