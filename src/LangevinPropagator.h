@@ -15,6 +15,7 @@
 #include "MxForces.h"
 
 struct MxModel;
+struct MxMesh;
 
 
 

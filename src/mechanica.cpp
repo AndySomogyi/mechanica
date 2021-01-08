@@ -12,7 +12,6 @@
 
 #include "mechanica_private.h"
 
-#include "MxModule.h"
 #include "MxModel.h"
 #include "MxSystem.h"
 #include "MxPropagator.h"
@@ -33,7 +32,6 @@
 #include <MxForce.h>
 #include <MxParticleEvent.h>
 #include <MxReactivePotential.h>
-#include "MxPyTest.h"
 #include "MxUtil.h"
 #include <rendering/NOMStyle.hpp>
 #include "MxCluster.hpp"
@@ -342,7 +340,6 @@ static PyObject * moduleinit(void)
     
     // needs to be before other stuff like particles that depend on style. 
     _NOMStyle_init(m);
-    MxModule_init(m);
     MxModel_init(m);
     MxSystem_init(m);
     MxPropagator_init(m);
@@ -364,8 +361,6 @@ static PyObject * moduleinit(void)
     _MxColormap_Init(m);
     
     _MxKeyEvent_Init(m);
-    
-    MxPyTest_init(m);
 
     test_sequences(m);
     _MxUniverseIterators_init(m);

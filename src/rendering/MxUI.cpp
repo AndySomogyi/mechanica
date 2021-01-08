@@ -65,7 +65,7 @@ static void error_callback(int error, const char* description)
 }
 
 
-CAPI_FUNC(HRESULT) MxUI_InitializeGraphics(const MxGraphicsConfiguration* conf)
+CAPI_FUNC(HRESULT) MxUI_InitializeGraphics(void*)
 {
     std::cout << MX_FUNCTION << std::endl;
 

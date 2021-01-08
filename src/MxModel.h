@@ -9,7 +9,6 @@
 #define SRC_MXMODEL_H_
 
 #include "mechanica_private.h"
-#include "MxModule.h"
 #include "MxMesh.h"
 
 
@@ -94,7 +93,7 @@ struct MxModelMethods {
  * each higher level component (cells) that it's vertices have moved, hence
  * it is time to re-calculate these bulk properties.
  */
-struct MxModel : MxModule {
+struct MxModel  {
 
     /**
      * The model is responsible for creating a mesh. The mesh is shared

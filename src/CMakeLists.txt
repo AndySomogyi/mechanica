@@ -31,33 +31,14 @@ file(GLOB AST_SRC
 corrade_add_resource(MxMeshShaderProgramRes MxMeshShaderProgram.res)
 
 set(SRC
-  MObject.cpp
-  moduledef.cpp
-  mx_callable.cpp
-  mx_float.cpp
-  mx_import.cpp
-  mx_port.cpp
-  mx_abstract.cpp
-  mx_eval.cpp
-  mx_floatobject.cpp
-  mx_int.cpp
-  mx_number.cpp
-  mx_runtime.cpp
-  mx_ast.cpp
-  mx_function.cpp
-  MxList.cpp
-  mx_stmt.cpp
-  mx_tupleobject.cpp
+
   MxMeshCore.cpp
   MxMesh.cpp
   MxPolygon.cpp
-  MxModule.cpp
+
   MxSimulator.cpp
-  MxTestCube.cpp
-  MxTestParticles.cpp
   MxPropagator.cpp
-  MxTestMDCoreParticles.cpp
-  MxModule.cpp
+
   MxModel.cpp
   MxSystem.cpp
   MxPropagator.cpp
@@ -79,7 +60,7 @@ set(SRC
   MxEdge.cpp
   MeshIO.cpp
   MxTesselator.cpp
-  MxColumnarCell.cpp
+
   FlipEdge.cpp
   CollapsePolygon.cpp
   SplitPolygon.cpp
@@ -95,8 +76,6 @@ set(SRC
   MxCylinderModel.cpp
   MxUniverse.cpp
   MxUniverseIterators.cpp
-
-  MxPyTest.cpp
 
   MxUtil.cpp
 
@@ -145,12 +124,9 @@ set(HEADERS
   MxMeshCore.h
   MxMesh.h
   MxPolygon.h
-  MxModule.h
+
   MxSimulator.h
-  MxTestCube.h
-  MxTestParticles.h
-  MxTestMDCoreParticles.h
-  MxModule.h
+
   MxModel.h
   MxSystem.h
   MxPropagator.h
@@ -174,7 +150,7 @@ set(HEADERS
   MxEdge.h
   MeshIO.h
   MxTesselator.h
-  MxColumnarCell.h
+
   SymmetricEigen.h
   GteSymmetricEigensolver3x3.h
   MxConstraints.h
@@ -186,7 +162,6 @@ set(HEADERS
   MxUniverse.h
   MxUniverseIterators.h
 
-  MxPyTest.h
   MxUtil.h
 
   rendering/ArcBallInteractor.h

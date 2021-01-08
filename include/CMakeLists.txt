@@ -29,29 +29,8 @@ message("mx config file: ${CMAKE_CURRENT_BINARY_DIR}/mx_config.h")
 
 set (_PUBLIC_HEADERS
   Mechanica.h
-  mx_object.hpp
-  mx_callable.h
-  mx_function.h
-  mx_list.h
-  mx_number.h
-  mx_abstract.h
-  mx_eval.h
-  mx_import.h
-  mx_mesh.h
+  mx_config.h
   mx_runtime.h
-  mx_ast.h
-  mx_float.h
-  mx_int.h
-  mx_module.h
-  mx_parser.h
-  mx_simulator.h
-  mx_tupleobject.h
-  mx_particles.h
-  mx_particle.h
-  mx_composite_particle.h
-  mx_propagator.h
-  mx_lattice.h
-  mx_ui.h
   NOMStyle.h
   ${AST_HEADERS}
   ${X3D_HEADERS}

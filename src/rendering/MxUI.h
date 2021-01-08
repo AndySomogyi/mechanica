@@ -8,7 +8,6 @@
 #ifndef SRC_MXUI_H_
 #define SRC_MXUI_H_
 
-#include "mx_ui.h"
 #include "mechanica_private.h"
 
 
