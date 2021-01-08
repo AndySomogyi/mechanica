@@ -19,6 +19,29 @@ course).
 History
 =======
 
+
+Version Alpha 0.0.14
+--------------------
+* All new FLUX / DIFFUSION / TRANSPORT, We've not got
+  Transport-Dissipative-Dynamics working!!!
+* secrete methods on particle to perform atomic secrete
+* bug fixes in neighbor list, make sure neighbor don't contain the particle
+* bug fixes in harmonic potential
+* new overlapped sphere potential
+* new potential plotting method, lots of nice improvements
+* new examples
+* update become to copy over species values
+* lattice initializers
+* add decay to flux
+* detect hardware concurrency
+* bug fix in Windows release-mode CPUID crash
+* multi-threaded integration
+* all new C++ thread pool, working on getting rid of OpenMP / pthreads
+* event system bug fixes
+* documentation updates
+
+
+
 Version Alpha 0.0.13
 --------------------
 * preliminary SBML species per object support
