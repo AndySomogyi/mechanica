@@ -171,7 +171,20 @@ A potential can be treated just like any python callable object to evaluate it::
 
          .. math::
 
-            k (r-r_0)^2
+            U(r) = k (r-r_0)^2
+
+         We can plot the harmonic function to get an idea of it's behavior::
+
+         >>> import mechanica as m
+         >>> p = p = m.Potential.harmonic(k=10, r0=1, min=0.001, max=10)
+         >>> p.plot(s=2, potential=True)
+
+      .. figure:: harmonic.png
+         :width: 500px
+         :align: center
+         :alt: alternate text
+         :figclass: align-center
+
 
       .. staticmethod:: soft_sphere(kappa, epsilon, r0, eta, min, max, tol)
 
@@ -299,6 +312,34 @@ A potential can be treated just like any python callable object to evaluate it::
          
    
  
+
+      .. staticmethod:: linear(k, [min], max=[10], [tol=0.001])
+
+
+         :param k: interaction strength, represents the potential energy peak
+                    value.
+         :param min: Minimum value potential is computed for. 
+         :param max: Potential cutoff values.
+         :param tol: Tolerance, defaults to 0.001.
+
+         The `linear` potential is the simplest one, it's simply a potential of
+         the form
+
+         .. math::
+
+           U(r) = k r
+
+         >>> import mechanica as m
+         >>> p = p = m.Potential.linear(k=5, max=10)
+         >>> p.plot(potential=True)
+
+      .. figure:: linear.png
+         :width: 500px
+         :align: center
+         :alt: alternate text
+         :figclass: align-center
+
+         Linear potential function
 
 
       
