@@ -19,6 +19,13 @@ course).
 History
 =======
 
+Version Alpha 0.0.14.1
+----------------------
+* added convenience methods to get spherical and cartesian coords from lists
+* updated example models
+* update docs
+* added plot function in examples to plot polar angle velocity. 
+* code cleanup
 
 Version Alpha 0.0.14
 --------------------

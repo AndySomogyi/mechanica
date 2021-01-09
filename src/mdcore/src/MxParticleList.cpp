@@ -14,6 +14,7 @@
 #include <metrics.h>
 #include <cstdarg>
 #include <iostream>
+#include <MxNumpy.h>
 
 static PyObject* list_virial(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
@@ -26,6 +27,10 @@ static PyObject* list_center_of_geometry(MxParticleList *self, PyObject *args, P
 static PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 static PyObject* list_copy(MxParticleList *self, PyObject *args, PyObject *kwargs);
+
+static PyObject* list_positions(MxParticleList *self);
+
+static PyObject* list_spherical_positions(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 
 
@@ -185,6 +190,8 @@ static PyMethodDef list_methods[] = {
     { "moment_of_inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
     { "inertia", (PyCFunction)list_moment_of_inertia, METH_VARARGS | METH_KEYWORDS, NULL },
     { "copy", (PyCFunction)list_copy, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "positions", (PyCFunction)list_positions, METH_NOARGS , NULL },
+    { "spherical_positions", (PyCFunction)list_spherical_positions, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -441,6 +448,72 @@ PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject 
         c_exp(e, "invalid args");
         return NULL;
     }
+}
+
+PyObject* list_positions(MxParticleList *self) {
+    int nd = 2;
+    
+    int typenum = NPY_DOUBLE;
+    
+    npy_intp dims[] = {self->nr_parts,3};
+    
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+    
+    double *data = (double*)PyArray_DATA(array);
+    
+    for(int i = 0; i < self->nr_parts; ++i) {
+        MxParticle *part = _Engine.s.partlist[self->parts[i]];
+        Magnum::Vector3 pos = part->global_position();
+        data[i * 3 + 0] = pos.x();
+        data[i * 3 + 1] = pos.y();
+        data[i * 3 + 2] = pos.z();
+    }
+    
+    return (PyObject*)array;
+}
+
+PyObject* list_spherical_positions(MxParticleList *self, PyObject *args, PyObject *kwargs) {
+
+    Magnum::Vector3 origin;
+    
+    if(args && PyTuple_Size(args) > 0) {
+        try {
+            origin = mx::cast<Magnum::Vector3>(PyTuple_GetItem(args, 0));
+        }
+        catch(const std::exception &e) {
+            c_error(E_FAIL, e.what());
+            return NULL;
+        }
+    }
+    else {
+        Magnum::Vector3 center = {
+            (float)_Engine.s.dim[0],
+            (float)_Engine.s.dim[1],
+            (float)_Engine.s.dim[2]
+        };
+        origin = center / 2;
+    }
+    
+    int nd = 2;
+    
+    int typenum = NPY_DOUBLE;
+    
+    npy_intp dims[] = {self->nr_parts,3};
+    
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+    
+    double *data = (double*)PyArray_DATA(array);
+    
+    for(int i = 0; i < self->nr_parts; ++i) {
+        MxParticle *part = _Engine.s.partlist[self->parts[i]];
+        Magnum::Vector3 pos = part->global_position();
+        pos = MxCartesianToSpherical(pos, origin);
+        data[i * 3 + 0] = pos.x();
+        data[i * 3 + 1] = pos.y();
+        data[i * 3 + 2] = pos.z();
+    }
+    
+    return (PyObject*)array;
 }
 
 CAPI_FUNC(MxParticleList*) MxParticleList_Copy(const PyObject *obj) {

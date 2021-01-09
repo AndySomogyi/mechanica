@@ -1,7 +1,6 @@
 Concepts
 ========
 
-
 Running a Simulation
 --------------------
 
@@ -95,6 +94,42 @@ We make it easy to create forces, and apply them to objects::
 This example creates a simple potential, and binds it to ALL objects. As all
 objects in our modeling world are either an instance of the base ``Particle``
 type, or a instance of a subclass of it.
+
+
+Coordinate Systems
+------------------
+We can access the cartesian coordinates of any particle via the
+:meth:`Particle.position` method::
+
+      >>> p = MyParticleType.items()[0]
+      >>> print(p.position)
+      Out[5]: array([8.147237 , 1.3547701, 9.0579195], dtype=float32)
+
+
+For spherical coordinates, we use the spherical coordinates :math:`(r, \theta,
+\phi)` as often used in mathematics: radial distance :math:`r`, azimuthal angle
+:math:`\theta`,  and polar angle :math:`\phi`. 
+
+.. figure:: spherical.png
+    :width: 400px
+    :align: center
+    :alt: alternate text
+    :figclass: align-center
+
+We can get the spherical coordinates of any particle via the
+:meth:`Particle.spherical_position()` method, or for a list of partices, we can
+call the `spherical_positions()` method on the list::
+
+      >>> In [3]: particles = Cell.items()
+      >>> In [4]: print(particles.spherical_positions())
+
+          [[11.88918877  1.38879788  0.87157094]
+          [13.48884487  1.18363881  1.71954644]
+          [13.44023037 -0.2029787   1.40948272]
+          ...
+          [10.63551331 -1.95453715  1.43269634]
+          [13.24325752 -1.98586023  1.21553445]
+          [12.08293533 -0.55892485  1.20240927]]
 
 
 

@@ -241,13 +241,7 @@ HRESULT _MxUniverse_init(PyObject* m)
                 return py::cast(particles).release();
             }
         );
-    
-    u.def_property_readonly_static("bonds",
-            [](py::object self) -> py::handle {
-                static PyBonds bonds;
-                return py::cast(bonds).release();
-            }
-        );
+
     
     u.def_property_readonly_static("center",
            [](py::object self) -> py::handle {

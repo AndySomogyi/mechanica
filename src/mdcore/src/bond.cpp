@@ -79,6 +79,7 @@ const char *bond_err_msg[2] = {
 
 static PyObject* bond_destroy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
 static PyObject* bond_energy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
+static PyObject *bond_bonds();
 
 
 /**
@@ -671,11 +672,23 @@ static PyGetSetDef bond_getset[] = {
     {NULL}
 };
 
+PyObject *bond_bonds() {
+    PyObject *list = PyList_New(_Engine.nr_bonds);
+    
+    for(int i = 0; i < _Engine.nr_bonds; ++i) {
+        PyList_SET_ITEM(list, i, MxBondHandle_FromId(i));
+    }
+    
+    return list;
+}
+
 
 
 static PyMethodDef bond_methods[] = {
     { "destroy", (PyCFunction)bond_destroy, METH_VARARGS | METH_KEYWORDS, NULL },
     { "energy", (PyCFunction)bond_energy, METH_NOARGS, NULL },
+    { "bonds", (PyCFunction)bond_bonds, METH_STATIC | METH_NOARGS, NULL },
+    { "items", (PyCFunction)bond_bonds, METH_STATIC | METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -904,6 +917,7 @@ MxBondHandle* MxBondHandle_FromId(int id) {
     if(id >= 0 && id < _Engine.nr_bonds) {
         MxBondHandle *h = (MxBondHandle*)PyType_GenericAlloc(&MxBondHandle_Type, 0);
         h->id = id;
+        return h;
     }
     PyErr_SetString(PyExc_ValueError, "invalid id");
     return NULL;

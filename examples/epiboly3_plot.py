@@ -1,5 +1,6 @@
 import mechanica as m
 import numpy as np
+import phiplot
 
 # the cell initial positions
 # use the random_points function to make a group of points in the shape of a solid sphere
@@ -123,12 +124,11 @@ Yolk.style.visible = True
 Actin.style.visible = True
 Cell.style.visible = True
 
-# display function to write out values, any code can go here.
-def update(e):
-    print(Actin.items().center_of_mass())
+plt = phiplot.PhiPlot(Cell)
+
 
 # hook up the 'update' function to the on_time event to disply output.
-m.on_time(update, period=0.01)
+m.on_time(plt.update, period=0.01)
 
 # display the model (space bar starts / pauses the simulation)
 m.show()

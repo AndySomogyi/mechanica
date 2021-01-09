@@ -49,26 +49,6 @@ struct PyParticlesIterator {
 };
 
 
-
-struct PyBondsIterator {
-    PyBondsIterator(py::object ref) :  ref(ref) { }
-
-    py::handle next() {
-        if (index == _Engine.nr_bonds)
-            throw py::stop_iteration();
-
-        PyObject *bond = MxBondHandle_FromId(index++);
-
-        return bond;
-    }
-
-    py::object ref; // keep a reference
-    size_t index = 0;
-};
-
-
-
-
 /**
  * Init and add to python module
  */
@@ -95,27 +75,6 @@ HRESULT _MxUniverseIterators_init(PyObject *_m) {
     })
     .def("__len__", [](const PyParticles &s) -> int {
         return _Engine.s.nr_parts;
-
-    });
-
-
-    py::class_<PyBondsIterator>(m, "_PyBondsIterator")
-                .def("__iter__", [](PyBondsIterator &it) -> PyBondsIterator& { return it; })
-                .def("__next__", &PyBondsIterator::next);
-
-    py::class_<PyBonds>(m, "PyBonds")
-                .def(py::init<>())
-
-                /// Bare bones interface
-                .def("__getitem__", [](const PyBonds &s, size_t i) -> py::handle {
-        if (i >= _Engine.nr_bonds) throw py::index_error();
-        return (PyObject*)&(_Engine.bonds[i]);
-    })
-    .def("__setitem__", [](PyParticles &s, size_t i, py::handle) {
-        throw py::index_error();
-    })
-    .def("__len__", [](const PyBonds &s) -> int {
-        return _Engine.nr_bonds;
 
     });
 

@@ -788,6 +788,7 @@ static PyMethodDef particle_methods[] = {
         { "split", (PyCFunction)particle_fission, METH_VARARGS, NULL }, // alias name
         { "destroy", (PyCFunction)particle_destroy, METH_VARARGS, NULL },
         { "spherical", (PyCFunction)particle_spherical, METH_VARARGS, NULL },
+        { "spherical_position", (PyCFunction)particle_spherical, METH_VARARGS, NULL },
         { "virial", (PyCFunction)particle_virial, METH_VARARGS | METH_KEYWORDS, NULL },
         { "become", (PyCFunction)particle_become, METH_VARARGS | METH_KEYWORDS, NULL },
         { "neighbors", (PyCFunction)particle_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
