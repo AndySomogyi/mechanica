@@ -11,6 +11,7 @@
 #include <space.h>
 #include <iostream>
 #include <CConvert.hpp>
+#include <MxPy.h>
 
 static HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, double time);
 

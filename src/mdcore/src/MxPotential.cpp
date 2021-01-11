@@ -52,13 +52,17 @@ int potential_err = potential_err_ok;
 FPTYPE c_null[] = { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO };
 struct MxPotential potential_null = {
         PyObject_HEAD_INIT(&MxPotential_Type)
-        NULL,
-        {FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
+        .eval = NULL,
+        .alpha = {FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
         .c = c_null ,
+	.r0 = 0.0,
         .a = 0.0 ,
         .b = DBL_MAX,
-        POTENTIAL_NONE ,
-        1
+	.mu = 0.0,
+        .flags = POTENTIAL_NONE ,
+        .n = 1,
+	.create_func = NULL,
+	.name = NULL
 };
 
 

@@ -112,25 +112,25 @@ typedef struct MxPotential* (*MxPotentialCreate) (
 typedef struct MxPotential : PyObject {
     MxPotentialEval eval;
 
-	/** Coefficients for the interval transform. */
-	FPTYPE alpha[4];
+    /** Coefficients for the interval transform. */
+    FPTYPE alpha[4];
 
-	/** The coefficients. */
-	FPTYPE *c;
+    /** The coefficients. */
+    FPTYPE *c;
     
     FPTYPE r0;
 
-	/** Interval edges. */
+    /** Interval edges. */
     double a, b;
     
     /** potential scaling constant */
     FPTYPE mu;
 
-	/** Flags. */
-	unsigned int flags;
+    /** Flags. */
+    unsigned int flags;
 
-	/** Nr of intervals. */
-	int n;
+    /** Nr of intervals. */
+    int n;
     
     MxPotentialCreate create_func;
     
