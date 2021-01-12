@@ -44,6 +44,9 @@
 #include "Magnum/GL/TransformFeedback.h"
 #endif
 
+
+#include <rendering/MxWindowless.h>
+
 #include <sstream>
 
 using namespace Magnum;

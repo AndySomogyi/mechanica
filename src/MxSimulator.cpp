@@ -220,6 +220,10 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("max_distance")) {
         conf.universeConfig.max_distance = py::cast<double>(kwargs["max_distance"]);
     }
+    
+    if(kwargs.contains("windowless")) {
+        conf.setWindowless(py::cast<bool>(kwargs["windowless"]));
+    }
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs);

@@ -8,6 +8,7 @@
 #include <MxSystem.h>
 #include <MxUtil.h>
 #include <rendering/MxGlInfo.h>
+#include <rendering/MxWindowless.h>
 
 static PyObject *system_module;
 
@@ -15,10 +16,38 @@ static PyObject *_gl_info(PyObject *mod, PyObject *args, PyObject *kwds) {
     return Mx_GlInfo(args, kwds);
 }
 
+
+#if defined(MX_APPLE)
+
+static PyObject *test_headless(PyObject *mod, PyObject *args, PyObject *kwds) {
+    return Mx_GlInfo(args, kwds);
+}
+
+#elif defined(MX_LINUX)
+static PyObject *test_headless(PyObject *mod, PyObject *args, PyObject *kwds) {
+    
+    
+    
+    
+    
+    return Mx_GlInfo(args, kwds);
+}
+#elif defined(MX_WINDOWS)
+static PyObject *test_headless(PyObject *mod, PyObject *args, PyObject *kwds) {
+    return Mx_GlInfo(args, kwds);
+}
+#else
+#error no windowless application available on this platform
+#endif
+
+
+
 static PyMethodDef system_methods[] = {
     //{ "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
     //{ "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
     { "gl_info", (PyCFunction)_gl_info, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "test_headless", (PyCFunction)test_headless, METH_VARARGS | METH_KEYWORDS, NULL },
+    
     { NULL, NULL, 0, NULL }
 };
 
