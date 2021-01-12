@@ -24,12 +24,20 @@
     #include "Magnum/Platform/WindowlessCglApplication.h"
 #elif defined(MX_LINUX)
     #include "Magnum/Platform/WindowlessEglApplication.h"
+
+    // Freaking xlib.h defines these, and the wreak havoc with everythign... 
+    #undef Button
+    #undef Button1
+    #undef Button2
+    #undef Button3
+    #undef Button4
+    #undef Button5
+
 #elif defined(MX_WINDOWS)
 #include "Magnum/Platform/WindowlessWglApplication.h"
 #else
 #error no windowless application available on this platform
 #endif
-
 
 
 
