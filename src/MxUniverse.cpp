@@ -20,6 +20,7 @@
 #include <iostream>
 #include <limits>
 #include <MxThreadPool.hpp>
+#include "Magnum/Math/Matrix4.h"
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
 

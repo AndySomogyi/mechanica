@@ -34,35 +34,12 @@ struct MxGlfwWindow : MxWindow
 
     float f;
 
-    enum MouseButton {
-        MouseButton1 = GLFW_MOUSE_BUTTON_1,
-        MouseButton2 = GLFW_MOUSE_BUTTON_2,
-        MouseButton3 = GLFW_MOUSE_BUTTON_3,
-        MouseButton4 = GLFW_MOUSE_BUTTON_4,
-        MouseButton5 = GLFW_MOUSE_BUTTON_5,
-        MouseButton6 = GLFW_MOUSE_BUTTON_6,
-        MouseButton7 = GLFW_MOUSE_BUTTON_7,
-        MouseButton8 = GLFW_MOUSE_BUTTON_8,
-        MouseButtonLast = GLFW_MOUSE_BUTTON_LAST,
-        MouseButtonLeft = GLFW_MOUSE_BUTTON_LEFT,
-        MouseButtonRight = GLFW_MOUSE_BUTTON_RIGHT,
-        MouseButtonMiddle = GLFW_MOUSE_BUTTON_MIDDLE,
-    };
+    Magnum::Vector2i windowSize() const override;
 
-    enum State {
-        Release = GLFW_RELEASE,
-        Press = GLFW_PRESS,
-        Repeat = GLFW_REPEAT
-    };
-
-    State getMouseButtonState(MouseButton);
-
-    Magnum::Vector2i framebufferSize() const;
-
-    Magnum::Vector2i windowSize() const;
-
-    void redraw();
-
+    void redraw() override;
+    
+    Magnum::GL::AbstractFramebuffer &framebuffer() override;
+    
 };
 
 

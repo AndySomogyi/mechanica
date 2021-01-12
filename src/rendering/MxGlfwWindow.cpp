@@ -7,7 +7,7 @@
 
 #include <rendering/MxGlfwApplication.h>
 #include <rendering/MxGlfwWindow.h>
-
+#include <Magnum/GL/DefaultFramebuffer.h>
 
 #include <MxPy.h>
 #include <iostream>
@@ -175,18 +175,12 @@ MxGlfwWindow::MxGlfwWindow(GLFWwindow *win)
     _window = win;
 }
 
-MxGlfwWindow::State MxGlfwWindow::getMouseButtonState(MouseButton mouseButton)
-{
-    return (State)glfwGetMouseButton(_window, (int)mouseButton);
-}
+//MxGlfwWindow::State MxGlfwWindow::getMouseButtonState(MouseButton mouseButton)
+//{
+//    return (State)glfwGetMouseButton(_window, (int)mouseButton);
+//}
 
-Magnum::Vector2i MxGlfwWindow::framebufferSize() const {
-    CORRADE_ASSERT(_window, "Platform::GlfwApplication::framebufferSize(): no window opened", {});
 
-    Vector2i size;
-    glfwGetFramebufferSize(_window, &size.x(), &size.y());
-    return size;
-}
 
 Vector2i MxGlfwWindow::windowSize() const {
     CORRADE_ASSERT(_window, "Platform::GlfwApplication::windowSize(): no window opened", {});
@@ -196,11 +190,13 @@ Vector2i MxGlfwWindow::windowSize() const {
     return size;
 }
 
-
 void MxGlfwWindow::redraw() {
 
     // TODO: get rid of GLFWApplication
     MxSimulator_Redraw();
+}
 
+Magnum::GL::AbstractFramebuffer &MxGlfwWindow::framebuffer() {
+    return Magnum::GL::defaultFramebuffer;
 }
 

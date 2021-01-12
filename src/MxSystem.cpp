@@ -9,6 +9,7 @@
 #include <MxUtil.h>
 #include <rendering/MxGlInfo.h>
 #include <rendering/MxWindowless.h>
+#include <rendering/MxApplication.h>
 
 static PyObject *system_module;
 
@@ -47,7 +48,8 @@ static PyMethodDef system_methods[] = {
     //{ "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
     { "gl_info", (PyCFunction)_gl_info, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test_headless", (PyCFunction)test_headless, METH_VARARGS | METH_KEYWORDS, NULL },
-    
+    { "test_image", (PyCFunction)MxTestImage, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "image_data", (PyCFunction)MxFramebufferImageData, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

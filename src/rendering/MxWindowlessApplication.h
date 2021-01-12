@@ -13,6 +13,12 @@
 #include <rendering/MxApplication.h>
 #include <Magnum/GL/Context.h>
 
+#include <Magnum/GL/Buffer.h>
+#include <Magnum/GL/Framebuffer.h>
+#include <Magnum/GL/Mesh.h>
+#include <Magnum/GL/Renderbuffer.h>
+#include <Magnum/GL/RenderbufferFormat.h>
+
 
 #if defined(MX_APPLE)
     #include "Magnum/Platform/WindowlessCglApplication.h"
@@ -45,15 +51,14 @@ public:
     MxWindowlessApplication(const Arguments &args);
 
     ~MxWindowlessApplication();
+    
+    MxUniverseRenderer *getRenderer() override;
+    
+    
+    HRESULT createContext(const MxSimulator::Config &conf) override;
 
 
-    /**
-     * @brief Try to create context with given configuration
-     *
-     * Unlike @ref createContext() returns @cpp false @ce if the context
-     * cannot be created, @cpp true @ce otherwise.
-     */
-    bool tryCreateContext(const Configuration& configuration);
+
 
 
     /**
@@ -116,11 +121,44 @@ public:
     HRESULT postEmptyEvent() override;
 
     HRESULT setSwapInterval(int si) override { return E_NOTIMPL;};
+    
+    HRESULT mainLoopIteration(double timeout) override;
+    
+    struct MxGlfwWindow *getWindow() override;
+    
+    int windowAttribute(MxWindowAttributes attr) override;
+    
+    HRESULT setWindowAttribute(MxWindowAttributes attr, int val) override;
+    
+    HRESULT redraw() override;
+    
+    HRESULT close() override;
+    
+    HRESULT destroy() override;
+    
+    HRESULT show() override;
+    
+    HRESULT messageLoop() override;
+    
+    Magnum::GL::AbstractFramebuffer& framebuffer() override;
+    
 
 private:
     virtual int exec() override { return 0; };
 
     typedef Magnum::Platform::WindowlessApplication WindowlessApplication;
+    
+    Magnum::GL::Renderbuffer renderBuffer;
+    
+    Magnum::GL::Framebuffer frameBuffer;
+    
+
+    
+    struct MxWindowlessWindow *window;
+    struct MxUniverseRenderer *renderer;
+    Magnum::Vector2i frameBufferSize;
+    
+    friend class MxWindowlessWindow;
 
 };
 

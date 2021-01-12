@@ -11,11 +11,15 @@
 
 #include <Magnum/GL/Context.h>
 
+#include "rendering/MxApplication.h"
+#include "rendering/MxUniverseRenderer.h"
 #include <rendering/MxGlfwApplication.h>
 #include <rendering/MxWindowlessApplication.h>
 #include <map>
 #include <sstream>
 #include <MxUniverse.h>
+
+
 
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
@@ -776,11 +780,12 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
 
     if(conf.windowless()) {
         ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
-        MxWindowlessApplication::Configuration conf;
-
+        
+        std::cout << "creating Windowless app" << std::endl;
+        
         MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
 
-        if(!windowlessApp->tryCreateContext(conf)) {
+        if(FAILED(windowlessApp->createContext(conf))) {
             delete windowlessApp;
 
             throw std::domain_error("could not create windowless gl context");

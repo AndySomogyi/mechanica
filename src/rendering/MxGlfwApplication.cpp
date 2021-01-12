@@ -1,6 +1,7 @@
 
 #include "MxGlfwApplication.h"
 #include "MxKeyEvent.hpp"
+#include <rendering/MxUniverseRenderer.h>
 
 #include <cstring>
 #include <tuple>
@@ -23,7 +24,7 @@
 #include <Magnum/Image.h>
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/Version.h>
-#include <Magnum/Animation/Easing.h>
+
 
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/SceneGraph/Camera.h>
@@ -89,43 +90,11 @@ HRESULT MxGlfwApplication::postEmptyEvent()
     MXGLFW_CHECK();
 }
 
-HRESULT MxGlfwApplication::simulationStep() {
-    
-    /* Pause simulation if the mouse was pressed (camera is moving around).
-       This avoid freezing GUI while running the simulation */
-    
-    /*
-    if(!_pausedSimulation && !_mousePressed) {
-        // Adjust the substep number to maximize CPU usage each frame
-        const Float lastAvgStepTime = _timeline.previousFrameDuration()/Float(_substeps);
-        const Int newSubsteps = lastAvgStepTime > 0 ? Int(1.0f/60.0f/lastAvgStepTime) + 1 : 1;
-        if(Math::abs(newSubsteps - _substeps) > 1) _substeps = newSubsteps;
-
-        // TODO: move substeps to universe step.
-        if(MxUniverse_Flag(MxUniverse_Flags::MX_RUNNING)) {
-            for(Int i = 0; i < _substeps; ++i) {
-                MxUniverse_Step(0, 0);
-            }
-        }
-    }
-    */
-    
-    static Float offset = 0.0f;
-    if(_dynamicBoundary) {
-        /* Change fluid boundary */
-        static Float step = 2.0e-3f;
-        if(_boundaryOffset > 1.0f || _boundaryOffset < 0.0f) {
-            step *= -1.0f;
-        }
-        _boundaryOffset += step;
-        offset = Math::lerp(0.0f, 0.5f, Animation::Easing::quadraticInOut(_boundaryOffset));
-    }
-    
-    currentStep += 1;
-
-    // TODO: get rid of this
-    return  MxUniverse_Step(0,0);
+Magnum::GL::AbstractFramebuffer& MxGlfwApplication::framebuffer() {
+    return GL::defaultFramebuffer;
 }
+
+
 
 void MxGlfwApplication::drawEvent() {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
@@ -237,14 +206,9 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
     return _ren;
 }
 
-HRESULT MxGlfwApplication:: MxGlfwApplication::run()
-{
-    std::cout << MX_FUNCTION << std::endl;
-    MxUniverse_SetFlag(MX_RUNNING, true);
-    return messageLoop();
-}
 
-HRESULT MxGlfwApplication:: MxGlfwApplication::messageLoop()
+
+HRESULT MxGlfwApplication::messageLoop()
 {
     std::cout << MX_FUNCTION << std::endl;
     

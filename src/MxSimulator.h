@@ -13,11 +13,12 @@
 #include "MxPropagator.h"
 #include "MxController.h"
 #include "MxView.h"
-#include "rendering/MxApplication.h"
+
 #include "Magnum/Platform/GLContext.h"
 #include "Magnum/Platform/Implementation/DpiScaling.h"
 #include "MxUniverse.h"
-#include <rendering/MxUniverseRenderer.h>
+
+
 
 enum MxSimulator_Key {
     MXSIMULATOR_NONE,
@@ -318,7 +319,7 @@ struct CAPI_EXPORT MxSimulator {
 
 
     int32_t kind;
-    MxApplication *app;
+    struct MxApplication *app;
 
 
     // python list of windows.
@@ -328,9 +329,6 @@ struct CAPI_EXPORT MxSimulator {
     enum Flags {
         Running = 1 << 0
     };
-
-
-    //uint32_t flags = 0;
 };
 
 

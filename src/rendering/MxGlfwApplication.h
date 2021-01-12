@@ -37,7 +37,7 @@ public:
     MxGlfwApplication(const Arguments &args);
 
 
-    HRESULT createContext(const MxSimulator::Config &conf);
+    HRESULT createContext(const MxSimulator::Config &conf) override;
 
     /**
      * This function processes only those events that are already in the event
@@ -101,24 +101,19 @@ public:
 
     HRESULT setSwapInterval(int si) override;
 
-
     void drawEvent() override;
-
 
     MxGlfwWindow *getWindow() override;
 
-
     MxUniverseRenderer *getRenderer() override;
-
-    HRESULT simulationStep();
-
-    HRESULT run() override;
             
     HRESULT redraw() override;
+            
+    Magnum::GL::AbstractFramebuffer& framebuffer() override;
 
     MxGlfwWindow *_win;
 
-    int currentStep = 0;
+    
 
     // TODO implement events and move these to simulator.
     MxUniverseRenderer *_ren;
@@ -126,9 +121,7 @@ public:
     Int _substeps = 1;
     bool _pausedSimulation = false;
     bool _mousePressed = false;
-    bool _dynamicBoundary = true;
-
-    Float _boundaryOffset = 0.0f; /* For boundary animation */
+    
 
 
     /* Timeline to adjust number of simulation steps per frame */
@@ -155,7 +148,7 @@ public:
 
     HRESULT show() override;
             
-    HRESULT messageLoop();
+    HRESULT messageLoop() override;
             
     HRESULT showWindow();
 };

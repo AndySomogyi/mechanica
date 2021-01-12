@@ -60,14 +60,12 @@
 
 using namespace Magnum::Math::Literals;
 
-MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
+MxUniverseRenderer::MxUniverseRenderer(MxWindow *win, float particleRadius):
     window{win}
 {
     // py init
     //ob_type = &MxUniverseRenderer_Type;
     //ob_refcnt = 1;
-
-    setupCallbacks();
 
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     
@@ -109,7 +107,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxGlfwWindow *win, float particleRadius):
         const Vector3 up = Vector3::zAxis();
 
         _arcball = new Magnum::Mechanica::ArcBallCamera(*_scene, eye, center, up, 45.0_degf,
-            win->windowSize(), win->framebufferSize());
+            win->windowSize(), win->framebuffer().viewport().size());
     }
 
 
@@ -439,7 +437,7 @@ void MxUniverseRenderer::onFramebufferSizeChange(int x, int y)
 }
 
 void MxUniverseRenderer::draw() {
-    GL::defaultFramebuffer.clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
+    window->framebuffer().clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
     /* Call arcball update in every frame. This will do nothing if the camera
            has not been changed. Otherwise, camera transformation will be
@@ -453,7 +451,7 @@ void MxUniverseRenderer::draw() {
     /* Trigger drawable object to update the particles to the GPU */
     setDirty();
     /* Draw particles */
-    draw(_arcball, window->framebufferSize());
+    draw(_arcball, window->framebuffer().viewport().size());
 
     /* Draw other objects (ground grid) */
     _arcball->draw(*_drawableGroup);
@@ -481,7 +479,7 @@ glfwSetFramebufferSizeCallback
 
 void MxUniverseRenderer::viewportEvent(const int w, const int h) {
     /* Resize the main framebuffer */
-    GL::defaultFramebuffer.setViewport({{}, window->framebufferSize()});
+    window->framebuffer().setViewport({{}, window->windowSize()});
 
     /* Recompute the camera's projection matrix */
     //_camera->setViewport(window->framebufferSize());
@@ -493,14 +491,10 @@ void MxUniverseRenderer::onMouseButton(int button, int action, int mods)
 {
 }
 
-void MxUniverseRenderer::setupCallbacks()
-{
-
-}
 
 
 void MxUniverseRenderer::viewportEvent(Platform::GlfwApplication::ViewportEvent& event) {
-    GL::defaultFramebuffer.setViewport({{}, event.framebufferSize()});
+    window->framebuffer().setViewport({{}, event.framebufferSize()});
 
     _arcball->reshape(event.windowSize(), event.framebufferSize());
 

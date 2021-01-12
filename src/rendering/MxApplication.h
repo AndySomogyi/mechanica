@@ -10,15 +10,9 @@
 
 #include <Mechanica.h>
 #include "mechanica_private.h"
-
+#include <MxSimulator.h>
 #include <Magnum/GL/Context.h>
-
 #include <GLFW/glfw3.h>
-
-#include <rendering/MxUniverseRenderer.h>
-#include <rendering/MxGlfwWindow.h>
-
-
 
 enum MxWindowAttributes {
     MX_FOCUSED = GLFW_FOCUSED,
@@ -172,6 +166,8 @@ public:
     };
 };
 
+struct MxUniverseRenderer;
+
 
 struct MxApplication
 {
@@ -185,6 +181,8 @@ public:
     PyObject *windows;
 
     virtual ~MxApplication() {};
+    
+    //virtual HRESULT createContext(const class MxSimulator::Config &conf) = 0;
 
 
     /**
@@ -247,57 +245,65 @@ public:
     virtual HRESULT postEmptyEvent() = 0;
 
 
-    virtual HRESULT mainLoopIteration(double timeout) {
-        C_UNUSED(timeout)
-        return E_NOTIMPL;
-    };
+    virtual HRESULT mainLoopIteration(double timeout)= 0;
 
 
     virtual HRESULT setSwapInterval(int si) = 0;
 
 
     // temporary hack until we setup events correctly
-    virtual MxGlfwWindow *getWindow() {
-        return NULL;
-    }
+    virtual struct MxGlfwWindow *getWindow() = 0;
 
-    virtual int windowAttribute(MxWindowAttributes attr) {
-        C_UNUSED(attr)
-        return E_NOTIMPL;
-    };
+    virtual int windowAttribute(MxWindowAttributes attr) = 0;
 
-    virtual HRESULT setWindowAttribute(MxWindowAttributes attr, int val) {
-        C_UNUSED(attr)
-        C_UNUSED(val)
-        return E_NOTIMPL;
-    };
+    virtual HRESULT setWindowAttribute(MxWindowAttributes attr, int val) = 0;
+    
+    virtual HRESULT createContext(const MxSimulator::Config &conf) = 0;
 
-
-    virtual MxUniverseRenderer *getRenderer() {
-        return NULL;
-    }
+    virtual MxUniverseRenderer *getRenderer() = 0;
     
     /**
      * post a re-draw event, to tell the renderer
      * that it should re-draw
      */
-    virtual HRESULT redraw() {
-        return E_NOTIMPL;
-    }
+    virtual HRESULT redraw() = 0;
 
-    virtual HRESULT run() { return E_NOTIMPL;};
+    virtual HRESULT run();
 
 
     // soft hide the window
-    virtual HRESULT close() { return E_NOTIMPL; };
+    virtual HRESULT close() = 0;
 
     // hard window close
-    virtual HRESULT destroy() { return E_NOTIMPL; };
+    virtual HRESULT destroy() = 0;
 
     // display the window if closed.
-    virtual HRESULT show() { return E_NOTIMPL; };
+    virtual HRESULT show() = 0;
+    
+    virtual HRESULT simulationStep();
+    
+    virtual HRESULT messageLoop() = 0;
+    
+    virtual Magnum::GL::AbstractFramebuffer& framebuffer() = 0;
+    
+    
+    
+    
+protected:
+    bool _dynamicBoundary = true;
+    
+    
+    Float _boundaryOffset = 0.0f; /* For boundary animation */
+    
+    int currentStep = 0;
+
 
 };
+
+PyObject* MxTestImage(PyObject *module, PyObject* self, PyObject* args);
+
+
+PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* args);
 
 
 
