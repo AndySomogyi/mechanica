@@ -106,6 +106,8 @@ set(SRC
 
   rendering/MxColorMapper.cpp
 
+  rendering/MxGlInfo.cpp
+
   shaders/ParticleSphereShader.cpp
 
   test_sequences_and_iterators.cpp
@@ -193,6 +195,9 @@ set(HEADERS
   rendering/MxKeyEvent.hpp
 
   rendering/MxColorMapper.hpp
+
+  rendering/MxGlInfo.h
+
   rendering/colormaps/colormaps.h
 
   shaders/ParticleSphereShader.h

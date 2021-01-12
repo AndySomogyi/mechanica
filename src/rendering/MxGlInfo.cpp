@@ -5,6 +5,7 @@
  *      Author: andy
  */
 
+#include <carbon.h>
 #include <rendering/MxGlInfo.h>
 
 #include <Corrade/Utility/Arguments.h>
@@ -43,6 +44,10 @@
 #include "Magnum/GL/TransformFeedback.h"
 #endif
 
+#include <sstream>
+
+using namespace Magnum;
+
 
 std::string gl_info(const Magnum::Utility::Arguments &args) {
 
@@ -58,106 +63,110 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
     os << "";
 
     #ifdef MAGNUM_WINDOWLESSEGLAPPLICATION_MAIN
-    os << "Used application: Platform::WindowlessEglApplication";
+    os << "Used application: Platform::WindowlessEglApplication" << std::endl;
     #elif defined(MAGNUM_WINDOWLESSIOSAPPLICATION_MAIN)
-    os << "Used application: Platform::WindowlessIosApplication";
+    os << "Used application: Platform::WindowlessIosApplication" << std::endl;
     #elif defined(MAGNUM_WINDOWLESSCGLAPPLICATION_MAIN)
-    os << "Used application: Platform::WindowlessCglApplication";
+    os << "Used application: Platform::WindowlessCglApplication" << std::endl;
     #elif defined(MAGNUM_WINDOWLESSGLXAPPLICATION_MAIN)
-    os << "Used application: Platform::WindowlessGlxApplication";
+    os << "Used application: Platform::WindowlessGlxApplication" << std::endl;
     #elif defined(MAGNUM_WINDOWLESSWGLAPPLICATION_MAIN)
-    os << "Used application: Platform::WindowlessWglApplication";
+    os << "Used application: Platform::WindowlessWglApplication" << std::endl;
     #elif defined(MAGNUM_WINDOWLESSWINDOWSEGLAPPLICATION_MAIN)
-    os << "Used application: Platform::WindowlessWindowsEglApplication";
+    os << "Used application: Platform::WindowlessWindowsEglApplication" << std::endl;
     #else
-    #error no windowless application available on this platform
+    os << "No windowless application available on this platform" << std::endl;
     #endif
     os << "Compilation flags:";
     #ifdef CORRADE_BUILD_DEPRECATED
-    os << "    CORRADE_BUILD_DEPRECATED";
+    os << "    CORRADE_BUILD_DEPRECATED" << std::endl;
     #endif
     #ifdef CORRADE_BUILD_STATIC
-    os << "    CORRADE_BUILD_STATIC";
+    os << "    CORRADE_BUILD_STATIC" << std::endl;
     #endif
     #ifdef CORRADE_BUILD_MULTITHREADED
-    os << "    CORRADE_BUILD_MULTITHREADED";
+    os << "    CORRADE_BUILD_MULTITHREADED" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_UNIX
-    os << "    CORRADE_TARGET_UNIX";
+    os << "    CORRADE_TARGET_UNIX" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_APPLE
-    os << "    CORRADE_TARGET_APPLE";
+    os << "    CORRADE_TARGET_APPLE" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_IOS
-    os << "    CORRADE_TARGET_IOS";
+    os << "    CORRADE_TARGET_IOS" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_WINDOWS
-    os << "    CORRADE_TARGET_WINDOWS";
+    os << "    CORRADE_TARGET_WINDOWS" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_WINDOWS_RT
-    os << "    CORRADE_TARGET_WINDOWS_RT";
+    os << "    CORRADE_TARGET_WINDOWS_RT" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_EMSCRIPTEN
     os << "    CORRADE_TARGET_EMSCRIPTEN (" << Debug::nospace
         << __EMSCRIPTEN_major__ << Debug::nospace << "." << Debug::nospace
         << __EMSCRIPTEN_minor__ << Debug::nospace << "." << Debug::nospace
-        << __EMSCRIPTEN_tiny__ << Debug::nospace << ")";
+       << __EMSCRIPTEN_tiny__ << Debug::nospace << ")" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_ANDROID
-    os << "    CORRADE_TARGET_ANDROID";
+    os << "    CORRADE_TARGET_ANDROID" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_X86
-    os << "    CORRADE_TARGET_X86";
+    os << "    CORRADE_TARGET_X86" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_ARM
-    os << "    CORRADE_TARGET_ARM";
+    os << "    CORRADE_TARGET_ARM" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_POWERPC
-    os << "    CORRADE_TARGET_POWERPC";
+    os << "    CORRADE_TARGET_POWERPC" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_LIBCXX
-    os << "    CORRADE_TARGET_LIBCXX";
+    os << "    CORRADE_TARGET_LIBCXX" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_DINKUMWARE
-    os << "    CORRADE_TARGET_DINKUMWARE";
+    os << "    CORRADE_TARGET_DINKUMWARE" << std::endl;
     #endif
     #ifdef CORRADE_TARGET_LIBSTDCXX
-    os << "    CORRADE_TARGET_LIBSTDCXX";
+    os << "    CORRADE_TARGET_LIBSTDCXX" << std::endl;
     #endif
     #ifdef CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT
-    os << "    CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT";
+    os << "    CORRADE_PLUGINMANAGER_NO_DYNAMIC_PLUGIN_SUPPORT" << std::endl;
     #endif
     #ifdef CORRADE_TESTSUITE_TARGET_XCTEST
-    os << "    CORRADE_TESTSUITE_TARGET_XCTEST";
+    os << "    CORRADE_TESTSUITE_TARGET_XCTEST" << std::endl;
     #endif
     #ifdef CORRADE_UTILITY_USE_ANSI_COLORS
-    os << "    CORRADE_UTILITY_USE_ANSI_COLORS";
+    os << "    CORRADE_UTILITY_USE_ANSI_COLORS" << std::endl;
     #endif
     #ifdef MAGNUM_BUILD_DEPRECATED
-    os << "    MAGNUM_BUILD_DEPRECATED";
+    os << "    MAGNUM_BUILD_DEPRECATED" << std::endl;
     #endif
     #ifdef MAGNUM_BUILD_STATIC
-    os << "    MAGNUM_BUILD_STATIC";
+    os << "    MAGNUM_BUILD_STATIC" << std::endl;
     #endif
     #ifdef MAGNUM_TARGET_GLES
-    os << "    MAGNUM_TARGET_GLES";
+    os << "    MAGNUM_TARGET_GLES" << std::endl;
     #endif
     #ifdef MAGNUM_TARGET_GLES2
-    os << "    MAGNUM_TARGET_GLES2";
+    os << "    MAGNUM_TARGET_GLES2" << std::endl;
     #endif
     #ifdef MAGNUM_TARGET_DESKTOP_GLES
-    os << "    MAGNUM_TARGET_DESKTOP_GLES";
+    os << "    MAGNUM_TARGET_DESKTOP_GLES" << std::endl;
     #endif
     #ifdef MAGNUM_TARGET_WEBGL
-    os << "    MAGNUM_TARGET_WEBGL";
+    os << "    MAGNUM_TARGET_WEBGL" << std::endl;
     #endif
     #ifdef MAGNUM_TARGET_HEADLESS
-    os << "    MAGNUM_TARGET_HEADLESS";
+    os << "    MAGNUM_TARGET_HEADLESS" << std::endl;
     #endif
-    os << "";
+    os << "" << std::endl;
 
     /* Create context here, so the context creation info is displayed at proper
        place */
+    
+    if(!GL::Context::hasCurrent()) {
+        return os.str();
+    }
 
     GL::Context& c = GL::Context::current();
 
@@ -640,8 +649,7 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
     return os.str();
 }
 
-
-static PyObject *simulator_gl_info(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+PyObject *Mx_GlInfo(PyObject *args, PyObject *kwds) {
 
     Magnum::Utility::Arguments arg;
 

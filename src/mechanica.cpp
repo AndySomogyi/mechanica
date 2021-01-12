@@ -341,7 +341,7 @@ static PyObject * moduleinit(void)
     // needs to be before other stuff like particles that depend on style. 
     _NOMStyle_init(m);
     MxModel_init(m);
-    MxSystem_init(m);
+    _MxSystem_init(m);
     MxPropagator_init(m);
 
     _MxSimulator_init(m);

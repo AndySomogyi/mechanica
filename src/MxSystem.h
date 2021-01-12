@@ -14,14 +14,12 @@
 #include "MxController.h"
 #include "MxView.h"
 
+/**
+ * get the python module for the system module
+ */
+CAPI_FUNC(PyObject*) MxSystem_Module();
 
-struct MxSystem : CObject {
-	MxModel *model;
-	MxPropagator *propagator;
-	MxController *controller;
-	MxView *view;
-};
 
-void MxSystem_init(PyObject *m);
+HRESULT _MxSystem_init(PyObject *m);
 
 #endif /* SRC_MXSYSTEM_H_ */

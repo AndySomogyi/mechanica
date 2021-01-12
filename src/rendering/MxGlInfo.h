@@ -8,8 +8,8 @@
 #ifndef SRC_RENDERING_MXGLINFO_H_
 #define SRC_RENDERING_MXGLINFO_H_
 
-class MxGlInfo
-{
-};
+#include "Mechanica.h"
+
+PyObject *Mx_GlInfo(PyObject *args, PyObject *kwds);
 
 #endif /* SRC_RENDERING_MXGLINFO_H_ */

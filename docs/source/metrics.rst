@@ -85,11 +85,12 @@ We can compute the radius of gyration for a cluster of particles using the
 Center of Mass
 --------------
 
-The center of mass of a system of particles :math:`P_i, i = 1, \ldots,  n`, each
+The center of mass of a system of particles, :math:`P_i, i-1, \ldits, n`, each
 with mass :math:`m_i`, at locations :math:`\mathbf{r}_i, i=1, \ldots, n`, with
 the center of mass :math:`\mathbf{R}` satisfy the condition
 
 .. math::
+
    \sum_{i=1}^n m_i(\mathbf{r}_i - \mathbf{R}) = \mathbf{0},
 
 with :math:`\mathbf{R}` defined as:

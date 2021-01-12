@@ -44,7 +44,7 @@ class PhiPlot :
 
         digitized_phi = np.digitize(phi, self.bins)
 
-        mean_phidot = np.array([phidot[digitized_phi == i].mean() for i in range(len(self.bins))])
+        mean_phidot = np.array([phidot[digitized_phi == i].mean() for i range(len(self.bins))])
 
         return (self.bins, mean_phidot)
 
