@@ -8,7 +8,7 @@ class Na (m.Particle):
 
 class Cl (m.Particle):
     radius = 0.25
-    style={"color":"dodgerblue"}
+    style={"color":"spablue"}
 
 uc = m.lattice.bcc(0.9, [Na, Cl])
 

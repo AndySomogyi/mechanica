@@ -447,13 +447,14 @@ void MxUniverseRenderer::draw() {
 
     /* Trigger drawable object to update the particles to the GPU */
     setDirty();
-    /* Draw particles */
-    draw(_arcball, window->framebuffer().viewport().size());
-
+    
     /* Draw other objects (ground grid) */
     _arcball->draw(*_drawableGroup);
 
+    /* Draw particles */
+    draw(_arcball, window->framebuffer().viewport().size());
 
+    // TODO: don't think this is right, should signal a dirty...
     if(camChanged) {
         MxSimulator_Redraw();
     }

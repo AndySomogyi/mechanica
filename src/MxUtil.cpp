@@ -182,6 +182,10 @@ const char* MxColor3Names[] = {
     "WhiteSmoke",
     "Yellow",
     "YellowGreen",
+    "SpaBlue",
+    "Pumpkin",
+    "OleumYellow",
+    "SGIPurple",
     NULL
 };
 
@@ -802,6 +806,10 @@ Magnum::Color3 Color3_Parse(const std::string &s)
         colors["SLATEGRAY"]         = Magnum::Color3::fromSrgb(0x708090);
         colors["DARKSLATEGRAY"]     = Magnum::Color3::fromSrgb(0x2F4F4F);
         colors["BLACK"]             = Magnum::Color3::fromSrgb(0x000000);
+	colors["SPABLUE"]           = Magnum::Color3::fromSrgb(0x6D99D3); // Rust Oleum Spa Blue
+	colors["PUMPKIN"]           = Magnum::Color3::fromSrgb(0xF65917); // Rust Oleum Pumpkin
+	colors["OLEUMYELLOW"]       = Magnum::Color3::fromSrgb(0xF9CB20); // rust oleum yellow
+	colors["SGIPURPLE"]         = Magnum::Color3::fromSrgb(0x6353BB); // SGI purple
     }
 
     std::unordered_map<std::string, Magnum::Color3>::const_iterator got =
