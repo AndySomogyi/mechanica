@@ -18,6 +18,7 @@
 #include <map>
 #include <sstream>
 #include <MxUniverse.h>
+#include <MxConvert.hpp>
 
 
 
@@ -227,6 +228,15 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     
     if(kwargs.contains("windowless")) {
         conf.setWindowless(py::cast<bool>(kwargs["windowless"]));
+        if(conf.windowless()) {
+            conf.setWindowSize({1024,768});
+        }
+    }
+    
+    if(kwargs.contains("window_size")) {
+        PyObject *val = kwargs["window_size"].ptr();
+        Magnum::Vector2i windowSize = mx::cast<Magnum::Vector2i>(val);
+        conf.setWindowSize(windowSize);
     }
 }
 

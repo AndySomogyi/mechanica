@@ -47,6 +47,9 @@ template<>
 Magnum::Vector3i cast(PyObject *obj);
     
 template<>
+Magnum::Vector2i cast(PyObject *obj);
+    
+template<>
 PyObject* cast(const float &f);
     
 template<>

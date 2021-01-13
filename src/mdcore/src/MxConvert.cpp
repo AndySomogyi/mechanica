@@ -134,6 +134,26 @@ Magnum::Vector3i vector3i_from_list(PyObject *obj) {
     
     return result;
 }
+    
+Magnum::Vector2i vector2i_from_list(PyObject *obj) {
+    Magnum::Vector2i result = {};
+    
+    if(PyList_Size(obj) != 2) {
+        throw std::domain_error("error, must be length 2 list to convert to vector2");
+    }
+    
+    for(int i = 0; i < 2; ++i) {
+        PyObject *item = PyList_GetItem(obj, i);
+        if(PyNumber_Check(item)) {
+            result[i] = PyLong_AsLong(item);
+        }
+        else {
+            throw std::domain_error("error, can not convert list item to number");
+        }
+    }
+    
+    return result;
+}
 
     
 Magnum::Vector3 vector3_from_array(PyObject *obj) {
@@ -179,6 +199,29 @@ Magnum::Vector3i vector3i_from_array(PyObject *obj) {
     Py_DecRef((PyObject*)tmp);
     return result;
 }
+    
+Magnum::Vector2i vector2i_from_array(PyObject *obj) {
+    Magnum::Vector2i result = {};
+    
+    npy_intp dims[1] = {2};
+    PyArrayObject* tmp = (PyArrayObject*)PyArray_SimpleNew(1, dims, NPY_INT64);
+    
+    if( PyArray_CopyInto(tmp, (PyArrayObject*)obj) == 0) {
+        int64_t *data = (int64_t*)PyArray_GETPTR1(tmp, 0);
+        for(int i = 0; i < 2; ++i) {
+            result[i] = data[i];
+        }
+    }
+    else {
+        Py_DecRef((PyObject*)tmp);
+        throw std::domain_error("could not convert array to int array, " + pyerror_str());
+        PyErr_Clear();
+    }
+    
+    Py_DecRef((PyObject*)tmp);
+    return result;
+}
+    
 /**
  * convert vector to numpy array
  */
@@ -206,6 +249,18 @@ Magnum::Vector3i cast(PyObject *obj) {
     }
     throw std::domain_error("can not convert non-list to vector");
     
+}
+    
+template<>
+Magnum::Vector2i cast(PyObject *obj) {
+    if(PyList_Check(obj)) {
+        return vector2i_from_list(obj);
+    }
+    
+    if(PyArray_Check(obj)) {
+        return vector2i_from_array(obj);
+    }
+    throw std::domain_error("can not convert non-list to vector");
 }
     
 template<>
