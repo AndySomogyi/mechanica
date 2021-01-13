@@ -1,14 +1,14 @@
 import mechanica as m
 
-m.Simulator(windowless=True)
+m.Simulator(windowless=True, window_size=[2048,2048])
 
 class Na (m.Particle):
     radius = 0.4
-    style={"color":"red"}
+    style={"color":"orange"}
 
 class Cl (m.Particle):
     radius = 0.25
-    style={"color":"blue"}
+    style={"color":"dodgerblue"}
 
 uc = m.lattice.bcc(0.9, [Na, Cl])
 

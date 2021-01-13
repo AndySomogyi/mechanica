@@ -60,21 +60,19 @@
 
 using namespace Magnum::Math::Literals;
 
-MxUniverseRenderer::MxUniverseRenderer(MxWindow *win, float particleRadius):
+MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     window{win}
 {
-    // py init
-    //ob_type = &MxUniverseRenderer_Type;
-    //ob_refcnt = 1;
-
+    GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
     
     GL::Renderer::setClearColor(Color3{0.35f});
     
     GL::Renderer::enable(GL::Renderer::Feature::Blending);
+    
     GL::Renderer::setBlendFunction(
-                                   GL::Renderer::BlendFunction::SourceAlpha, /* or SourceAlpha for non-premultiplied */
-                                   GL::Renderer::BlendFunction::OneMinusSourceAlpha);
+       GL::Renderer::BlendFunction::SourceAlpha, /* or SourceAlpha for non-premultiplied */
+       GL::Renderer::BlendFunction::OneMinusSourceAlpha);
 
     /* Loop at 60 Hz max */
     glfwSwapInterval(1);
@@ -97,7 +95,6 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win, float particleRadius):
     _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
 
     _defaultCamTarget   = {0,0,0};
-
 
     /* Set up the camera */
     {

@@ -80,7 +80,7 @@ struct MxUniverseRenderer : MxRenderer {
 
 
     // TODO, implement the event system instead of hard coding window events.
-    MxUniverseRenderer(MxWindow *win, float particleRadius = 1.0);
+    MxUniverseRenderer(MxWindow *win);
 
     template<typename T>
     MxUniverseRenderer& draw(T& camera, const Vector2i& viewportSize);

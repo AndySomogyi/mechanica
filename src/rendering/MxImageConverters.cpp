@@ -32,6 +32,7 @@
 #include <Magnum/PixelFormat.h>
 #include <Corrade/Utility/Debug.h>
 #include <rendering/MxImageConverters.h>
+#include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
 #include <string.h>
 #include <tuple>
 
@@ -183,4 +184,12 @@ Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2
     Containers::Array<char> fileData{destinationManager.output.size()};
     std::copy(destinationManager.output.begin(), destinationManager.output.end(), fileData.data());
     return fileData;
+}
+
+
+Corrade::Containers::Array<char> convertImageDataToTGA(const Magnum::ImageView2D& image) {
+    
+    TgaImageConverter conv;
+    
+    return conv.exportToData(image);
 }

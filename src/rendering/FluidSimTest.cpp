@@ -192,7 +192,7 @@ FluidSimTest::FluidSimTest(const Arguments& arguments) :
         
 
         /* Drawable particles */
-        _drawableParticles.reset(new MxUniverseRenderer{mxWindow, ParticleRadius});
+        _drawableParticles.reset(new MxUniverseRenderer{mxWindow});
     }
     
 

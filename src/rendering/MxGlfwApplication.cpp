@@ -159,10 +159,7 @@ static MxGlfwApplication::Configuration magConf(const MxSimulator::Config &sc) {
     return mc;
 }
 
-
-
-HRESULT MxGlfwApplication::createContext(
-        const MxSimulator::Config &conf)
+HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
 {
     const Vector2 dpiScaling = this->dpiScaling({});
     Configuration c = magConf(conf);
@@ -185,7 +182,7 @@ HRESULT MxGlfwApplication::createContext(
         glfwFocusWindow(this->window());
     }
 
-    _ren = new MxUniverseRenderer{_win, 0.25};
+    _ren = new MxUniverseRenderer{_win};
 
     return b ? S_OK : E_FAIL;
 }

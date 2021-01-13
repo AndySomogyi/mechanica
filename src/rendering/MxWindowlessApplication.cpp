@@ -84,7 +84,7 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
     
     window = new MxWindowlessWindow(this);
     
-    renderer = new MxUniverseRenderer{window, 0.25};
+    renderer = new MxUniverseRenderer(window);
     
     return S_OK;
 }

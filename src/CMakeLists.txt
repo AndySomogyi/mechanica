@@ -399,6 +399,7 @@ target_link_libraries(mechanica_py PRIVATE
   Magnum::MeshTools
   LibSBML::LibSBML
   ${MX_JPEG_LIBRARIES}
+  TgaImageConverter
   )
 
 if(WIN32 OR CYGWIN OR (UNIX AND NOT APPLE))
@@ -506,6 +507,7 @@ target_link_libraries(mechanica_shared
   Magnum::MeshTools
   LibSBML::LibSBML
   ${MX_JPEG_LIBRARIES}
+  TgaImageConverter
   )
 
 

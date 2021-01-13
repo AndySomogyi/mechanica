@@ -93,4 +93,7 @@ below for all options and their default values:
 Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2D& image, int jpegQuality = 100);
 
 
+Corrade::Containers::Array<char> convertImageDataToTGA(const Magnum::ImageView2D& image);
+
+
 #endif

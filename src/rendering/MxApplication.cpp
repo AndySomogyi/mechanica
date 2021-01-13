@@ -103,8 +103,6 @@ PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* arg
     
     sim->app->redraw();
     
-    //_test_draw(framebuffer);
-    
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
     auto jpegData = convertImageDataToJpeg(image);
