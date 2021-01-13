@@ -229,7 +229,7 @@ static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
     if(kwargs.contains("windowless")) {
         conf.setWindowless(py::cast<bool>(kwargs["windowless"]));
         if(conf.windowless()) {
-            conf.setWindowSize({1024,768});
+            conf.setWindowSize({1024,1024});
         }
     }
     

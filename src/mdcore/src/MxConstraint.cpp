@@ -25,7 +25,7 @@ PyTypeObject MxConstraint_Type = {
     .tp_basicsize =      sizeof(MxConstraint),
     .tp_itemsize =       1,
     .tp_dealloc =        0,
-    .tp_print =          0,
+                         0, // .tp_print changed to tp_vectorcall_offset in python 3.8
     .tp_getattr =        0,
     .tp_setattr =        0,
     .tp_as_async =       0,
