@@ -65,6 +65,8 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
 {
     GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
+
+    GL::Renderer::setDepthFunction(GL::Renderer::StencilFunction::Less);
     
     GL::Renderer::setClearColor(Color3{0.35f});
     

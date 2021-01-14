@@ -4,11 +4,11 @@ m.Simulator()
 
 class Na (m.Particle):
     radius = 0.4
-    style={"color":"green"}
+    style={"color":"orange"}
 
 class Cl (m.Particle):
     radius = 0.25
-    style={"color":"purple"}
+    style={"color":"spablue"}
 
 uc = m.lattice.bcc(0.9, [Na, Cl])
 
