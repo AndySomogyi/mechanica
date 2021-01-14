@@ -58,12 +58,16 @@ MxWindowlessApplication::MxWindowlessApplication(const Arguments &args) :
 }
 
 HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) {
+
+    // default Magnum WindowlessApplication config, does not have any options
     Configuration windowlessConf;
     
     if(!WindowlessApplication::tryCreateContext(windowlessConf)) {
         return c_error(E_FAIL, "could not create windowless context");
     }
-    
+
+    // create the render buffer here, after we have a context,
+    // default ctor makes this with a {Magnum::NoCreate},
     renderBuffer = Magnum::GL::Renderbuffer();
     
     frameBufferSize = conf.windowSize();
@@ -72,18 +76,14 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
     
     frameBuffer = Magnum::GL::Framebuffer{{{0,0}, conf.windowSize()}};
     
-    Vector2i size1 = frameBuffer.viewport().size();
-    
-    //frameBuffer.set
-    
-    Vector2i size2 = GL::defaultFramebuffer.viewport().size();
-    
-    frameBuffer.attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderBuffer)
-    .clear(GL::FramebufferClear::Color)
-    .bind();
+    frameBuffer
+        .attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderBuffer)
+        .clear(GL::FramebufferClear::Color)
+        .bind();
     
     window = new MxWindowlessWindow(this);
-    
+
+    // renderer accesses the framebuffer from the window handle we pass in.
     renderer = new MxUniverseRenderer(window);
     
     return S_OK;
