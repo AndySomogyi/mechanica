@@ -156,15 +156,17 @@ private:
 
     typedef Magnum::Platform::WindowlessApplication WindowlessApplication;
     
+    // the drawing buffer
     Magnum::GL::Renderbuffer renderBuffer;
+    
+    // attach render / stencil buffer to the framebuffer
+    Magnum::GL::Renderbuffer depthStencil;
     
     Magnum::GL::Framebuffer frameBuffer;
     
-
     
     struct MxWindowlessWindow *window;
     struct MxUniverseRenderer *renderer;
-    Magnum::Vector2i frameBufferSize;
     
     friend class MxWindowlessWindow;
 

@@ -27,7 +27,7 @@ struct MxWindowlessWindow : MxWindow
     MxWindowlessApplication *app;
     
     Magnum::Vector2i windowSize() const override {
-        return app->frameBufferSize;
+        return app->framebuffer().viewport().size();
     };
     
     void redraw() override {
@@ -53,7 +53,8 @@ MxWindowlessApplication::~MxWindowlessApplication()
 MxWindowlessApplication::MxWindowlessApplication(const Arguments &args) :
     WindowlessApplication{args, Magnum::NoCreate},
     renderBuffer{Magnum::NoCreate},
-    frameBuffer{Magnum::NoCreate}
+    frameBuffer{Magnum::NoCreate},
+    depthStencil{Magnum::NoCreate}
 {
 }
 
@@ -65,19 +66,23 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
     if(!WindowlessApplication::tryCreateContext(windowlessConf)) {
         return c_error(E_FAIL, "could not create windowless context");
     }
+    
+    Vector2i size = conf.windowSize();
 
-    // create the render buffer here, after we have a context,
+    // create the render buffers here, after we have a context,
     // default ctor makes this with a {Magnum::NoCreate},
     renderBuffer = Magnum::GL::Renderbuffer();
+    depthStencil = Magnum::GL::Renderbuffer();
     
-    frameBufferSize = conf.windowSize();
+    depthStencil.setStorage(GL::RenderbufferFormat::Depth24Stencil8, size);
     
-    renderBuffer.setStorage(Magnum::GL::RenderbufferFormat::RGBA8, conf.windowSize());
+    renderBuffer.setStorage(Magnum::GL::RenderbufferFormat::RGBA8, size);
     
-    frameBuffer = Magnum::GL::Framebuffer{{{0,0}, conf.windowSize()}};
+    frameBuffer = Magnum::GL::Framebuffer{{{0,0}, size}};
     
     frameBuffer
         .attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderBuffer)
+        .attachRenderbuffer(GL::Framebuffer::BufferAttachment::DepthStencil, depthStencil)
         .clear(GL::FramebufferClear::Color)
         .bind();
     

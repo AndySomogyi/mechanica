@@ -1,6 +1,6 @@
 import mechanica as m
 
-m.Simulator()
+m.Simulator(window_size=[1000,1000])
 
 class Na (m.Particle):
     radius = 0.4
