@@ -4,58 +4,84 @@
 #
 # TODO: Update to provide the libraries and paths for linking npymath lib.
 #
-#  NUMPY_FOUND               - was NumPy found
-#  NUMPY_VERSION             - the version of NumPy found as a string
-#  NUMPY_VERSION_MAJOR       - the major version number of NumPy
-#  NUMPY_VERSION_MINOR       - the minor version number of NumPy
-#  NUMPY_VERSION_PATCH       - the patch version number of NumPy
-#  NUMPY_VERSION_DECIMAL     - e.g. version 1.6.1 is 10601
-#  NUMPY_INCLUDE_DIR         - path to the NumPy include files
+#  Python_NumPy_FOUND
+#  Python_NumPy_INCLUDE_DIRS
+#  Python_NumPy_VERSION
+
+
+cmake_minimum_required(VERSION 3.13)
 
 unset(NUMPY_VERSION)
 unset(NUMPY_INCLUDE_DIR)
 
-if(PYTHONINTERP_FOUND)
-  execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-    "import numpy as n; print(n.__version__); print(n.get_include());"
-    RESULT_VARIABLE __result
-    OUTPUT_VARIABLE __output
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+message("findNumpy, looking for python...")
 
-  message("result: ${__result}, output: ${__output}")
-  
-  if(__result MATCHES 0)
-    string(REGEX REPLACE ";" "\\\\;" __values ${__output})
-    string(REGEX REPLACE "\r?\n" ";"    __values ${__values})
-    list(GET __values 0 NUMPY_VERSION)
-    list(GET __values 1 NUMPY_INCLUDE_DIR)
+find_package(Python REQUIRED COMPONENTS Interpreter)
 
-    string(REGEX MATCH "^([0-9])+\\.([0-9])+\\.([0-9])+" __ver_check "${NUMPY_VERSION}")
-    if(NOT "${__ver_check}" STREQUAL "")
-      set(NUMPY_VERSION_MAJOR ${CMAKE_MATCH_1})
-      set(NUMPY_VERSION_MINOR ${CMAKE_MATCH_2})
-      set(NUMPY_VERSION_PATCH ${CMAKE_MATCH_3})
-      math(EXPR NUMPY_VERSION_DECIMAL
-        "(${NUMPY_VERSION_MAJOR} * 10000) + (${NUMPY_VERSION_MINOR} * 100) + ${NUMPY_VERSION_PATCH}")
-      string(REGEX REPLACE "\\\\" "/"  NUMPY_INCLUDE_DIR ${NUMPY_INCLUDE_DIR})
-    else()
-     unset(NUMPY_VERSION)
-     unset(NUMPY_INCLUDE_DIR)
-     message(STATUS "Requested NumPy version and include path, but got instead:\n${__output}\n")
-    endif()
-  endif()
+if(NOT ${Python_Interpeter_FOUND})
+  message("no python found")
 else()
-  message(STATUS "To find NumPy Python interpretator is required to be found.")
+  message("found python")
+endif()
+
+message("NUMPY Python_FOUND: ${Python_FOUND}")
+message("NUMPY Python_Interpeter_FOUND: ${Python_Interpeter_FOUND}")
+message("NUMPY Python_VERSION: ${Python_VERSION}")
+message("NUMPY Python_EXECUTABLE: ${Python_EXECUTABLE}")
+
+
+execute_process(COMMAND "${Python_EXECUTABLE}" "-c"
+  "import numpy as n; print(n.__version__); print(n.get_include());"
+  RESULT_VARIABLE __result
+  OUTPUT_VARIABLE __output
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+message("result: ${__result}, output: ${__output}")
+
+if(__result MATCHES 0)
+  string(REGEX REPLACE ";" "\\\\;" __values ${__output})
+  string(REGEX REPLACE "\r?\n" ";"    __values ${__values})
+  list(GET __values 0 Python_NumPy_VERSION)
+  list(GET __values 1 Python_NumPy_INCLUDE_DIRS)
+
+  message("Numpy, Python_NumPy_VERSION: ${Python_NumPy_VERSION}")
+  message("Numpy, Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
+  
+  string(REGEX MATCH "^([0-9])+\\.([0-9])+\\.([0-9])+" __ver_check "${Python_NumPy_VERSION}")
+  
+  if(NOT "${__ver_check}" STREQUAL "")
+    set(NUMPY_VERSION_MAJOR ${CMAKE_MATCH_1})
+    set(NUMPY_VERSION_MINOR ${CMAKE_MATCH_2})
+    set(NUMPY_VERSION_PATCH ${CMAKE_MATCH_3})
+    math(EXPR NUMPY_VERSION_DECIMAL
+      "(${NUMPY_VERSION_MAJOR} * 10000) + (${NUMPY_VERSION_MINOR} * 100) + ${NUMPY_VERSION_PATCH}")
+    string(REGEX REPLACE "\\\\" "/"  Python_NumPy_INCLUDE_DIRS ${Python_NumPy_INCLUDE_DIRS})
+  else()
+    unset(Python_NumPy_VERSION)
+    unset(Python_NumPy_INCLUDE_DIRS)
+    message(STATUS "Requested NumPy version and include path, but got instead:\n${__output}\n")
+  endif()
+endif()
+
+ 
+if(Python_NumPy_INCLUDE_DIRS)
+  message("NumPy ver. ${Python_NumPy_VERSION} found (include: ${Python_NumPy_INCLUDE_DIRS})")
+  set(Python_NumPy_FOUND TRUE)
+
+
+  add_library(Python::NumPy INTERFACE IMPORTED)
+  set_property(TARGET Python::NumPy
+    PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${Python_NumPy_INCLUDE_DIRS}")
+  #target_link_libraries(Python::NumPy INTERFACE Python::Module)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NumPy REQUIRED_VARS NUMPY_INCLUDE_DIR NUMPY_VERSION
-                                        VERSION_VAR   NUMPY_VERSION)
-
-if(NUMPY_FOUND)
-  message(STATUS "NumPy ver. ${NUMPY_VERSION} found (include: ${NUMPY_INCLUDE_DIR})")
-endif()
-
+find_package_handle_standard_args(NumPy REQUIRED_VARS
+  Python_NumPy_INCLUDE_DIRS
+  Python_NumPy_VERSION
+  Python_NumPy_FOUND
+  )
+  
 unset(__result)
 unset(__output)
 unset(__error)

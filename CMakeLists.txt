@@ -1,5 +1,5 @@
 # need 3.12 for FindPython support
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.13)
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
@@ -10,7 +10,6 @@ endif()
 message("VCPKG CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
 
 project(Mechanica)
-
 
 # sets the target types
 if(UNIX)
@@ -150,7 +149,12 @@ else()
   find_package(Threads REQUIRED)
 endif()
 
-find_package(Python 3.7.0...3.7.99 COMPONENTS Development NumPy)
+find_package(Python 3.7.0...3.7.99 COMPONENTS Interpreter Development NumPy)
+
+if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
+  message("old cmake, using hack to find numpy...")
+  find_package(NumPy)  
+endif()
 
 message("Python_FOUND: ${Python_FOUND}")
 message("Python_Interpeter_FOUND: ${Python_Interpeter_FOUND}")
@@ -167,7 +171,6 @@ message("Python_EXECUTABLE: ${Python_EXECUTABLE}")
 message("Python_NumPy_FOUND: ${Python_NumPy_FOUND}")
 message("Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
 message("Python_NumPy_VERSION: ${Python_NumPy_VERSION}")
-
 
 if(Python_Development_FOUND)
   get_target_property(TMP Python::Python IMPORTED_LOCATION_DEBUG)
