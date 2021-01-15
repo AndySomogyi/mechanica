@@ -13,13 +13,12 @@ execute_process(
   OUTPUT_VARIABLE PY_SITEPACKAGES
   )
 
-string(REPLACE "['" ""  PY_SITEPACKAGES ${PY_SITEPACKAGES})
-string(REPLACE "']" ""  PY_SITEPACKAGES ${PY_SITEPACKAGES})
+string(REPLACE "[" ""  PY_SITEPACKAGES ${PY_SITEPACKAGES})
+string(REPLACE "]" ""  PY_SITEPACKAGES ${PY_SITEPACKAGES})
 
 string(STRIP ${PY_SITEPACKAGES} PY_SITEPACKAGES)
 
 message("PY_SITEPACKAGES: ${PY_SITEPACKAGES}")
-
 
 # if python / numpy are in debug mode, or otherwise, numpy is installed from an egg,
 # it will have a path that looks like this:

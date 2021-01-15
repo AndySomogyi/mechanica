@@ -1,4 +1,4 @@
-# need 3.12 for FindPython support
+# need 3.13 for FindPython support
 cmake_minimum_required (VERSION 3.13)
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -152,8 +152,9 @@ endif()
 find_package(Python 3.7.0...3.7.99 COMPONENTS Interpreter Development NumPy)
 
 if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
+  # hack for 3.13 CMake, does not have find numpy.
   message("old cmake, using hack to find numpy...")
-  find_package(NumPy)  
+  find_package(NumPy)
 endif()
 
 message("Python_FOUND: ${Python_FOUND}")
@@ -185,7 +186,6 @@ if(MX_APPLE AND DEFINED CMAKE_ECLIPSE_VERSION)
   message("setting eclipse include dirs: ${Python_INCLUDE_DIRS}")
   include_directories(${Python_INCLUDE_DIRS})
 endif()
-
 
 
 # needed for jpeg image writer
