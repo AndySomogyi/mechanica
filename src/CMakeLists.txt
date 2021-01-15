@@ -108,6 +108,8 @@ set(SRC
 
   rendering/MxGlInfo.cpp
 
+  rendering/MxEglInfo.cpp
+
   shaders/ParticleSphereShader.cpp
 
   test_sequences_and_iterators.cpp

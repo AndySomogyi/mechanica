@@ -17,6 +17,10 @@ static PyObject *_gl_info(PyObject *mod, PyObject *args, PyObject *kwds) {
     return Mx_GlInfo(args, kwds);
 }
 
+static PyObject *_egl_info(PyObject *mod, PyObject *args, PyObject *kwds) {
+    return Mx_EglInfo(args, kwds);
+}
+
 
 #if defined(MX_APPLE)
 
@@ -47,6 +51,7 @@ static PyMethodDef system_methods[] = {
     //{ "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
     //{ "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
     { "gl_info", (PyCFunction)_gl_info, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "egl_info", (PyCFunction)_egl_info, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test_headless", (PyCFunction)test_headless, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test_image", (PyCFunction)MxTestImage, METH_VARARGS | METH_KEYWORDS, NULL },
     { "image_data", (PyCFunction)MxFramebufferImageData, METH_VARARGS | METH_KEYWORDS, NULL },

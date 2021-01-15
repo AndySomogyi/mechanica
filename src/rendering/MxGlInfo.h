@@ -12,4 +12,6 @@
 
 PyObject *Mx_GlInfo(PyObject *args, PyObject *kwds);
 
+PyObject *Mx_EglInfo(PyObject *args, PyObject *kwds);
+
 #endif /* SRC_RENDERING_MXGLINFO_H_ */
