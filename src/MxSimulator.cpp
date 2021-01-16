@@ -372,7 +372,8 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("poll_events", [](){PY_CHECK(MxSimulator_PollEvents());});
     sim.def_static("wait_events", &pysimulator_wait_events);
     sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
-    sim.def_static("run", [](){PY_CHECK(MxSimulator_Run());});
+    sim.def_static("run", [](){PY_CHECK(MxSimulator_Run(-1));});
+    sim.def_static("run", [](double et){PY_CHECK(MxSimulator_Run(et));});
     sim.def_static("ftest", &ftest);
     sim.def_static("irun", [] () { PY_CHECK(MxSimulator_InteractiveRun()); });
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
@@ -714,10 +715,13 @@ static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3
     return result;
 }
 
-CAPI_FUNC(HRESULT) MxSimulator_Run()
+CAPI_FUNC(HRESULT) MxSimulator_Run(double et)
 {
     SIMULATOR_CHECK();
-    return Simulator->app->run();
+
+    std::cout << "simulator run(" << et << ")" << std::endl;
+
+    return Simulator->app->run(et);
 }
 
 CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
@@ -743,7 +747,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
     }
     else {
         std::fprintf(stderr, "not ipython, returning MxSimulator_Run \n");
-        return MxSimulator_Run();
+        return MxSimulator_Run(-1);
     }
 }
 
@@ -885,7 +889,7 @@ static void simulator_interactive_run() {
     }
     else {
         // not in ipython, so run regular run.
-        MxSimulator_Run();
+        MxSimulator_Run(-1);
         return;
     }
     

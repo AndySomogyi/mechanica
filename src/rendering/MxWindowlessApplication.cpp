@@ -169,7 +169,7 @@ HRESULT MxWindowlessApplication::show()
     return redraw();
 }
 
-HRESULT MxWindowlessApplication::messageLoop()
+HRESULT MxWindowlessApplication::messageLoop(double et)
 {
     return E_NOTIMPL;
 }

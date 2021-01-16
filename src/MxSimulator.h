@@ -413,7 +413,7 @@ CAPI_FUNC(HRESULT) MxSimulator_PostEmptyEvent();
 /**
  * runs the event loop until window close
  */
-CAPI_FUNC(HRESULT) MxSimulator_Run();
+CAPI_FUNC(HRESULT) MxSimulator_Run(double et);
 
 /**
  * ipython version of the run loop. This checks the ipython context and lets

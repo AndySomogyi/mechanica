@@ -205,9 +205,17 @@ MxUniverseRenderer* MxGlfwApplication::getRenderer()
 
 
 
-HRESULT MxGlfwApplication::messageLoop()
+HRESULT MxGlfwApplication::messageLoop(double et)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    double initTime = _Engine.time * _Engine.dt;
+    double endTime = std::numeric_limits<double>::infinity();
+    
+    if(et >= 0) {
+        endTime = initTime + et;
+    }
+    
+    std::cout << "MxGlfwApplication::messageLoop(" << et 
+              << ") {now_time: " << initTime << ", end_time: " << endTime <<  "}" << std::endl;
     
     // process initial messages.
     GlfwApplication::mainLoopIteration();
@@ -222,7 +230,6 @@ HRESULT MxGlfwApplication::messageLoop()
     glfwPostEmptyEvent();
 
 #if defined(_WIN32)
-
     std::fprintf(stderr, "set forground window \n");
     GLFWwindow* wnd = window();
     HWND hwnd = glfwGetWin32Window(wnd);
@@ -232,8 +239,10 @@ HRESULT MxGlfwApplication::messageLoop()
     HRESULT hr;
 
     // run while it's visible, process window messages
-    while(GlfwApplication::mainLoopIteration() &&
+    while(_Engine.time * _Engine.dt < endTime &&
+          GlfwApplication::mainLoopIteration() &&
           glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
+        
         // keep processing messages until window closes.
         if(engine_err == 0 && MxUniverse_Flag(MX_RUNNING)) {
             if(!SUCCEEDED((hr = simulationStep()))) {
@@ -242,7 +251,6 @@ HRESULT MxGlfwApplication::messageLoop()
             GlfwApplication::redraw();
         }
     }
-
     return S_OK;
 }
 
@@ -484,7 +492,7 @@ HRESULT MxGlfwApplication::show()
     showWindow();
     
     if (!Mx_IsIpython()) {
-        return messageLoop();
+        return messageLoop(-1);
     }
     
     return S_OK;

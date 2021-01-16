@@ -268,7 +268,7 @@ public:
      */
     virtual HRESULT redraw() = 0;
 
-    virtual HRESULT run();
+    virtual HRESULT run(double et);
 
 
     // soft hide the window
@@ -282,7 +282,7 @@ public:
     
     virtual HRESULT simulationStep();
     
-    virtual HRESULT messageLoop() = 0;
+    virtual HRESULT messageLoop(double et) = 0;
     
     virtual Magnum::GL::AbstractFramebuffer& framebuffer() = 0;
     

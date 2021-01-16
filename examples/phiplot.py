@@ -29,6 +29,8 @@ class PhiPlot :
         # bins
         self.bins = np.linspace(0, np.pi, bincount)
 
+        self.count = 0
+
     def phi_phidot(self, sph_positions):
         """
         returns two arrays,
@@ -44,9 +46,12 @@ class PhiPlot :
 
         digitized_phi = np.digitize(phi, self.bins)
 
-        mean_phidot = np.array([phidot[digitized_phi == i].mean() for i range(len(self.bins))])
+        mean_phidot = np.array([phidot[digitized_phi == i].mean() for i in range(len(self.bins))])
 
         return (self.bins, mean_phidot)
+
+
+
 
 
     def update(self, e):
@@ -58,7 +63,11 @@ class PhiPlot :
         phi, phidot = self.phi_phidot(sph_positions)
 
         plt.pause(0.001)
-        plt.clf()
+
+        if(self.count < 5):
+            plt.clf()
+
+        self.count = self.count + 1
 
         plt.plot(phi, phidot)
         plt.xlabel('$\phi$')

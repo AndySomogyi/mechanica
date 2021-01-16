@@ -146,7 +146,7 @@ public:
     
     HRESULT show() override;
     
-    HRESULT messageLoop() override;
+    HRESULT messageLoop(double et) override;
     
     Magnum::GL::AbstractFramebuffer& framebuffer() override;
     

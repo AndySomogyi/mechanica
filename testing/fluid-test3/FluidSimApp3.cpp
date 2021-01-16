@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     conf.example = "argon";
     MxSimulator_InitConfig(conf, glConf);
 
-    MxSimulator_Run();
+    MxSimulator_Run(-1);
 
     return 0;
 }

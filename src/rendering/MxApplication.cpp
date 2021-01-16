@@ -148,11 +148,13 @@ HRESULT MxApplication::simulationStep() {
     return  MxUniverse_Step(0,0);
 }
 
-HRESULT MxApplication::run()
+HRESULT MxApplication::run(double et)
 {
     std::cout << MX_FUNCTION << std::endl;
     MxUniverse_SetFlag(MX_RUNNING, true);
-    return messageLoop();
+    HRESULT result = messageLoop(et);
+    MxUniverse_SetFlag(MX_RUNNING, false);
+    return result;
 }
 
 
