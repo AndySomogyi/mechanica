@@ -1046,7 +1046,12 @@ struct MxPotential *potential_create_LJ126_switch ( double a , double b , double
 
 
 
-#define Power(base, exp) std::pow(base, exp)
+//#define Power(base, exp) std::pow(base, exp)
+
+double Power(double base, double exp) {
+    double result = std::pow(base, exp);
+    return result;
+}
 
 #define Log(x) std::log(x)
 
@@ -1551,6 +1556,103 @@ struct MxPotential *potential_create_overlapping_sphere(double mu, double k,
     /* return it */
     return p;
 }
+
+static double power_k;
+static double power_r0;
+static double power_alpha;
+
+static double power_f ( double x ) {
+    double k = power_k;
+    double r0 = power_r0;
+    double alpha = power_alpha;
+    
+    double result;
+    
+    result =  k * Power(std::abs(-r0 + x), alpha);
+    
+    //std::cout << "power_f(" << x << "): " << result;
+    return result;
+}
+
+static double power_fp ( double x ) {
+    double k = power_k;
+    double r0 = power_r0;
+    double alpha = power_alpha;
+    double result;
+    
+
+    result = alpha * k + Power(std::abs(-r0 + x), -1 + alpha);
+    
+    
+    //std::cout << "power_fp(" << x << "): " << result;
+    return result;
+}
+
+static double power_f6p ( double x ) {
+    
+    double k = power_k;
+    double r0 = power_r0;
+    double alpha = power_alpha;
+    
+    double result;
+    
+    result =  (-5 + alpha) *
+           (-4 + alpha) *
+           (-3 + alpha) *
+           (-2 + alpha) *
+           (-1 + alpha) *
+           alpha * k * Power(std::abs(-r0 + x), -6 + alpha);
+    
+    //std::cout << "power_f6p(" << x << "): " << result;
+    return result;
+}
+
+struct MxPotential *potential_create_power(double k, double r0, double alpha, double a , double b ,double tol) {
+    
+    struct MxPotential *p;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    power_k = k;
+    power_r0 = r0;
+    power_alpha = alpha;
+    
+    p->flags =  POTENTIAL_R2  | POTENTIAL_SCALED;
+    
+    p->name = "Power(r - r0)^alpha";
+    
+    int err = 0;
+    
+    // interpolate potential bigger than the bounds so we dont get jaggy edges
+    double min, max;
+    double range = b - a;
+    
+    double fudge = range / 10;
+    
+    if(a - fudge  < 0.01) {
+        a = fudge + 0.01;
+    }
+    
+    if((err = potential_init(p ,&power_f,
+                             &power_fp ,
+                             &power_f6p , a - fudge , 1.2 * b , tol )) < 0 ) {
+        
+        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        CAligned_Free(p);
+        return NULL;
+    }
+    
+    p->a = a;
+    p->b = b;
+    
+    /* return it */
+    return p;
+}
+
 
 
 
@@ -2627,6 +2729,7 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return NULL;
     }
 }
+
 static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
@@ -2650,6 +2753,51 @@ static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject 
         return NULL;
     }
 }
+
+
+
+static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    try {
+        double k =   arg<double>("k",   0, _args, _kwargs, 1);
+        double r0 = arg<double>("r0", 1, _args, _kwargs, 0);
+        double alpha = arg<double>("alpha", 2, _args, _kwargs, 0.0);
+        
+        double defaultMin;
+        double defaultTol;
+        
+        if(alpha > 1) {
+            defaultMin = r0 > 0.5 ? 0.5 * r0 : 0.1;
+            defaultTol = 0.001;
+        }
+        else {
+            defaultMin = 1.001 * r0 ;
+            defaultTol = 0.01;
+        }
+        
+        double min = arg<double>("min", 4, _args, _kwargs, defaultMin);
+        double max = arg<double>("max", 5, _args, _kwargs, 5);
+        double tol = arg<double>("tol", 6, _args, _kwargs, defaultTol);
+        
+        if(alpha <= 1 && min < r0) {
+            PyErr_WarnEx(PyExc_Warning,
+                         "Creating a power potential with alpha less than or equal to one, \
+                         and min less than r0 is discontinous and unstable", 1);
+        }
+        
+        return potential_checkerr(potential_create_power(k, r0, alpha, min, max, tol));
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+    catch(py::error_already_set &e){
+        e.restore();
+        return NULL;
+    }
+}
+
 
 
 
@@ -2775,6 +2923,12 @@ static PyMethodDef potential_methods[] = {
         "force",
         (PyCFunction)potential_force,
         METH_VARARGS | METH_KEYWORDS,
+        "calc force"
+    },
+    {
+        "power",
+        (PyCFunction)_potential_power,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "calc force"
     },
     

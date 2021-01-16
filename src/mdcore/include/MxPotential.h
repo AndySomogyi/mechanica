@@ -42,7 +42,7 @@
 #define potential_ivalsb                    10
 #define potential_N                         100
 #define potential_align                     64
-#define potential_ivalsmax                  2048
+#define potential_ivalsmax                  3048
 
 #define potential_escale                    (0.079577471545947667882)
 // #define potential_escale                    1.0
