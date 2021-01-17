@@ -389,8 +389,7 @@ PyObject* list_virial(MxParticleList *self, PyObject *args, PyObject *kwargs)
         }
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -403,8 +402,7 @@ PyObject* list_radius_of_gyration(MxParticleList *self, PyObject *args, PyObject
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -417,8 +415,7 @@ PyObject* list_center_of_mass(MxParticleList *self, PyObject *args, PyObject *kw
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -431,8 +428,7 @@ PyObject* list_center_of_geometry(MxParticleList *self, PyObject *args, PyObject
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -445,8 +441,7 @@ PyObject* list_moment_of_inertia(MxParticleList *self, PyObject *args, PyObject 
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 

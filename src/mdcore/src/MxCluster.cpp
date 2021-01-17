@@ -774,8 +774,7 @@ PyObject* cluster_virial(PyObject *_self, PyObject *args, PyObject *kwargs)
         }
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -789,8 +788,7 @@ PyObject* cluster_radius_of_gyration(PyObject *_self, PyObject *args, PyObject *
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -804,8 +802,7 @@ PyObject* cluster_center_of_mass(PyObject *_self, PyObject *args, PyObject *kwar
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -819,8 +816,7 @@ PyObject* cluster_center_of_geometry(PyObject *_self, PyObject *args, PyObject *
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -834,7 +830,6 @@ PyObject* cluster_moment_of_inertia(PyObject *_self, PyObject *args, PyObject *k
         return NULL;
     }
     catch(const std::exception &e) {
-        c_exp(e, "invalid args");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }

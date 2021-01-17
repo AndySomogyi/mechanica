@@ -608,7 +608,7 @@ PyObject *universe_virial(PyObject *_args, PyObject *_kwargs) {
         }
     }
     catch(const std::exception &e) {
-        c_exp(e, "error checking args");
+        C_RETURN_EXP(e);
     }
     return NULL;
 }
@@ -693,8 +693,7 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
         return result;
     }
     catch (const std::exception &e) {
-        c_exp(e, "error");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }
 
@@ -855,7 +854,6 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         return (PyObject*)result;
     }
     catch (const std::exception &e) {
-        c_exp(e, "error");
-        return NULL;
+        C_RETURN_EXP(e);
     }
 }

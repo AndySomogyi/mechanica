@@ -88,8 +88,7 @@ static PyGetSetDef getset[] = {
                 return NOMStyle_SetFlag((NOMStyle*)self, STYLE_VISIBLE, visible);
             }
             catch(const std::exception &e) {
-                c_exp(e, "");
-                return -1;
+                return C_EXP(e);
             }
         },
         .doc = "test doc",
@@ -116,8 +115,7 @@ static PyGetSetDef getset[] = {
                 }
             }
             catch(const std::exception &e) {
-                c_exp(e, "");
-                return -1;
+                return C_EXP(e);
             }
             return 0;
         },

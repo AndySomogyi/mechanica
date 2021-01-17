@@ -21,38 +21,38 @@ int wmain(int argc, wchar_t **argv)
 
 #else
 
-int main(int argc, char **argv)
-{
+    int main(int argc, char **argv)
+    {
 
-   std::wstring pypath(Py_GetPath());
+       std::wstring pypath(Py_GetPath());
 
-   std::wcout << L"path: " << pypath << std::endl;
+       std::wcout << L"path: " << pypath << std::endl;
 
-   pypath = pypath + L":" + PY_SITEPACKAGES + L":" + MX_PYMODULE_DIR + L":" + NUMPY_PYPATH;
+       pypath = pypath + L":" + PY_SITEPACKAGES + L":" + MX_PYMODULE_DIR + L":" + NUMPY_PYPATH;
 
-   Py_SetPath(pypath.c_str());
+       Py_SetPath(pypath.c_str());
 
-   std::wcout << "new path: " << Py_GetPath() << std::endl;
+       std::wcout << "new path: " << Py_GetPath() << std::endl;
+        
+    #if (PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 8)
+        return Py_BytesMain(argc, argv);
+    #else
+        #ifdef __APPLE__
+            return _Py_UnixMain(argc, argv);
+        #else
+            Py_Initialize();
 
+            wchar_t** _argv = (wchar_t**)malloc(sizeof(wchar_t*)*argc);
 
-
-
-
-#ifdef __APPLE__
-    return _Py_UnixMain(argc, argv);
-#else
-    Py_Initialize();
-
-    wchar_t** _argv = (wchar_t**)malloc(sizeof(wchar_t*)*argc);
-
-    for (int i=0; i<argc; i++) {
-        wchar_t* arg = Py_DecodeLocale(argv[i], NULL);
-        _argv[i] = arg;
+            for (int i=0; i<argc; i++) {
+                wchar_t* arg = Py_DecodeLocale(argv[i], NULL);
+                _argv[i] = arg;
+            }
+            int result =  Py_Main(argc, _argv);
+            free(_argv);
+            return result;
+        #endif
+    #endif
     }
-    int result =  Py_Main(argc, _argv);
-    free(_argv);
-    return result;
-#endif
-}
 
 #endif
