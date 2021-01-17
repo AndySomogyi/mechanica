@@ -135,7 +135,11 @@ static PyObject *plist_item(PyObject *_self, Py_ssize_t i) {
     MxParticleList *self = (MxParticleList*)_self;
     
     if(i < self->nr_parts) {
-        return _Engine.s.partlist[self->parts[i]]->py_particle();
+        MxParticle *part = _Engine.s.partlist[self->parts[i]];
+        if(part) {
+            return part->py_particle();
+        }
+        Py_RETURN_NONE;
     }
     else {
         PyErr_SetString(PyExc_IndexError, "cluster index out of range");
@@ -513,8 +517,20 @@ PyObject* list_spherical_positions(MxParticleList *self, PyObject *args, PyObjec
 
 CAPI_FUNC(MxParticleList*) MxParticleList_Copy(const PyObject *obj) {
     MxParticleList *self = (MxParticleList*)obj;
+                
+    MxParticleList *result;
     
-    return MxParticleList_NewFromData(self->nr_parts, self->parts);
+    result = MxParticleList_New(self->nr_parts);
+    if (result == NULL) {
+        return NULL;
+    }
+    
+    result->flags = PARTICLELIST_OWNDATA | PARTICLELIST_OWNSELF;
+    result->nr_parts = self->nr_parts;
+    
+    memcpy(result->parts, self->parts, self->nr_parts * sizeof(int32_t));
+
+    return result;
 }
 
 PyObject* list_copy(MxParticleList *self, PyObject *args, PyObject *kwargs) {
