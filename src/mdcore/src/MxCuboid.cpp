@@ -7,8 +7,8 @@
 
 #include <MxCuboid.hpp>
 #include <MxConvert.hpp>
+#include <Magnum/Math/Matrix4.h>
 #include <engine.h>
-
 
 #define CUBOID_SELF(handle) \
     MxCuboid *self = &_Engine.s.cuboids[((MxCuboidHandle*)handle)->id]; \
@@ -27,11 +27,9 @@
 
 MxCuboid::MxCuboid() {
     bzero(this, sizeof(MxCuboid));
+    orientation = Magnum::Quaternion();
 }
 
-static PyMethodDef cuboid_methods[] = {
-    { NULL, NULL, 0, NULL }
-};
 
 static PyObject* cuboid_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
     //std::cout << MX_FUNCTION << ", type: " << type->tp_name << std::endl;
@@ -49,12 +47,21 @@ int cuboid_init(MxCuboidHandle *handle, PyObject *args, PyObject *kwds) {
         MxCuboid *p;
         
         c.position = mx::arg<Magnum::Vector3>("pos", 0, args, kwds, engine_center());
+        c.size = mx::arg<Magnum::Vector3>("size", 1, args, kwds, Magnum::Vector3{1, 1, 1});
+        
+        Magnum::Vector3 angle = mx::arg<Magnum::Vector3>("orientation", 2, args, kwds, Magnum::Vector3{0, 0, 0});
+        
+        Magnum::Quaternion qx = Magnum::Quaternion::rotation(Magnum::Rad(angle[0]), Magnum::Vector3::xAxis());
+        Magnum::Quaternion qy = Magnum::Quaternion::rotation(Magnum::Rad(angle[1]), Magnum::Vector3::yAxis());
+        Magnum::Quaternion qz = Magnum::Quaternion::rotation(Magnum::Rad(angle[2]), Magnum::Vector3::zAxis());
+        
+        c.orientation = qx * qy * qz;
         
         if(!SUCCEEDED((err = engine_addcuboid(&_Engine, &c, &p)))) {
             return err;
         }
         
-        p->extents = {1, 1, 1};
+        p->size = {1, 1, 1};
         
         p->_handle = handle;
         
@@ -67,104 +74,33 @@ int cuboid_init(MxCuboidHandle *handle, PyObject *args, PyObject *kwds) {
     }
 }
 
+static PyObject* cuboid_scale(MxCuboidHandle *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        CUBOID_SELF(_self);
+        
+        Magnum::Vector3 scale = mx::arg<Magnum::Vector3>("scale", 0, args, kwargs);
+        
+        self->size = Magnum::Matrix4::scaling(scale).transformVector(self->size);
+        
+        Py_RETURN_NONE;
+    }
+    catch(const std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+static PyMethodDef cuboid_methods[] = {
+    { "scale", (PyCFunction)cuboid_scale, METH_VARARGS | METH_KEYWORDS, NULL },
+    { NULL, NULL, 0, NULL }
+};
+
 
 PyGetSetDef cuboid_getsets[] = {
     {
-        .name = "position",
+        .name = "size",
         .get = [](PyObject *obj, void *p) -> PyObject* {
             CUBOID_SELF(obj);
-            return mx::cast(self->position);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            try {
-                CUBOID_PROP_SELF(obj);
-                Magnum::Vector3 vec = mx::cast<Magnum::Vector3>(val);
-                self->position = vec;
-                return 0;
-            }
-            catch (const std::exception &e) {
-                return C_EXP(e);
-            }
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "velocity",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            CUBOID_SELF(obj);
-            return mx::cast(self->velocity);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            try {
-                int id = ((MxParticleHandle*)obj)->id;
-                Magnum::Vector3 *vec = &_Engine.s.partlist[id]->velocity;
-                *vec = mx::cast<Magnum::Vector3>(val);
-                return 0;
-            }
-            catch (const std::exception &e) {
-                return C_EXP(e);
-            }
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "force",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            int id = ((MxParticleHandle*)obj)->id;
-            Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
-            return mx::cast(*vec);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            try {
-                int id = ((MxParticleHandle*)obj)->id;
-                Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
-                *vec = mx::cast<Magnum::Vector3>(val);
-                return 0;
-            }
-            catch (const std::exception &e) {
-                return C_EXP(e);
-            }
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "id",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            CUBOID_SELF(obj)
-            return carbon::cast(self->id);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            PyErr_SetString(PyExc_ValueError, "read only property");
-            return -1;
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "flags",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            CUBOID_SELF(obj);
-            return carbon::cast(self->flags);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            PyErr_SetString(PyExc_ValueError, "read only property");
-            return -1;
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "species",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            CUBOID_SELF(obj);
-            if(self->state_vector) {
-                Py_INCREF(self->state_vector);
-                return (PyObject*)self->state_vector;
-            }
-            Py_RETURN_NONE;
+            return mx::cast(self->size);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
@@ -206,7 +142,7 @@ PyTypeObject MxCuboid_Type = {
     .tp_iternext =       0,
     .tp_methods =        cuboid_methods,
     .tp_members =        0,
-    .tp_getset =         cuboid_getsets,
+    .tp_getset =         0,
     .tp_base =           0,
     .tp_dict =           0,
     .tp_descr_get =      0,
@@ -229,6 +165,10 @@ PyTypeObject MxCuboid_Type = {
 
 
 HRESULT _MxCuboid_Init(PyObject* m) {
+    
+    // WARNING: make sure MxBody is initialized before cuboid.
+    MxCuboid_Type.tp_base = &MxBody_Type;
+    
     if (PyType_Ready((PyTypeObject*)&MxCuboid_Type) < 0) {
         return E_FAIL;
     }

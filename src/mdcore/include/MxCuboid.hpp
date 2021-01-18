@@ -17,9 +17,9 @@ struct MxCuboid : MxBody
     MxCuboid();
     
     // extents / size of the cuboid
-    Magnum::Vector3 extents;
+    Magnum::Vector3 size;
     
-    Magnum::Quaternion rotation;
+
     
 
 };
@@ -32,7 +32,7 @@ struct MxCuboidHandle : PyObject
 /**
  * vertex is special, it extends particle.
  */
-CAPI_DATA(MxParticleType*) MxCuboid_TypePtr;
+CAPI_DATA(PyTypeObject) MxCuboid_Type;
 
 HRESULT _MxCuboid_Init(PyObject *m);
 

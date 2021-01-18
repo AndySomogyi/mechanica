@@ -220,8 +220,10 @@ static inline int render_cuboid(CuboidInstanceData* pData, int i, MxCuboid *p, d
             (float)(origin[2] + p->x[2])
         };
         
-        pData[i].transformationMatrix =
-            Matrix4::translation(position) * Matrix4::scaling(p->extents);
+        Matrix4 translateRotate = Matrix4::from(p->orientation.toMatrix(), position);
+        
+        pData[i].transformationMatrix = translateRotate * Matrix4::scaling(p->size);
+        
         pData[i].normalMatrix =
             pData[i].transformationMatrix.normalMatrix();
         pData[i].color = Color4::red();

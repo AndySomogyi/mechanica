@@ -30,14 +30,8 @@ struct MxBody : PyObject
         Magnum::Vector3 velocity __attribute__ ((aligned (16)));
     };
     
-    /** angular velocity */
-    union {
-        FPTYPE _spin[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 spin __attribute__ ((aligned (16)));
-    };
-
     /**
-     * Particle force
+     * linear force
      *
      * ONLY the coherent part of the force should go here. We use multi-step
      * integrators, that need to separate the random and coherent forces.
@@ -46,6 +40,23 @@ struct MxBody : PyObject
         FPTYPE f[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 force __attribute__ ((aligned (16)));
     };
+    
+    union {
+        FPTYPE pad_orientation[4] __attribute__ ((aligned (16)));
+        Magnum::Quaternion orientation __attribute__ ((aligned (16)));
+    };
+    
+    /** angular velocity */
+    union {
+        FPTYPE _spin[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 spin __attribute__ ((aligned (16)));
+    };
+
+    union {
+        FPTYPE _torque[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 torque __attribute__ ((aligned (16)));
+    };
+        
 
     /** random force force */
     union {
@@ -91,16 +102,6 @@ struct MxBody : PyObject
      */
     struct CStateVector *state_vector;
     
-    union {
-        FPTYPE pad_orientation[4] __attribute__ ((aligned (16)));
-        Magnum::Quaternion orientation __attribute__ ((aligned (16)));
-    };
-
-    union {
-        FPTYPE pad_torque[4] __attribute__ ((aligned (16)));
-        Magnum::Quaternion torque __attribute__ ((aligned (16)));
-    };
-    
     MxBody();
 };
 
@@ -112,7 +113,7 @@ struct MxBodyHandle : PyObject
 /**
  * vertex is special, it extends particle.
  */
-CAPI_DATA(PyTypeObject*) MxBody_TypePtr;
+CAPI_DATA(PyTypeObject) MxBody_Type;
 
 HRESULT _MxBody_Init(PyObject *m);
 
