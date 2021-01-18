@@ -263,48 +263,8 @@ Magnum::Vector2i cast(PyObject *obj) {
     throw std::domain_error("can not convert non-list to vector");
 }
     
-template<>
-float cast(PyObject *obj) {
-if(PyNumber_Check(obj)) {
-    return PyFloat_AsDouble(obj);
-}
-throw std::domain_error("can not convert to number");
-}
 
-template<>
-PyObject* cast(const float &f) {
-    return PyFloat_FromDouble(f);
-}
-
-template<>
-bool cast(PyObject *obj) {
-    if(PyBool_Check(obj)) {
-        return obj == Py_True ? true : false;
-    }
-    throw std::domain_error("can not convert to boolean");
-}
-
-template<>
-PyObject* cast(const bool &b) {
-    if(b) {
-        Py_RETURN_TRUE;
-    }
-    else {
-        Py_RETURN_FALSE;
-    }
-}
-    
-//template PyObject* cast<PyObject*, const Magnum::Vector3&>(const Magnum::Vector3&);
-//template Magnum::Vector3 cast<Magnum::Vector3, PyObject*>(PyObject*);
-    
-template <>
-bool check<bool>(PyObject *o) {
-    return PyBool_Check(o);
-}
-    
-
-    
-PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
+PyObject *py_arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
     PyObject *kwobj = _kwargs ?  PyDict_GetItemString(_kwargs, name) : NULL;
     PyObject *aobj = _args && (PyTuple_Size(_args) > index) ? PyTuple_GetItem(_args, index) : NULL;
     
@@ -315,33 +275,7 @@ PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
     
     return aobj ? aobj : kwobj;
 }
-    
-    
-template<>
-PyObject* cast(const double &f){
-    return PyFloat_FromDouble(f);
-}
 
-template<>
-double cast(PyObject *obj) {
-if(PyNumber_Check(obj)) {
-    return PyFloat_AsDouble(obj);
-}
-    throw std::domain_error("can not convert to number");
-}
-
-template<>
-PyObject* cast(const int &i) {
-    return PyLong_FromLong(i);
-}
-
-template<>
-int cast(PyObject *obj){
-    if(PyNumber_Check(obj)) {
-        return PyLong_AsLong(obj);
-    }
-    throw std::domain_error("can not convert to number");
-}
     
 
 }

@@ -549,9 +549,9 @@ void print_performance_counters() {
 
 PyObject *universe_virial(PyObject *_args, PyObject *_kwargs) {
     try {
-        PyObject *_origin = mx::arg("origin", 0, _args, _kwargs);
-        PyObject *_radius = mx::arg("radius", 1, _args, _kwargs);
-        PyObject *_types = mx::arg("types", 2, _args, _kwargs);
+        PyObject *_origin = mx::py_arg("origin", 0, _args, _kwargs);
+        PyObject *_radius = mx::py_arg("radius", 1, _args, _kwargs);
+        PyObject *_types = mx::py_arg("types", 2, _args, _kwargs);
         
         Magnum::Vector3 origin;
         float radius = 0;
@@ -633,10 +633,10 @@ PyObject *MxPyUniverse_BindPairwise(PyObject *args, PyObject *kwds) {
     };
     
     try {
-        PyObject *ppot = mx::arg(names[0], 0, args, kwds);
-        PyObject *pparts = mx::arg(names[1], 1, args, kwds);
-        PyObject *pcutoff = mx::arg(names[2], 2, args, kwds);
-        PyObject *pairs = mx::arg(names[3], 3, args, kwds);
+        PyObject *ppot = mx::py_arg(names[0], 0, args, kwds);
+        PyObject *pparts = mx::py_arg(names[1], 1, args, kwds);
+        PyObject *pcutoff = mx::py_arg(names[2], 2, args, kwds);
+        PyObject *pairs = mx::py_arg(names[3], 3, args, kwds);
         
         MxPotential *pot;
         MxParticleList *parts;
@@ -735,12 +735,12 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
         //*     tuple of starting / stopping theta (polar angle)
         //*     center of sphere
         //*     radius of sphere
-        PyObject *ppot = mx::arg("potential", 0, args, kwds);
-        PyObject *pn = mx::arg("n", 1, args, kwds);
-        PyObject *pcenter = mx::arg("center", 2, args, kwds);
-        PyObject *pradius = mx::arg("radius", 3, args, kwds);
-        PyObject *pphi = mx::arg("phi", 4, args, kwds);
-        PyObject *type = mx::arg("type", 5, args, kwds);
+        PyObject *ppot = mx::py_arg("potential", 0, args, kwds);
+        PyObject *pn = mx::py_arg("n", 1, args, kwds);
+        PyObject *pcenter = mx::py_arg("center", 2, args, kwds);
+        PyObject *pradius = mx::py_arg("radius", 3, args, kwds);
+        PyObject *pphi = mx::py_arg("phi", 4, args, kwds);
+        PyObject *type = mx::py_arg("type", 5, args, kwds);
         
         MxPotential *pot;
         int n;

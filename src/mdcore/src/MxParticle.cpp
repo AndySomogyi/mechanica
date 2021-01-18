@@ -51,6 +51,10 @@
 
 #include <sstream>
 
+MxParticle::MxParticle() {
+    bzero(this, sizeof(MxParticle));
+}
+
 struct Foo {
     int x; int y; int z;
 };
@@ -1942,7 +1946,7 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
         PARTICLE_SELF(_self);
         
         float radius;
-        PyObject *_radius = mx::arg("distance", 0, args, kwargs);
+        PyObject *_radius = mx::py_arg("distance", 0, args, kwargs);
         if(_radius) {
             radius = mx::cast<float>(_radius);
         }
@@ -1950,7 +1954,7 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
             radius = _Engine.s.cutoff;
         }
         
-        PyObject *ptypes = mx::arg("types", 1, args, kwargs);
+        PyObject *ptypes = mx::py_arg("types", 1, args, kwargs);
         
         std::set<short int> types;
    

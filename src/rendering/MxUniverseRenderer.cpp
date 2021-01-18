@@ -135,6 +135,10 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
 
     largeSphereInstanceBuffer = GL::Buffer{};
     
+    cuboidInstanceBuffer = GL::Buffer();
+    
+    cuboidMesh = MeshTools::compile(Primitives::cubeSolid());
+    
     // setup bonds mesh, shader and vertex buffer.
     bondsMesh = GL::Mesh{};
     bondsVertexBuffer = GL::Buffer{};
@@ -157,9 +161,14 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
         Shaders::Phong::Color4{});
     
     largeSphereMesh.addVertexBufferInstanced(largeSphereInstanceBuffer, 1, 0,
-            Shaders::Phong::TransformationMatrix{},
-            Shaders::Phong::NormalMatrix{},
-            Shaders::Phong::Color4{});
+        Shaders::Phong::TransformationMatrix{},
+        Shaders::Phong::NormalMatrix{},
+        Shaders::Phong::Color4{});
+    
+    cuboidMesh.addVertexBufferInstanced(cuboidInstanceBuffer, 1, 0,
+        Shaders::Phong::TransformationMatrix{},
+        Shaders::Phong::NormalMatrix{},
+        Shaders::Phong::Color4{});
 
     // setup up lighting properties. TODO: move these to style
     sphereShader.setShininess(2000.0f)
@@ -173,6 +182,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     // we resize instances all the time.
     sphereMesh.setInstanceCount(0);
     largeSphereMesh.setInstanceCount(0);
+    cuboidMesh.setInstanceCount(0);
 }
 
 static inline int render_particle(SphereInstanceData* pData, int i, MxParticle *p, space_cell *c) {
@@ -187,18 +197,40 @@ static inline int render_particle(SphereInstanceData* pData, int i, MxParticle *
             (float)(c->origin[1] + p->x[1]),
             (float)(c->origin[2] + p->x[2])
         };
+        
         float radius = p->flags & PARTICLE_CLUSTER ? 0 : p->radius;
         pData[i].transformationMatrix =
-        Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
+            Matrix4::translation(position) * Matrix4::scaling(Vector3{radius});
         pData[i].normalMatrix =
-        pData[i].transformationMatrix.normalMatrix();
-        
+            pData[i].transformationMatrix.normalMatrix();
         pData[i].color = style->map_color(p);
         return 1;
     }
     
     return 0;
 }
+
+static inline int render_cuboid(CuboidInstanceData* pData, int i, MxCuboid *p, double *origin) {
+
+    if(true) {
+    
+        Magnum::Vector3 position = {
+            (float)(origin[0] + p->x[0]),
+            (float)(origin[1] + p->x[1]),
+            (float)(origin[2] + p->x[2])
+        };
+        
+        pData[i].transformationMatrix =
+            Matrix4::translation(position) * Matrix4::scaling(p->extents);
+        pData[i].normalMatrix =
+            pData[i].transformationMatrix.normalMatrix();
+        pData[i].color = Color4::red();
+        return 1;
+    }
+    
+    return 0;
+}
+
 
 template<typename T>
 MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
@@ -210,22 +242,26 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
 
     _dirty = false;
 
-    sphereMesh.setInstanceCount(_Engine.s.nr_visable_parts);
-    largeSphereMesh.setInstanceCount(_Engine.s.nr_visable_large_parts);
+    sphereMesh.setInstanceCount(_Engine.s.nr_visible_parts);
+    largeSphereMesh.setInstanceCount(_Engine.s.nr_visible_large_parts);
+    cuboidMesh.setInstanceCount(_Engine.s.nr_visible_cuboids);
 
     // invalidate / resize the buffer
     sphereInstanceBuffer.setData({NULL,
-        _Engine.s.nr_visable_parts * sizeof(SphereInstanceData)},
+        _Engine.s.nr_visible_parts * sizeof(SphereInstanceData)},
             GL::BufferUsage::DynamicDraw);
 
     largeSphereInstanceBuffer.setData({NULL,
-        _Engine.s.nr_visable_large_parts * sizeof(SphereInstanceData)},
+        _Engine.s.nr_visible_large_parts * sizeof(SphereInstanceData)},
             GL::BufferUsage::DynamicDraw);
     
-
+    cuboidInstanceBuffer.setData({NULL,
+        _Engine.s.nr_visible_cuboids * sizeof(CuboidInstanceData)},
+            GL::BufferUsage::DynamicDraw);
+    
     // get pointer to data, give me the damned bytes
     SphereInstanceData* pData = (SphereInstanceData*)(void*)sphereInstanceBuffer.map(0,
-            _Engine.s.nr_visable_parts * sizeof(SphereInstanceData),
+            _Engine.s.nr_visible_parts * sizeof(SphereInstanceData),
             GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
     int i = 0;
@@ -235,12 +271,12 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
             i += render_particle(pData, i, p, &_Engine.s.cells[cid]);
         }
     }
-    assert(i == _Engine.s.nr_visable_parts);
+    assert(i == _Engine.s.nr_visible_parts);
     sphereInstanceBuffer.unmap();
 
     // get pointer to data, give me the damned bytes
     SphereInstanceData* pLargeData = (SphereInstanceData*)(void*)largeSphereInstanceBuffer.map(0,
-            _Engine.s.largeparts.count * sizeof(SphereInstanceData),
+            _Engine.s.nr_visible_large_parts * sizeof(SphereInstanceData),
             GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
 
     i = 0;
@@ -248,9 +284,26 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         MxParticle *p  = &_Engine.s.largeparts.parts[pid];
         i += render_particle(pLargeData, i, p, &_Engine.s.largeparts);
     }
-    assert(i == _Engine.s.nr_visable_large_parts);
-
+    
+    assert(i == _Engine.s.nr_visible_large_parts);
     largeSphereInstanceBuffer.unmap();
+    
+    
+    // render the cuboids.
+    // get pointer to data, give me the damned bytes
+    CuboidInstanceData* pCuboidData = (CuboidInstanceData*)(void*)cuboidInstanceBuffer.map(0,
+            _Engine.s.nr_visible_cuboids * sizeof(CuboidInstanceData),
+            GL::Buffer::MapFlag::Write|GL::Buffer::MapFlag::InvalidateBuffer);
+
+    i = 0;
+    for (int cid = 0 ; cid < _Engine.s.cuboids.size() ; cid++ ) {
+        MxCuboid *c = &_Engine.s.cuboids[cid];
+        i += render_cuboid(pCuboidData, i, c, _Engine.s.origin);
+    }
+    
+    assert(i == _Engine.s.nr_visible_cuboids);
+    cuboidInstanceBuffer.unmap();
+    
     
     if(_Engine.nr_active_bonds > 0) {
         int vertexCount = _Engine.nr_active_bonds * 2;
@@ -298,7 +351,7 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     
     sphereShader.draw(sphereMesh);
     sphereShader.draw(largeSphereMesh);
-    
+    sphereShader.draw(cuboidMesh);
     
     return *this;
 }

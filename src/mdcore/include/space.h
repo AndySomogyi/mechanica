@@ -2,25 +2,29 @@
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
  * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
+#pragma once
 #ifndef INCLUDE_SPACE_H_
 #define INCLUDE_SPACE_H_
 #include "mdcore_config.h"
 #include "space_cell.h"
+#include "MxCuboid.hpp"
+
+#include <vector>
 
 
 MDCORE_BEGIN_DECLS
@@ -125,6 +129,8 @@ struct celltuple {
 
 };
 
+typedef std::vector<MxCuboid> CuboidVector;
+
 
 /**
  * The space structure
@@ -184,8 +190,8 @@ typedef struct space {
 
     /** Array of pointers to the individual parts, sorted by their ID. */
     struct MxParticle **partlist;
-    
-    /** store the large particles in the largs parts cell, its special */
+
+    /** store the large particles in the large parts cell, its special */
     space_cell largeparts;
 
     /** Array of pointers to the #cell of individual parts, sorted by their ID. */
@@ -195,14 +201,23 @@ typedef struct space {
     int nr_parts, size_parts;
     
     /**
-     * number of visiable particles and large particles.
+     * cuboids, WARNING: make sure to do an in-place new in space_init.
+     *
+     * TODO: this is a total hack, come back and re-think how we store
+     * rigid bodies.
+     */
+    CuboidVector cuboids;
+
+    /**
+     * number of visible particles and large particles.
      * Yes... mixing rendering and simulation, but put it here
      * so we only have to go through the list once to get this count.
      *
      * updated by engine_advance
      */
-    int nr_visable_parts;
-    int nr_visable_large_parts;
+    int nr_visible_parts;
+    int nr_visible_large_parts;
+    int nr_visible_cuboids;
 
     /** Trigger re-building the cells/sorts. */
     int verlet_rebuild;
@@ -282,9 +297,11 @@ CAPI_FUNC(int) space_shuffle_local ( struct space *s );
  * This is a PRIVATE function, literally only the engine should call this.
  * Does NOT manage ref count on particle types in the engine.
  */
-CAPI_FUNC(int) space_addpart ( struct space *s ,  struct MxParticle *p ,
-        double *x, struct MxParticle **result );
+CAPI_FUNC(int) space_addpart (struct space *s,  struct MxParticle *p,
+        double *x, struct MxParticle **result);
 
+CAPI_FUNC(int) space_addcuboid (struct space *s, struct MxCuboid *p,
+                                struct MxCuboid **result);
 
 /**
  * get the cell id for a position,

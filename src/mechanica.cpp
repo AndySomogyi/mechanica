@@ -47,7 +47,8 @@
 #include "Polygon.hpp"
 #include "Cell.hpp"
 #include "Flux.hpp"
-
+#include "MxBody.hpp"
+#include "MxCuboid.hpp"
 
 #include <c_util.h>
 
@@ -370,6 +371,10 @@ static PyObject * moduleinit(void)
     _MxBond_init(m);
     
     _MxAngle_init(m);
+    
+    _MxBody_Init(m);
+    
+    _MxCuboid_Init(m);
     
     _vertex_init(m);
     _edge_init(m);

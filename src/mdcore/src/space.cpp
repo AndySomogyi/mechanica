@@ -447,12 +447,46 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     
     if(style->flags & STYLE_VISIBLE) {
         if(p->flags & PARTICLE_LARGE) {
-            s->nr_visable_large_parts++;
+            s->nr_visible_large_parts++;
         }
         else {
-            s->nr_visable_parts++;
+            s->nr_visible_parts++;
         }
     }
+
+    /* end well */
+    return space_err_ok;
+}
+
+int space_addcuboid (struct space *s, struct MxCuboid *p, struct MxCuboid **result) {
+
+    int k, ind[3];
+
+    /* check input */
+    if ( s == NULL || p == NULL )
+        return error(space_err_null);
+    
+    /* get the hypothetical cell coordinate */
+    for ( k = 0 ; k < 3 ; k++ )
+        ind[k] = (p->x[k] - s->origin[k]) * s->ih[k];
+    
+    /* is this particle within the space? */
+    for ( k = 0 ; k < 3 ; k++ )
+        if ( ind[k] < 0 || ind[k] >= s->cdim[k] )
+            return error(space_err_range);
+    
+    /* make the particle position local */
+    for ( k = 0 ; k < 3 ; k++ )
+        p->x[k] = p->x[k] - s->origin[k];
+    
+    s->nr_visible_cuboids++;
+    
+    p->id = s->cuboids.size();
+    
+    s->cuboids.push_back(*p);
+        
+    // address of the new member we pushed back.
+    *result = &s->cuboids[p->id];
 
     /* end well */
     return space_err_ok;
@@ -578,7 +612,11 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     int id1, id2, sid;
     double o[3], lh[3];
     struct space_cell *ci, *cj;
-
+    
+    // using placement new, set up the mem space for the
+    // std vector of cuboids.
+    new ((void*)(&s->cuboids)) CuboidVector(10);
+    
     /* check inputs */
     if ( s == NULL || origin == NULL || dim == NULL || L == NULL )
         return error(space_err_null);
@@ -1402,10 +1440,10 @@ CAPI_FUNC(HRESULT) space_del_particle(struct space *s, int pid)
     
     if(style->flags & STYLE_VISIBLE) {
         if(p->flags & PARTICLE_LARGE) {
-            s->nr_visable_large_parts -= 1;
+            s->nr_visible_large_parts -= 1;
         }
         else {
-            s->nr_visable_parts -= 1;
+            s->nr_visible_parts -= 1;
         }
     }
 
@@ -1438,8 +1476,8 @@ int space_get_cellids_for_pos (struct space *s , FPTYPE *x, int *cellids) {
 
 
 HRESULT space_update_style( struct space *s ) {
-    s->nr_visable_parts = 0;
-    s->nr_visable_large_parts = 0;
+    s->nr_visible_parts = 0;
+    s->nr_visible_large_parts = 0;
     
     for(int i = 0; i < s->nr_parts; ++i) {
         MxParticle *p = s->partlist[i];
@@ -1448,10 +1486,10 @@ HRESULT space_update_style( struct space *s ) {
         
         if(style->flags & STYLE_VISIBLE) {
             if(p->flags & PARTICLE_LARGE) {
-                s->nr_visable_large_parts +=1;
+                s->nr_visible_large_parts +=1;
             }
             else {
-                s->nr_visable_parts += 1;
+                s->nr_visible_parts += 1;
             }
         }
     }

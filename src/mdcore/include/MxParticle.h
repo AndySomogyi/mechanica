@@ -24,6 +24,7 @@
 #include "carbon.h"
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector4.h>
+#include <Magnum/Math/Quaternion.h>
 #include "space_cell.h"
 #include "MxParticleList.hpp"
 #include <set>
@@ -89,7 +90,7 @@ struct MxParticle  {
 	/** Particle position */
     union {
         FPTYPE x[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 position __attribute__ ((aligned (16))) = {0,0,0};
+        Magnum::Vector3 position __attribute__ ((aligned (16)));
 
         struct {
             float __dummy[3];
@@ -100,7 +101,7 @@ struct MxParticle  {
 	/** Particle velocity */
     union {
         FPTYPE v[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 velocity __attribute__ ((aligned (16))) = {0,0,0};
+        Magnum::Vector3 velocity __attribute__ ((aligned (16)));
     };
 
 	/**
@@ -111,12 +112,12 @@ struct MxParticle  {
 	 */
     union {
         FPTYPE f[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 force __attribute__ ((aligned (16))) = {0,0,0};
+        Magnum::Vector3 force __attribute__ ((aligned (16)));
     };
 
     /** random force force */
     union {
-        Magnum::Vector3 persistent_force __attribute__ ((aligned (16))) = {0,0,0};
+        Magnum::Vector3 persistent_force __attribute__ ((aligned (16)));
     };
 
     // inverse mass
@@ -201,6 +202,8 @@ struct MxParticle  {
     inline Magnum::Vector3 global_position();
 
     inline void set_global_position(const Magnum::Vector3& pos);
+    
+    MxParticle();
 };
 
 

@@ -1,19 +1,16 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dim=[20., 20., 20.], cutoff=8, bc=m.BOUNDARY_NONE)
+# potential cutoff distance
+cutoff = 1
 
-class Bead(m.Particle):
-    mass = 1
-    radius = 0.1
-    dynamics = m.Overdamped
+# dimensions of universe
+dim=[10., 10., 10.]
 
-pot = m.Potential.harmonic(k=1, r0=0.1, max = 3)
+# new simulator, don't load any example
+m.Simulator(dim=dim, window_size=[900,900])
 
-pts = m.random_points(m.SolidCube, 10000) * 18 + m.Universe.center
+c = m.Cuboid(pos=m.Universe.center + [1, 1, 1])
 
-beads = [Bead(p) for p in pts]
-
-m.bind_pairwise(pot, beads, 1)
-
-m.run()
+# run the simulator interactive
+m.Simulator.show()

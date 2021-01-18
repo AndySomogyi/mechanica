@@ -478,8 +478,12 @@ CAPI_FUNC(struct MxParticleType*) engine_type(int id);
  *
  * Increases the ref count on the particle type.
  */
-CAPI_FUNC(int) engine_addpart ( struct engine *e ,  struct MxParticle *p ,
-        double *x, struct MxParticle **result );
+CAPI_FUNC(int) engine_addpart (struct engine *e,  struct MxParticle *p,
+    double *x, struct MxParticle **result);
+
+
+CAPI_FUNC(int) engine_addcuboid(struct engine *e, struct MxCuboid *p,
+                                struct MxCuboid **result);
 
 /**
  * Adds a force for a given type id
@@ -623,6 +627,9 @@ CAPI_FUNC(int) engine_split_METIS ( struct engine *e, int N, int flags);
 #ifdef WITH_METIS
 CAPI_FUNC(int) engine_split_METIS ( struct engine *e, int N, int flags);
 #endif
+
+
+Magnum::Vector3 engine_center();
 
 /**
  * Single static instance of the md engine per process.

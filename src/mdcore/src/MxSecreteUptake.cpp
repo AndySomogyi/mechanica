@@ -97,9 +97,9 @@ static PyObject *secrete(PyObject *self, PyObject *args, PyObject *kwargs) {
         //    << ")"
         //    << std::endl;
         
-        float amount = carbon::cast<float>(carbon::arg("amount", 0, args, kwargs));
+        float amount = carbon::cast<float>(carbon::py_arg("amount", 0, args, kwargs));
         
-        PyObject *to = carbon::arg("to", 1, args, kwargs);
+        PyObject *to = carbon::py_arg("to", 1, args, kwargs);
         
         MxParticleList *toList = MxParticleList_FromPyObject(to);
         
@@ -112,7 +112,7 @@ static PyObject *secrete(PyObject *self, PyObject *args, PyObject *kwargs) {
             return result;
         }
         
-        PyObject *distance = carbon::arg("distance", 1, args, kwargs);
+        PyObject *distance = carbon::py_arg("distance", 1, args, kwargs);
         
         if(carbon::check<float>(distance)) {
             

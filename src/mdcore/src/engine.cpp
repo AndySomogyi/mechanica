@@ -1734,6 +1734,16 @@ int engine_addpart(struct engine *e, struct MxParticle *p, double *x,
     return engine_err_ok;
 }
 
+int engine_addcuboid(struct engine *e, struct MxCuboid *p, struct MxCuboid **result)
+{
+
+    if(space_addcuboid(&(e->s), p, result ) != 0) {
+        return error(engine_err_space);
+    }
+    
+    return engine_err_ok;
+}
+
 CAPI_FUNC(struct MxParticleType*) engine_type(int id)
 {
     if(id >= 0 && id < engine::nr_types) {
@@ -1785,3 +1795,14 @@ CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
     
     return space_del_particle(&e->s, pid);
 }
+
+
+Magnum::Vector3 engine_center() {
+    Magnum::Vector3 dim = {
+        (float)_Engine.s.dim[0],
+        (float)_Engine.s.dim[1],
+        (float)_Engine.s.dim[2]
+    };
+    return dim / 2.;
+}
+

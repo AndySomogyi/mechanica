@@ -53,6 +53,8 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/MxConvert.hpp"
   "${MDCORE_SOURCE_DIR}/include/MxParticleList.hpp"
   "${MDCORE_SOURCE_DIR}/include/Vertex.hpp"
+  "${MDCORE_SOURCE_DIR}/include/MxBody.hpp"
+  "${MDCORE_SOURCE_DIR}/include/MxCuboid.hpp"
   "${MDCORE_SOURCE_DIR}/include/Edge.hpp"
   "${MDCORE_SOURCE_DIR}/include/Polygon.hpp"
   "${MDCORE_SOURCE_DIR}/include/Cell.hpp"
@@ -115,6 +117,8 @@ SET(SOURCES
   MxConvert.cpp
   MxParticleList.cpp
   Vertex.cpp
+  MxBody.cpp
+  MxCuboid.cpp
   Edge.cpp
   Polygon.cpp
   Cell.cpp

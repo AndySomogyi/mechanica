@@ -9,6 +9,7 @@
 #define SRC_MDCORE_INCLUDE_MXCONVERT_HPP_
 
 #include <platform.h>
+#include <CConvert.hpp>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 #include <Magnum/Math/Matrix3.h>
@@ -50,29 +51,28 @@ template<>
 Magnum::Vector2i cast(PyObject *obj);
     
 template<>
-PyObject* cast(const float &f);
+inline PyObject* cast(const float &f) {return carbon::cast(f);}
     
 template<>
-float cast(PyObject *obj);
+inline float cast(PyObject *obj) { return carbon::cast<float>(obj); };
     
 template<>
-PyObject* cast(const bool &f);
+inline PyObject* cast(const bool &f) {return carbon::cast(f); }
     
 template<>
-bool cast(PyObject *obj);
+inline bool cast(PyObject *obj) { return carbon::cast<bool>(obj); };
     
 template<>
-PyObject* cast(const double &f);
+inline PyObject* cast(const double &f) {return carbon::cast(f); }
     
 template<>
-double cast(PyObject *obj);
+inline double cast(PyObject *obj) {return carbon::cast<double>(obj); };
 
 template<>
-PyObject* cast(const int &i);
+inline PyObject* cast(const int &i) {return carbon::cast(i); }
     
 template<>
-int cast(PyObject *obj);
-    
+inline int cast(PyObject *obj) {return carbon::cast<int>(obj); };
     
 /**
  * check if type can be converted
@@ -81,7 +81,7 @@ template <typename T>
 bool check(PyObject *o);
     
 template <>
-bool check<bool>(PyObject *o);
+inline bool check<bool>(PyObject *o) {return carbon::check<bool>(o); }
     
     
 /**
@@ -89,7 +89,31 @@ bool check<bool>(PyObject *o);
  *
  * gets a reference to the object, NULL if not exist.
  */
-PyObject *arg(const char* name, int index, PyObject *_args, PyObject *_kwargs);
+PyObject *py_arg(const char* name, int index, PyObject *_args, PyObject *_kwargs);
+
+template<typename T>
+T arg(const char* name, int index, PyObject *args, PyObject *kwargs) {
+    PyObject *value = py_arg(name, index, args, kwargs);
+    if(value) {
+        return cast<T>(value);
+    }
+    throw std::runtime_error(std::string("missing argument ") + name);
+};
+
+template<>
+PyObject* arg<PyObject*>(const char* name, int index, PyObject *_args, PyObject *_kwargs);
+
+template<typename T>
+T arg(const char* name, int index, PyObject *args, PyObject *kwargs, T deflt) {
+    
+    PyObject *value = py_arg(name, index, args, kwargs);
+    if(value) {
+        return cast<T>(value);
+    }
+    return deflt;
+};
+
+
         
 }
 

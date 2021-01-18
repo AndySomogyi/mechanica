@@ -11,11 +11,30 @@
 #include <stddef.h>
 #include "mx-pyrun.h"
 
+void print_cwd() {
+    
+#ifdef MS_WINDOWS
+    char* buffer = _getcwd( NULL, 0 );
+#else
+    char* buffer = getcwd( NULL, 0 );
+#endif
+    
+     // Get the current working directory:
+     if( buffer == NULL )
+        perror( "getcwd error" );
+     else
+     {
+        std::cout << "mx-pyrun cwd: " << buffer << std::endl;
+        free(buffer);
+     }
+}
+
 //#include <string>
 
 #ifdef MS_WINDOWS
 int wmain(int argc, wchar_t **argv)
 {
+    void print_cwd();
     return Py_Main(argc, argv);
 }
 
@@ -23,16 +42,17 @@ int wmain(int argc, wchar_t **argv)
 
     int main(int argc, char **argv)
     {
+        print_cwd();
 
-       std::wstring pypath(Py_GetPath());
+        std::wstring pypath(Py_GetPath());
 
-       std::wcout << L"path: " << pypath << std::endl;
+        std::wcout << L"path: " << pypath << std::endl;
 
-       pypath = pypath + L":" + PY_SITEPACKAGES + L":" + MX_PYMODULE_DIR + L":" + NUMPY_PYPATH;
+        pypath = pypath + L":" + PY_SITEPACKAGES + L":" + MX_PYMODULE_DIR + L":" + NUMPY_PYPATH;
 
-       Py_SetPath(pypath.c_str());
+        Py_SetPath(pypath.c_str());
 
-       std::wcout << "new path: " << Py_GetPath() << std::endl;
+        std::wcout << "new path: " << Py_GetPath() << std::endl;
         
     #if (PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 8)
         return Py_BytesMain(argc, argv);

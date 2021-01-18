@@ -76,6 +76,12 @@ struct BondsInstanceData {
     Magnum::Color3 color;
 };
 
+struct CuboidInstanceData {
+    Magnum::Matrix4 transformationMatrix;
+    Magnum::Matrix3x3 normalMatrix;
+    Magnum::Color4 color;
+};
+
 struct MxUniverseRenderer : MxRenderer {
 
 
@@ -240,15 +246,18 @@ struct MxUniverseRenderer : MxRenderer {
     GL::Mesh largeSphereMesh{NoCreate};
     
     GL::Mesh bondsMesh{NoCreate};
+    
+    GL::Mesh cuboidMesh{NoCreate};
+    
+    GL::Buffer cuboidInstanceBuffer{NoCreate};
+    
     GL::Buffer bondsVertexBuffer{NoCreate};
 
     Vector3 center;
 
-
     MxWindow *window;
 
     Vector3 unproject(const Vector2i& windowPosition, float depth) const;
-
 
     void setupCallbacks();
     

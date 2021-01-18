@@ -577,8 +577,8 @@ PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
         case MxPointsType::SolidCube:
             return random_point_solidcube(n);
         case MxPointsType::SolidSphere: {
-            PyObject *phi = mx::arg("phi", 2, args, kwargs);
-            PyObject *dr = mx::arg("dr", 3, args, kwargs);
+            PyObject *phi = mx::py_arg("phi", 2, args, kwargs);
+            PyObject *dr = mx::py_arg("dr", 3, args, kwargs);
             return random_point_solidsphere_shell(n, dr, phi);
         }
         default:
