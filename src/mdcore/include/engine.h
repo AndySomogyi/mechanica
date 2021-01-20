@@ -210,6 +210,13 @@ typedef struct engine {
 
 	/** The explicit electrostatic potential. */
 	struct MxPotential *ep;
+    
+    /**
+     * array of potentials for cuboid interactions,
+     * TODO: for now, onle have one cuboid type, so this array is of length
+     * count(particle types).
+     */
+    struct MxPotential **cuboid_potentials;
 
 	/**
 	 * vector of single body potentials for types, indexed
@@ -390,6 +397,14 @@ typedef struct engine_comm {
 
 /* associated functions */
 CAPI_FUNC(int) engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j );
+
+
+/**
+ * add a particle / cuboid potential
+ */
+CAPI_FUNC(int) engine_add_cuboid_potential (struct engine *e , struct MxPotential *p , int partTypeId);
+
+
 CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i );
 
 /**

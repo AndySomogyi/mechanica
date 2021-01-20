@@ -4,6 +4,7 @@
 #ifdef __APPLE__
 #define Py_BUILD_CORE
 #endif
+
 #include <iostream>
 #include <string>
 
@@ -11,13 +12,14 @@
 #include <stddef.h>
 #include "mx-pyrun.h"
 
+#if defined(WIN32)
+#include <direct.h>
+#define getcwd(buffer, maxlen) _getcwd(buffer, maxlen)
+#endif
+
 void print_cwd() {
     
-#ifdef MS_WINDOWS
-    char* buffer = _getcwd( NULL, 0 );
-#else
     char* buffer = getcwd( NULL, 0 );
-#endif
     
      // Get the current working directory:
      if( buffer == NULL )

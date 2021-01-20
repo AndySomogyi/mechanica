@@ -30,6 +30,16 @@ struct MxCuboidHandle : PyObject
 };
 
 /**
+ * check if a handle is a cublid
+ */
+CAPI_FUNC(int) MxCuboid_Check(PyObject *obj);
+
+/**
+ * check if a object is a cuboid type
+ */
+CAPI_FUNC(int) MxCuboidType_Check(PyObject *obj);
+
+/**
  * vertex is special, it extends particle.
  */
 CAPI_DATA(PyTypeObject) MxCuboid_Type;

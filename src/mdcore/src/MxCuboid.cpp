@@ -9,6 +9,7 @@
 #include <MxConvert.hpp>
 #include <Magnum/Math/Matrix4.h>
 #include <engine.h>
+#include <cuboid_eval.hpp>
 
 #define CUBOID_SELF(handle) \
     MxCuboid *self = &_Engine.s.cuboids[((MxCuboidHandle*)handle)->id]; \
@@ -60,8 +61,6 @@ int cuboid_init(MxCuboidHandle *handle, PyObject *args, PyObject *kwds) {
         if(!SUCCEEDED((err = engine_addcuboid(&_Engine, &c, &p)))) {
             return err;
         }
-        
-        p->size = {1, 1, 1};
         
         p->_handle = handle;
         
@@ -164,6 +163,24 @@ PyTypeObject MxCuboid_Type = {
 };
 
 
+int MxCuboid_Check(PyObject *obj) {
+    if(obj) {
+        return PyObject_IsInstance(obj, (PyObject*)&MxCuboid_Type);
+    }
+    return 0;
+}
+
+/**
+ * check if a object is a cuboid type
+ */
+int MxCuboidType_Check(PyObject *obj) {
+    if(obj && PyType_Check(obj)) {
+        return PyObject_IsSubclass(obj, (PyObject*)&MxCuboid_Type);
+    }
+    return 0;
+}
+
+
 HRESULT _MxCuboid_Init(PyObject* m) {
     
     // WARNING: make sure MxBody is initialized before cuboid.
@@ -181,3 +198,5 @@ HRESULT _MxCuboid_Init(PyObject* m) {
 
     return S_OK;
 }
+
+

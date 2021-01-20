@@ -20,6 +20,7 @@
 #include <iostream>
 #include <limits>
 #include <MxThreadPool.hpp>
+#include <MxCuboid.hpp>
 #include "Magnum/Math/Matrix4.h"
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
@@ -397,9 +398,9 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a) {
 
 
 static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool bound) {
-    MxParticleData *a_type = NULL;
-    MxParticleData *b_type = NULL;
-    if((a_type = MxParticleType_Get(a)) && (b_type = MxParticleType_Get(b))) {
+    MxParticleData *a_type = MxParticleType_Get(a);
+    MxParticleData *b_type = MxParticleType_Get(b);
+    if(a_type && b_type) {
         
         MxPotential *pot = NULL;
         
@@ -441,7 +442,15 @@ static HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b,
 
         return S_OK;
     }
-
+    
+    if(MxCuboidType_Check(a) && b_type) {
+        return engine_add_cuboid_potential(&_Engine, p, b_type->id);
+    }
+    
+    if(MxCuboidType_Check(b) && a_type) {
+        return engine_add_cuboid_potential(&_Engine, p, a_type->id);
+    }
+    
     return mx_error(E_FAIL, "can only add potential to particle types or instances");
 }
 

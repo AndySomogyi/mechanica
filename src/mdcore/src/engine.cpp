@@ -1594,12 +1594,17 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
 
     if ( ( e->p_bound = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
             return error(engine_err_malloc);
+    
+    if ( ( e->cuboid_potentials = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type ) ) == NULL )
+        return error(engine_err_malloc);
 
     bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
     
     bzero( e->fluxes , sizeof(struct MxFluxes *) * e->max_type * e->max_type );
 
     bzero( e->p_bound , sizeof(struct MxPotential *) * e->max_type * e->max_type );
+    
+    bzero( e->cuboid_potentials , sizeof(struct MxPotential *) * e->max_type );
 
     e->dihedralpots_size = 100;
     if ( (e->p_dihedral = (struct MxPotential **)malloc( sizeof(struct MxPotential *) * e->dihedralpots_size )) == NULL)
@@ -1804,5 +1809,24 @@ Magnum::Vector3 engine_center() {
         (float)_Engine.s.dim[2]
     };
     return dim / 2.;
+}
+
+int engine_add_cuboid_potential (struct engine *e , struct MxPotential *p , int partTypeId) {
+    /* check for nonsense. */
+    if ( e == NULL )
+        return error(engine_err_null);
+    if ( partTypeId < 0 || partTypeId >= e->nr_types)
+        return error(engine_err_range);
+    
+    if(e->cuboid_potentials[partTypeId]) {
+        Py_DECREF(e->cuboid_potentials[partTypeId]);
+    }
+    
+    /* store the potential. */
+    e->cuboid_potentials[partTypeId] = p;
+    Py_INCREF(p);
+
+    /* end on a good note. */
+    return engine_err_ok;
 }
 

@@ -56,6 +56,16 @@ struct MxBody : PyObject
         FPTYPE _torque[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 torque __attribute__ ((aligned (16)));
     };
+    
+    /**
+     * inverse rotation transform. 
+     */
+    Magnum::Quaternion inv_orientation;
+    
+    /**
+     * update the aabb on motion. 
+     */
+    Magnum::Vector3 aabb_size;
         
 
     /** random force force */

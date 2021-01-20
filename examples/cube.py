@@ -1,16 +1,38 @@
 import mechanica as m
 import numpy as np
 
-# potential cutoff distance
-cutoff = 1
+
 
 # dimensions of universe
-dim=[10., 10., 10.]
+dim=np.array([30., 30., 30.])
 
-# new simulator, don't load any example
-m.Simulator(dim=dim, window_size=[900,900])
+m.Simulator(example="",
+            dim=dim,
+            cutoff=10,
+            integrator=m.FORWARD_EULER,
+            cells=[1, 1, 1],
+            dt=0.01)
 
-c = m.Cuboid(pos=m.Universe.center + [1, 1, 1])
+class A(m.Particle):
+    radius=0.5
+    dynamics = m.Newtonian
+    mass=5
+    style={"color":"MediumSeaGreen"}
 
-# run the simulator interactive
-m.Simulator.show()
+class Sphere(m.Particle):
+    radius=3
+    frozen = True
+    style={"color":"orange"}
+
+p = m.Potential.glj(e=30, m=2, max=10)
+
+m.bind(p, A, Sphere)
+
+Sphere(m.Universe.center + [5, 0, 0])
+
+A(m.Universe.center + [5, 0, 5.8])
+
+c = m.Cuboid(m.Universe.center - [5, 0, 0], size=[6, 6, 6])
+
+
+m.run()
