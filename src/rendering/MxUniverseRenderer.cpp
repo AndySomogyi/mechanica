@@ -86,43 +86,28 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
 
     // TODO: get the max value
     sideLength = dim[0];
-
-    /* Setup scene objects and camera */
-
-    /* Setup scene objects */
-    _scene.reset(new Scene3D{});
-    _drawableGroup.reset(new SceneGraph::DrawableGroup3D{});
-
-    /* Set default camera parameters */
-    _defaultCamPosition = Vector3(2*sideLength, 2*sideLength, 2 * sideLength);
-
-    _defaultCamTarget   = {0,0,0};
+    
+    Magnum::Vector3i size = {(int)std::ceil(dim[0]), (int)std::ceil(dim[1]), (int)std::ceil(dim[2])};
 
     /* Set up the camera */
     {
         /* Setup the arcball after the camera objects */
-        const Vector3 eye = Vector3(2*sideLength, 1.1*sideLength, sideLength);
-        const Vector3 center{};
+        const Vector3 eye = Vector3(0.5 * sideLength, -2.2 * sideLength, 1.1 * sideLength);
+        const Vector3 center{0, 0, -0.1 * sideLength };
         const Vector3 up = Vector3::zAxis();
 
-        _arcball = new Magnum::Mechanica::ArcBallCamera(*_scene, eye, center, up, 45.0_degf,
+        _arcball = new Magnum::Mechanica::ArcBallCamera(eye, center, up, 45.0_degf,
             win->windowSize(), win->framebuffer().viewport().size());
     }
 
-
     /* Setup ground grid */
-
-    // grid is ???
-    _grid.reset(new WireframeGrid(_scene.get(), _drawableGroup.get()));
-    _grid->transform(Matrix4::scaling(Vector3(1.f))  );
-
-    /* Simulation domain box */
-    /* Transform the box to cover the region [0, 0, 0] to [3, 3, 1] */
-    _drawableBox.reset(new WireframeBox(_scene.get(), _drawableGroup.get()));
-
-    // box is cube of side length 2 centered at origin
-    _drawableBox->transform(Matrix4::scaling(dim / 2));
-    _drawableBox->setColor(Color3(1, 1, 0));
+    
+    // makes a grid and scene box. Both of these get made with extent
+    // of {-1, 1}, thus, have a size of 2x2x2, so the transform for these
+    // needs to cut them in half.
+    gridMesh = MeshTools::compile(Primitives::grid3DWireframe({9, 9}));
+    sceneBox = MeshTools::compile(Primitives::cubeWireframe());
+    gridModelView = Matrix4::scaling({size[0]/2., size[1]/2., size[2]/2.});
 
     setModelViewTransform(Matrix4::translation(-center));
     
@@ -144,7 +129,10 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     bondsVertexBuffer = GL::Buffer{};
     bondsMesh.setPrimitive(MeshPrimitive::Lines);
     
+    // vertex colors for bonds shader
     flatShader = Shaders::Flat3D{Shaders::Flat3D::Flag::VertexColor };
+    
+    wireframeShader = Shaders::Flat3D{};
     
     bondsMesh.addVertexBuffer(bondsVertexBuffer, 0,
                               Shaders::Flat3D::Position{},
@@ -222,7 +210,7 @@ static inline int render_cuboid(CuboidInstanceData* pData, int i, MxCuboid *p, d
         
         Matrix4 translateRotate = Matrix4::from(p->orientation.toMatrix(), position);
         
-        pData[i].transformationMatrix = translateRotate * Matrix4::scaling(p->size);
+        pData[i].transformationMatrix = translateRotate * Matrix4::scaling(0.5 * p->size);
         
         pData[i].normalMatrix =
             pData[i].transformationMatrix.normalMatrix();
@@ -345,7 +333,16 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
         .draw(bondsMesh);
     }
     
-
+    wireframeShader.setColor(Magnum::Color3{1., 1., 1.})
+        .setTransformationProjectionMatrix(
+             camera->projectionMatrix() *
+             camera->cameraMatrix() *
+             gridModelView)
+        .draw(gridMesh);
+    
+    wireframeShader.setColor(Magnum::Color3::yellow())
+        .draw(sceneBox);
+    
     sphereShader
         .setProjectionMatrix(camera->projectionMatrix())
         .setTransformationMatrix(camera->cameraMatrix() * modelViewMat)
@@ -449,7 +446,7 @@ void MxUniverseRenderer::onCursorMove(double xpos, double ypos)
             Matrix4::translation(-_rotationPoint));
     } else {
         const Vector3 p = unproject(position, _lastDepth);
-        _objCamera->translateLocal(_translationPoint - p); /* is Z always 0?
+        _objCamera->translateLocal(_translationPoint - p); // is Z always 0?
         _translationPoint = p;
     }
 
@@ -500,14 +497,9 @@ void MxUniverseRenderer::draw() {
 
     //Magnum::Debug{} << _arcball->projectionMatrix();
 
-    /* Draw objects */
-
     /* Trigger drawable object to update the particles to the GPU */
     setDirty();
     
-    /* Draw other objects (ground grid) */
-    _arcball->draw(*_drawableGroup);
-
     /* Draw particles */
     draw(_arcball, window->framebuffer().viewport().size());
 

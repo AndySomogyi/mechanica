@@ -58,12 +58,8 @@
 
 using namespace Magnum;
 
-using Object3D = SceneGraph::Object<SceneGraph::MatrixTransformation3D>;
-using Scene3D  = SceneGraph::Scene<SceneGraph::MatrixTransformation3D>;
-
 class WireframeGrid;
 class WireframeBox;
-
 
 struct SphereInstanceData {
     Magnum::Matrix4 transformationMatrix;
@@ -182,9 +178,6 @@ struct MxUniverseRenderer : MxRenderer {
     void mouseScrollEvent(Platform::GlfwApplication::MouseScrollEvent& event);
 
 
-
-
-
     bool _dirty = false;
     ParticleSphereShader::ColorMode _colorMode = ParticleSphereShader::ColorMode::ConsistentRandom;
     Color3 _ambientColor{0.1f};
@@ -210,32 +203,22 @@ struct MxUniverseRenderer : MxRenderer {
     
     float sideLength;
 
-
-    /* Scene and drawable group must be constructed before camera and other
-    scene objects */
-    Containers::Pointer<Scene3D> _scene;
-    
-    Containers::Pointer<SceneGraph::DrawableGroup3D> _drawableGroup;
-
-
     Magnum::Mechanica::ArcBallCamera *_arcball;
+    
+    /* ground grid */
+    GL::Mesh gridMesh{NoCreate};
+    Magnum::Matrix4 gridModelView;
+    
+    GL::Mesh sceneBox{NoCreate};
 
-
-    /* Ground grid */
-     Containers::Pointer<WireframeGrid> _grid;
-
-    /* Fluid simulation system */
-    Containers::Pointer<WireframeBox> _drawableBox;
-
-    /* Camera helpers */
-    Vector3 _defaultCamPosition{0.0f, 1.5f, 8.0f};
-    Vector3 _defaultCamTarget{0.0f, 0.0f, 0.0f};
     
     /* Spheres rendering */
     
     Shaders::Phong sphereShader{NoCreate};
     
     Shaders::Flat3D flatShader{NoCreate};
+    
+    Shaders::Flat3D wireframeShader{NoCreate};
     
     GL::Buffer sphereInstanceBuffer{NoCreate};
     
