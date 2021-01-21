@@ -35,15 +35,19 @@
  * The cuboid AABB *includes* the cutoff distance.
  */
 INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell *c) {
-    Magnum::Vector3 a_min = cuboid->position - cuboid->aabb_size / 2;
-    Magnum::Vector3 a_max = cuboid->position + cuboid->aabb_size / 2;
-    Magnum::Vector3 b_min = {float(c->origin[0]), float(c->origin[1]), float(c->origin[2])};
-    Magnum::Vector3 b_max = {
-        b_min[0] + (float)c->dim[0],
-        b_min[1] + (float)c->dim[1],
-        b_min[2] + (float)c->dim[2]
+    Magnum::Vector3 a_min = cuboid->aabb.min();
+    Magnum::Vector3 a_max = cuboid->aabb.max();
+    Magnum::Vector3 b_min = {
+        float(c->origin[0]) - (float)_Engine.s.cutoff,
+        float(c->origin[1]) - (float)_Engine.s.cutoff,
+        float(c->origin[2]) - (float)_Engine.s.cutoff
     };
-    
+    Magnum::Vector3 b_max = {
+        float(c->origin[0]) + (float)c->dim[0] + (float)_Engine.s.cutoff,
+        float(c->origin[1]) + (float)c->dim[1] + (float)_Engine.s.cutoff,
+        float(c->origin[2]) + (float)c->dim[2] + (float)_Engine.s.cutoff
+    };
+
     return (a_min[0] <= b_max[0] && a_max[0] >= b_min[0]) &&
            (a_min[1] <= b_max[1] && a_max[1] >= b_min[1]) &&
            (a_min[2] <= b_max[2] && a_max[2] >= b_min[2]);
@@ -55,8 +59,8 @@ INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell 
  * cell local coords
  */
 INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, struct space_cell *c) {
-    Magnum::Vector3 box_min = cuboid->position - cuboid->aabb_size / 2;
-    Magnum::Vector3 box_max = cuboid->position + cuboid->aabb_size / 2;
+    Magnum::Vector3 box_min = cuboid->aabb.min() - Magnum::Vector3(_Engine.s.cutoff);
+    Magnum::Vector3 box_max = cuboid->aabb.min() + Magnum::Vector3(_Engine.s.cutoff);
     Magnum::Vector3 point = {
         p->position[0] + float(c->origin[0]),
         p->position[1] + float(c->origin[1]),
@@ -68,9 +72,13 @@ INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, stru
            (point[2] >= box_min[2] && point[2] <= box_max[2]);
 }
 
-INLINE bool potential_eval_cuboid_particle(MxPotential *pot, MxCuboid *cube, MxParticle *part, struct space_cell *cell) {
+INLINE bool potential_eval_cuboid_particle(MxCuboid *cube, MxParticle *part, struct space_cell *cell) {
     
-
+    MxPotential *pot = _Engine.cuboid_potentials[part->typeId];
+    
+    if(!pot) {
+        return false;
+    }
     
     // transform point into cuboid local coordinate space
     
@@ -123,6 +131,10 @@ INLINE bool potential_eval_cuboid_particle(MxPotential *pot, MxCuboid *cube, MxP
         forceVec = {0, 0, distanceVec[0] * neg};
     }
     
+    else {
+        return false;
+    }
+    
     
     
     /* update the forces if part in range */
@@ -153,9 +165,16 @@ INLINE bool potential_eval_cuboid_particle(MxPotential *pot, MxCuboid *cube, MxP
     return false;
 }
 
-
-
-
+inline std::vector<MxCuboid*> space_cell_intersecting_cuboids(struct space_cell *c) {
+    std::vector<MxCuboid*> cuboids;
+    for (MxCuboid& cuboid : _Engine.s.cuboids) {
+        if(aabb_intersect_cuboid_spacecell(&cuboid, c)) {
+            aabb_intersect_cuboid_spacecell(&cuboid, c);
+            cuboids.push_back(&cuboid);
+        }
+    }
+    return cuboids;
+}
 
 
 #endif

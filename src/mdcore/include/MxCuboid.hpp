@@ -18,10 +18,6 @@ struct MxCuboid : MxBody
     
     // extents / size of the cuboid
     Magnum::Vector3 size;
-    
-
-    
-
 };
 
 struct MxCuboidHandle : PyObject
@@ -45,5 +41,7 @@ CAPI_FUNC(int) MxCuboidType_Check(PyObject *obj);
 CAPI_DATA(PyTypeObject) MxCuboid_Type;
 
 HRESULT _MxCuboid_Init(PyObject *m);
+
+void MxCuboid_UpdateAABB(MxCuboid *c);
 
 #endif /* SRC_MDCORE_CUBOID_H_ */

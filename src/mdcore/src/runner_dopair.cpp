@@ -488,6 +488,9 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         parts = c->parts;
     }
     
+    // grab any cuboids that intersect this space cell
+    std::vector<MxCuboid*> cuboids = space_cell_intersecting_cuboids(c);
+    
     // loop over all particles , indexing here only calculates pairwise
     // interactions, and avoids self-interactions.
     for ( i = 0 ; i < count ; i++ ) {
@@ -507,6 +510,11 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         
         // force between particle and large particles
         particle_largecell_force(part_i, c, epot);
+        
+        // loop over any potential intersecting cuboids
+        for(MxCuboid *cuboid : cuboids) {
+            potential_eval_cuboid_particle(cuboid, part_i, c);
+        }
 
         /* loop over all other particles */
         for ( j = i + 1 ; j < count ; j++ ) {

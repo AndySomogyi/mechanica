@@ -9,6 +9,11 @@
 #include <MxConvert.hpp>
 #include <engine.h>
 
+// TODO: cheap, quick hack, move this to function pointer or somethign...
+#include <MxCuboid.hpp>
+
+#define update_aabb(body) MxCuboid_UpdateAABB((MxCuboid*)body)
+
 
 #define BODY_SELF(handle) \
     MxBody *self = &_Engine.s.cuboids[((MxBodyHandle*)handle)->id]; \
@@ -38,6 +43,8 @@ static PyObject* body_move(MxBodyHandle *_self, PyObject *args, PyObject *kwargs
         
         self->position += amount;
         
+        update_aabb(self);
+        
         Py_RETURN_NONE;
     }
     catch(const std::exception &e) {
@@ -56,6 +63,8 @@ static PyObject* body_rotate(MxBodyHandle *_self, PyObject *args, PyObject *kwar
         Magnum::Quaternion qz = Magnum::Quaternion::rotation(Magnum::Rad(angle[2]), Magnum::Vector3::zAxis());
         
         self->orientation = self->orientation * qx * qy * qz;
+        
+        update_aabb(self);
         
         Py_RETURN_NONE;
     }

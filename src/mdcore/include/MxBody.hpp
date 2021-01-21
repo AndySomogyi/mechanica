@@ -10,6 +10,7 @@
 
 #include <platform.h>
 #include <MxParticle.h>
+#include <Magnum/Math/Range.h>
 
 struct MxBody : PyObject
 {
@@ -65,7 +66,9 @@ struct MxBody : PyObject
     /**
      * update the aabb on motion. 
      */
-    Magnum::Vector3 aabb_size;
+    Magnum::Vector3 aabb_min_size;
+    
+    Magnum::Range3D aabb;
         
 
     /** random force force */

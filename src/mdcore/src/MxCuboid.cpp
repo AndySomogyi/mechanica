@@ -58,6 +58,8 @@ int cuboid_init(MxCuboidHandle *handle, PyObject *args, PyObject *kwds) {
         
         c.orientation = qx * qy * qz;
         
+        MxCuboid_UpdateAABB(&c);
+        
         if(!SUCCEEDED((err = engine_addcuboid(&_Engine, &c, &p)))) {
             return err;
         }
@@ -178,6 +180,35 @@ int MxCuboidType_Check(PyObject *obj) {
         return PyObject_IsSubclass(obj, (PyObject*)&MxCuboid_Type);
     }
     return 0;
+}
+
+
+void MxCuboid_UpdateAABB(MxCuboid *c) {
+    Magnum::Vector3 min = Magnum::Vector3(std::numeric_limits<float>::max());
+    Magnum::Vector3 max = Magnum::Vector3(std::numeric_limits<float>::min());
+    Magnum::Vector3 halfSize = 0.5 * c->size;
+    Magnum::Vector3 pos = c->position;
+    Magnum::Vector3 points[] =  {
+        c->orientation.transformVector({ halfSize[0],  halfSize[1],  halfSize[2]}) + pos,
+        c->orientation.transformVector({ halfSize[0], -halfSize[1],  halfSize[2]}) + pos,
+        c->orientation.transformVector({-halfSize[0], -halfSize[1],  halfSize[2]}) + pos,
+        c->orientation.transformVector({-halfSize[0],  halfSize[1],  halfSize[2]}) + pos,
+        
+        c->orientation.transformVector({ halfSize[0],  halfSize[1],  -halfSize[2]}) + pos,
+        c->orientation.transformVector({ halfSize[0], -halfSize[1],  -halfSize[2]}) + pos,
+        c->orientation.transformVector({-halfSize[0], -halfSize[1],  -halfSize[2]}) + pos,
+        c->orientation.transformVector({-halfSize[0],  halfSize[1],  -halfSize[2]}) + pos,
+    };
+    
+    for(int i = 0; i < 8; ++i) {
+        min = {std::min(min[0], points[i][0]), std::min(min[1], points[i][1]), std::min(min[2], points[i][2])};
+        max = {std::max(max[0], points[i][0]), std::max(max[1], points[i][1]), std::max(max[2], points[i][2])};
+    }
+    
+    c->aabb = {min, max};
+    
+    // TODO: only need to compute if rotation. 
+    c->inv_orientation = c->orientation.invertedNormalized();
 }
 
 
