@@ -2004,14 +2004,10 @@ static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyOb
 }
 
 
-int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
+int particle_init(MxParticleHandle *self, PyObject *args, PyObject *kwds) {
     
     try {
         MxParticleType *type = (MxParticleType*)self->ob_type;
-        
-        pybind11::detail::loader_life_support ls{};
-        pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
-        pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
         // make a random initial position
         std::uniform_real_distribution<float> x(_Engine.s.origin[0], _Engine.s.dim[0]);
@@ -2026,20 +2022,19 @@ int particle_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
         float x2 = (type->target_energy * 2. / (type->mass * v2));
         vel *= std::sqrt(x2);
         
-        Magnum::Vector3 position = arg<Magnum::Vector3>("position", 0, args.ptr(), kwargs.ptr(), iniPos);
-        Magnum::Vector3 velocity = arg<Magnum::Vector3>("velocity", 1, args.ptr(), kwargs.ptr(), vel);
+        Magnum::Vector3 position = mx::arg<Magnum::Vector3>("position", 0, args, kwds, iniPos);
+        Magnum::Vector3 velocity = mx::arg<Magnum::Vector3>("velocity", 1, args, kwds, vel);
         
         // particle_init_ex will allocate a new particle, this can re-assign the pointers in
         // the engine particles, so need to pass cluster by id.
-        MxParticle *cluster = _kwds  ? MxParticle_Get(PyDict_GetItemString(_kwds, "cluster")) : NULL;
+        MxParticle *cluster = kwds  ? MxParticle_Get(PyDict_GetItemString(kwds, "cluster")) : NULL;
         int clusterId = cluster ? cluster->id : -1;
         
         return particle_init_ex(self, position, velocity, clusterId);
         
     }
-    catch (const pybind11::builtin_exception &e) {
-        e.set_error();
-        return -1;
+    catch (const std::exception &e) {
+        return C_EXP(e);
     }
 }
 

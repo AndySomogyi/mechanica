@@ -141,6 +141,42 @@ int engine_advance ( struct engine *e ) {
     }
 }
 
+Magnum::Quaternion integrate_angular_velocity_exact_1(const Magnum::Vector3& em, double deltaTime)
+{
+    Magnum::Vector3 ha = em * deltaTime * 0.5; // vector of half angle
+    double len = ha.length(); // magnitude
+    if (len > 0) {
+        ha *= std::sin(len) / len;
+        double w = std::cos(len);
+        double s = std::sin(len) / len;
+        return Magnum::Quaternion(ha, w);
+    } else {
+        return Magnum::Quaternion(ha, 1.0);
+    }
+}
+
+static Magnum::Quaternion integrate_angular_velocity_2(const Magnum::Vector3 &av, double dt) {
+    float len = av.length();
+    double theta = len * dt * 0.5;
+    if (len > 1.0e-12) {
+        double w = std::cos(theta);
+        double s = std::sin(theta) / len;
+        return  Magnum::Quaternion(av * s, w);
+    } else {
+        return Magnum::Quaternion({0.f, 0.f, 0.f}, 1.f);
+    }
+}
+
+static inline void bodies_advance_forward_euler(const float dt, int cid)
+{
+    if(cid == 0) {
+        for (MxCuboid& c : _Engine.s.cuboids) {
+            c.orientation = c.orientation * integrate_angular_velocity_2(c.spin, dt);
+            MxCuboid_UpdateAABB(&c);
+        }
+    }
+}
+
 
 // FPTYPE dt, h[3], h2[3], maxv[3], maxv2[3], maxx[3], maxx2[3]; // h, h2: edge length of space cells.
 
@@ -349,6 +385,8 @@ int engine_advance_forward_euler ( struct engine *e ) {
             cell_advance_forward_euler(dt, h, h2, maxv, maxv2, maxx, maxx2, cid);
             
             MxFluxes_Integrate(cid);
+            
+            bodies_advance_forward_euler(dt, cid);
         };
         
 #if MX_THREADING

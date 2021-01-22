@@ -208,7 +208,9 @@ void MxCuboid_UpdateAABB(MxCuboid *c) {
     c->aabb = {min, max};
     
     // TODO: only need to compute if rotation. 
-    c->inv_orientation = c->orientation.invertedNormalized();
+    c->inv_orientation = c->orientation.inverted();
+    
+    Magnum::Vector3 p2 = c->orientation.transformVector(Magnum::Vector3{1, 0, 1});
 }
 
 

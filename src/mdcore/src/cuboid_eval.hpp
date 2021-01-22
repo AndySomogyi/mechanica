@@ -60,7 +60,7 @@ INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell 
  */
 INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, struct space_cell *c) {
     Magnum::Vector3 box_min = cuboid->aabb.min() - Magnum::Vector3(_Engine.s.cutoff);
-    Magnum::Vector3 box_max = cuboid->aabb.min() + Magnum::Vector3(_Engine.s.cutoff);
+    Magnum::Vector3 box_max = cuboid->aabb.max() + Magnum::Vector3(_Engine.s.cutoff);
     Magnum::Vector3 point = {
         p->position[0] + float(c->origin[0]),
         p->position[1] + float(c->origin[1]),
@@ -80,18 +80,30 @@ INLINE bool potential_eval_cuboid_particle(MxCuboid *cube, MxParticle *part, str
         return false;
     }
     
+    Magnum::Vector3 box_min = cube->aabb.min() - Magnum::Vector3(_Engine.s.cutoff);
+    Magnum::Vector3 box_max = cube->aabb.max() + Magnum::Vector3(_Engine.s.cutoff);
+    
+    // point in global space
+    Magnum::Vector3 point = {
+        part->position[0] + float(cell->origin[0]),
+        part->position[1] + float(cell->origin[1]),
+        part->position[2] + float(cell->origin[2])
+    };
+    
+    // check AABB
+    if(!((point[0] >= box_min[0] && point[0] <= box_max[0]) &&
+         (point[1] >= box_min[1] && point[1] <= box_max[1]) &&
+         (point[2] >= box_min[2] && point[2] <= box_max[2]))) {
+        return false;
+    }
+    
     // transform point into cuboid local coordinate space
     
     // translate into box local coordinate space:
     // global = part.pos + cell.origin
     // box.local = global - box.origin
     // -> box.local = part.pos + cell.origin - box.origin
-    
-    Magnum::Vector3 point = {
-        part->position[0] + float(cell->origin[0]) - cube->position[0],
-        part->position[1] + float(cell->origin[1]) - cube->position[1],
-        part->position[2] + float(cell->origin[2]) - cube->position[2]
-    };
+    point = point - cube->position;
     
     point = cube->inv_orientation.transformVector(point);
     
@@ -100,48 +112,61 @@ INLINE bool potential_eval_cuboid_particle(MxCuboid *cube, MxParticle *part, str
     
     Magnum::Vector3 halfSize = cube->size / 2;
     
+    // distance between point and box surface, negative if inside the box.
     Magnum::Vector3 distanceVec = absPoint - halfSize;
     Magnum::Vector3 forceVec = {0, 0, 0};
     
-    float distance, force, energy;
+    float r0, distance, force, energy;
     
     // inside the box
-    if(absPoint[0] < halfSize[0] && absPoint[1] < halfSize[1] && absPoint[2] < halfSize[2]) {
-        
+    if(distanceVec[0] < 0 && distanceVec[1] < 0 && distanceVec[2] < 0 ) {
+        if(distanceVec[0] > distanceVec[1] && distanceVec[0] > distanceVec[2] ) {
+            r0 = halfSize[0];
+            forceVec = {point[0], 0, 0};
+            distance = std::abs(point[0]);
+        }
+        else if(distanceVec[1] > distanceVec[0] && distanceVec[1] > distanceVec[2] ) {
+            r0 = halfSize[1];
+            forceVec = {0, point[1], 0};
+            distance = std::abs(point[1]);
+        }
+        else {
+            r0 = halfSize[2];
+            forceVec = {0, 0, point[2]};
+            distance = std::abs(point[2]);
+        }
     }
     
     // above the box in x-y plane (force in z direction)
-    else if(absPoint[0] <= halfSize[0] && absPoint[1] <= halfSize[1]) {
-        distance = distanceVec[2];
-        float neg = point[2] < 0 ? -1 : 1;
-        forceVec = {0, 0, distanceVec[2] * neg};
+    else if(distanceVec[0] < 0 && distanceVec[1] < 0) {
+        r0 = halfSize[2];
+        forceVec = {0, 0, point[2]};
+        distance = std::abs(point[2]);
     }
     
     // check if in x-z plane (force in y direction)
-    else if(absPoint[0] <= halfSize[0] && absPoint[2] <= halfSize[2]) {
-        distance = distanceVec[1];
-        float neg = point[1] < 0 ? -1 : 1;
-        forceVec = {0, 0, distanceVec[1] * neg};
+    else if(distanceVec[0] < 0 && distanceVec[2] < 0) {
+        r0 = halfSize[1];
+        forceVec = {0, point[1], 0};
+        distance = std::abs(point[1]);
     }
     
     // check if in y-z plane (force in x direction)
-    else if(absPoint[1] <= halfSize[1] && absPoint[2] <= halfSize[2]) {
-        distance = distanceVec[0];
-        float neg = point[0] < 0 ? -1 : 1;
-        forceVec = {0, 0, distanceVec[0] * neg};
+    else if(distanceVec[1] < 0 && distanceVec[2] < 0) {
+        r0 = halfSize[0];
+        forceVec = {point[0], 0, 0};
+        distance = std::abs(point[0]);
     }
     
     else {
         return false;
     }
-    
-    
-    
+
     /* update the forces if part in range */
     
     // resulting force from potential_eval is force scalar divided by total distance
     // for central potentials, this lets create a normalized unit vector direction.
-    if (potential_eval_ex(pot, 0, part->radius, distance * distance, &energy, &force)) {
+    if (potential_eval_ex(pot, r0, part->radius, distance * distance, &energy, &force)) {
         
         //        for ( int k = 0 ; k < 3 ; k++ ) {
         //            w = force * dx[k];

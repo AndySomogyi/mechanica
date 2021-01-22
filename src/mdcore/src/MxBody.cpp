@@ -62,6 +62,10 @@ static PyObject* body_rotate(MxBodyHandle *_self, PyObject *args, PyObject *kwar
         Magnum::Quaternion qy = Magnum::Quaternion::rotation(Magnum::Rad(angle[1]), Magnum::Vector3::yAxis());
         Magnum::Quaternion qz = Magnum::Quaternion::rotation(Magnum::Rad(angle[2]), Magnum::Vector3::zAxis());
         
+        Magnum::Quaternion test = Magnum::Quaternion(angle).normalized();
+        
+        Magnum::Quaternion t2 = qx * qy * qz;
+        
         self->orientation = self->orientation * qx * qy * qz;
         
         update_aabb(self);
@@ -134,6 +138,25 @@ PyGetSetDef body_getsets[] = {
                 int id = ((MxParticleHandle*)obj)->id;
                 Magnum::Vector3 *vec = &_Engine.s.partlist[id]->force;
                 *vec = mx::cast<Magnum::Vector3>(val);
+                return 0;
+            }
+            catch (const std::exception &e) {
+                return C_EXP(e);
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "spin",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            BODY_SELF(obj);
+            return mx::cast(self->spin);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                BODY_SELF(obj);
+                self->spin = mx::cast<Magnum::Vector3>(val);
                 return 0;
             }
             catch (const std::exception &e) {
