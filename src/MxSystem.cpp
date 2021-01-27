@@ -70,21 +70,20 @@ static struct PyModuleDef system_def = {
 
 
 HRESULT _MxSystem_init(PyObject* m) {
-    
+
     PyObject *system_module = PyModule_Create(&system_def);
-    
+
     if(!system_module) {
         return c_error(E_FAIL, "could not create system module");
     }
-    
+
     if(PyModule_AddObject(m, "system", system_module) != 0) {
-        std::cout << "could not add system module to mechanica" << std::endl;
-        return NULL;
+        return c_error(E_FAIL, "could not add system module to mechanica");
     }
-    
+
     //if(PyModule_AddObject(m, "version", version_create()) != 0) {
     //    std::cout << "error creating version info module" << std::endl;
     //}
-    
+
     return S_OK;
 }

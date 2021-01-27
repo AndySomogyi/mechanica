@@ -21,7 +21,7 @@
 #include <Magnum/Primitives/Cube.h>
 #include <Magnum/GL/Version.h>
 #include <Magnum/GL/Renderer.h>
-#include <Magnum/Trade/MeshData3D.h>
+#include <Magnum/Trade/MeshData.h>
 
 #include <Magnum/PixelFormat.h>
 #include <Magnum/Image.h>

@@ -576,7 +576,7 @@ int reader_init ( struct reader *r , int fd , char *ws , char *comm_start , char
         for ( r->nr_ws = 0 ; ws[r->nr_ws] != 0 ; r->nr_ws++ );
         }
     else {
-        r->ws = " \f\n\r\t\v";
+        r->ws = (char*)" \f\n\r\t\v";
         r->nr_ws = 6;
         }
     
@@ -586,7 +586,7 @@ int reader_init ( struct reader *r , int fd , char *ws , char *comm_start , char
         for ( r->nr_comm_start = 0 ; comm_start[r->nr_comm_start] != 0 ; r->nr_comm_start++ );
         }
     else {
-        r->comm_start = "";
+        r->comm_start = (char*)"";
         r->nr_comm_start = 0;
         }
     if ( comm_stop != NULL ) {
@@ -594,7 +594,7 @@ int reader_init ( struct reader *r , int fd , char *ws , char *comm_start , char
         for ( r->nr_comm_stop = 0 ; comm_stop[r->nr_comm_stop] != 0 ; r->nr_comm_stop++ );
         }
     else {
-        r->comm_stop = "\n\r";
+        r->comm_stop = (char*)"\n\r";
         r->nr_comm_stop = 2;
         }
     

@@ -578,11 +578,13 @@ int angle_evalf ( struct MxAngle *a , int N , struct engine *e , FPTYPE *f , dou
 
 MxAngle* MxAngle_NewFromIds(int i, int j, int k, int pid)
 {
+    return NULL;
 }
 
 MxAngle* MxAngle_NewFromIdsAndPotential(int i, int j, int k,
         struct MxPotential *pot)
 {
+    return NULL;
 }
 
 

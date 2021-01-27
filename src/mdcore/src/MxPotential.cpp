@@ -2346,7 +2346,7 @@ static MxPotential *potential_alloc(PyTypeObject *type) {
         return NULL;
     }
     
-    ::memset(obj, NULL, type->tp_basicsize);
+    ::memset(obj, 0, type->tp_basicsize);
 
     if (type->tp_flags & Py_TPFLAGS_HEAPTYPE)
         Py_INCREF(type);
@@ -2838,7 +2838,7 @@ static PyMethodDef potential_methods[] = {
         "potential. \n"
         " \n"
         "@return A newly-allocated #potential representing the potential \n"
-        "@f$ \left( \frac{A}{r^{12}} - \frac{B}{r^6} \right) @f$ in @f$[a,b]@f$ \n"
+        "@f$ \\left( \\frac{A}{r^{12}} - \\frac{B}{r^6} \\right) @f$ in @f$[a,b]@f$ \n"
         "or @c NULL on error (see #potential_err). \n"
     },
     {

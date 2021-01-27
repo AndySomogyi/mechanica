@@ -155,7 +155,7 @@ PyGetSetDef body_getsets[] = {
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {
             try {
-                BODY_SELF(obj);
+                BODY_PROP_SELF(obj);
                 self->spin = mx::cast<Magnum::Vector3>(val);
                 return 0;
             }

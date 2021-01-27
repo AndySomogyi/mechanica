@@ -56,7 +56,7 @@ Noddy_init(Noddy *self, PyObject *args, PyObject *kwds)
 {
     PyObject *first=NULL, *last=NULL, *tmp;
 
-    static char *kwlist[] = {"first", "last", "number", NULL};
+    static char *kwlist[] = {(char*)"first", (char*)"last", (char*)"number", NULL};
 
     if (! PyArg_ParseTupleAndKeywords(args, kwds, "|SSi", kwlist,
                                       &first, &last,

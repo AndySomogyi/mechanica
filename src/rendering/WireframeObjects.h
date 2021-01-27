@@ -31,8 +31,7 @@
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/SceneGraph/Scene.h>
 #include <Magnum/SceneGraph/MatrixTransformation3D.h>
-#include <Magnum/Trade/MeshData3D.h>
-
+#include <Magnum/Trade/MeshData.h>
 #include <rendering/FlatShadeObject.h>
 
 using namespace Magnum;

@@ -312,7 +312,7 @@ MxFluxes *MxFluxes_New(int32_t init_size) {
         return NULL;
     }
     
-    ::memset(obj, NULL, total_size);
+    ::memset(obj, 0, total_size);
     
     obj->alloc_size = init_size;
     

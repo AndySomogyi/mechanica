@@ -101,11 +101,13 @@ int testWin(int argc, char** argv) {
     }
 
     glfwTerminate();
+
+    return 0;
 }
 
 PyObject *PyTestWin(PyObject *self, PyObject *a)
 {
-     char *args[] = {"foo", "bar"};
+    char *args[] = {(char*)"foo", (char*)"bar"};
 
      testWin(1, args);
     Py_RETURN_NONE;
@@ -209,7 +211,7 @@ MxTestView::MxTestView(int width, int height) :
 
     /* Return true if the initialization succeeds */
 
-    char *argv[] = {"foo", "bar"};
+    char *argv[] = {(char*)"foo", (char*)"bar"};
 
     context = new Platform::GLContext{1, argv};
 

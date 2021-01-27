@@ -102,6 +102,7 @@ static PyGetSetDef getset[] = {
                 Py_INCREF(self->mapper);
                 return self->mapper;
             }
+            Py_RETURN_NONE;
         },
         .set = [](PyObject *_self, PyObject *val, void *p) -> int {
             try {
