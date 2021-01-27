@@ -124,11 +124,6 @@ Yolk.style.visible = True
 Actin.style.visible = True
 Cell.style.visible = True
 
-plt = phiplot.PhiPlot(Cell)
-
-
-# hook up the 'update' function to the on_time event to disply output.
-m.on_time(plt.update, period=0.01)
 
 # display the model (space bar starts / pauses the simulation)
-m.show()
+#m.show()

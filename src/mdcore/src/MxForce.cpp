@@ -14,6 +14,7 @@
 
 static PyObject *berenderson_create(float tau);
 static PyObject *random_create(float std, float mean, float durration);
+static PyObject *friction_create(float coef, float mean, float std, float durration);
 
 /**
  * force type
@@ -114,12 +115,32 @@ static PyObject* py_random_create(PyObject *m, PyObject *_args, PyObject *_kwds)
     }
 }
 
+static PyObject* py_friction_create(PyObject *m, PyObject *_args, PyObject *_kwds) {
+    try {
+        pybind11::detail::loader_life_support ls{};
+        pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
+        pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
+        
+        float coef = arg<float>("coef", 0, args.ptr(), kwargs.ptr());
+        float std = arg<float>("std", 1, args.ptr(), kwargs.ptr(), 0);
+        float mean = arg<float>("mean", 2, args.ptr(), kwargs.ptr(), 0);
+        float durration = arg<float>("durration", 3, args.ptr(), kwargs.ptr(), 0.01);
+        
+        return friction_create(coef, std, mean, durration);
+    }
+    catch (const pybind11::builtin_exception &e) {
+        e.set_error();
+        return NULL;
+    }
+}
+
 
 
 
 static PyMethodDef methods[] = {
     { "berenderson_tstat", (PyCFunction)py_berenderson_create, METH_VARARGS | METH_KEYWORDS, NULL},
     { "random", (PyCFunction)py_random_create, METH_VARARGS | METH_KEYWORDS, NULL},
+    { "friction", (PyCFunction)py_friction_create, METH_VARARGS | METH_KEYWORDS, NULL},
     { NULL, NULL, 0, NULL }
 };
 
@@ -168,6 +189,13 @@ struct Gaussian : MxForce {
     unsigned durration_steps;
 };
 
+struct Friction : MxForce {
+    float coef;
+    float std;
+    float mean;
+    unsigned durration_steps;
+};
+
 /**
  * Implements a force:
  *
@@ -180,6 +208,30 @@ static void berendsen_force(struct Berendsen* t, struct MxParticle *p, FPTYPE*f)
     f[0] += scale * p->v[0];
     f[1] += scale * p->v[1];
     f[2] += scale * p->v[2];
+}
+
+
+/**
+ * Implements a friction force:
+ *
+ * f_b = p / tau * ((T_0 / T) - 1)
+ */
+static void friction_force(struct Friction* t, struct MxParticle *p, FPTYPE*f) {
+    MxParticleType *type = (MxParticleType*)&engine::types[p->typeId];
+    
+    if((_Engine.integrator_flags & INTEGRATOR_UPDATE_PERSISTENTFORCE) &&
+       (_Engine.time + p->id) % t->durration_steps == 0) {
+        
+        
+        p->persistent_force = MxRandomVector(t->mean, t->std);
+    }
+    
+    float v2 = Magnum::Math::dot(p->velocity, p->velocity);
+    float scale = -1. * t->coef * v2;
+    
+    f[0] += scale * p->v[0] + p->persistent_force[0];
+    f[1] += scale * p->v[1] + p->persistent_force[1];
+    f[2] += scale * p->v[2] + p->persistent_force[2];
 }
 
 static void gaussian_force(struct Gaussian* t, struct MxParticle *p, FPTYPE*f) {
@@ -214,6 +266,19 @@ PyObject *random_create(float mean, float std, float durration) {
                                                      sizeof(Gaussian) - sizeof(MxForce));
     
     obj->func = (MxForce_OneBodyPtr)gaussian_force;
+    obj->std = std;
+    obj->mean = mean;
+    obj->durration_steps = std::ceil(durration / _Engine.dt);
+    
+    return (PyObject*)obj;
+}
+
+PyObject *friction_create(float coef, float mean, float std, float durration) {
+    Friction *obj = (Friction*)PyType_GenericAlloc(&MxForce_Type,
+                                                   sizeof(Friction) - sizeof(MxForce));
+    
+    obj->func = (MxForce_OneBodyPtr)friction_force;
+    obj->coef = coef;
     obj->std = std;
     obj->mean = mean;
     obj->durration_steps = std::ceil(durration / _Engine.dt);

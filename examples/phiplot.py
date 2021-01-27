@@ -40,7 +40,12 @@ class PhiPlot :
 
         phi = sph_positions[:,2]
 
-        phidot = phi - self.prev_phi
+        phidot = None
+
+        if phi.shape == self.prev_phi.shape:
+            phidot = phi - self.prev_phi
+        else:
+            phidot = phi
 
         self.prev_phi = phi
 
@@ -69,7 +74,9 @@ class PhiPlot :
 
         self.count = self.count + 1
 
-        plt.plot(phi, phidot)
+        phidot1 = np.diff(phidot)
+
+        plt.plot(phi[1:], phidot1)
         plt.xlabel('$\phi$')
         plt.ylabel('${d \phi}/{dt}$')
 

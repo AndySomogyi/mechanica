@@ -67,6 +67,7 @@ set(PRIVATE_HEADERS
   "potential_eval.h"
   "flux_eval.hpp"
   "cuboid_eval.hpp"
+  "smoothing_kernel.hpp"
   "reader.h"
   "MxConstraint.hpp"
   "MxCluster.hpp"
