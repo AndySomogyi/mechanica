@@ -92,8 +92,8 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     /* Set up the camera */
     {
         /* Setup the arcball after the camera objects */
-        const Vector3 eye = Vector3(0.5 * sideLength, -2.2 * sideLength, 1.1 * sideLength);
-        const Vector3 center{0, 0, -0.1 * sideLength };
+        const Vector3 eye = Vector3(0.5f * sideLength, -2.2f * sideLength, 1.1f * sideLength);
+        const Vector3 center{0.f, 0.f, -0.1f * sideLength };
         const Vector3 up = Vector3::zAxis();
 
         _arcball = new Magnum::Mechanica::ArcBallCamera(eye, center, up, 45.0_degf,
@@ -107,7 +107,7 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     // needs to cut them in half.
     gridMesh = MeshTools::compile(Primitives::grid3DWireframe({9, 9}));
     sceneBox = MeshTools::compile(Primitives::cubeWireframe());
-    gridModelView = Matrix4::scaling({size[0]/2., size[1]/2., size[2]/2.});
+    gridModelView = Matrix4::scaling({size[0]/2.f, size[1]/2.f, size[2]/2.f});
 
     setModelViewTransform(Matrix4::translation(-center));
     
