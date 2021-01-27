@@ -127,7 +127,7 @@ typedef struct MxPotential : PyObject {
     FPTYPE mu;
 
     /** Flags. */
-    unsigned int flags;
+    uint32_t flags;
 
     /** Nr of intervals. */
     int n;

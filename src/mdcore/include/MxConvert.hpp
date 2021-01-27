@@ -73,6 +73,30 @@ inline PyObject* cast(const int &i) {return carbon::cast(i); }
     
 template<>
 inline int cast(PyObject *obj) {return carbon::cast<int>(obj); };
+
+template<>
+inline PyObject* cast(const int16_t &i)  {return carbon::cast(i); }
+
+template<>
+inline PyObject* cast(const uint16_t &i)  {return carbon::cast(i); }
+
+template<>
+inline PyObject* cast(const uint32_t &i)  {return carbon::cast(i); }
+
+template<>
+inline PyObject* cast(const uint64_t &i)  {return carbon::cast(i); }
+
+template<>
+inline int16_t cast(PyObject *o) {return (int16_t)carbon::cast<int>(o);};
+
+template<>
+inline uint16_t cast(PyObject *o) {return (uint16_t)carbon::cast<int>(o);};
+
+template<>
+inline uint32_t cast(PyObject *o) {return (uint32_t)carbon::cast<int>(o);};
+
+template<>
+inline uint64_t cast(PyObject *o) {return (uint64_t)carbon::cast<int>(o);};
     
 /**
  * check if type can be converted

@@ -30,7 +30,7 @@
 #include <MxPy.h>
 #include <string.h>
 #include <carbon.h>
-#include <CConvert.hpp>
+#include <MxConvert.hpp>
 
 
 /* include local headers */
@@ -2332,9 +2332,6 @@ double potential_getalpha ( double (*f6p)( double ) , double a , double b ) {
 
 }
 
-#include <pybind11/pybind11.h>
-namespace py = pybind11;
-
 static MxPotential *potential_alloc(PyTypeObject *type) {
 
     std::cout << MX_FUNCTION << std::endl;
@@ -2370,15 +2367,10 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
     MxPotential *self = (MxPotential*)_self;
 
     try {
-        py::args args = py::reinterpret_borrow<py::args>(_args);
-        py::kwargs kwargs = py::reinterpret_borrow<py::kwargs>(_kwargs);
-        
 
-        float r = py::cast<float>(args[0]);
-        
-        
-        double ri = arg<double>("ri",  1, _args, _kwargs, -1);
-        double rj = arg<double>("rj",  2, _args, _kwargs, -1);
+        float r = mx::arg<double>("rr",  0, _args, _kwargs);
+        double ri = mx::arg<double>("ri",  1, _args, _kwargs, -1);
+        double rj = mx::arg<double>("rj",  2, _args, _kwargs, -1);
         
         // if no r args are given, we pull the r0 from the potential,
         // and use the ri, rj to cancel them out.
@@ -2419,13 +2411,8 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
         
         return res;
     }
-    catch (const pybind11::builtin_exception &e) {
-        e.set_error();
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception &e) {
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2433,15 +2420,10 @@ static PyObject *potential_force(PyObject *_self, PyObject *_args, PyObject *_kw
     MxPotential *self = (MxPotential*)_self;
     
     try {
-        py::args args = py::reinterpret_borrow<py::args>(_args);
-        py::kwargs kwargs = py::reinterpret_borrow<py::kwargs>(_kwargs);
-        
-        
-        float r = py::cast<float>(args[0]);
-        
-        
-        double ri = arg<double>("ri",  1, _args, _kwargs, -1);
-        double rj = arg<double>("rj",  2, _args, _kwargs, -1);
+
+        float r = mx::arg<double>("r",  0, _args, _kwargs);
+        double ri = mx::arg<double>("ri",  1, _args, _kwargs, -1);
+        double rj = mx::arg<double>("rj",  2, _args, _kwargs, -1);
         
         // if no r args are given, we pull the r0 from the potential,
         // and use the ri, rj to cancel them out.
@@ -2470,15 +2452,10 @@ static PyObject *potential_force(PyObject *_self, PyObject *_args, PyObject *_kw
         
         f = (f * r) / 2;
         
-        return py::cast(f).release().ptr();
+        return mx::cast(f);
     }
-    catch (const pybind11::builtin_exception &e) {
-        e.set_error();
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception &e) {
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2494,12 +2471,7 @@ static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject 
         return potential_create_LJ126( min, max, A, B, tol);
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2517,12 +2489,7 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
         return potential_checkerr(potential_create_LJ126_Coulomb( min, max, A, B, q, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2541,12 +2508,7 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
         return potential_checkerr(potential_create_SS(eta, kappa, epsilon, r0, min, max, tol, shift));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2562,12 +2524,7 @@ static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return potential_checkerr(potential_create_Ewald( min, max, q, kappa, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2583,12 +2540,7 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return potential_checkerr(potential_create_Coulomb( min, max, q, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2606,12 +2558,7 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
         return potential_checkerr(potential_create_harmonic(min, max, k, r0, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2626,12 +2573,7 @@ static PyObject *_linear(PyObject *_self, PyObject *_args, PyObject *_kwargs){
         return potential_checkerr(potential_create_linear(min, max, k, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2648,12 +2590,7 @@ static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kw
         return potential_checkerr(potential_create_harmonic_angle( min, max, k, theta0, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2669,12 +2606,7 @@ static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *
         return potential_checkerr(potential_create_harmonic_dihedral( k, n, delta, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2694,12 +2626,7 @@ static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return potential_checkerr(potential_create_well(k, n, r0, tol, min, max));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2721,12 +2648,7 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         return potential_checkerr(potential_create_glj(e, n, m, k, r0, min, max, tol, shifted));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2745,12 +2667,7 @@ static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject 
         return potential_checkerr(potential_create_overlapping_sphere(mu, kc, kh, r0, min, max, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2789,12 +2706,7 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
         return potential_checkerr(potential_create_power(k, r0, alpha, min, max, tol));
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-    catch(py::error_already_set &e){
-        e.restore();
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -2954,7 +2866,7 @@ static PyGetSetDef potential_getset[] = {
         .name = "min",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            return pybind11::cast(obj->a).release().ptr();
+            return mx::cast(obj->a);
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
@@ -2967,7 +2879,7 @@ static PyGetSetDef potential_getset[] = {
         .name = "max",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            return pybind11::cast(obj->b).release().ptr();
+            return mx::cast(obj->b);
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
@@ -2980,8 +2892,10 @@ static PyGetSetDef potential_getset[] = {
         .name = "domain",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            py::tuple  res = py::make_tuple(obj->a, obj->b);
-            return res.release().ptr();
+            PyObject *res = PyTuple_New(2);
+            PyTuple_SET_ITEM(res, 0, mx::cast(obj->a));
+            PyTuple_SET_ITEM(res, 1, mx::cast(obj->b));
+            return res;
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
@@ -2994,7 +2908,7 @@ static PyGetSetDef potential_getset[] = {
         .name = "intervals",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            return pybind11::cast(obj->n).release().ptr();
+            return mx::cast(obj->n);
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
@@ -3007,11 +2921,11 @@ static PyGetSetDef potential_getset[] = {
         .name = "flags",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            return pybind11::cast(obj->flags).release().ptr();
+            return mx::cast(obj->flags);
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             MxPotential *obj = (MxPotential*)_obj;
-            obj->flags = pybind11::cast<uint32_t>(val);
+            obj->flags = mx::cast<uint32_t>(val);
             return 0;
         },
         .doc = "test doc",
@@ -3205,7 +3119,7 @@ HRESULT _MxPotential_init(PyObject *m)
         return E_FAIL;
     }
     
-
+    /*
     py::enum_<PotentialFlags>(m, "PotentialFlags", py::arithmetic())
         .value("POTENTIAL_NONE", PotentialFlags::POTENTIAL_NONE)
         .value("POTENTIAL_LJ126", PotentialFlags::POTENTIAL_LJ126)
@@ -3222,6 +3136,7 @@ HRESULT _MxPotential_init(PyObject *m)
         .value("POTENTIAL_SCALED", PotentialFlags::POTENTIAL_SCALED)
         .value("POTENTIAL_SHIFTED", PotentialFlags::POTENTIAL_SHIFTED)
         .export_values();
+     */
 
     return S_OK;
 }
