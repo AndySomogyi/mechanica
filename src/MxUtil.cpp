@@ -11,7 +11,6 @@
 #include <cmath>
 
 #include <MxUtil.h>
-#include <MxPy.h>
 #include <MxNumpy.h>
 #include <MxConvert.hpp>
 #include <MxThreadPool.hpp>
@@ -38,6 +37,8 @@
 #include <bitset>
 #include <array>
 #include <string>
+
+#include <MxPy.h>
 
 
 
@@ -239,14 +240,15 @@ static PyObject *random_point_disk(int n) {
         return (PyObject*)array;
 
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 
@@ -296,12 +298,12 @@ static PyObject* random_point_sphere(int n) {
         return (PyObject*)array;
 
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
+        return NULL;
+    }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
         return NULL;
     }
 }
@@ -339,14 +341,15 @@ static PyObject* random_point_solidsphere(int n) {
         return (PyObject*)array;
 
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 static PyObject* random_point_solidsphere_shell(int n, PyObject *_dr, PyObject *_phi) {
@@ -427,14 +430,15 @@ static PyObject* random_point_solidcube(int n) {
         return (PyObject*)array;
 
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 static PyObject* points_solidcube(int n) {
@@ -469,14 +473,15 @@ static PyObject* points_solidcube(int n) {
         return (PyObject*)array;
         
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 
@@ -512,14 +517,15 @@ static PyObject* points_ring(int n) {
         return (PyObject*)array;
         
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 static PyObject* points_sphere(int n) {
@@ -550,14 +556,15 @@ static PyObject* points_sphere(int n) {
         return (PyObject*)array;
         
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 
@@ -586,14 +593,15 @@ PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 
@@ -613,14 +621,15 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
                 return NULL;
         }
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
+    catch (const std::exception &e) {
+        PyErr_SetString(PyExc_ValueError, e.what());
+        return NULL;
+    }
+
 }
 
 

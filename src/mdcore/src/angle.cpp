@@ -51,7 +51,7 @@
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"
-#include "MxPy.h"
+#include "MxConvert.hpp"
 
 #include <iostream>
 
@@ -662,10 +662,10 @@ int angle_init(MxAngle *self, PyObject *args, PyObject *kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        PyObject *pot  = arg<PyObject*>("potential", 0, args, kwargs);
-        PyObject *p1  = arg<PyObject*>("p1", 1, args, kwargs);
-        PyObject *p2  = arg<PyObject*>("p2", 2, args, kwargs);
-        PyObject *p3  = arg<PyObject*>("p3", 3, args, kwargs);
+        PyObject *pot  = mx::arg<PyObject*>("potential", 0, args, kwargs);
+        PyObject *p1  = mx::arg<PyObject*>("p1", 1, args, kwargs);
+        PyObject *p2  = mx::arg<PyObject*>("p2", 2, args, kwargs);
+        PyObject *p3  = mx::arg<PyObject*>("p3", 3, args, kwargs);
         
         
         if(PyObject_IsInstance(pot, (PyObject*)&MxPotential_Type) <= 0) {
@@ -696,12 +696,7 @@ int angle_init(MxAngle *self, PyObject *args, PyObject *kwargs) {
         Py_XINCREF(pot);
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return -1;
-    }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return -1;
+        return C_EXP(e);
     }
     return 0;
 }

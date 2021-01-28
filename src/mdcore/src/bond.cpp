@@ -54,12 +54,9 @@
 #include "engine.h"
 #include <bond.h>
 
-
-#include <MxPy.h>
 #include <MxConvert.hpp>
 #include <../../MxUtil.h>
 #include <../../rendering/NOMStyle.hpp>
-
 
 NOMStyle *MxBond_StylePtr = NULL;
 
@@ -529,13 +526,13 @@ static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        PyObject *pot  = arg<PyObject*>("potential", 0, args, kwargs);
-        PyObject *p1  = arg<PyObject*>("p1", 1, args, kwargs);
-        PyObject *p2  = arg<PyObject*>("p2", 2, args, kwargs);
+        PyObject *pot  = mx::arg<PyObject*>("potential", 0, args, kwargs);
+        PyObject *p1  = mx::arg<PyObject*>("p1", 1, args, kwargs);
+        PyObject *p2  = mx::arg<PyObject*>("p2", 2, args, kwargs);
         
-        double half_life = arg<double>("half_life", 3, args, kwargs, std::numeric_limits<double>::max());
-        double bond_energy = arg<double>("bond_energy", 4, args, kwargs, std::numeric_limits<double>::max());
-        uint32_t flags = arg<uint32_t>("flags", 5, args, kwargs, 0);
+        double half_life = mx::arg<double>("half_life", 3, args, kwargs, std::numeric_limits<double>::max());
+        double bond_energy = mx::arg<double>("bond_energy", 4, args, kwargs, std::numeric_limits<double>::max());
+        uint32_t flags = mx::arg<uint32_t>("flags", 5, args, kwargs, 0);
         
         if(PyObject_IsInstance(pot, (PyObject*)&MxPotential_Type) <= 0) {
             PyErr_SetString(PyExc_TypeError, "potential is not a instance of Potential");
@@ -557,12 +554,7 @@ static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
 
     }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return -1;
-    }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return -1;
+        C_EXP(e); return 0;
     }
     return 0;
 }
@@ -878,9 +870,9 @@ PyObject* MxBond_PairwiseNew(
         bonds = PyList_New(pairs.size());
         std::cout << "list size: " << PyList_Size(bonds) << std::endl;
         
-        double half_life = arg<double>("half_life", 3, args, kwds, std::numeric_limits<double>::max());
-        double bond_energy = arg<double>("bond_energy", 4, args, kwds, std::numeric_limits<double>::max());
-        uint32_t flags = arg<uint32_t>("flags", 5, args, kwds, 0);
+        double half_life = mx::arg<double>("half_life", 3, args, kwds, std::numeric_limits<double>::max());
+        double bond_energy = mx::arg<double>("bond_energy", 4, args, kwds, std::numeric_limits<double>::max());
+        uint32_t flags = mx::arg<uint32_t>("flags", 5, args, kwds, 0);
         
         for(int i = 0; i < pairs.size(); ++i) {
             bond = (MxBondHandle*)PyType_GenericAlloc(&MxBondHandle_Type, 0);
@@ -902,13 +894,7 @@ PyObject* MxBond_PairwiseNew(
         if(bonds) {
             Py_DecRef(bonds);
         }
-        PyErr_SetString(PyExc_ValueError, e.what());
-    }
-    catch(pybind11::error_already_set &e){
-        if(bonds) {
-            Py_DecRef(bonds);
-        }
-        e.restore();
+        C_EXP(e);
     }
     return NULL;
 }

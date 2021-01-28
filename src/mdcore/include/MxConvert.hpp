@@ -125,7 +125,13 @@ T arg(const char* name, int index, PyObject *args, PyObject *kwargs) {
 };
 
 template<>
-PyObject* arg<PyObject*>(const char* name, int index, PyObject *_args, PyObject *_kwargs);
+inline PyObject* arg<PyObject*>(const char* name, int index, PyObject *args, PyObject *kwargs) {
+    PyObject *value = py_arg(name, index, args, kwargs);
+    if(value) {
+        return value;
+    }
+    throw std::runtime_error(std::string("missing argument ") + name);
+};
 
 template<typename T>
 T arg(const char* name, int index, PyObject *args, PyObject *kwargs, T deflt) {
