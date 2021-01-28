@@ -97,6 +97,12 @@ inline uint32_t cast(PyObject *o) {return (uint32_t)carbon::cast<int>(o);};
 
 template<>
 inline uint64_t cast(PyObject *o) {return (uint64_t)carbon::cast<int>(o);};
+
+template<>
+inline PyObject* cast(const std::string &s) {return carbon::cast(s); };
+
+template<>
+inline std::string cast(PyObject *o) { return carbon::cast<std::string>(o); };
     
 /**
  * check if type can be converted

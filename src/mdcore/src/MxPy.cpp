@@ -7,7 +7,21 @@
 
 #include <MxPy.h>
 #include <pybind11/pybind11.h>
+#include "MxConvert.hpp"
 #include <iostream>
+
+bool MxDict_DelItemStringNoErr(PyObject *p, const char *key) {
+    PyObject *pkey = mx::cast(std::string(key));
+    bool result = false;
+    
+    if(PyDict_Contains(p, pkey)) {
+        PyDict_DelItem(p, pkey);
+        result = true;
+    }
+    
+    Py_DECREF(pkey);
+    return result;
+}
 
 template<typename T>
 PyObject *PyBind_Getter(PyObject *obj, bool byReference, size_t offset) {

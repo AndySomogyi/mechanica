@@ -246,6 +246,11 @@ PyGetSetDef MakeAttibuteGetSet(const char* name, const char* doc) {
 
 std::ostream& operator<<(std::ostream& os, const PyObject *obj);
 
+/**
+ * same as python delitemstring, except no error if no key.
+ */
+bool MxDict_DelItemStringNoErr(PyObject *p, const char *key);
+
 
 // was added in 3.7, dup it here for python 3.6
 #if PY_MAJOR_VERSION == 3 and PY_MINOR_VERSION < 7
