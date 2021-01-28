@@ -181,61 +181,64 @@ struct ArgumentsWrapper  {
 };
 
 
-static void parse_kwargs(const py::kwargs &kwargs, MxSimulator::Config &conf) {
-    if(kwargs.contains("example")) {
-        py::object example = kwargs["example"];
-        if(py::isinstance<py::none>(example)) {
+static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
+    
+    PyObject *o;
+    
+    if((o = PyDict_GetItemString(kwargs, "example"))) {
+        if(py::isinstance<py::none>(o)) {
             conf.example = "";
         }
-        conf.example = py::cast<std::string>(kwargs["example"]);
+        else {
+            conf.example = mx::cast<std::string>(o);
+        }
     }
     
-    if(kwargs.contains("dim")) {
-        conf.universeConfig.dim = py::cast<Vector3>(kwargs["dim"]);
+    if((o = PyDict_GetItemString(kwargs, "dim"))) {
+        conf.universeConfig.dim = mx::cast<Magnum::Vector3>(o);
     }
     
-    if(kwargs.contains("cutoff")) {
-        conf.universeConfig.cutoff = py::cast<double>(kwargs["cutoff"]);
+    if((o = PyDict_GetItemString(kwargs, "cutoff"))) {
+        conf.universeConfig.cutoff = mx::cast<double>(o);
     }
     
-    if(kwargs.contains("cells")) {
-        conf.universeConfig.spaceGridSize = py::cast<Vector3i>(kwargs["cells"]);
+    if((o = PyDict_GetItemString(kwargs, "cells"))) {
+        conf.universeConfig.spaceGridSize = mx::cast<Vector3i>(o);
     }
     
-    if(kwargs.contains("threads")) {
-        conf.universeConfig.threads = py::cast<unsigned>(kwargs["threads"]);
+    if((o = PyDict_GetItemString(kwargs, "threads"))) {
+        conf.universeConfig.threads = mx::cast<unsigned>(o);
     }
 
-    if(kwargs.contains("integrator")) {
-        conf.universeConfig.integrator = py::cast<EngineIntegrator>(kwargs["integrator"]);
+    if((o = PyDict_GetItemString(kwargs, "integrator"))) {
+        conf.universeConfig.integrator = py::cast<EngineIntegrator>(o);
     }
 
-    if(kwargs.contains("dt")) {
-        conf.universeConfig.dt = py::cast<double>(kwargs["dt"]);
+    if((o = PyDict_GetItemString(kwargs, "dt"))) {
+        conf.universeConfig.dt = mx::cast<double>(o);
     }
     
-    if(kwargs.contains("boundary_conditions")) {
-        conf.universeConfig.boundaryConditions = py::cast<unsigned>(kwargs["boundary_conditions"]);
+    if((o = PyDict_GetItemString(kwargs, "boundary_conditions"))) {
+        conf.universeConfig.boundaryConditions = mx::cast<unsigned>(o);
     }
     
-    if(kwargs.contains("bc")) {
-        conf.universeConfig.boundaryConditions = py::cast<unsigned>(kwargs["bc"]);
+    if((o = PyDict_GetItemString(kwargs, "bc"))) {
+        conf.universeConfig.boundaryConditions = mx::cast<unsigned>(o);
     }
     
-    if(kwargs.contains("max_distance")) {
-        conf.universeConfig.max_distance = py::cast<double>(kwargs["max_distance"]);
+    if((o = PyDict_GetItemString(kwargs, "max_distance"))) {
+        conf.universeConfig.max_distance = mx::cast<double>(o);
     }
     
-    if(kwargs.contains("windowless")) {
-        conf.setWindowless(py::cast<bool>(kwargs["windowless"]));
+    if((o = PyDict_GetItemString(kwargs, "windowless"))) {
+        conf.setWindowless(mx::cast<bool>(o));
         if(conf.windowless()) {
             conf.setWindowSize({1024,1024});
         }
     }
     
-    if(kwargs.contains("window_size")) {
-        PyObject *val = kwargs["window_size"].ptr();
-        Magnum::Vector2i windowSize = mx::cast<Magnum::Vector2i>(val);
+    if((o = PyDict_GetItemString(kwargs, "window_size"))) {
+        Magnum::Vector2i windowSize = mx::cast<Magnum::Vector2i>(o);
         conf.setWindowSize(windowSize);
     }
 }
@@ -298,15 +301,6 @@ static int init(PyObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyObject *Noddy_name(MxSimulator* self)
-{
-    return PyUnicode_FromFormat("%s %s", "foo", "bar");
-}
-
-
-
-
-
 
 
 static PyObject *simulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -319,10 +313,8 @@ static PyObject *simulator_new(PyTypeObject *type, PyObject *args, PyObject *kwd
 
 
 
-
 static PyMethodDef methods[] = {
         { "pollEvents", (PyCFunction)MxPyUI_PollEvents, MX_CLASS, NULL },
-
         { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, MX_CLASS, NULL },
         { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, MX_CLASS, NULL },
         { "initializeGraphics", (PyCFunction)MxPyUI_InitializeGraphics, MX_CLASS, NULL },
@@ -752,79 +744,83 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
-
-    if(Simulator) {
-        throw std::domain_error( "Error, Simulator is already initialized" );
-    }
-
-    MxSimulator *sim = new MxSimulator();
-
-    // get the argv,
-    py::list argv;
-    if(kwargs.contains("argv")) {
-        argv = kwargs["argv"];
-    }
-    else {
-        argv = py::module::import("sys").attr("argv");
-    }
-
-    MxSimulator::Config conf;
-    MxSimulator::GLConfig glConf;
-
-    if(kwargs.size() > 0 && args.size() == 0) {
-        parse_kwargs(kwargs, conf);
-    }
-    else {
-        if(args.size() > 0) {
-            conf = args[0].cast<MxSimulator::Config>();
-        }
-
-        if(args.size() > 1) {
-            glConf = args[1].cast<MxSimulator::GLConfig>();
-        }
-    }
-
-    // init the engine first
-    /* Initialize scene particles */
-    universe_init(conf.universeConfig);
-
-    if(conf.example.compare("argon")==0) {
-        example_argon(conf.universeConfig);
-    }
-
-    if(conf.windowless()) {
-        ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
+    try {
         
-        std::cout << "creating Windowless app" << std::endl;
+        if(Simulator) {
+            throw std::domain_error( "Error, Simulator is already initialized" );
+        }
         
-        MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
-
-        if(FAILED(windowlessApp->createContext(conf))) {
-            delete windowlessApp;
-
-            throw std::domain_error("could not create windowless gl context");
+        MxSimulator *sim = new MxSimulator();
+        
+        // get the argv,
+        py::list argv;
+        if(kwargs.contains("argv")) {
+            argv = kwargs["argv"];
         }
         else {
-            sim->app = windowlessApp;
+            argv = py::module::import("sys").attr("argv");
         }
+        
+        MxSimulator::Config conf;
+        MxSimulator::GLConfig glConf;
+        
+        if(kwargs.size() > 0 && args.size() == 0) {
+            parse_kwargs(kwargs.ptr(), conf);
+        }
+        else {
+            if(args.size() > 0) {
+                conf = args[0].cast<MxSimulator::Config>();
+            }
+            
+            if(args.size() > 1) {
+                glConf = args[1].cast<MxSimulator::GLConfig>();
+            }
+        }
+        
+        // init the engine first
+        /* Initialize scene particles */
+        universe_init(conf.universeConfig);
+        
+        if(conf.example.compare("argon")==0) {
+            example_argon(conf.universeConfig);
+        }
+        
+        if(conf.windowless()) {
+            ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
+            
+            std::cout << "creating Windowless app" << std::endl;
+            
+            MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
+            
+            if(FAILED(windowlessApp->createContext(conf))) {
+                delete windowlessApp;
+                
+                throw std::domain_error("could not create windowless gl context");
+            }
+            else {
+                sim->app = windowlessApp;
+            }
+        }
+        else {
+            ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
+            
+            std::cout << "creating GLFW app" << std::endl;
+            
+            MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
+            
+            glfwApp->createContext(conf);
+            
+            sim->app = glfwApp;
+        }
+        
+        std::cout << MX_FUNCTION << std::endl;
+        
+        Simulator = sim;
+        return S_OK;
     }
-    else {
-        ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
-
-        std::cout << "creating GLFW app" << std::endl;
-
-        MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
-
-        glfwApp->createContext(conf);
-
-        sim->app = glfwApp;
+    catch(const std::exception &e) {
+        return C_EXP(e);
     }
-
-    std::cout << MX_FUNCTION << std::endl;
-
-    Simulator = sim;
-
-    return S_OK;
 }
 
 

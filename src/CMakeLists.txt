@@ -395,7 +395,6 @@ target_link_libraries(mechanica_py PRIVATE
   voro++
   sundials_cvode_static
   MagnumGlfwApplication
-  Magnum_PyBind
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools
@@ -503,7 +502,6 @@ target_link_libraries(mechanica_shared
   voro++
   sundials_cvode_static
   MagnumGlfwApplication
-  Magnum_PyBind
   Magnum::SceneGraph
   Magnum::Primitives
   Magnum::MeshTools

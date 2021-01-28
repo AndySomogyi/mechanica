@@ -58,9 +58,6 @@
 
 #include <pybind11/pybind11.h>
 
-#include <magnum/bootstrap.h>
-
-
 
 #include <string>
 #include <MxPy.h>
@@ -270,12 +267,12 @@ void test_sequences(PyObject *_m);
 static PyObject * moduleinit(void)
 {
     std::cout << "Mechanica " << MX_FUNCTION << ", initializing numpy... " << std::endl;
-    
+
     /* Load all of the `numpy` functionality. */
     import_array();
-    
+
     PyObject *m;
-    
+
     // need to initialize the base carbon library first.
     PyObject *carbonModule = PyInit_carbon();
 
@@ -290,13 +287,12 @@ static PyObject * moduleinit(void)
         std::cout << "could not create mechanica module: "  << std::endl;
         return NULL;
     }
-    
+
     if(PyModule_AddObject(m, "__version__", PyUnicode_FromString(version_str().c_str())) != 0) {
         std::cout << "could not add version"  << std::endl;
         return NULL;
     }
 
-    
     if(PyModule_AddObject(m, "version", version_create()) != 0) {
         std::cout << "error creating version info module" << std::endl;
     }
@@ -305,39 +301,10 @@ static PyObject * moduleinit(void)
         std::cout << "could not add carbon module "  << std::endl;
         return NULL;
     }
-    
-    // ugh, still usign pybind11, TODO: GET RID OF THIS PYBIND!!!
-
-    pybind11::module rootModule = pybind11::reinterpret_borrow<pybind11::module>(m);
-
-    pybind11::module math = rootModule.def_submodule("math", "math module");
-
-    // Create the Magnum math objects and put them in the top-level Mechanica
-    // module
-    magnum::math(rootModule, math);
-    
-    // grab the Magnum color3 and color4 pybind types, and add some new constructors
-    // to them, to make colors based on name.
-
-    pybind11::object o = (pybind11::object)rootModule.attr("Color3");
-    
-    pybind11::class_<Magnum::Color3> color3(o);
-    
-    color3.def(pybind11::init([](std::string arg) -> Magnum::Color3 {
-        return Color3_Parse(arg);
-    }));
-    
-    
-    pybind11::class_<Magnum::Color4> color4((pybind11::object)rootModule.attr("Color4"));
-
-    color4.def(pybind11::init([](std::string arg) -> Magnum::Color4 {
-        return Magnum::Color4(Color3_Parse(arg));
-    }));
-
 
     _MxUtil_init(m);
-    
-    // needs to be before other stuff like particles that depend on style. 
+
+    // needs to be before other stuff like particles that depend on style.
     _NOMStyle_init(m);
     MxModel_init(m);
     _MxSystem_init(m);
