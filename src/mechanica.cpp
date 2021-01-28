@@ -80,8 +80,7 @@ static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
 
         int n = mx::arg<int>("n", 0, args, kwargs, 1);
 
-        unsigned long start = mx::arg<unsigned long>("start", 1, args, kwargs, 2);
-
+        uint64_t start = mx::arg<uint64_t>("start", 1, args, kwargs, 2);
 
         int typenum = NPY_UINT64;
 
