@@ -100,15 +100,13 @@ static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
         return (PyObject*)array;
 
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
     catch(pybind11::error_already_set &e){
         e.restore();
         return NULL;
     }
-
+    catch (const std::exception &e) {
+        C_EXP(e); return NULL;
+    }
 }
 
 static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
