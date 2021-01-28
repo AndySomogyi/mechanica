@@ -121,39 +121,7 @@ int _MxGetSetDef_Setter(PyObject *obj, PyObject *arg, MxGetSetDefInfo info) {
 }
 
 
-template<>
-PyObject* arg<PyObject*>(const char* name, int index, PyObject *_args, PyObject *_kwargs) {
-    
-    try {
-        
-        if(_args == NULL && _kwargs == NULL) {
-            throw std::runtime_error("no arguments given");
-        }
-        
-        else if(_args != NULL && _kwargs == NULL) {
-            return PyTuple_GetItem(_args, index);
-        }
-        
-        else if(_args == NULL && _kwargs != NULL) {
-            return PyDict_GetItemString(_kwargs, name);
-        }
-        
-        else {
-            
-            PyObject *item = NULL;
-            if((item = PyDict_GetItemString(_kwargs, name))) {
-                if(PyTuple_Size(_args) > index) {
-                    throw std::runtime_error(std::string("value ") + name + " given as both indexed and named argument");
-                }
-                return item;
-            }
-            return PyTuple_GetItem(_args, index);
-        }
-    }
-    catch(std::exception &e) {
-        throw std::runtime_error(std::string("error reading arugment \'") + name + "\' : " + e.what());
-    }
-};
+
 
 std::ostream& operator<<(std::ostream& os, const PyObject *_obj) {
     if(_obj) {

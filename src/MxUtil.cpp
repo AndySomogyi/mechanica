@@ -240,15 +240,9 @@ static PyObject *random_point_disk(int n) {
         return (PyObject*)array;
 
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
-    }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
+        C_EXP(e); return NULL;
     }
-
 }
 
 
@@ -298,13 +292,8 @@ static PyObject* random_point_sphere(int n) {
         return (PyObject*)array;
 
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
-    }
     catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
+        C_EXP(e); return NULL;
     }
 }
 
@@ -341,15 +330,9 @@ static PyObject* random_point_solidsphere(int n) {
         return (PyObject*)array;
 
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 static PyObject* random_point_solidsphere_shell(int n, PyObject *_dr, PyObject *_phi) {
@@ -430,15 +413,9 @@ static PyObject* random_point_solidcube(int n) {
         return (PyObject*)array;
 
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 static PyObject* points_solidcube(int n) {
@@ -473,15 +450,9 @@ static PyObject* points_solidcube(int n) {
         return (PyObject*)array;
         
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 
@@ -517,15 +488,9 @@ static PyObject* points_ring(int n) {
         return (PyObject*)array;
         
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 static PyObject* points_sphere(int n) {
@@ -556,15 +521,9 @@ static PyObject* points_sphere(int n) {
         return (PyObject*)array;
         
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 
@@ -573,8 +532,8 @@ static PyObject* points_sphere(int n) {
 PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
 {
     try {
-        MxPointsType kind = arg<MxPointsType>("kind", 0, args, kwargs, MxPointsType::Sphere);
-        int n  = arg<int>("n", 1, args, kwargs, 1);
+        MxPointsType kind = (MxPointsType)mx::arg<int>("kind", 0, args, kwargs, MxPointsType::Sphere);
+        int n  = mx::arg<int>("n", 1, args, kwargs, 1);
 
         switch(kind) {
         case MxPointsType::Sphere:
@@ -593,23 +552,17 @@ PyObject* MxRandomPoints(PyObject *m, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
 
 
 PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
 {
     try {
-        MxPointsType kind = arg<MxPointsType>("kind", 0, args, kwargs, MxPointsType::Sphere);
-        int n  = arg<int>("n", 1, args, kwargs, 1);
+        MxPointsType kind = (MxPointsType)mx::arg<int>("kind", 0, args, kwargs, MxPointsType::Sphere);
+        int n  = mx::arg<int>("n", 1, args, kwargs, 1);
         
         switch(kind) {
             case MxPointsType::Ring:
@@ -621,30 +574,29 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
                 return NULL;
         }
     }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
+    catch (const std::exception& e) {
+        C_EXP(e); return NULL;
     }
-    catch (const std::exception &e) {
-        PyErr_SetString(PyExc_ValueError, e.what());
-        return NULL;
-    }
-
 }
+
+#define MODULE_ADDINT(m, name, val) \
+    { \
+        PyObject* o = mx::cast((int)val); \
+        PyModule_AddObject(m, name, o); \
+        Py_DECREF(o); \
+    } \
 
 
 
 
 HRESULT _MxUtil_init(PyObject *m)
 {
-    pybind11::enum_<MxPointsType>(m, "RandomPoints")
-    .value("Sphere", MxPointsType::Sphere)
-    .value("SolidSphere", MxPointsType::SolidSphere)
-    .value("Disk", MxPointsType::Disk)
-    .value("SolidCube", MxPointsType::SolidCube)
-    .value("Cube", MxPointsType::Cube)
-    .value("Ring", MxPointsType::Ring)
-    .export_values();
+    MODULE_ADDINT(m, "Sphere", MxPointsType::Sphere);
+    MODULE_ADDINT(m, "SolidSphere", MxPointsType::SolidSphere);
+    MODULE_ADDINT(m, "Disk", MxPointsType::Disk);
+    MODULE_ADDINT(m, "SolidCube", MxPointsType::SolidCube);
+    MODULE_ADDINT(m, "Cube", MxPointsType::Cube);
+    MODULE_ADDINT(m, "Ring", MxPointsType::Ring);
 
     return S_OK;
 }

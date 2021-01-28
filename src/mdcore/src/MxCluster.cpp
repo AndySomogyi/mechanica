@@ -457,7 +457,7 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
     if(kwargs && PyDict_GetItemString(kwargs, "axis")) {
         // use axis form of split
         pybind11::detail::loader_life_support ls{};
-        Magnum::Vector3 axis = arg<Magnum::Vector3>("axis", 0, args, kwargs);
+        Magnum::Vector3 axis = mx::arg<Magnum::Vector3>("axis", 0, args, kwargs);
         return cluster_fission_axis(cluster, axis);
     }
     
@@ -487,8 +487,8 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
     else {
         // normal documented usage, grab args from args and kewords.
         pybind11::detail::loader_life_support ls{};
-        normal = arg("normal", 0, args, kwargs, MxRandomUnitVector());
-        point = arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
+        normal = mx::arg("normal", 0, args, kwargs, MxRandomUnitVector());
+        point = mx::arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
         
         std::cout << "using cleavage plane to split cluster" << std::endl;
         

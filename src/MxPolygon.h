@@ -245,13 +245,13 @@ struct MxPolygon : CObject {
      * Later versions will investigate stack allocation.
      */
     MxPolygon() :
+        id{ 0 },
         vertices{{nullptr, nullptr, nullptr}},
         cells{{nullptr,nullptr}},
         partialPolygons {{
             {nullptr, nullptr, 0.0, nullptr},
             {nullptr, nullptr, 0.0, nullptr}
-        }},
-        id{0}
+        }}
     {}
 
 

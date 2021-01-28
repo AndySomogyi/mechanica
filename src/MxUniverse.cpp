@@ -23,6 +23,8 @@
 #include <MxCuboid.hpp>
 #include "Magnum/Math/Matrix4.h"
 
+#include <pybind11/pybind11.h>
+
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
 
 static void print_performance_counters();
@@ -290,8 +292,8 @@ HRESULT _MxUniverse_init(PyObject* m)
     );
 
     u.def_static("step", [](py::args args, py::kwargs kwargs) -> void {
-        double until = arg<double>("until", 0, args.ptr(), kwargs.ptr(), 0);
-        double dt = arg<double>("dt", 1, args.ptr(), kwargs.ptr(), 0);
+        double until = mx::arg<double>("until", 0, args.ptr(), kwargs.ptr(), 0);
+        double dt = mx::arg<double>("dt", 1, args.ptr(), kwargs.ptr(), 0);
         PY_CHECK(MxUniverse_Step(until, dt));
     });
 
@@ -471,8 +473,8 @@ static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
 
 static void universe_step(py::args args, py::kwargs kwargs) {
 
-    double until = arg<double>("until", 0, args.ptr(), kwargs.ptr());
-    double dt = arg<double>("dt", 1, args.ptr(), kwargs.ptr());
+    double until = mx::arg<double>("until", 0, args.ptr(), kwargs.ptr());
+    double dt = mx::arg<double>("dt", 1, args.ptr(), kwargs.ptr());
 
     PY_CHECK(MxUniverse_Step(until, dt));
 }

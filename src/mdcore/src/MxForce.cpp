@@ -8,9 +8,14 @@
 #include <MxForce.h>
 #include <engine.h>
 #include <MxParticle.h>
+#include <MxConvert.hpp>
 #include <iostream>
 #include <MxPy.h>
 #include <random>
+
+
+#include <pybind11/pybind11.h>
+
 
 static PyObject *berenderson_create(float tau);
 static PyObject *random_create(float std, float mean, float durration);
@@ -86,7 +91,7 @@ static PyObject* py_berenderson_create(PyObject *m, PyObject *_args, PyObject *_
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
 
-        float tau = arg<float>("tau", 0, args.ptr(), kwargs.ptr());
+        float tau = mx::arg<float>("tau", 0, args.ptr(), kwargs.ptr());
 
         return berenderson_create(tau);
     }
@@ -103,9 +108,9 @@ static PyObject* py_random_create(PyObject *m, PyObject *_args, PyObject *_kwds)
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
-        float std = arg<float>("std", 0, args.ptr(), kwargs.ptr());
-        float mean = arg<float>("mean", 1, args.ptr(), kwargs.ptr());
-        float durration = arg<float>("durration", 2, args.ptr(), kwargs.ptr(), 0.01);
+        float std = mx::arg<float>("std", 0, args.ptr(), kwargs.ptr());
+        float mean = mx::arg<float>("mean", 1, args.ptr(), kwargs.ptr());
+        float durration = mx::arg<float>("durration", 2, args.ptr(), kwargs.ptr(), 0.01);
         
         return random_create(std, mean, durration);
     }
@@ -121,10 +126,10 @@ static PyObject* py_friction_create(PyObject *m, PyObject *_args, PyObject *_kwd
         pybind11::args args = pybind11::reinterpret_borrow<pybind11::args>(_args);
         pybind11::kwargs kwargs = pybind11::reinterpret_borrow<pybind11::kwargs>(_kwds);
         
-        float coef = arg<float>("coef", 0, args.ptr(), kwargs.ptr());
-        float std = arg<float>("std", 1, args.ptr(), kwargs.ptr(), 0);
-        float mean = arg<float>("mean", 2, args.ptr(), kwargs.ptr(), 0);
-        float durration = arg<float>("durration", 3, args.ptr(), kwargs.ptr(), 0.01);
+        float coef = mx::arg<float>("coef", 0, args.ptr(), kwargs.ptr());
+        float std = mx::arg<float>("std", 1, args.ptr(), kwargs.ptr(), 0);
+        float mean = mx::arg<float>("mean", 2, args.ptr(), kwargs.ptr(), 0);
+        float durration = mx::arg<float>("durration", 3, args.ptr(), kwargs.ptr(), 0.01);
         
         return friction_create(coef, std, mean, durration);
     }

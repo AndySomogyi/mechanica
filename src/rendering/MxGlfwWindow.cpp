@@ -64,41 +64,14 @@ void Test(const char* name, const char* doc) {
     std::cout << "foo";
 }
 
-void testtt() {
-    
-    MyStruct<MxGlfwWindow, float, &MxGlfwWindow::f> variable;
-    
-    Test<MxGlfwWindow, float, &MxGlfwWindow::f>("", "");
-    
-    PyGetSetDef gs = MakeAttibuteGetSet<MxGlfwWindow, float, &MxGlfwWindow::f>("", "");
-    
-    
-    MxGlfwWindow win(NULL);
-    
-    PyObject *obj = gs.get(&win, NULL);
-    
-    std::cout << "type: " << obj->ob_type->tp_name << std::endl;
-    
-    PyObject *n = PyFloat_FromDouble(987);
-    
-    gs.set(&win, n, NULL);
-}
 
 PyGetSetDef glfwwindow_getsets[] = {
-    MakeAttibuteGetSet<MxGlfwWindow, float, &MxGlfwWindow::f>("f", "foo doc"),
     {NULL}
 };
 
 static int glfwwindow_init(MxGlfwWindow *self, PyObject *args, PyObject *kwds)
 {
-    
-    std::cout << MX_FUNCTION << std::endl;
-    
-    self->f = 123456789.0;
-    
-    testtt();
-
-    
+        
     return 0;
 }
 

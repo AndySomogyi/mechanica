@@ -2382,7 +2382,7 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
         // if no r args are given, we pull the r0 from the potential,
         // and use the ri, rj to cancel them out.
         if((self->flags & POTENTIAL_SCALED)) {
-            double s = arg<double>("s",  1, _args, _kwargs, -1);
+            double s = mx::arg<double>("s",  1, _args, _kwargs, -1);
             if(s < 0) {
                 PyErr_Warn(PyExc_Warning, "calling scaled potential without s, sum of particle radii");
                 ri = 1 / 2;
@@ -2463,11 +2463,11 @@ static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject 
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double A = arg<double>("A", 2, _args, _kwargs);
-        double B = arg<double>("B", 3, _args, _kwargs);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        double min = mx::arg<double>("min", 0, _args, _kwargs);
+        double max = mx::arg<double>("max", 1, _args, _kwargs);
+        double A = mx::arg<double>("A", 2, _args, _kwargs);
+        double B = mx::arg<double>("B", 3, _args, _kwargs);
+        double tol = mx::arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
         return potential_create_LJ126( min, max, A, B, tol);
     }
     catch (const std::exception &e) {
@@ -2480,12 +2480,12 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double A = arg<double>("A", 2, _args, _kwargs);
-        double B = arg<double>("B", 3, _args, _kwargs);
-        double q = arg<double>("q", 4, _args, _kwargs);
-        double tol = arg<double>("tol", 5, _args, _kwargs, 0.001 * (max-min));
+        double min = mx::arg<double>("min", 0, _args, _kwargs);
+        double max = mx::arg<double>("max", 1, _args, _kwargs);
+        double A = mx::arg<double>("A", 2, _args, _kwargs);
+        double B = mx::arg<double>("B", 3, _args, _kwargs);
+        double q = mx::arg<double>("q", 4, _args, _kwargs);
+        double tol = mx::arg<double>("tol", 5, _args, _kwargs, 0.001 * (max-min));
         return potential_checkerr(potential_create_LJ126_Coulomb( min, max, A, B, q, tol));
     }
     catch (const std::exception &e) {
@@ -2497,14 +2497,14 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double kappa = arg<double>("kappa", 0, _args, _kwargs);
-        double epsilon = arg<double>("epsilon", 1, _args, _kwargs);
-        double r0 = arg<double>("r0", 2, _args, _kwargs);
-        double eta = arg<double>("eta", 3, _args, _kwargs);
-        double min = arg<double>("min", 4, _args, _kwargs, 0);
-        double max = arg<double>("max", 5, _args, _kwargs, 2);
-        double tol = arg<double>("tol", 6, _args, _kwargs, 0.001 * (max-min));
-        bool shift = arg<bool>("shift", 7, _args, _kwargs, false);
+        double kappa = mx::arg<double>("kappa", 0, _args, _kwargs);
+        double epsilon = mx::arg<double>("epsilon", 1, _args, _kwargs);
+        double r0 = mx::arg<double>("r0", 2, _args, _kwargs);
+        double eta = mx::arg<double>("eta", 3, _args, _kwargs);
+        double min = mx::arg<double>("min", 4, _args, _kwargs, 0);
+        double max = mx::arg<double>("max", 5, _args, _kwargs, 2);
+        double tol = mx::arg<double>("tol", 6, _args, _kwargs, 0.001 * (max-min));
+        bool shift = mx::arg<bool>("shift", 7, _args, _kwargs, false);
         return potential_checkerr(potential_create_SS(eta, kappa, epsilon, r0, min, max, tol, shift));
     }
     catch (const std::exception &e) {
@@ -2516,11 +2516,11 @@ static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double min = arg<double>("min", 0, _args, _kwargs);
-        double max = arg<double>("max", 1, _args, _kwargs);
-        double q = arg<double>("q", 2, _args, _kwargs);
-        double kappa = arg<double>("kappa", 3, _args, _kwargs);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
+        double min = mx::arg<double>("min", 0, _args, _kwargs);
+        double max = mx::arg<double>("max", 1, _args, _kwargs);
+        double q = mx::arg<double>("q", 2, _args, _kwargs);
+        double kappa = mx::arg<double>("kappa", 3, _args, _kwargs);
+        double tol = mx::arg<double>("tol", 4, _args, _kwargs, 0.001 * (max-min));
         return potential_checkerr(potential_create_Ewald( min, max, q, kappa, tol));
     }
     catch (const std::exception &e) {
@@ -2533,10 +2533,10 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double q = arg<double>("q", 0, _args, _kwargs);
-        double min = arg<double>("min", 1, _args, _kwargs, 0.01);
-        double max = arg<double>("max", 2, _args, _kwargs, 2);
-        double tol = arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
+        double q = mx::arg<double>("q", 0, _args, _kwargs);
+        double min = mx::arg<double>("min", 1, _args, _kwargs, 0.01);
+        double max = mx::arg<double>("max", 2, _args, _kwargs, 2);
+        double tol = mx::arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
         return potential_checkerr(potential_create_Coulomb( min, max, q, tol));
     }
     catch (const std::exception &e) {
@@ -2549,12 +2549,12 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double k =     arg<double>("k", 0, _args, _kwargs);
-        double r0 =    arg<double>("r0", 1, _args, _kwargs);
+        double k =     mx::arg<double>("k", 0, _args, _kwargs);
+        double r0 =    mx::arg<double>("r0", 1, _args, _kwargs);
         double range = r0;
-        double min =   arg<double>("min", 2, _args, _kwargs, r0 - range);
-        double max =   arg<double>("max", 3, _args, _kwargs, r0 + range);
-        double tol =   arg<double>("tol", 4, _args, _kwargs, 0.01 * (max-min));
+        double min =   mx::arg<double>("min", 2, _args, _kwargs, r0 - range);
+        double max =   mx::arg<double>("max", 3, _args, _kwargs, r0 + range);
+        double tol =   mx::arg<double>("tol", 4, _args, _kwargs, 0.01 * (max-min));
         return potential_checkerr(potential_create_harmonic(min, max, k, r0, tol));
     }
     catch (const std::exception &e) {
@@ -2566,10 +2566,10 @@ static PyObject *_linear(PyObject *_self, PyObject *_args, PyObject *_kwargs){
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double k =     arg<double>("k", 0, _args, _kwargs);
-        double min =   arg<double>("min", 1, _args, _kwargs, std::numeric_limits<double>::epsilon());
-        double max =   arg<double>("max", 2, _args, _kwargs, 10);
-        double tol =   arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
+        double k =     mx::arg<double>("k", 0, _args, _kwargs);
+        double min =   mx::arg<double>("min", 1, _args, _kwargs, std::numeric_limits<double>::epsilon());
+        double max =   mx::arg<double>("max", 2, _args, _kwargs, 10);
+        double tol =   mx::arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
         return potential_checkerr(potential_create_linear(min, max, k, tol));
     }
     catch (const std::exception &e) {
@@ -2581,11 +2581,11 @@ static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kw
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double k = arg<double>("k", 0, _args, _kwargs);
-        double theta0 = arg<double>("theta0", 1, _args, _kwargs);
-        double min = arg<double>("min", 2, _args, _kwargs, 0.0);
-        double max = arg<double>("max", 3, _args, _kwargs, M_PI);
-        double tol = arg<double>("tol", 4, _args, _kwargs, 0.005 * std::abs(max-min));
+        double k = mx::arg<double>("k", 0, _args, _kwargs);
+        double theta0 = mx::arg<double>("theta0", 1, _args, _kwargs);
+        double min = mx::arg<double>("min", 2, _args, _kwargs, 0.0);
+        double max = mx::arg<double>("max", 3, _args, _kwargs, M_PI);
+        double tol = mx::arg<double>("tol", 4, _args, _kwargs, 0.005 * std::abs(max-min));
 
         return potential_checkerr(potential_create_harmonic_angle( min, max, k, theta0, tol));
     }
@@ -2599,10 +2599,10 @@ static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double k = arg<double>("k", 0, _args, _kwargs);
-        int n = arg<int>("n", 1, _args, _kwargs);
-        double delta = arg<double>("delta", 2, _args, _kwargs);
-        double tol = arg<double>("tol", 3, _args, _kwargs, 0.001);
+        double k = mx::arg<double>("k", 0, _args, _kwargs);
+        int n = mx::arg<int>("n", 1, _args, _kwargs);
+        double delta = mx::arg<double>("delta", 2, _args, _kwargs);
+        double tol = mx::arg<double>("tol", 3, _args, _kwargs, 0.001);
         return potential_checkerr(potential_create_harmonic_dihedral( k, n, delta, tol));
     }
     catch (const std::exception &e) {
@@ -2616,12 +2616,12 @@ static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
 
     try {
-        double k =   arg<double>("k",   0, _args, _kwargs);
-        double n =   arg<double>("n",   1, _args, _kwargs);
-        double r0 =  arg<double>("r0",  2, _args, _kwargs);
-        double min = arg<double>("min", 3, _args, _kwargs, 0.0);
-        double max = arg<double>("max", 4, _args, _kwargs, 0.99 * r0);
-        double tol = arg<double>("tol", 5, _args, _kwargs, 0.01 * std::abs(min - max));
+        double k =   mx::arg<double>("k",   0, _args, _kwargs);
+        double n =   mx::arg<double>("n",   1, _args, _kwargs);
+        double r0 =  mx::arg<double>("r0",  2, _args, _kwargs);
+        double min = mx::arg<double>("min", 3, _args, _kwargs, 0.0);
+        double max = mx::arg<double>("max", 4, _args, _kwargs, 0.99 * r0);
+        double tol = mx::arg<double>("tol", 5, _args, _kwargs, 0.01 * std::abs(min - max));
 
         return potential_checkerr(potential_create_well(k, n, r0, tol, min, max));
     }
@@ -2635,15 +2635,15 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double e =   arg<double>("e",   0, _args, _kwargs);
-        int m =   arg<double>("m",   1, _args, _kwargs, 3);
-        int n =  arg<double>("n",  2, _args, _kwargs, 2*m);
-        double k = arg<double>("k", 3, _args, _kwargs, 0);
-        double r0 = arg<double>("r0", 4, _args, _kwargs, 1);
-        double min = arg<double>("min", 5, _args, _kwargs, 0.05 * r0);
-        double max = arg<double>("max", 6, _args, _kwargs, 3 * r0);
-        double tol = arg<double>("tol", 7, _args, _kwargs, 0.01);
-        bool shifted = arg<bool>("shifted", 8, _args, _kwargs, true);
+        double e =   mx::arg<double>("e",   0, _args, _kwargs);
+        int m =   mx::arg<double>("m",   1, _args, _kwargs, 3);
+        int n =  mx::arg<double>("n",  2, _args, _kwargs, 2*m);
+        double k = mx::arg<double>("k", 3, _args, _kwargs, 0);
+        double r0 = mx::arg<double>("r0", 4, _args, _kwargs, 1);
+        double min = mx::arg<double>("min", 5, _args, _kwargs, 0.05 * r0);
+        double max = mx::arg<double>("max", 6, _args, _kwargs, 3 * r0);
+        double tol = mx::arg<double>("tol", 7, _args, _kwargs, 0.01);
+        bool shifted = mx::arg<bool>("shifted", 8, _args, _kwargs, true);
         
         return potential_checkerr(potential_create_glj(e, n, m, k, r0, min, max, tol, shifted));
     }
@@ -2656,13 +2656,13 @@ static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject 
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double mu =   arg<double>("mu",   0, _args, _kwargs, 1);
-        double kc = arg<double>("kc", 1, _args, _kwargs, 1);
-        double kh = arg<double>("kh", 2, _args, _kwargs, 0.0);
-        double r0 = arg<double>("r0", 3, _args, _kwargs, 0.0);
-        double min = arg<double>("min", 4, _args, _kwargs, 0.001);
-        double max = arg<double>("max", 5, _args, _kwargs, 10);
-        double tol = arg<double>("tol", 6, _args, _kwargs, 0.001);
+        double mu =   mx::arg<double>("mu",   0, _args, _kwargs, 1);
+        double kc = mx::arg<double>("kc", 1, _args, _kwargs, 1);
+        double kh = mx::arg<double>("kh", 2, _args, _kwargs, 0.0);
+        double r0 = mx::arg<double>("r0", 3, _args, _kwargs, 0.0);
+        double min = mx::arg<double>("min", 4, _args, _kwargs, 0.001);
+        double max = mx::arg<double>("max", 5, _args, _kwargs, 10);
+        double tol = mx::arg<double>("tol", 6, _args, _kwargs, 0.001);
         
         return potential_checkerr(potential_create_overlapping_sphere(mu, kc, kh, r0, min, max, tol));
     }
@@ -2677,9 +2677,9 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
     std::cout << MX_FUNCTION << std::endl;
     
     try {
-        double k =   arg<double>("k",   0, _args, _kwargs, 1);
-        double r0 = arg<double>("r0", 1, _args, _kwargs, 0);
-        double alpha = arg<double>("alpha", 2, _args, _kwargs, 0.0);
+        double k =   mx::arg<double>("k",   0, _args, _kwargs, 1);
+        double r0 = mx::arg<double>("r0", 1, _args, _kwargs, 0);
+        double alpha = mx::arg<double>("alpha", 2, _args, _kwargs, 0.0);
         
         double defaultMin;
         double defaultTol;
@@ -2693,9 +2693,9 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
             defaultTol = 0.01;
         }
         
-        double min = arg<double>("min", 4, _args, _kwargs, defaultMin);
-        double max = arg<double>("max", 5, _args, _kwargs, 5);
-        double tol = arg<double>("tol", 6, _args, _kwargs, defaultTol);
+        double min = mx::arg<double>("min", 4, _args, _kwargs, defaultMin);
+        double max = mx::arg<double>("max", 5, _args, _kwargs, 5);
+        double tol = mx::arg<double>("tol", 6, _args, _kwargs, defaultTol);
         
         if(alpha <= 1 && min < r0) {
             PyErr_WarnEx(PyExc_Warning,
