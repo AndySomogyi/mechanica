@@ -99,9 +99,6 @@ template<>
 inline uint64_t cast(PyObject *o) {return (uint64_t)carbon::cast<int>(o);};
 
 template<>
-inline unsigned long cast(PyObject* o) { return (unsigned long)carbon::cast<uint64_t>(o); };
-
-template<>
 inline PyObject* cast(const std::string &s) {return carbon::cast(s); };
 
 template<>

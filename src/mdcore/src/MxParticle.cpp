@@ -22,17 +22,13 @@
 #define _USE_MATH_DEFINES // for C++
 
 #include <MxParticle.h>
-
-#include <cmath>
-#include <stdlib.h>
-#include "fptype.h"
-#include <iostream>
+#include "engine.h"
 
 // python type info
 #include <structmember.h>
 #include <MxNumpy.h>
 #include <MxPy.h>
-#include "engine.h"
+
 #include "space.h"
 #include "mx_runtime.h"
 
@@ -49,6 +45,12 @@
 #include <CStateVector.hpp>
 
 #include <sstream>
+#include <cstring>
+#include <cmath>
+#include <stdlib.h>
+#include "fptype.h"
+#include <iostream>
+
 
 MxParticle::MxParticle() {
     bzero(this, sizeof(MxParticle));
