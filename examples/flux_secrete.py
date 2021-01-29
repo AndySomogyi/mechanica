@@ -28,7 +28,9 @@ uc = m.lattice.sc(0.25, A)
 parts = m.lattice.create_lattice(uc, [25, 25, 25])
 
 # grap the particle at the top cornder
-o = parts[24,24,24][0]
+o = parts[24,0,24][0]
+
+print("secreting pos: ", o.position)
 
 # change type to B, since there is no flux rule between A and B
 o.become(B)
