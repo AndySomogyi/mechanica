@@ -4,7 +4,7 @@
  *  Created on: May 21, 2020
  *      Author: andy
  */
-
+#pragma once
 #ifndef SRC_MDCORE_SRC_MXFORCE_H_
 #define SRC_MDCORE_SRC_MXFORCE_H_
 
@@ -30,6 +30,46 @@ struct MxForce : PyObject
 {
     MxForce_OneBodyPtr func;
 };
+
+/**
+ * a force function defined by a user python function, we update the force
+ * according to update frequency.
+ *
+ * this object acts like a constant force, but also acts like a time event,
+ * in that it periodically calls a user function to update the force.
+ */
+struct MxConstantForce : MxForce {
+    PyObject *userFunc;
+    float updateInterval;
+    double lastUpdate;
+    
+    Magnum::Vector3 force;
+    
+    /**
+     * notify this user force object of a simulation time step,
+     *
+     * this will check if interval has elapsed, and update the function.
+     *
+     * throws std::exception if userfunc is not a valid kind.
+     */
+    void onTime(double time);
+    
+    /**
+     * sets the value of the force, can be either a Vector3, or a pycallable
+     * that returns a Vector3.
+     *
+     * throws std::exception if invalid value.
+     */
+    void setValue(PyObject *value);
+};
+
+/**
+ * Determines if this object is a constant force type.
+ * @returns TRUE if a symbol, FALSE otherwise.
+ */
+CAPI_FUNC(int) MxConstantForce_Check(PyObject *o);
+
+
 
 #endif /* SRC_MDCORE_SRC_MXFORCE_H_ */
 

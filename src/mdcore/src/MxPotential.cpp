@@ -1631,15 +1631,18 @@ struct MxPotential *potential_create_power(double k, double r0, double alpha, do
     double min, max;
     double range = b - a;
     
-    double fudge = range / 10;
+    double fudge = range / 5;
     
-    if(a - fudge  < 0.01) {
-        a = fudge + 0.01;
+    double fudged_a = a;
+    
+    if(a - fudge >= 0.001) {
+        fudged_a = a - fudge;
     }
+    
     
     if((err = potential_init(p ,&power_f,
                              &power_fp ,
-                             &power_f6p , a - fudge , 1.2 * b , tol )) < 0 ) {
+                             &power_f6p , fudged_a , 1.2 * b , tol )) < 0 ) {
         
         std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
         CAligned_Free(p);
@@ -2678,23 +2681,32 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
     
     try {
         double k =   mx::arg<double>("k",   0, _args, _kwargs, 1);
-        double r0 = mx::arg<double>("r0", 1, _args, _kwargs, 0);
-        double alpha = mx::arg<double>("alpha", 2, _args, _kwargs, 0.0);
+        double r0 = mx::arg<double>("r0", 1, _args, _kwargs, 1.0);
+        double alpha = mx::arg<double>("alpha", 2, _args, _kwargs, 1.0);
         
-        double defaultMin;
+        double defaultMin = 0.1;
         double defaultTol;
+        double defaultMax = 3.0;
         
-        if(alpha > 1) {
-            defaultMin = r0 > 0.5 ? 0.5 * r0 : 0.1;
+        if(alpha >= 1) {
             defaultTol = 0.001;
         }
         else {
-            defaultMin = 1.001 * r0 ;
             defaultTol = 0.01;
         }
         
+        if(r0 > 0) {
+            if(alpha <= 1) {
+                defaultMin = r0;
+            }
+            else {
+                defaultMin = 0.1 * r0;
+            }
+            defaultMax = 3.0 * r0;
+        }
+        
         double min = mx::arg<double>("min", 4, _args, _kwargs, defaultMin);
-        double max = mx::arg<double>("max", 5, _args, _kwargs, 5);
+        double max = mx::arg<double>("max", 5, _args, _kwargs, defaultMax);
         double tol = mx::arg<double>("tol", 6, _args, _kwargs, defaultTol);
         
         if(alpha <= 1 && min < r0) {
@@ -3118,25 +3130,21 @@ HRESULT _MxPotential_init(PyObject *m)
         Py_DECREF(&MxPotential_Type);
         return E_FAIL;
     }
-    
-    /*
-    py::enum_<PotentialFlags>(m, "PotentialFlags", py::arithmetic())
-        .value("POTENTIAL_NONE", PotentialFlags::POTENTIAL_NONE)
-        .value("POTENTIAL_LJ126", PotentialFlags::POTENTIAL_LJ126)
-        .value("POTENTIAL_EWALD", PotentialFlags::POTENTIAL_EWALD)
-        .value("POTENTIAL_COULOMB", PotentialFlags::POTENTIAL_COULOMB)
-        .value("POTENTIAL_SINGLE", PotentialFlags::POTENTIAL_SINGLE)
-        .value("POTENTIAL_R2", PotentialFlags::POTENTIAL_R2)
-        .value("POTENTIAL_R", PotentialFlags::POTENTIAL_R)
-        .value("POTENTIAL_ANGLE", PotentialFlags::POTENTIAL_ANGLE)
-        .value("POTENTIAL_HARMONIC", PotentialFlags::POTENTIAL_HARMONIC)
-        .value("POTENTIAL_DIHEDRAL", PotentialFlags::POTENTIAL_DIHEDRAL)
-        .value("POTENTIAL_SWITCH", PotentialFlags::POTENTIAL_SWITCH)
-        .value("POTENTIAL_REACTIVE", PotentialFlags::POTENTIAL_REACTIVE)
-        .value("POTENTIAL_SCALED", PotentialFlags::POTENTIAL_SCALED)
-        .value("POTENTIAL_SHIFTED", PotentialFlags::POTENTIAL_SHIFTED)
-        .export_values();
-     */
+
+    PyModule_AddObject(m, "POTENTIAL_NONE", mx::cast((int)PotentialFlags::POTENTIAL_NONE));
+    PyModule_AddObject(m, "POTENTIAL_LJ126", mx::cast((int)PotentialFlags::POTENTIAL_LJ126));
+    PyModule_AddObject(m, "POTENTIAL_EWALD", mx::cast((int)PotentialFlags::POTENTIAL_EWALD));
+    PyModule_AddObject(m, "POTENTIAL_COULOMB", mx::cast((int)PotentialFlags::POTENTIAL_COULOMB));
+    PyModule_AddObject(m, "POTENTIAL_SINGLE", mx::cast((int)PotentialFlags::POTENTIAL_SINGLE));
+    PyModule_AddObject(m, "POTENTIAL_R2", mx::cast((int)PotentialFlags::POTENTIAL_R2));
+    PyModule_AddObject(m, "POTENTIAL_R", mx::cast((int)PotentialFlags::POTENTIAL_R));
+    PyModule_AddObject(m, "POTENTIAL_ANGLE", mx::cast((int)PotentialFlags::POTENTIAL_ANGLE));
+    PyModule_AddObject(m, "POTENTIAL_HARMONIC", mx::cast((int)PotentialFlags::POTENTIAL_HARMONIC));
+    PyModule_AddObject(m, "POTENTIAL_DIHEDRAL", mx::cast((int)PotentialFlags::POTENTIAL_DIHEDRAL));
+    PyModule_AddObject(m, "POTENTIAL_SWITCH", mx::cast((int)PotentialFlags::POTENTIAL_SWITCH));
+    PyModule_AddObject(m, "POTENTIAL_REACTIVE", mx::cast((int)PotentialFlags::POTENTIAL_REACTIVE));
+    PyModule_AddObject(m, "POTENTIAL_SCALED", mx::cast((int)PotentialFlags::POTENTIAL_SCALED));
+    PyModule_AddObject(m, "POTENTIAL_SHIFTED", mx::cast((int)PotentialFlags::POTENTIAL_SHIFTED));
 
     return S_OK;
 }

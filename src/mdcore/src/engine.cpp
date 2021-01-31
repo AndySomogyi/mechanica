@@ -962,6 +962,11 @@ CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i )
     /* store the force. */
     e->p_singlebody[i] = p;
     Py_INCREF(p);
+    
+    if(MxConstantForce_Check(p)) {
+        Py_INCREF(p);
+        e->constant_forces.push_back((MxConstantForce*)p);
+    }
 
     /* end on a good note. */
     return engine_err_ok;
@@ -1217,6 +1222,10 @@ int engine_step ( struct engine *e ) {
     // notify time listeners
     if(!SUCCEEDED(CMulticastTimeEvent_Invoke(e->on_time, e->time * e->dt))) {
         return error(engine_err);
+    }
+    
+    for(MxConstantForce* p : e->constant_forces) {
+        p->onTime(e->time * e->dt);
     }
 
 	/* return quietly */

@@ -1799,6 +1799,8 @@ HRESULT MxParticle_Become(MxParticle *part, MxParticleType *type) {
     
     part->typeId = type->id;
     
+    part->flags = type->particle_flags;
+    
     if(part->state_vector) {
         CStateVector *oldState = part->state_vector;
         

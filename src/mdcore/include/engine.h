@@ -25,6 +25,7 @@
 #include "pthread.h"
 #include "space.h"
 #include "cycle.h"
+#include <vector>
 
 
 /* engine error codes */
@@ -166,6 +167,7 @@ CAPI_DATA(int) engine_err;
 /** List of error messages. */
 CAPI_DATA(const char *) engine_err_msg[];
 
+struct MxConstantForce;
 
 /** 
  * The #engine structure. 
@@ -341,6 +343,14 @@ typedef struct engine {
 	int nr_sets;
 
 	struct CMulticastTimeEvent *on_time;
+    
+    
+    /**
+     * vector of constant forces. Because these forces get
+     * updates from user defined functions, we keep a copy of them
+     * here in addtion to the other copy in p_singlebody. 
+     */
+    std::vector<MxConstantForce*> constant_forces;
     
     /**
      * particle maximum velocity as a fraction of space cell size.

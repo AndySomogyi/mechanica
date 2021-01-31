@@ -97,6 +97,15 @@ class unitcell(object):
         diameter (list): List of particle diameters.
         moment_inertia (list): List of particle moments of inertia.
         orientation (list): List of particle orientations.
+        bonds (tuple): a list of tuples, where each tuple that contains a:
+                      * potential,
+                      * tuple of particle index in current cell, and
+                        another unit cell
+                      * tuple of the other unit cell's offset, i.e.
+                      to bind the 1'th particle in a cell with the 1'th particle
+                      in another cell one unit cell offset in the i direction, we
+                      would:
+                      (pot, (1, 1), (1, 0, 0))
 
     A unit cell is a box definition (*a1*, *a2*, *a3*, *dimensions*), and particle properties
     for *N* particles. You do not need to specify all particle properties. Any property omitted
@@ -131,13 +140,15 @@ class unitcell(object):
                  position = None,
                  types = None,
                  diameter = None,
-                 orientation = None):
+                 orientation = None,
+                 bonds = None):
 
         self.N = N;
         self.a1 = numpy.asarray(a1, dtype=numpy.float64)
         self.a2 = numpy.asarray(a2, dtype=numpy.float64)
         self.a3 = numpy.asarray(a3, dtype=numpy.float64)
         self.dimensions = dimensions
+        self.bonds = bonds
 
         if position is None:
             self.position = numpy.array([(0,0,0)] * self.N, dtype=numpy.float64);
@@ -163,7 +174,7 @@ class unitcell(object):
 
 
 
-def sc(a, types=None):
+def sc(a, types=None, potential=None, bond_vector=(True, True, True)):
     R""" Create a simple cubic lattice (3D).
 
     Args:
@@ -193,12 +204,27 @@ def sc(a, types=None):
         \end{eqnarray*}
     """
 
+    bonds = None
+    if potential:
+        bonds = []
+
+        if bond_vector[0]:
+            bonds.append((potential, (0,0), (1, 0, 0)))
+
+        if bond_vector[1]:
+            bonds.append((potential, (0,0), (0, 1, 0)))
+
+        if bond_vector[2]:
+            bonds.append((potential, (0,0), (0, 0, 1)))
+
+
     return unitcell(N=1,
                     types=_make_types(1, types),
                     a1=[a,0,0],
                     a2=[0,a,0],
                     a3=[0,0,a],
-                    dimensions=3);
+                    dimensions=3,
+                    bonds=bonds);
 
 def bcc(a, types = None):
     R""" Create a body centered cubic lattice (3D).
@@ -455,6 +481,32 @@ def create_lattice(unitcell, n, origin=None):
                 pos = origin + unitcell.a1 * i + unitcell.a2 * j + unitcell.a3 * k;
                 parts = [type(pos) for (type,pos) in zip(unitcell.types, unitcell.position + pos)]
                 lattice[i,j,k] = parts
+
+    for i in range(n[0]):
+        for j in range(n[1]):
+            for k in range(n[2]):
+                for bond in unitcell.bonds:
+                    ii = (i, j, k) # index of first unit cell, needs to be tuple
+                    jj = (ii[0] + bond[2][0], ii[1] + bond[2][1], ii[2] + bond[2][2])
+                    # check if next unit cell index is valid
+                    if jj[0] >= n[0] or jj[1] >= n[1] or jj[2] >= n[2]:
+                        continue
+
+                    print("ii, jj: ", ii, jj)
+
+                    #print("lattice[(0,0,0)]: ", lattice[(0, 0, 0)])
+
+                    # grap the parts out of the lattice
+                    ci = lattice[ii]
+                    cj = lattice[jj]
+
+                    #print("ci: ", ci)
+                    #print("cj: ", cj)
+
+                    print("bonding: ", ci[bond[1][0]], cj[bond[1][1]])
+
+                    m.Bond(bond[0], ci[bond[1][0]], cj[bond[1][1]])
+
 
     return lattice
 

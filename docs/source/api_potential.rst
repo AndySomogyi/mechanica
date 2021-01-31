@@ -25,7 +25,68 @@ A potential can be treated just like any python callable object to evaluate it::
 
 .. class:: Potential
 
-   
+      .. staticmethod:: power([k], [r0], [min], max=[10], [tol=0.001])
+
+
+         :param k: interaction strength, represents the potential energy peak
+                    value. Defaults to 1
+         :param r0: potential rest length, zero of the potential, defaults
+                    to 0. 
+         :param alpha: Exponent, defaults to 1.
+         :param min: minimal value potential is computed for, defaults to r0 / 2.
+         :param max: cutoff distance, defaults to 3 * r0.
+         :param tol: Tolerance, defaults to 0.01.
+
+
+         some stuff, :math:`r_0 - r_0 / 2`.
+
+         The `power` potential the general form of many of the potential
+         functions, such as :meth:`linear`, etc... `power` has the form:
+
+         .. math::
+
+            U(r,k) = k (r-r_0)^{\alpha}
+
+         Some examples of `power` potentials are::
+
+         >>> import mechanica as m
+         >>> p = m.Potential.power(k=1, r0=1, alpha=1.1)
+         >>> p.plot(potential=True)
+
+         .. figure:: power_alpha_1.1.png
+            :width: 500px
+            :align: center
+            :alt: alternate text
+            :figclass: align-center
+
+            `power` potential function of :math:`U(r) = 1.0 (r - 1)^{1.1}`
+
+
+         >>> import mechanica as m
+         >>> p = m.Potential.power(k=1,alpha=0.5, r0=1)
+         >>> p.plot(potential=True)
+
+         .. figure:: power_alpha_0.5.png
+            :width: 500px
+            :align: center
+            :alt: alternate text
+            :figclass: align-center
+
+            `power` potential function of :math:`U(r) = 1.0 (r - 1)^{0.5}`
+
+         >>> import mechanica as m
+         >>> p = m.Potential.power(k=1,alpha=2.5, r0=1)
+         >>> p.plot(potential=True)
+
+         .. figure:: power_alpha_2.5.png
+            :width: 500px
+            :align: center
+            :alt: alternate text
+            :figclass: align-center
+
+            `power` potential function of :math:`U(r) = 1.0 (r - 1)^{2.5}`
+
+
    .. staticmethod:: lennard_jones_12_6(min, max, a, b, )
 
       Creates a Potential representing a 12-6 Lennard-Jones potential
