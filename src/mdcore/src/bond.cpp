@@ -502,7 +502,7 @@ static int _bond_init(MxBondHandle *self, uint32_t flags, int32_t i, int32_t j,
     bond->i = i;
     bond->j = j;
     bond->half_life = half_life;
-    bond->bond_energy = bond_energy;
+    bond->dissociation_energy = bond_energy;
     bond->style = MxBond_StylePtr;
     Py_IncRef(bond->style);
     
@@ -531,7 +531,7 @@ static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
         PyObject *p2  = mx::arg<PyObject*>("p2", 2, args, kwargs);
         
         double half_life = mx::arg<double>("half_life", 3, args, kwargs, std::numeric_limits<double>::max());
-        double bond_energy = mx::arg<double>("bond_energy", 4, args, kwargs, std::numeric_limits<double>::max());
+        double bond_energy = mx::arg<double>("dissociation_energy", 4, args, kwargs, std::numeric_limits<double>::max());
         uint32_t flags = mx::arg<uint32_t>("flags", 5, args, kwargs, 0);
         
         if(PyObject_IsInstance(pot, (PyObject*)&MxPotential_Type) <= 0) {
@@ -623,6 +623,25 @@ static PyGetSetDef bond_getset[] = {
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             PyErr_SetString(PyExc_PermissionError, "read only");
             return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "dissociation_energy",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxBond *bond = ((MxBondHandle*)_obj)->get();
+            return mx::cast(bond->dissociation_energy);
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            try {
+                MxBond *bond = ((MxBondHandle*)_obj)->get();
+                bond->dissociation_energy = mx::cast<float>(val);
+                return 0;
+            }
+            catch (const std::exception &e) {
+                return C_EXP(e);
+            }
         },
         .doc = "test doc",
         .closure = NULL
