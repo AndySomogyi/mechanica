@@ -73,7 +73,7 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
  * of the #potential @c p.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
     
     int ind, k;
     FPTYPE x, ee, eff, *c, r;
@@ -112,7 +112,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval ( struct MxPotential 
     
 }
 
-__attribute__ ((always_inline)) INLINE bool potential_eval_ex(
+MX_ALWAYS_INLINE bool potential_eval_ex(
     struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
     
     unsigned ind, k;
@@ -182,7 +182,7 @@ __attribute__ ((always_inline)) INLINE bool potential_eval_ex(
  * of the #potential @c p.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_r (struct MxPotential *p , FPTYPE r , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval_r (struct MxPotential *p , FPTYPE r , FPTYPE *e , FPTYPE *f ) {
 
     int ind, k;
     FPTYPE x, ee, eff, *c;
@@ -235,7 +235,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_r (struct MxPotential
  * arguments for @c NULL.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_expl ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval_expl ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
 
     const FPTYPE isqrtpi = 0.56418958354775628695;
     const FPTYPE kappa = 3.0;
@@ -306,7 +306,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_expl ( struct MxPoten
  * this function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
 
 #if defined(__SSE__) && defined(FPTYPE_SINGLE)
     // int j, k;
@@ -454,7 +454,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4single ( struct 
  * this function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
 
 #if defined(__SSE__) && defined(FPTYPE_SINGLE)
     int j, k;
@@ -564,7 +564,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_old ( str
 
 
 #ifdef STILL_NOT_READY_FOR_PRIME_TIME
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[4] , float *r2 , float *e , float *f ) {
 
     int j, k;
     union {
@@ -652,7 +652,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_gccvec ( 
  * this function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , float *r_in , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , float *r_in , float *e , float *f ) {
 
 #if defined(__SSE__) && defined(FPTYPE_SINGLE)
     int j, k;
@@ -784,7 +784,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4single_r ( struc
  * this function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , float *r2 , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , float *r2 , float *e , float *f ) {
 
 #if defined(__AVX__) && defined(FPTYPE_SINGLE)
     int j;
@@ -978,7 +978,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_8single ( struct 
     }
 
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , float *r2 , float *e , float *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , float *r2 , float *e , float *f ) {
 
 #if defined(__AVX__) && defined(FPTYPE_SINGLE)
     int j;
@@ -1195,7 +1195,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_8single_r ( struc
  * function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f ) {
 
 #if defined(__SSE2__) && defined(FPTYPE_DOUBLE)
     int ind[2], j;
@@ -1271,7 +1271,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_2double ( struct 
  * function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f ) {
 
 #if defined(__AVX__) && defined(FPTYPE_DOUBLE)
     int ind[4], j;
@@ -1420,7 +1420,7 @@ __attribute__ ((always_inline)) INLINE void potential_eval_vec_4double ( struct 
  * function simply calls #potential_eval on each entry.
  */
 
-__attribute__ ((always_inline)) INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , FPTYPE *r_in , FPTYPE *e , FPTYPE *f ) {
+MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , FPTYPE *r_in , FPTYPE *e , FPTYPE *f ) {
 
 #if defined(__AVX__) && defined(FPTYPE_DOUBLE)
     int ind[4], j;

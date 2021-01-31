@@ -15,20 +15,6 @@
 using namespace Magnum;
 
 
-
-/*
-
-PyGetSetDef particle_getsets[] = {
-        //create_vector4_getset(),
-    MakeAttibute("position", "doc", &MxParticle::position),
-    MakeAttibute("velocity", "doc", &MxParticle::velocity),
-    MakeAttibute("force", "doc", &MxParticle::force),
-    MakeAttibute("q", "doc", &MxParticle::q),
-    {NULL}
-};
-
-*/
-
 static PyObject*
 mytype_get_float_field(MxGlfwWindow* self, void* closure)
 {
