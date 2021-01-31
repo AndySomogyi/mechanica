@@ -61,7 +61,7 @@ typedef struct MxBond {
 	double half_life;
 
 	/* potential energy required to break this bond */
-	double bond_energy;
+	double dissociation_energy;
 
 	struct MxPotential *potential;
     
