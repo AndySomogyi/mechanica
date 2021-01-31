@@ -8,7 +8,6 @@
 #include <rendering/NOMStyle.hpp>
 #include <engine.h>
 #include <space.h>
-#include <pybind11/pybind11.h>
 #include <MxUtil.h>
 #include <MxConvert.hpp>
 #include <CConvert.hpp>
@@ -67,7 +66,7 @@ static PyGetSetDef getset[] = {
         .name = "color",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             NOMStyle *self = (NOMStyle*)_obj;
-            return pybind11::cast(self->color).release().ptr();
+            return mx::cast((Magnum::Vector3)self->color);
         },
         .set = [](PyObject *self, PyObject *val, void *p) -> int {
             return NOMStyle_SetColor((NOMStyle*)self, val);

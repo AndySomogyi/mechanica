@@ -17,9 +17,6 @@
 // python type info
 #include <structmember.h>
 #include <MxNumpy.h>
-
-#include <pybind11/pybind11.h>
-
 #include <MxPy.h>
 #include "engine.h"
 #include "space.h"
@@ -214,8 +211,8 @@ MxParticleType *MxCluster_TypePtr;
 //PyObject *);
 PyObject *cluster_particle_ctor(PyObject *a, PyObject *b, PyObject *c) {
     
-    std::cout << "a: " << pybind11::cast<std::string>(PyObject_Str(a)) << std::endl;
-    std::cout << "b: " << pybind11::cast<std::string>(PyObject_Str(b)) << std::endl;
+    std::cout << "a: " << carbon::str(a) << std::endl;
+    std::cout << "b: " << carbon::str(b) << std::endl;
     Py_RETURN_NONE;
 }
 
@@ -273,11 +270,11 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
     
     while (PyDict_Next(dict, &pos, &key, &value)) {
         
-        std::cout << "checking (" << pybind11::cast<std::string>(PyObject_Str(key))
-        << ", " << pybind11::cast<std::string>(PyObject_Str(value)) << ")" << std::endl;
+        std::cout << "checking (" << carbon::str(key)
+        << ", " << carbon::str(value) << ")" << std::endl;
         
         if(PyType_Check(value) && PyObject_IsSubclass(value, (PyObject*)MxParticle_GetType())) {
-            std::cout << "found a particle type: " << pybind11::cast<std::string>(PyObject_Str(key)) << std::endl;
+            std::cout << "found a particle type: " << carbon::str(key) << std::endl;
             
             PyObject *descr = MxClusterParticleCtor_New((MxParticleType*)self, (MxParticleType*)value);
             
@@ -290,7 +287,7 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
             
             PyObject *o = PyDict_GetItem(dict, key);
             
-            std::cout << "new obj " << pybind11::cast<std::string>(PyObject_Str(o)) << std::endl;
+            std::cout << "new obj " << carbon::str(o) << std::endl;
         }
     }
     return S_OK;
@@ -456,7 +453,6 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
     
     if(kwargs && PyDict_GetItemString(kwargs, "axis")) {
         // use axis form of split
-        pybind11::detail::loader_life_support ls{};
         Magnum::Vector3 axis = mx::arg<Magnum::Vector3>("axis", 0, args, kwargs);
         return cluster_fission_axis(cluster, axis);
     }
@@ -486,7 +482,6 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
     }
     else {
         // normal documented usage, grab args from args and kewords.
-        pybind11::detail::loader_life_support ls{};
         normal = mx::arg("normal", 0, args, kwargs, MxRandomUnitVector());
         point = mx::arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
         
@@ -595,10 +590,10 @@ static Magnum::Vector3 random_point_solid_sphere(float radius) {
 
 PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
                 void *wrapped, PyObject *kwds) {
-    std::cout << "self: " << pybind11::cast<std::string>(PyObject_Str(self)) << std::endl;
-    std::cout << "args: " << pybind11::cast<std::string>(PyObject_Str(args)) << std::endl;
-    std::cout << "kwds: " << pybind11::cast<std::string>(PyObject_Str(kwds)) << std::endl;
-    std::cout << "wrapped: " << pybind11::cast<std::string>(PyObject_Str((PyObject*)wrapped)) << std::endl;
+    std::cout << "self: " << carbon::str(self) << std::endl;
+    std::cout << "args: " << carbon::str(args) << std::endl;
+    std::cout << "kwds: " << carbon::str(kwds) << std::endl;
+    std::cout << "wrapped: " << carbon::str((PyObject*)wrapped) << std::endl;
     
     if(kwds) {
         Py_INCREF(kwds);
@@ -633,7 +628,7 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
             Magnum::Vector3 pos;
             space_getpos(&_Engine.s, clusterId, pos.data());
             pos = random_point_solid_sphere(radius) + pos;
-            PyObject *pypos = pybind11::cast(pos).release().ptr();
+            PyObject *pypos = mx::cast(pos);
             PyDict_SetItemString(kwds, "position", pypos);
             PyObject *part = PyObject_Call((PyObject*)ptype, newArgs, kwds);
             assert(part);

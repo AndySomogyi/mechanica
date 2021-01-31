@@ -43,6 +43,7 @@
 #include <CSpecies.hpp>
 #include <CSpeciesList.hpp>
 #include <CStateVector.hpp>
+#include <bond.h>
 
 #include <sstream>
 #include <cstring>
@@ -144,6 +145,8 @@ static PyObject* particle_become(MxParticleHandle *_self, PyObject *args, PyObje
 static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
+
+static PyObject* particle_bonds(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particletype_items(MxParticleType *self);
 
@@ -704,6 +707,7 @@ static PyMethodDef particle_methods[] = {
         { "become", (PyCFunction)particle_become, METH_VARARGS | METH_KEYWORDS, NULL },
         { "neighbors", (PyCFunction)particle_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
         { "distance", (PyCFunction)particle_distance, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "bonds", (PyCFunction)particle_bonds, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
 };
 
@@ -1909,6 +1913,28 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
         MxParticle_Neighbors(self, radius, &types, &nr_parts, &parts);
         
         return (PyObject*)MxParticleList_NewFromData(nr_parts, parts);
+    }
+    catch(std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+
+static PyObject* particle_bonds(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        PARTICLE_SELF(_self);
+        
+        PyObject *bonds = PyList_New(0);
+        
+        int j = 0;
+        
+        for(int i = 0; i < _Engine.nr_bonds; ++i) {
+            MxBond *b = &_Engine.bonds[i];
+            if((b->flags & BOND_ACTIVE) && (b->i == self->id || b->j == self->id)) {
+                PyList_Insert(bonds, j++, MxBondHandle_FromId(i));
+            }
+        }
+        return bonds;
     }
     catch(std::exception &e) {
         C_RETURN_EXP(e);
