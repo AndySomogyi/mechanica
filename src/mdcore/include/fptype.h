@@ -61,22 +61,7 @@
 #define simd_vector(elcount, type)  __attribute__((vector_size((elcount)*sizeof(type)))) type
 
 
-/* Some extra functions function for Alti-Vec instruction set. */
-#ifdef __ALTIVEC__
-    #include <altivec.h>
-    __attribute__ ((always_inline)) INLINE simd_vector float vec_sqrt( simd_vector float a ) {
-        simd_vector float z = ( simd_vector float ){ 0.0f };
-        simd_vector float estimate = vec_rsqrte( a );
-        simd_vector float estimateSquared = vec_madd( estimate, estimate, z );
-        simd_vector float halfEstimate = vec_madd( estimate, (simd_vector float){0.5}, z );
-        return vec_madd( a, vec_madd( vec_nmsub( a, estimateSquared, (simd_vector float){1.0} ), halfEstimate, estimate ), z);
-        }
-    /* inline static vector float vec_load4 ( float a , float b , float c , float d ) {
-        return vec_mergeh( vec_mergeh( vec_promote(a,0) , vec_promote(c,0) ) , vec_mergeh( vec_promote(b,0) , vec_promote(d,0) ) );
-        } */
-    #define vec_load4(a,b,c,d) vec_mergeh( vec_mergeh( vec_promote((a),0) , vec_promote((c),0) ) , vec_mergeh( vec_promote((b),0) , vec_promote((d),0) ) )
-    #define vec_mul(a,b) vec_madd((a),(b),(simd_vector float){0.0f})
-#endif
+
 
 
 /**
@@ -92,7 +77,7 @@
  * SSE registers and horizontal adds.
  */
  
-__attribute__ ((always_inline)) INLINE FPTYPE fptype_r2 ( FPTYPE *x1 , FPTYPE *x2 , FPTYPE *dx ) {
+MX_ALWAYS_INLINE FPTYPE fptype_r2 ( FPTYPE *x1 , FPTYPE *x2 , FPTYPE *dx ) {
 
 #if defined(VECTORIZE) && defined(FPTYPE_SINGLE) && defined(__SSE4_1__)
     union {
