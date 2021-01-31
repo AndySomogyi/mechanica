@@ -103,6 +103,7 @@ static PyGetSetDef constantforce_getset[] = {
             try {
                 MxConstantForce *self = (MxConstantForce*)obj;
                 self->setValue(val);
+                return 0;
             }
             catch(const std::exception &e) {
                 return C_EXP(e);
@@ -121,6 +122,7 @@ static PyGetSetDef constantforce_getset[] = {
             try {
                 MxConstantForce *self = (MxConstantForce*)obj;
                 self->updateInterval = mx::cast<double>(val);
+                return 0;
             }
             catch(const std::exception &e) {
                 return C_EXP(e);
