@@ -15,6 +15,6 @@ uc = m.lattice.sc(0.25, A)
 
 parts = m.lattice.create_lattice(uc, [25, 25, 25])
 
-parts[24,24,24][0].species.S1 = 5000
+parts[24,0,24][0].species.S1 = 5000
 
 m.show()
