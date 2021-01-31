@@ -114,6 +114,14 @@ struct MxParticle  {
         FPTYPE f[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 force __attribute__ ((aligned (16)));
     };
+    
+    union {
+        FPTYPE __xxx[4] __attribute__ ((aligned (16)));
+        float delta; // number density
+        
+        
+        
+    };
 
     /** random force force */
     union {

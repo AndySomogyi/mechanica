@@ -70,21 +70,6 @@ inline size_t constexpr offset_of(Type Klass::*member) {
     return size_t(&(object.*member)) - size_t(&object);
 }
 
-template<typename C, typename T>
-PyGetSetDef MakeAttibute(const char* name, const char* doc, T C::*pm) {
-
-    MxGetSetDef result;
-
-    result.doc = doc;
-    result.name = name;
-    result.info.kind = PyGetSetDef_Kind<T>::value;
-    result.info.offset = offset_of(pm);
-    result.get = _MxGetSetDef_Getter;
-    result.set = _MxGetSetDef_Setter;
-    return *((PyGetSetDef*)&result);
-}
-
-
 
 std::ostream& operator<<(std::ostream& os, const PyObject *obj);
 
