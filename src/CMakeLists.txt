@@ -112,9 +112,6 @@ set(SRC
 
   shaders/ParticleSphereShader.cpp
 
-  test_sequences_and_iterators.cpp
-
-
   ${AST_SRC}
 #  ${X3D_SRC}
   )

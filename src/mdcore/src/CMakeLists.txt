@@ -62,17 +62,18 @@ set(PUBLIC_HEADERS
   )
 
 set(PRIVATE_HEADERS
-  "btree.h"
-  "mainpage.h"
-  "potential_eval.h"
-  "flux_eval.hpp"
-  "cuboid_eval.hpp"
-  "smoothing_kernel.hpp"
-  "reader.h"
-  "MxConstraint.hpp"
-  "MxCluster.hpp"
-  "engine_advance.h"
-  "MxSecreteUptake.hpp"
+  btree.h
+  mainpage.h
+  potential_eval.h
+  flux_eval.hpp
+  cuboid_eval.hpp
+  smoothing_kernel.hpp
+  reader.h
+  MxConstraint.hpp
+  MxCluster.hpp
+  engine_advance.h
+  MxSecreteUptake.hpp
+  SpaceQueue.hpp
   )
 
 if(MX_THREADING)
@@ -126,6 +127,7 @@ SET(SOURCES
   Cell.cpp
   Flux.cpp
   MxSecreteUptake.cpp
+  SpaceQueue.cpp
   )
 
 if(MDCORE_USE_MPI)

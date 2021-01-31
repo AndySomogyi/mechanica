@@ -261,7 +261,6 @@ CAPI_FUNC(PyObject*) Mx_GetModule() {
     return mechanicaModule;
 }
 
-void test_sequences(PyObject *_m);
 
 static PyObject * moduleinit(void)
 {
@@ -327,7 +326,6 @@ static PyObject * moduleinit(void)
     
     _MxKeyEvent_Init(m);
 
-    test_sequences(m);
     _MxUniverseIterators_init(m);
 
     _MxForces_init(m);
