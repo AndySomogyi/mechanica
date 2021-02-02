@@ -26,6 +26,7 @@
 #include "space.h"
 #include "cycle.h"
 #include <vector>
+#include <thread>
 
 
 /* engine error codes */
@@ -273,6 +274,9 @@ typedef struct engine {
      * allocate size of bonds array
      */
     int bonds_size;
+    
+    // mutex for anything that modifies the *number* of bonds.
+    std::mutex bonds_mutex;
 
 	/** List of exclusions. */
 	struct exclusion *exclusions;

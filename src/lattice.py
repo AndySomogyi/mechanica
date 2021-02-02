@@ -25,6 +25,7 @@
 
 import numpy
 import math
+from collections import namedtuple
 
 if __name__ == 'mechanica.lattice':
     from . import _mechanica as m
@@ -80,6 +81,17 @@ def _make_types(n, types):
 
     return [types] * n
 
+# hold bond rule info,
+#
+# *func: function of func(p1, p2) that accepts two particle handles and
+#        returns a bond.
+#
+# *parts: pair of particle ids in current current and other unit cell
+#         must be tuple.
+#
+# *cell_offset: offset vector of other unit cell relative to current
+#         unit cell. Must be a tuple
+_BondRule = namedtuple('_BondRule', ['func', 'part_ids', 'cell_offset'])
 
 class unitcell(object):
     R""" Define a unit cell.
@@ -174,7 +186,7 @@ class unitcell(object):
 
 
 
-def sc(a, types=None, potential=None, bond_vector=(True, True, True)):
+def sc(a, types=None, bond=None, bond_vector=(True, True, True)):
     R""" Create a simple cubic lattice (3D).
 
     Args:
@@ -205,18 +217,17 @@ def sc(a, types=None, potential=None, bond_vector=(True, True, True)):
     """
 
     bonds = None
-    if potential:
+    if bond:
         bonds = []
 
         if bond_vector[0]:
-            bonds.append((potential, (0,0), (1, 0, 0)))
+            bonds.append(_BondRule(bond, (0,0), (1, 0, 0)))
 
         if bond_vector[1]:
-            bonds.append((potential, (0,0), (0, 1, 0)))
+            bonds.append(_BondRule(bond, (0,0), (0, 1, 0)))
 
         if bond_vector[2]:
-            bonds.append((potential, (0,0), (0, 0, 1)))
-
+            bonds.append(_BondRule(bond, (0,0), (0, 0, 1)))
 
     return unitcell(N=1,
                     types=_make_types(1, types),
@@ -473,8 +484,6 @@ def create_lattice(unitcell, n, origin=None):
 
     lattice = numpy.empty(n, dtype=numpy.object)
 
-    print("origin: ", origin)
-
     for i in range(n[0]):
         for j in range(n[1]):
             for k in range(n[2]):
@@ -487,12 +496,12 @@ def create_lattice(unitcell, n, origin=None):
             for k in range(n[2]):
                 for bond in unitcell.bonds:
                     ii = (i, j, k) # index of first unit cell, needs to be tuple
-                    jj = (ii[0] + bond[2][0], ii[1] + bond[2][1], ii[2] + bond[2][2])
+                    jj = (ii[0] + bond.cell_offset[0], ii[1] + bond.cell_offset[1], ii[2] + bond.cell_offset[2])
                     # check if next unit cell index is valid
                     if jj[0] >= n[0] or jj[1] >= n[1] or jj[2] >= n[2]:
                         continue
 
-                    print("ii, jj: ", ii, jj)
+                    #print("ii, jj: ", ii, jj)
 
                     #print("lattice[(0,0,0)]: ", lattice[(0, 0, 0)])
 
@@ -503,9 +512,10 @@ def create_lattice(unitcell, n, origin=None):
                     #print("ci: ", ci)
                     #print("cj: ", cj)
 
-                    print("bonding: ", ci[bond[1][0]], cj[bond[1][1]])
+                    print("bonding: ", ci[bond.part_ids[0]], cj[bond.part_ids[1]])
 
-                    m.Bond(bond[0], ci[bond[1][0]], cj[bond[1][1]])
+                    bond.func(ci[bond.part_ids[0]], cj[bond.part_ids[1]])
+
 
 
     return lattice

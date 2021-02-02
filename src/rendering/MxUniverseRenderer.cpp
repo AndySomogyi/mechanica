@@ -319,9 +319,28 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
                 color = &bond->style->color;
                 MxParticle *pi = _Engine.s.partlist[bond->i];
                 MxParticle *pj = _Engine.s.partlist[bond->j];
-                bondData[i].position = pi->global_position();
+                
+                double *oj = _Engine.s.celllist[pj->id]->origin;
+                Magnum::Vector3 pj_origin = {static_cast<float>(oj[0]), static_cast<float>(oj[1]), static_cast<float>(oj[2])};
+                
+                int shift[3];
+                Magnum::Vector3 pix;
+                
+                int *loci = _Engine.s.celllist[ bond->i ]->loc;
+                int *locj = _Engine.s.celllist[ bond->j ]->loc;
+                
+                for ( int k = 0 ; k < 3 ; k++ ) {
+                    shift[k] = loci[k] - locj[k];
+                    if ( shift[k] > 1 )
+                        shift[k] = -1;
+                    else if ( shift[k] < -1 )
+                        shift[k] = 1;
+                    pix[k] = pi->x[k] + _Engine.s.h[k]* shift[k];
+                }
+                                
+                bondData[i].position = pix + pj_origin;
                 bondData[i++].color = *color;
-                bondData[i].position = pj->global_position();
+                bondData[i].position = pj->position + pj_origin;
                 bondData[i++].color = *color;
             }
         }

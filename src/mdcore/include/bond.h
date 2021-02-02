@@ -65,7 +65,6 @@ typedef struct MxBond {
 
 	struct MxPotential *potential;
     
-    
     struct NOMStyle *style;
 
 } MxBond;

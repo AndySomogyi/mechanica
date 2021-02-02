@@ -219,23 +219,30 @@ int bond_eval ( struct MxBond *bonds , int N , struct engine *e , double *epot_o
                 icount = 0;
 
             }
-        #else
+        #else // NOT VECTORIZE
             /* evaluate the bond */
             #ifdef EXPLICIT_POTENTIALS
                 potential_eval_expl( pot , r2 , &ee , &eff );
             #else
                 potential_eval( pot , r2 , &ee , &eff );
             #endif
+        
+            if(eff >= b->dissociation_energy) {
+                MxBond_Destroy(b);
+            }
+            else {
 
-            /* update the forces */
-            for ( k = 0 ; k < 3 ; k++ ) {
-                w = eff * dx[k];
-                pi->f[k] -= w;
-                pj->f[k] += w;
+                /* update the forces */
+                for ( k = 0 ; k < 3 ; k++ ) {
+                    w = eff * dx[k];
+                    pi->f[k] -= w;
+                    pj->f[k] += w;
+                }
+                /* tabulate the energy */
+                epot += ee;
             }
 
-            /* tabulate the energy */
-            epot += ee;
+
         #endif
 
         } /* loop over bonds. */
@@ -554,9 +561,8 @@ static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
 
     }
     catch (const std::exception &e) {
-        C_EXP(e); return 0;
+        return C_EXP(e);
     }
-    return 0;
 }
 
 static PyObject* bond_str(MxBondHandle *bh) {
@@ -929,6 +935,9 @@ MxBondHandle* MxBondHandle_FromId(int id) {
 }
 
 CAPI_FUNC(HRESULT) MxBond_Destroy(struct MxBond *b) {
+    
+    std::unique_lock<std::mutex> lock(_Engine.bonds_mutex);
+    
     if(b->flags & BOND_ACTIVE) {
         Py_DecRef(b->potential);
         // this clears the BOND_ACTIVE flag
