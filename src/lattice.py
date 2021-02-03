@@ -491,32 +491,31 @@ def create_lattice(unitcell, n, origin=None):
                 parts = [type(pos) for (type,pos) in zip(unitcell.types, unitcell.position + pos)]
                 lattice[i,j,k] = parts
 
-    for i in range(n[0]):
-        for j in range(n[1]):
-            for k in range(n[2]):
-                for bond in unitcell.bonds:
-                    ii = (i, j, k) # index of first unit cell, needs to be tuple
-                    jj = (ii[0] + bond.cell_offset[0], ii[1] + bond.cell_offset[1], ii[2] + bond.cell_offset[2])
-                    # check if next unit cell index is valid
-                    if jj[0] >= n[0] or jj[1] >= n[1] or jj[2] >= n[2]:
-                        continue
+    if unitcell.bonds:
+        for i in range(n[0]):
+            for j in range(n[1]):
+                for k in range(n[2]):
+                    for bond in unitcell.bonds:
+                        ii = (i, j, k) # index of first unit cell, needs to be tuple
+                        jj = (ii[0] + bond.cell_offset[0], ii[1] + bond.cell_offset[1], ii[2] + bond.cell_offset[2])
+                        # check if next unit cell index is valid
+                        if jj[0] >= n[0] or jj[1] >= n[1] or jj[2] >= n[2]:
+                            continue
 
-                    #print("ii, jj: ", ii, jj)
+                        #print("ii, jj: ", ii, jj)
 
-                    #print("lattice[(0,0,0)]: ", lattice[(0, 0, 0)])
+                        #print("lattice[(0,0,0)]: ", lattice[(0, 0, 0)])
 
-                    # grap the parts out of the lattice
-                    ci = lattice[ii]
-                    cj = lattice[jj]
+                        # grap the parts out of the lattice
+                        ci = lattice[ii]
+                        cj = lattice[jj]
 
-                    #print("ci: ", ci)
-                    #print("cj: ", cj)
+                        #print("ci: ", ci)
+                        #print("cj: ", cj)
 
-                    print("bonding: ", ci[bond.part_ids[0]], cj[bond.part_ids[1]])
+                        print("bonding: ", ci[bond.part_ids[0]], cj[bond.part_ids[1]])
 
-                    bond.func(ci[bond.part_ids[0]], cj[bond.part_ids[1]])
-
-
+                        bond.func(ci[bond.part_ids[0]], cj[bond.part_ids[1]])
 
     return lattice
 
