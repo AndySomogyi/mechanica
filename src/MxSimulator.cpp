@@ -20,8 +20,8 @@
 #include <MxUniverse.h>
 #include <MxConvert.hpp>
 
-#include <err.h>
-
+// mdcore errs.h
+#include <errs.h>
 
 
 #include <pybind11/pybind11.h>
