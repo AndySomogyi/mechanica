@@ -45,6 +45,7 @@
 #include "engine.h"
 #include "../../rendering/NOMStyle.hpp"
 #include <iostream>
+#include "smoothing_kernel.hpp"
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -201,6 +202,8 @@ int space_prepare ( struct space *s ) {
     s->epot_angle = 0.0;
     s->epot_dihedral = 0.0;
     s->epot_exclusion = 0.0;
+    
+    const float self_number_density = W(0, s->cutoff);
 
     /* Run through the tasks and set the waits. */
     for ( k = 0 ; k < s->nr_tasks ; k++ )
@@ -213,14 +216,19 @@ int space_prepare ( struct space *s ) {
         s->cells[cid].epot = 0.0;
         if ( s->cells[cid].flags & cell_flag_ghost )
             continue;
-        for ( pid = 0 ; pid < s->cells[cid].count ; pid++ )
-            for ( k = 0 ; k < 3 ; k++ )
+        
+        for ( pid = 0 ; pid < s->cells[cid].count ; pid++ ) {
+            
+            // yes, we are using up to k=4 here, clear the force, and number density.
+            for ( k = 0 ; k < 3 ; k++ ) {
                 s->cells[cid].parts[pid].f[k] = 0.0;
+            }
+            s->cells[cid].parts[pid].f[3] = self_number_density;
+        }
     }
 
     /* what else could happen? */
     return space_err_ok;
-
 }
 
 

@@ -86,42 +86,50 @@ CAPI_DATA(int) particle_err;
  * by the space cells. Each space cell has a array of particle structs.
  */
 struct MxParticle  {
-
-	/** Particle position */
+    
+    /**
+     * Particle force
+     *
+     * ONLY the coherent part of the force should go here. We use multi-step
+     * integrators, that need to separate the random and coherent forces.
+     *
+     * Force gets cleared each step, along with number density, so can clear the
+     * whole 4 vector here. 
+     */
     union {
-        FPTYPE x[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 position __attribute__ ((aligned (16)));
-
+        FPTYPE f[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 force __attribute__ ((aligned (16)));
+        
         struct {
-            float __dummy[3];
-            uint32_t creation_time;
+            float __dummy0[3];
+            float number_density;
         };
     };
+
 
 	/** Particle velocity */
     union {
         FPTYPE v[4] __attribute__ ((aligned (16)));
         Magnum::Vector3 velocity __attribute__ ((aligned (16)));
+        
+        struct {
+            float __dummy1[3];
+            float inv_number_density;
+        };
     };
 
-	/**
-	 * Particle force
-	 *
-	 * ONLY the coherent part of the force should go here. We use multi-step
-	 * integrators, that need to separate the random and coherent forces.
-	 */
+    
+    /** Particle position */
     union {
-        FPTYPE f[4] __attribute__ ((aligned (16)));
-        Magnum::Vector3 force __attribute__ ((aligned (16)));
+        FPTYPE x[4] __attribute__ ((aligned (16)));
+        Magnum::Vector3 position __attribute__ ((aligned (16)));
+
+        struct {
+            float __dummy2[3];
+            uint32_t creation_time;
+        };
     };
     
-    union {
-        FPTYPE __xxx[4] __attribute__ ((aligned (16)));
-        float delta; // number density
-        
-        
-        
-    };
 
     /** random force force */
     union {

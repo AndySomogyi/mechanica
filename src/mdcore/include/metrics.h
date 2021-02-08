@@ -44,6 +44,16 @@ CAPI_FUNC(HRESULT) MxParticles_Virial(int32_t *parts,
                                         FPTYPE *tensor);
 
 /**
+*
+* flags currently ignored.
+*/
+CAPI_FUNC(HRESULT) MxParticles_StressTensor(int32_t *parts,
+                                       uint16_t nr_parts,
+                                       uint32_t flags,
+                                       FPTYPE *tensor);
+
+
+/**
  * @param result: pointer to float to store result.
  */
 HRESULT MxParticles_RadiusOfGyration(int32_t *parts, uint16_t nr_parts, float* result);

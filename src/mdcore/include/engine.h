@@ -368,6 +368,11 @@ typedef struct engine {
      * defaults to 0.1.
      */
     float particle_max_dist_fraction;
+    
+    /**
+     * 
+     */
+    float computed_volume;
 
 	EngineIntegrator integrator;
 } engine;

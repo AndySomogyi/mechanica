@@ -41,6 +41,7 @@
 #include <rendering/MxColorMapper.hpp>
 #include <rendering/MxKeyEvent.hpp>
 #include <MxSecreteUptake.hpp>
+#include <DissapativeParticleDynamics.hpp>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -344,6 +345,8 @@ static PyObject * moduleinit(void)
     _cell_init(m);
     
     _MxSecreteUptake_Init(m);
+    
+    _DPDPotential_Init(m);
 
     mechanicaModule = m;
 

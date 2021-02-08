@@ -238,6 +238,9 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
             }
         }
         
+        p->inv_number_density = p->number_density > 0.f ? 1.f / p->number_density : 0.f;
+        _Engine.computed_volume += p->inv_number_density;
+        
         if(toofast) {
             toofast_error(p);
         }
@@ -326,6 +329,8 @@ int engine_advance_forward_euler ( struct engine *e ) {
         maxx[k] = h[k] * e->particle_max_dist_fraction;
         maxx2[k] = maxx[k] * maxx[k];
     }
+    
+    e->computed_volume = 0;
 
     /* update the particle velocities and positions */
     if ((e->flags & engine_flag_verlet) || (e->flags & engine_flag_mpi)) {
@@ -396,6 +401,8 @@ int engine_advance_forward_euler ( struct engine *e ) {
             func(cid);
         }
 #endif
+        
+        std::cout << "step: " << _Engine.time  << ", computed volume: " << _Engine.computed_volume << std::endl;
         
         /* set the new pos for the clusters.  */
         for ( cid = 0 ; cid < s->nr_real ; ++cid ) {

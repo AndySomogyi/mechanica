@@ -11,8 +11,20 @@
 #include "mdcore_config.h"
 #include <cmath>
 
-MX_ALWAYS_INLINE float w_cubic_spline(float r, float h) {
-    float x = std::abs(r)/h;
+#include <immintrin.h>
+
+
+// faster than  1.0f/std::sqrt, but with little accuracy.
+MX_ALWAYS_INLINE float qsqrt(const float f)
+{
+    __m128 temp = _mm_set_ss(f);
+    temp = _mm_rsqrt_ss(temp);
+    return 1.0 / _mm_cvtss_f32(temp);
+}
+
+MX_ALWAYS_INLINE float w_cubic_spline(float r2, float h) {
+    float r = qsqrt(r2);
+    float x = r/h;
     float y;
     
     if(x < 1.f) {
@@ -30,8 +42,9 @@ MX_ALWAYS_INLINE float w_cubic_spline(float r, float h) {
     return y / (M_PI * h * h * h);
 }
 
-MX_ALWAYS_INLINE float grad_w_cubic_spline(float r, float h) {
-    float x = std::abs(r)/h;
+MX_ALWAYS_INLINE float grad_w_cubic_spline(float r2, float h) {
+    float r = qsqrt(r2);
+    float x = r/h;
     float y;
     
     if(x < 1.f) {
@@ -48,9 +61,12 @@ MX_ALWAYS_INLINE float grad_w_cubic_spline(float r, float h) {
     return y / (M_PI * h * h * h * h);
 }
 
-MX_ALWAYS_INLINE float W(float r, float h) { return w_cubic_spline(r, h); };
+MX_ALWAYS_INLINE float W(float r2, float h) { return w_cubic_spline(r2, h); };
 
-MX_ALWAYS_INLINE float grad_W(float r, float h) { return grad_w_cubic_spline(r, h); };
+MX_ALWAYS_INLINE float grad_W(float r2, float h) { return grad_w_cubic_spline(r2, h); };
+
+
+
 
 
 

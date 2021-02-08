@@ -20,6 +20,8 @@
 #include <MxUniverse.h>
 #include <MxConvert.hpp>
 
+#include <err.h>
+
 
 
 #include <pybind11/pybind11.h>
@@ -636,9 +638,7 @@ int universe_init (const MxUniverseConfig &conf ) {
     printf("main: initializing the engine... "); fflush(stdout);
     if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , conf.boundaryConditions ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
-        printf("main: engine_init failed with engine_err=%i.\n",engine_err);
-        errs_dump(stdout);
-        return 1;
+        throw std::runtime_error(errs_getstring(0));
     }
 
     _Engine.dt = conf.dt;
@@ -678,9 +678,7 @@ int universe_init (const MxUniverseConfig &conf ) {
     // start the engine
 
     if ( engine_start( &_Engine , nr_runners , nr_runners ) != 0 ) {
-        printf("main: engine_start failed with engine_err=%i.\n",engine_err);
-        errs_dump(stdout);
-        return 1;
+        throw std::runtime_error(errs_getstring(0));
     }
     
     fflush(stdout);

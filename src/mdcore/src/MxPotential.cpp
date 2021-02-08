@@ -22,16 +22,16 @@
 #endif
 
 /* include some standard header files */
+#include <MxPotential.h>
+#include <DissapativeParticleDynamics.hpp>
+#include <MxParticle.h>
+#include <MxPy.h>
+#include <MxConvert.hpp>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
-#include <MxPotential.h>
-#include <MxParticle.h>
-#include <MxPy.h>
 #include <string.h>
-#include <carbon.h>
-#include <MxConvert.hpp>
-
 
 /* include local headers */
 #include "errs.h"
@@ -52,17 +52,18 @@ int potential_err = potential_err_ok;
 FPTYPE c_null[] = { FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO };
 struct MxPotential potential_null = {
         PyObject_HEAD_INIT(&MxPotential_Type)
-        .eval = NULL,
+        .kind = POTENTIAL_KIND_POTENTIAL,
+        .flags = POTENTIAL_NONE ,
         .alpha = {FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
         .c = c_null ,
-	.r0 = 0.0,
-        .a = 0.0 ,
-        .b = DBL_MAX,
-	.mu = 0.0,
-        .flags = POTENTIAL_NONE ,
+	    .r0 = 0.0,
+        .a = 0.0f ,
+        .b = std::numeric_limits<float>::max(),
+	    .mu = 0.0,
         .n = 1,
-	.create_func = NULL,
-	.name = NULL
+        .create_func = NULL,
+        .eval = NULL,
+        .name = NULL
 };
 
 
@@ -87,7 +88,7 @@ static PyObject *potential_checkerr(MxPotential *p) {
     return p;
 }
 
-static MxPotential *potential_alloc(PyTypeObject *type);
+MxPotential *potential_alloc(PyTypeObject *type);
 
 /**
  * @brief Switching function.
@@ -2335,7 +2336,7 @@ double potential_getalpha ( double (*f6p)( double ) , double a , double b ) {
 
 }
 
-static MxPotential *potential_alloc(PyTypeObject *type) {
+MxPotential *potential_alloc(PyTypeObject *type) {
 
     std::cout << MX_FUNCTION << std::endl;
 
@@ -2723,6 +2724,19 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
 }
 
 
+static PyObject *_potential_dpd(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    std::cout << MX_FUNCTION << std::endl;
+    
+    
+    float alpha =   mx::arg<double>("alpha",   0, _args, _kwargs, 1);
+    float gamma = mx::arg<double>("gamma", 1, _args, _kwargs, 1.0);
+    float sigma = mx::arg<double>("sigma", 2, _args, _kwargs, 1.0);
+    float cutoff = mx::arg<double>("cutoff", 3, _args, _kwargs, 1.0);
+    
+    return DPDPotential_New(alpha, gamma, sigma, cutoff);
+};
+
+
 
 
 static PyObject *_potential_set_value(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
@@ -2855,6 +2869,12 @@ static PyMethodDef potential_methods[] = {
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "calc force"
     },
+    {
+        "dpd",
+        (PyCFunction)_potential_dpd,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "calc force"
+    },
     
     {NULL}
 };
@@ -2889,6 +2909,19 @@ static PyGetSetDef potential_getset[] = {
     },
     {
         .name = "max",
+        .get = [](PyObject *_obj, void *p) -> PyObject* {
+            MxPotential *obj = (MxPotential*)_obj;
+            return mx::cast(obj->b);
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "cutoff",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
             return mx::cast(obj->b);

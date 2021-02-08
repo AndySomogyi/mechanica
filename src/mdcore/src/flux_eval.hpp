@@ -4,7 +4,7 @@
 //
 //  Created by Andy on 12/30/20.
 //
-
+#pragma once
 #ifndef flux_eval_h
 #define flux_eval_h
 

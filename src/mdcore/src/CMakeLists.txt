@@ -59,6 +59,7 @@ set(PUBLIC_HEADERS
   "${MDCORE_SOURCE_DIR}/include/Polygon.hpp"
   "${MDCORE_SOURCE_DIR}/include/Cell.hpp"
   "${MDCORE_SOURCE_DIR}/include/Flux.hpp"
+  "${MDCORE_SOURCE_DIR}/include/xoshiro256plus.h"
   )
 
 set(PRIVATE_HEADERS
@@ -74,6 +75,8 @@ set(PRIVATE_HEADERS
   engine_advance.h
   MxSecreteUptake.hpp
   SpaceQueue.hpp
+  DissapativeParticleDynamics.hpp
+  dpd_eval.hpp
   )
 
 if(MX_THREADING)
@@ -128,6 +131,7 @@ SET(SOURCES
   Flux.cpp
   MxSecreteUptake.cpp
   SpaceQueue.cpp
+  DissapativeParticleDynamics.cpp
   )
 
 if(MDCORE_USE_MPI)

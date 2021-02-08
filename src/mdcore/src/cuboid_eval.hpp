@@ -34,7 +34,7 @@
  *
  * The cuboid AABB *includes* the cutoff distance.
  */
-INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell *c) {
+MX_ALWAYS_INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell *c) {
     Magnum::Vector3 a_min = cuboid->aabb.min();
     Magnum::Vector3 a_max = cuboid->aabb.max();
     Magnum::Vector3 b_min = {
@@ -58,7 +58,7 @@ INLINE bool aabb_intersect_cuboid_spacecell(MxCuboid *cuboid, struct space_cell 
  * checks aabb collision between a cuboid with global coords, and particle in a cell with
  * cell local coords
  */
-INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, struct space_cell *c) {
+MX_ALWAYS_INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, struct space_cell *c) {
     Magnum::Vector3 box_min = cuboid->aabb.min() - Magnum::Vector3(_Engine.s.cutoff);
     Magnum::Vector3 box_max = cuboid->aabb.max() + Magnum::Vector3(_Engine.s.cutoff);
     Magnum::Vector3 point = {
@@ -72,7 +72,7 @@ INLINE bool aabb_intersect_cuboid_particle(MxCuboid *cuboid, MxParticle *p, stru
            (point[2] >= box_min[2] && point[2] <= box_max[2]);
 }
 
-INLINE bool potential_eval_cuboid_particle(MxCuboid *cube, MxParticle *part, struct space_cell *cell) {
+MX_ALWAYS_INLINE bool potential_eval_cuboid_particle(MxCuboid *cube, MxParticle *part, struct space_cell *cell) {
     
     MxPotential *pot = _Engine.cuboid_potentials[part->typeId];
     

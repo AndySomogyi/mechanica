@@ -770,4 +770,74 @@ HRESULT enum_particles(const Magnum::Vector3 &_origin,
     return runner_err_ok;
 }
 
+void do_it(const Magnum::Vector3 &origin, const MxParticle *part, Magnum::Matrix3 &m) {
+    
+}
+
+
+HRESULT enum_thing(const Magnum::Vector3 &_origin,
+                       float radius,
+                       space_cell *cell,
+                       const std::set<short int> *typeIds,
+                       int32_t exceptPartId,
+                       const Magnum::Vector3 &shift,
+                       Magnum::Matrix3 &m) {
+    
+    int i, count;
+    FPTYPE cutoff2, r2;
+    struct MxParticle *part, *parts;
+    Magnum::Vector4 dx;
+    Magnum::Vector4 pix;
+    Magnum::Vector4 origin;
+    
+    /* break early if one of the cells is empty */
+    count = cell->count;
+    
+    if ( count == 0 )
+        return runner_err_ok;
+    
+    /* get the space and cutoff */
+    cutoff2 = radius * radius;
+    pix[3] = FPTYPE_ZERO;
+    
+    parts = cell->parts;
+    
+    // shift the origin into the current cell's reference
+    // frame with the shift vector.
+    origin[0] = _origin[0] - shift[0];
+    origin[1] = _origin[1] - shift[1];
+    origin[2] = _origin[2] - shift[2];
+    
+    /* loop over all other particles */
+    for ( i = 0 ; i < count ; i++ ) {
+        
+        /* get the other particle */
+        part = &(parts[i]);
+        
+        if(part->id == exceptPartId) {
+            continue;
+        }
+        
+        /* get the distance between both particles */
+        r2 = fptype_r2(origin.data() , part->x , dx.data() );
+        
+        /* is this within cutoff? */
+        if ( r2 > cutoff2 ) {
+            continue;
+        }
+        
+        /* check if this is a valid particle to search for */
+        if(typeIds && typeIds->find(part->typeId) == typeIds->end()) {
+            continue;
+        }
+        
+        //ids.push_back(part->id);
+        
+    } /* loop over all other particles */
+    
+    
+    /* all is well that ends ok */
+    return runner_err_ok;
+}
+
 

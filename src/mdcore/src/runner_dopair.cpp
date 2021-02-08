@@ -53,6 +53,8 @@
 #include "cuboid_eval.hpp"
 #include "potential_eval.h"
 #include "flux_eval.hpp"
+#include "smoothing_kernel.hpp"
+#include "dpd_eval.hpp"
 
 /* the error macro. */
 #define error(id)				( runner_err = errs_register( id , runner_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
@@ -98,6 +100,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     FPTYPE *pif;
     int pid, count_i, count_j;
     double epot = 0.0;
+    float number_density;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
     int icount = 0, l;
@@ -111,6 +114,10 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 #else
     FPTYPE e, f, dx[4], pix[4];
 #endif
+    
+    std::mt19937 gen(_Engine.time + cell_i->id + cell_j->id);
+    // instance of class std::normal_distribution with 0 mean, and 1 stdev
+    static std::normal_distribution<float> gaussian(0.f, 1.f);
     
     /* break early if one of the cells is empty */
     if ( cell_i->count == 0 || cell_j->count == 0 )
@@ -174,20 +181,23 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
             /* get a handle on the second particle */
             part_j = &( parts_j[ jparts[j] >> 16 ] );
 
-            /* fetch the potential, if any */
-            pot = get_potential(part_i, part_j);
-            fluxes = get_fluxes(part_i, part_j);
-            if ( pot == NULL && fluxes == NULL ) {
-                continue;
-            }
-
             /* get the distance between both particles */
             r2 = fptype_r2( pix , part_j->x , dx );
 
             /* is this within cutoff? */
             if (r2 > cutoff2)
                 continue;
-            // runner_rcount += 1;
+            
+            number_density = W(r2, cutoff);
+            
+            /* fetch the potential, if any */
+            pot = get_potential(part_i, part_j);
+            fluxes = get_fluxes(part_i, part_j);
+            if ( pot == NULL && fluxes == NULL ) {
+                part_i->number_density += number_density;
+                part_j->number_density += number_density;
+                continue;
+            }
 
             #if defined(VECTORIZE)
                 /* add this interaction to the interaction queue. */
@@ -242,16 +252,47 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                 #ifdef EXPLICIT_POTENTIALS
                     potential_eval_expl( pot , r2 , &e , &f );
                 #else
-                /* update the forces if part in range */
-                if (pot && potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
-                    
-                    for ( k = 0 ; k < 3 ; k++ ) {
-                        w = f * dx[k];
-                        pif[k] -= w;
-                        part_j->f[k] += w;
+            
+                if(pot) {
+            
+                    if(pot->kind == POTENTIAL_KIND_DPD) {
+                        /* update the forces if part in range */
+                        if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
+                            
+                            for ( k = 0 ; k < 3 ; k++ ) {
+                                w = f * dx[k];
+                                pif[k] -= w;
+                                part_j->f[k] += w;
+                            }
+                            
+                            // the number density is a union after the force 3-vector.
+                            pif[3] += number_density;
+                            part_j->f[3] += number_density;
+                            
+                            /* tabulate the energy */
+                            epot += e;
+                        }
                     }
-                    /* tabulate the energy */
-                    epot += e;
+                    else {
+                    
+                    
+                        /* update the forces if part in range */
+                        if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                            
+                            for ( k = 0 ; k < 3 ; k++ ) {
+                                w = f * dx[k];
+                                pif[k] -= w;
+                                part_j->f[k] += w;
+                            }
+                            
+                            // the number density is a union after the force 3-vector.
+                            pif[3] += number_density;
+                            part_j->f[3] += number_density;
+                            
+                            /* tabulate the energy */
+                            epot += e;
+                        }
+                    }
                 }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE
@@ -450,7 +491,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     // single body force and forces
     MxForce *psb, **psbs;
     struct engine *eng;
-    FPTYPE cutoff2, r2, w;
+    FPTYPE cutoff, cutoff2, r2, w;
     FPTYPE *pif;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
@@ -463,6 +504,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     FPTYPE f[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE dxq[VEC_SIZE*3];
 #else
+    float number_density;
     FPTYPE e, f, dx[4], pix[4];
 #endif
     
@@ -476,6 +518,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     s = &(eng->s);
     pots = eng->p;
     psbs = eng->p_singlebody;
+    cutoff = s->cutoff;
     cutoff2 = s->cutoff2;
     pix[3] = FPTYPE_ZERO;
     
@@ -522,12 +565,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             /* get the other particle */
             part_j = &(parts[j]);
                         
-            pot = get_potential(part_i, part_j);
-            fluxes = get_fluxes(part_i, part_j);
-            if ( pot == NULL && fluxes == NULL ) {
-                continue;
-            }
-
             /* get the distance between both particles */
             r2 = fptype_r2( pix , part_j->x , dx );
 
@@ -536,8 +573,17 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             // TODO move the square to the one-time potential init value.
             if ( r2 > cutoff2)
                 continue;
-
-            // runner_rcount += 1;
+            
+            number_density = W(r2, cutoff);
+            
+            pot = get_potential(part_i, part_j);
+            fluxes = get_fluxes(part_i, part_j);
+  
+            if ( pot == NULL && fluxes == NULL ) {
+                part_i->number_density += number_density;
+                part_j->number_density += number_density;
+                continue;
+            }
 
             #if defined(VECTORIZE)
                 /* add this interaction to the interaction queue. */
@@ -602,6 +648,11 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                     pif[k] -= w;
                     part_j->f[k] += w;
                 }
+                
+                // the number density is a union after the force 3-vector.
+                pif[3] += number_density;
+                part_j->f[3] += number_density;
+                
                 /* tabulate the energy */
                 epot += e;
             }

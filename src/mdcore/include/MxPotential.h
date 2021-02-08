@@ -2,21 +2,22 @@
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
  * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
+#pragma once
 #ifndef INCLUDE_POTENTIAL_H_
 #define INCLUDE_POTENTIAL_H_
 
@@ -76,7 +77,7 @@ enum PotentialFlags {
     POTENTIAL_SWITCH          = 1 << 9,
 
     POTENTIAL_REACTIVE        = 1 << 10,
-    
+
     /**
      * Scaled functions take a (r0/r)^2 argument instead of an r^2,
      * they include the rest length r0, such that r0/r yields a
@@ -96,6 +97,14 @@ enum PotentialFlags {
     POTENTIAL_BOUND           = 1 << 13,
 };
 
+enum PotentialKind {
+    // standard interpolated potential kind
+    POTENTIAL_KIND_POTENTIAL,
+    
+    //
+    POTENTIAL_KIND_DPD
+};
+
 
 /** ID of the last error. */
 CAPI_DATA(int) potential_err;
@@ -110,30 +119,34 @@ typedef struct MxPotential* (*MxPotentialCreate) (
 
 /** The #potential structure. */
 typedef struct MxPotential : PyObject {
-    MxPotentialEval eval;
+    uint32_t kind;
+
+    /** Flags. */
+    uint32_t flags;
+
 
     /** Coefficients for the interval transform. */
     FPTYPE alpha[4];
 
     /** The coefficients. */
     FPTYPE *c;
-    
+
     FPTYPE r0;
 
     /** Interval edges. */
-    double a, b;
-    
+    float a, b;
+
     /** potential scaling constant */
     FPTYPE mu;
 
-    /** Flags. */
-    uint32_t flags;
 
     /** Nr of intervals. */
     int n;
-    
+
     MxPotentialCreate create_func;
-    
+
+    MxPotentialEval eval;
+
     /**
      * pointer to what kind of potential this is.
      */
@@ -249,6 +262,12 @@ CAPI_FUNC(double) potential_Coulomb_p ( double r );
 CAPI_FUNC(double) potential_Coulomb_6p ( double r );
 CAPI_FUNC(double) potential_switch ( double r , double A , double B );
 CAPI_FUNC(double) potential_switch_p ( double r , double A , double B );
+
+
+/**
+ * do an aligned alloc. 
+ */
+MxPotential *potential_alloc(PyTypeObject *type);
 
 
 

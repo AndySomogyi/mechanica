@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 # potential cutoff distance
-cutoff = 1
+cutoff = 3
 
 # dimensions of universe
 dim=[10., 10., 10.]

@@ -46,15 +46,6 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
 */
 
 
-/* Get the inlining right. */
-#ifndef INLINE
-# if __GNUC__ && !__GNUC_STDC_INLINE__
-#  define INLINE extern inline
-# else
-#  define INLINE inline
-# endif
-#endif
-
 #include <iostream>
 
     
@@ -1545,7 +1536,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
         
 }
 
-inline MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
+MX_ALWAYS_INLINE MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
     int index = _Engine.max_type * a->typeId + b->typeId;
     if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
         return _Engine.p_bound[index];
