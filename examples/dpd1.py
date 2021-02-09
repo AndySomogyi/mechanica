@@ -2,10 +2,10 @@ import mechanica as m
 import numpy as np
 
 m.Simulator(dt=0.1, dim=[15, 12, 10],
-            bc=m.PERIODIC_X | m.FREESLIP_Y | m.FREESLIP_Z) #, bc=m.FREESLIP_FULL)
+            bc=m.PERIODIC_X | m.FREESLIP_Y | m.FREESLIP_Z)
 
 # lattice spacing
-a = 0.9
+a = 0.7
 
 class A (m.Particle):
     radius = 0.3
@@ -13,17 +13,16 @@ class A (m.Particle):
     dynamics = m.Newtonian
     mass=10
 
-dpd = m.Potential.dpd(sigma=0.1)
+dpd = m.Potential.dpd(sigma=1.5)
 
 m.bind(dpd, A, A)
 
-f = m.forces.ConstantForce([0.01, 0, 0])
+f = m.forces.ConstantForce([0.005, 0, 0])
 
 m.bind(f, A)
 
 uc = m.lattice.sc(a, A)
 
-parts = m.lattice.create_lattice(uc, [10, 10, 10])
-
+parts = m.lattice.create_lattice(uc, [15, 15, 15])
 
 m.run()
