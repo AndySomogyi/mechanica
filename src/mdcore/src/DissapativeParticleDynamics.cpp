@@ -134,6 +134,7 @@ PyTypeObject DPDPotential_Type = {
 PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff) {
     DPDPotential *p = (DPDPotential*)potential_alloc(&DPDPotential_Type);
     
+    p->kind = POTENTIAL_KIND_DPD;
     p->alpha = alpha;
     p->gamma = gamma;
     p->sigma = sigma;

@@ -2358,6 +2358,8 @@ MxPotential *potential_alloc(PyTypeObject *type) {
         assert(0 && "should not get here");
         //  _PyObject_GC_TRACK(obj);
     }
+    
+    obj->kind = POTENTIAL_KIND_POTENTIAL;
 
     return obj;
 }

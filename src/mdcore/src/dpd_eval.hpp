@@ -47,9 +47,9 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian, MxParticle *pi, 
     
     float f = fc + fd + fr;
     
-    pi->force = {pi->f[0] - f * e[0], pi->f[1] - f * e[1], pi->f[2] - f * e[2] };
+    pj->force = {pj->f[0] - f * e[0], pj->f[1] - f * e[1], pj->f[2] - f * e[2] };
     
-    pj->force = {pi->f[0] + f * e[0], pi->f[1] + f * e[1], pi->f[2] + f * e[2] };
+    pi->force = {pi->f[0] + f * e[0], pi->f[1] + f * e[1], pi->f[2] + f * e[2] };
     
     return true;
 }

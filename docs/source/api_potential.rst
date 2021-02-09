@@ -403,4 +403,50 @@ A potential can be treated just like any python callable object to evaluate it::
          Linear potential function
 
 
-      
+Dissapative Particle Dynamics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. function:: Potential.dpd(alpha=1, gamma=1, sigma=1, cutoff=1)
+
+   :param alpha: interaction strength of the conservative force
+   :param gamma: interaction strength of dissapative force
+   :param sigma: strength of random force.
+
+   The dissapative particle dynamics force is the sum of the conservative,
+   dissapative and random forces:
+
+   .. math::
+
+      \mathbf{F}_{ij} = \mathbf{F}^C_{ij} + \mathbf{F}^D_{ij} + \mathbf{F}^R_{ij}
+
+   The conservative force is: 
+
+   .. math::
+
+      \mathbf{F}^C_{ij} = \alpha \left(1 - \frac{r_{ij}}{r_c}\right)
+      \mathbf{e}_{ij}
+
+   The dissapative force is:
+
+   .. math::
+
+      \mathbf{F}^D_{ij} = -\gamma \left(1 - \frac{r_{ij}}{r_c}\right)^{2}(\mathbf{e}_{ij} \cdot
+      \mathbf{v}_{ij}) \mathbf{e}_{ij}
+
+
+   And the random force is: 
+
+   .. math::
+            
+      \mathbf{F}^R_{ij} = \sigma \left(1 - \frac{r_{ij}}{r_c}\right)
+      \xi_{ij}\Delta t^{-1/2}\mathbf{e}_{ij}
+
+
+     
+
+.. class:: DPDPotential()
+
+   A subtype of the Potential class that adds features specific to Dissapative
+   Particle Dynamics. 
+
+

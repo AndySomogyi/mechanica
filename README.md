@@ -19,6 +19,15 @@ course).
 History
 =======
 
+Version Alpha 1.0.15.2
+----------------------
+* initial dissapative particle dynamics
+* doc constant force, dpd
+
+Version Alpha 1.0.15.1
+----------------------
+
+
 Version Alpha 0.0.14.1
 ----------------------
 * added convenience methods to get spherical and cartesian coords from lists

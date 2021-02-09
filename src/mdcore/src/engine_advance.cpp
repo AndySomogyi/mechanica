@@ -402,7 +402,7 @@ int engine_advance_forward_euler ( struct engine *e ) {
         }
 #endif
         
-        std::cout << "step: " << _Engine.time  << ", computed volume: " << _Engine.computed_volume << std::endl;
+        //std::cout << "step: " << _Engine.time  << ", computed volume: " << _Engine.computed_volume << std::endl;
         
         /* set the new pos for the clusters.  */
         for ( cid = 0 ; cid < s->nr_real ; ++cid ) {

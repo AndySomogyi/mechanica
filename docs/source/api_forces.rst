@@ -45,40 +45,20 @@ force object.
    and larger values result in a slower acting thermostat.  
 
 
-.. function:: dpd_conservative(a, min = 0.1, cutoff=1)
+..class:: ConstantForce(value, period=None)
 
-   :param a:   interaction strength constant
-   :param min: The smallest radius for which the potential will be constructed.
-   :param cutoff: The largest radius for which the potential will be constructed.
-   :param tol: The tolerance to which the interpolation should match the exact
+   A Constant Force that acts on objects, is a way to specify things like
+   gravity, external pressure, etc...
 
-   .. math::
-
-        \mathbf{F}^C_{ij} = a \left(1 - \frac{r_{ij}}{r_{cutoff}}\right)
-        \mathbf{e}_{ij}
-
-
-.. function:: dpd_dissipative(gamma, min = 0.1, cutoff=1)
-
-   :param gamma:   interaction strength constant
-   :param min: The smallest radius for which the potential will be constructed.
-   :param cutoff: The largest radius for which the potential will be constructed.
-   :param tol: The tolerance to which the interpolation should match the exact
-
-   .. math::
-
-      \mathbf{F}^D_{ij} = -\gamma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.41}(\mathbf{e}_{ij} \cdot
-      \mathbf{v}_{ij}) \mathbf{e}_{ij}
-
-.. function:: dpd_random(gamma, sigma, min, cutoff, tol)
-
-   :param gamma: interaction strength constant
-   :param sigma: standard deviation of the gaussian random noise 
-   :param min: The smallest radius for which the potential will be constructed.
-   :param cutoff: The largest radius for which the potential will be constructed.
-   :param tol: The tolerance to which the interpolation should match the exact
-
-   .. math::
-
-      \mathbf{F}^R_{ij} = \sigma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.2} \xi_{ij}\Delta t^{-1/2}\mathbf{e}_{ij}
+   :param value: value can be either a callable that returns a length-3
+                 vector, or a length-3 vector. If value is a vector, than we
+                 simply use that vector value as the constant force. If value
+                 is callable, then the runtime calls that callable every
+                 period to get a new value. If it's a callable, then it must
+                 return somethign convertible to a length-3 array. 
+                 
+   :param period: If value is a callable, then period defines how frequenly
+                  the runtime should call that to obtain a new force value. 
+                     
+      
   

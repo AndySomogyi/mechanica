@@ -63,6 +63,22 @@
 extern const char *runner_err_msg[];
 extern unsigned int runner_rcount;
 
+thread_local std::size_t threadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
+thread_local std::mt19937 gen(threadId);
+// instance of class std::normal_distribution with 0 mean, and 1 stdev
+thread_local std::normal_distribution<float> gaussian(0.f, 1.f);
+
+static std::mutex _mutexPrint;
+
+static void print_thread()
+{
+    std::lock_guard<std::mutex> guard(_mutexPrint);
+    std::cout << "current thread id: " << std::this_thread::get_id() << ", static id: " << threadId << std::endl;
+}
+
+
+
+
 
 /**
  * @brief Compute the pairwise interactions for the given pair.
@@ -114,10 +130,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 #else
     FPTYPE e, f, dx[4], pix[4];
 #endif
-    
-    std::mt19937 gen(_Engine.time + cell_i->id + cell_j->id);
-    // instance of class std::normal_distribution with 0 mean, and 1 stdev
-    static std::normal_distribution<float> gaussian(0.f, 1.f);
     
     /* break early if one of the cells is empty */
     if ( cell_i->count == 0 || cell_j->count == 0 )
@@ -259,12 +271,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                         /* update the forces if part in range */
                         if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
                             
-                            for ( k = 0 ; k < 3 ; k++ ) {
-                                w = f * dx[k];
-                                pif[k] -= w;
-                                part_j->f[k] += w;
-                            }
-                            
                             // the number density is a union after the force 3-vector.
                             pif[3] += number_density;
                             part_j->f[3] += number_density;
@@ -274,7 +280,6 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                         }
                     }
                     else {
-                    
                     
                         /* update the forces if part in range */
                         if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
@@ -508,6 +513,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     FPTYPE e, f, dx[4], pix[4];
 #endif
     
+    //print_thread();
+    
     /* break early if one of the cells is empty */
     count = c->count;
     if ( count == 0 )
@@ -641,20 +648,39 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
                 #else
             
             /* update the forces if part in range */
-            if (pot && potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+            if(pot) {
                 
-                for ( k = 0 ; k < 3 ; k++ ) {
-                    w = f * dx[k];  // f is force / r, so multiply by dx to get unit vector. 
-                    pif[k] -= w;
-                    part_j->f[k] += w;
+                if(pot->kind == POTENTIAL_KIND_DPD) {
+                    /* update the forces if part in range */
+                    if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
+                        
+                        // the number density is a union after the force 3-vector.
+                        pif[3] += number_density;
+                        part_j->f[3] += number_density;
+                        
+                        /* tabulate the energy */
+                        epot += e;
+                    }
                 }
+                else {
                 
-                // the number density is a union after the force 3-vector.
-                pif[3] += number_density;
-                part_j->f[3] += number_density;
-                
-                /* tabulate the energy */
-                epot += e;
+                    /* update the forces if part in range */
+                    if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
+                        
+                        for ( k = 0 ; k < 3 ; k++ ) {
+                            w = f * dx[k];
+                            pif[k] -= w;
+                            part_j->f[k] += w;
+                        }
+                        
+                        // the number density is a union after the force 3-vector.
+                        pif[3] += number_density;
+                        part_j->f[3] += number_density;
+                        
+                        /* tabulate the energy */
+                        epot += e;
+                    }
+                }
             }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE
