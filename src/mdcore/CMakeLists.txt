@@ -40,6 +40,6 @@ set(MDCORE_INCLUDE_DIR
 
 add_subdirectory(src)
 
-if(MDCORE_EXAMPLES)
-  add_subdirectory(examples)
-endif()
+#if(MDCORE_EXAMPLES)
+#  add_subdirectory(examples)
+#endif()

@@ -5,8 +5,7 @@ import numpy as np
 dim=np.array([30., 30., 30.])
 center = dim / 2
 
-m.Simulator(example="",
-            dim=dim,
+m.Simulator(dim=dim,
             cutoff=3,
             integrator=m.FORWARD_EULER,
             dt=0.001)

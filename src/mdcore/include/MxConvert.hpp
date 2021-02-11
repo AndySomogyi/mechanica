@@ -112,6 +112,9 @@ bool check(PyObject *o);
     
 template <>
 inline bool check<bool>(PyObject *o) {return carbon::check<bool>(o); }
+
+template <>
+inline bool check<int>(PyObject *o) {return o && PyLong_Check(o) != 0;}
     
     
 /**

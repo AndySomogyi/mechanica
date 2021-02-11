@@ -10,7 +10,7 @@ We can write a much more detailed model of epiboly using clusters and events::
   dim=np.array([30., 30., 30.])
   center = dim / 2
 
-  m.Simulator(example="",
+  m.Simulator(
     dim=dim,
     cutoff=12,
     integrator=m.FORWARD_EULER,

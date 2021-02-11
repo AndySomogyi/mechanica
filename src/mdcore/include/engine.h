@@ -25,6 +25,7 @@
 #include "pthread.h"
 #include "space.h"
 #include "cycle.h"
+#include "MxBoundaryConditions.hpp"
 #include <mutex>
 #include <thread>
 
@@ -375,6 +376,8 @@ typedef struct engine {
     float computed_volume;
 
 	EngineIntegrator integrator;
+    
+    MxBoundaryConditions boundary_conditions;
 } engine;
 
 
@@ -561,7 +564,7 @@ CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
  *      of the space.
  * @param dim An array of three doubles containing the size of the space.
  *
- * @param L The minimum spatial cell edge length in each dimension.
+ * @param cells length 3 integer vector of number of cells in each direction. 
  *
  * @param cutoff The maximum interaction cutoff to use.
  * @param period A bitmask describing the periodicity of the domain
@@ -572,8 +575,8 @@ CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
  */
-CAPI_FUNC(int) engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
-		double cutoff , unsigned int period , int max_type , unsigned int flags );
+CAPI_FUNC(int) engine_init ( struct engine *e , const double *origin , const double *dim , int *cells ,
+		double cutoff , PyObject *boundaryConditions , int max_type , unsigned int flags );
 
 
 CAPI_FUNC(int) engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid ,

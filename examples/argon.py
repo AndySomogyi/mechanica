@@ -7,7 +7,7 @@ cutoff = 3
 # dimensions of universe
 dim=[10., 10., 10.]
 
-# new simulator, don't load any example
+# new simulator
 m.Simulator(dim=dim, window_size=[900,900])
 
 # create a potential representing a 12-6 Lennard-Jones potential

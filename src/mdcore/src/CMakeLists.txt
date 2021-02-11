@@ -77,6 +77,7 @@ set(PRIVATE_HEADERS
   SpaceQueue.hpp
   DissapativeParticleDynamics.hpp
   dpd_eval.hpp
+  MxBoundaryConditions.hpp
   )
 
 if(MX_THREADING)
@@ -132,6 +133,7 @@ SET(SOURCES
   MxSecreteUptake.cpp
   SpaceQueue.cpp
   DissapativeParticleDynamics.cpp
+  MxBoundaryConditions.cpp
   )
 
 if(MDCORE_USE_MPI)

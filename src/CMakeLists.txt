@@ -99,7 +99,6 @@ set(SRC
   rendering/MxTestView.cpp
   rendering/MxImageConverters.cpp
 
-  rendering/FluidSimTest.cpp
   rendering/ArcBall.cpp
   rendering/NOMStyle.cpp
   rendering/MxKeyEvent.cpp
@@ -187,7 +186,6 @@ set(HEADERS
   rendering/MxTestView.h
   rendering/MxImageConverters.h
 
-  rendering/FluidSimTest.h
   rendering/ArcBallCamera.h
   rendering/ArcBall.h
   rendering/NOMStyle.hpp

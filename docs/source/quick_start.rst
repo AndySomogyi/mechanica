@@ -26,19 +26,7 @@ The first thing we have to do, before we create any simulation objects is
 initialize the simulator. This essentially sets up the simulation environment,
 and gives us a place to create our model. ::
 
-  # new simulator, don't load any example
-  m.Simulator(example="", dim=dim)
-
-This initializes the simulator, and does not load any example
-models. :py:class:`~Simulator` class. A
-pre-built Argon simulation is available as ::
-
-  m.Simulator(example='argon')
-  m.Simulator.run()
-
-This loads an argon model, and starts the simulator. But to follow along, we can
-simply create our own simulation here. Once we've initialized the simulator, we
-can start populating our model.
+  m.Simulator(dim=dim)
 
 Particles interact via *Potentials*, :class:`Potential`. We supply a variety of
 pre-built potentials, and users can create their own, but for now, the
@@ -111,8 +99,7 @@ Download: :download:`this example script <../../examples/argon.py>`::
   # dimensions of universe
   dim=[10., 10., 10.]
 
-  # new simulator, don't load any example
-  m.Simulator(example="", dim=dim)
+  m.Simulator(dim=dim)
 
   # create a potential representing a 12-6 Lennard-Jones potential
   # A The first parameter of the Lennard-Jones potential.

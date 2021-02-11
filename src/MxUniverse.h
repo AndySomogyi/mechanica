@@ -66,9 +66,27 @@ struct CAPI_EXPORT MxUniverseConfig {
     int nParticles;
     int threads;
     EngineIntegrator integrator;
-    uint32_t boundaryConditions;
+    
+    // pointer to python object for the boundary conditions, should be
+    // a dictionary or integer, parse this object when we initialize the engine.
+    PyObject *boundaryConditionsPtr;
     double max_distance;
     MxUniverseConfig();
+    
+    // just set the object, borow a pointer to python handle
+    void setBoundaryConditions(PyObject *obj) {
+        if(boundaryConditionsPtr) {
+            Py_DECREF(boundaryConditionsPtr);
+        }
+        boundaryConditionsPtr = obj;
+        Py_INCREF(boundaryConditionsPtr);
+    }
+    
+    ~MxUniverseConfig() {
+        if(boundaryConditionsPtr) {
+            Py_DECREF(boundaryConditionsPtr);
+        }
+    }
 };
 
 CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf);

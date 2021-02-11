@@ -101,7 +101,7 @@ MxUniverseConfig::MxUniverseConfig() :
     nParticles{100},
     threads{mx::ThreadPool::hardwareThreadSize()},
     integrator{EngineIntegrator::FORWARD_EULER},
-    boundaryConditions{PeriodicFlags::space_periodic_full},
+    boundaryConditionsPtr{NULL},
     max_distance(-1)
 {
 }
@@ -120,16 +120,16 @@ static Vector3 universe_dim(py::object /* self */) {
     return Magnum::Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
 
-static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
-    if(_Engine.flags) {
-        throw std::domain_error("Error, Universe is already initialized");
-    }
+//static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
+//    if(_Engine.flags) {
+//        throw std::domain_error("Error, Universe is already initialized");
+//    }
 
-
-    MxUniverse_Init(conf);
-    
-    return new PyUniverse();
-}
+//
+//    MxUniverse_Init(conf);
+//
+//    return new PyUniverse();
+//}
 
 PyTypeObject MxUniverse_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -195,7 +195,8 @@ Magnum::Vector3 MxUniverse::dim()
 HRESULT _MxUniverse_init(PyObject* m)
 {
     py::class_<PyUniverse> u(m, "Universe");
-    u.def(py::init(&py_universe_init));
+    
+    //u.def(py::init(&py_universe_init));
      //sim.def(py::init(&PySimulator_New), py::return_value_policy::reference);
      //sim.def_property_readonly("foo", &PySimulator::foo);
      //sim.def_static("poll_events", [](){PY_CHECK(MxSimulator_PollEvents());});
@@ -503,18 +504,18 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
 }
 
 
-CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf) {
-    double origin[3] = {conf.origin[0], conf.origin[1], conf.origin[2]};
-    double dim[3] = {conf.dim[0], conf.dim[1], conf.dim[2]};
-    double L[3] = {conf.dim[0] / conf.spaceGridSize[0], conf.dim[1] / conf.spaceGridSize[1], conf.dim[2] / conf.spaceGridSize[2]};
-
-
-
-    int er = engine_init ( &_Engine , origin , dim , L ,
-            conf.cutoff, space_periodic_full , conf.maxTypes , conf.flags );
-
-    return S_OK;
-}
+//CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf) {
+//    double origin[3] = {conf.origin[0], conf.origin[1], conf.origin[2]};
+//    double dim[3] = {conf.dim[0], conf.dim[1], conf.dim[2]};
+//    double L[3] = {conf.dim[0] / conf.spaceGridSize[0], conf.dim[1] / conf.spaceGridSize[1], conf.dim[2] / conf.spaceGridSize[2]};
+//
+//
+//
+//    int er = engine_init ( &_Engine , origin , dim , L ,
+//            conf.cutoff, space_periodic_full , conf.maxTypes , conf.flags );
+//
+//    return S_OK;
+//}
 
 // TODO: does it make sense to return an hresult???
 int MxUniverse_Flag(MxUniverse_Flags flag)

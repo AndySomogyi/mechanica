@@ -23,7 +23,7 @@ Start with the usual model setup::
   center = dim / 2
 
   # new simulator, don't load any example
-  m.Simulator(example="", dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
+  m.Simulator(dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
 
 Make a couple particle types, one to represent a nucleus, and another for
 receptors. We want the nucleus fixed in space, so make it very heavy::

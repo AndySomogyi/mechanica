@@ -12,8 +12,8 @@ cutoff = 3
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim, cutoff=cutoff)
+# new simulator
+m.Simulator(dim=dim, cutoff=cutoff)
 
 class A(m.Particle):
     mass = 5

@@ -300,8 +300,6 @@ struct CAPI_EXPORT MxSimulator {
 
         MxUniverseConfig universeConfig;
         
-        std::string example;
-        
         int queues;
 
         int argc = 0;
@@ -661,8 +659,6 @@ private:
 // int nParticles, double dt = 0.005, float temp = 100
 
 CAPI_FUNC(int) universe_init(const MxUniverseConfig &conf);
-
-CAPI_FUNC(HRESULT) example_argon(const MxUniverseConfig &conf);
 
 CAPI_FUNC(bool) Mx_IsIpython();
 

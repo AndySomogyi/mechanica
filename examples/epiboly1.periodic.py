@@ -10,8 +10,8 @@ count = 3000
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim, cutoff=cutoff, bc=m.BOUNDARY_NONE)
+# new simulator
+m.Simulator(dim=dim, cutoff=cutoff, bc=m.BOUNDARY_NONE)
 
 class Yolk(m.Particle):
     mass = 500000

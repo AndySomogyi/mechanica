@@ -17,7 +17,7 @@ We can make a model with more than one type simply by making different
   center = dim / 2
 
   # new simulator, don't load any example
-  m.Simulator(example="", dim=dim, cutoff=cutoff)
+  m.Simulator(dim=dim, cutoff=cutoff)
 
 Make a *Big* and *Small* types::
 

@@ -18,8 +18,8 @@ cutoff = 1
 # dimensions of universe
 dim=[10., 10., 10.]
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim)
+# new simulator
+m.Simulator(dim=dim)
 
 class MyCell(m.Particle):
 

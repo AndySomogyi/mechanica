@@ -10,8 +10,8 @@ receptor_count = 500
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim, cutoff=cutoff, cells=[4, 4, 4], integrator=m.RUNGE_KUTTA_4)
+# new simulator
+m.Simulator(dim=dim, cutoff=cutoff, cells=[4, 4, 4], integrator=m.RUNGE_KUTTA_4)
 
 class Big(m.Particle):
     mass = 500000

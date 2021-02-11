@@ -10,8 +10,8 @@ receptor_count = 10000
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
+# new simulator
+m.Simulator(dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
 
 class Nucleus(m.Particle):
     mass = 500000

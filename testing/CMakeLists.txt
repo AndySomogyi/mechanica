@@ -13,7 +13,6 @@
 #add_subdirectory(CylinderComponent)
 #add_subdirectory(qtest)
 #add_subdirectory(twave)
-#add_subdirectory(fluid-test3)
 #add_subdirectory(octree)
 
 if(MX_APPLE)

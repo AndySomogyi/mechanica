@@ -42,7 +42,7 @@ We can create a filament starting with the standard simulation setup::
   center = dim / 2
 
   # new simulator, don't load any example
-  m.Simulator(example="", dim=dim, cutoff=cutoff)
+  m.Simulator(dim=dim, cutoff=cutoff)
 
 We approximate a bacteria with a simple spherical `Bead`. For the time being, we
 ignore the fact that bacteria in fact tend to be lozenge shaped. We'll cover

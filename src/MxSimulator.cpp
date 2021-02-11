@@ -186,16 +186,7 @@ struct ArgumentsWrapper  {
 static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     
     PyObject *o;
-    
-    if((o = PyDict_GetItemString(kwargs, "example"))) {
-        if(py::isinstance<py::none>(o)) {
-            conf.example = "";
-        }
-        else {
-            conf.example = mx::cast<std::string>(o);
-        }
-    }
-    
+        
     if((o = PyDict_GetItemString(kwargs, "dim"))) {
         conf.universeConfig.dim = mx::cast<Magnum::Vector3>(o);
     }
@@ -220,12 +211,12 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
         conf.universeConfig.dt = mx::cast<double>(o);
     }
     
-    if((o = PyDict_GetItemString(kwargs, "boundary_conditions"))) {
-        conf.universeConfig.boundaryConditions = mx::cast<unsigned>(o);
+    if((o = PyDict_GetItemString(kwargs, "bc"))) {
+        conf.universeConfig.setBoundaryConditions(o);
     }
     
-    if((o = PyDict_GetItemString(kwargs, "bc"))) {
-        conf.universeConfig.boundaryConditions = mx::cast<unsigned>(o);
+    if((o = PyDict_GetItemString(kwargs, "boundary_conditions"))) {
+        conf.universeConfig.setBoundaryConditions(o);
     }
     
     if((o = PyDict_GetItemString(kwargs, "max_distance"))) {
@@ -581,25 +572,6 @@ int universe_init (const MxUniverseConfig &conf ) {
     Magnum::Vector3d length{tmp[0], tmp[1], tmp[2]};
     Magnum::Vector3i cells = conf.spaceGridSize;
     
-    if(cells[0] < 3 && (conf.boundaryConditions & space_periodic_x)) {
-        cells[0] = 3;
-        std::string msg = "requested periodic_x and " + std::to_string(cells[0]) +
-        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-        PyErr_WarnEx(NULL, msg.c_str(), 0);
-    }
-    if(cells[1] < 3 && (conf.boundaryConditions & space_periodic_y)) {
-        cells[1] = 3;
-        std::string msg = "requested periodic_x and " + std::to_string(cells[1]) +
-        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-        PyErr_WarnEx(NULL, msg.c_str(), 0);
-    }
-    if(cells[2] < 3 && (conf.boundaryConditions & space_periodic_z)) {
-        cells[2] = 3;
-        std::string msg = "requested periodic_x and " + std::to_string(cells[2]) +
-        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-        PyErr_WarnEx(NULL, msg.c_str(), 0);
-    }
-
     Magnum::Vector3d spaceGridSize{(float)cells[0],
                                    (float)cells[1],
                                    (float)cells[2]};
@@ -617,26 +589,9 @@ int universe_init (const MxUniverseConfig &conf ) {
         _dim[i] = conf.dim[i];
     }
 
-    // initialize the engine
-    printf("engine: initializing the engine... ");
-    printf("engine: requesting origin = [ %f , %f , %f ].\n", _origin[0], _origin[1], _origin[2] );
-    printf("engine: requesting dimensions = [ %f , %f , %f ].\n", _dim[0], _dim[1], _dim[2] );
-    printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
-    printf("engine: requesting cutoff = %22.16e.\n", cutoff);
-    
-    printf("engine periodic x : %s\n", conf.boundaryConditions & space_periodic_x ? "true" : "false");
-    printf("engine periodic y : %s\n", conf.boundaryConditions & space_periodic_y ? "true" : "false");
-    printf("engine periodic z : %s\n", conf.boundaryConditions & space_periodic_z ? "true" : "false");
-    printf("engine freeslip x : %s\n", conf.boundaryConditions & SPACE_FREESLIP_X ? "true" : "false");
-    printf("engine freeslip y : %s\n", conf.boundaryConditions & SPACE_FREESLIP_Y ? "true" : "false");
-    printf("engine freeslip z : %s\n", conf.boundaryConditions & SPACE_FREESLIP_Z ? "true" : "false");
-    printf("engine periodic ghost x : %s\n", conf.boundaryConditions & space_periodic_ghost_x ? "true" : "false");
-    printf("engine periodic ghost y : %s\n", conf.boundaryConditions & space_periodic_ghost_y ? "true" : "false");
-    printf("engine periodic ghost z : %s\n", conf.boundaryConditions & space_periodic_ghost_z ? "true" : "false");
-    
 
     printf("main: initializing the engine... "); fflush(stdout);
-    if ( engine_init( &_Engine , _origin , _dim , L.data() , cutoff , conf.boundaryConditions ,
+    if ( engine_init( &_Engine , _origin , _dim , cells.data() , cutoff , conf.boundaryConditionsPtr ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
         throw std::runtime_error(errs_getstring(0));
     }
@@ -779,10 +734,6 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
         /* Initialize scene particles */
         universe_init(conf.universeConfig);
         
-        if(conf.example.compare("argon")==0) {
-            example_argon(conf.universeConfig);
-        }
-        
         if(conf.windowless()) {
             ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
             
@@ -900,114 +851,6 @@ static void ipythonInputHook(py::args args) {
     }
 }
 
-HRESULT example_argon(const MxUniverseConfig &conf) {
-    
-    std::cout << "loading argon example" << std::endl;
-
-    double length = conf.dim[0] - conf.origin[0];
-
-    double x[3];
-
-    double   cutoff = 0.1 * length;
-
-    struct MxParticle pAr = {};
-    struct MxPotential *pot_ArAr;
-
-    auto pos = fillCubeRandom(conf.origin, conf.dim, conf.nParticles);
-
-    /* mix-up the pair list just for kicks
-    printf("main: shuffling the interaction pairs... "); fflush(stdout);
-    srand(6178);
-    for ( i = 0 ; i < e.s.nr_pairs ; i++ ) {
-        j = rand() % e.s.nr_pairs;
-        if ( i != j ) {
-            cp = e.s.pairs[i];
-            e.s.pairs[i] = e.s.pairs[j];
-            e.s.pairs[j] = cp;
-            }
-        }
-    printf("done.\n"); fflush(stdout); */
-
-
-    // initialize the Ar-Ar potential
-    if ( ( pot_ArAr = potential_create_LJ126( 0.275 , cutoff, 9.5075e-06 , 6.1545e-03 , 1.0e-3 ) ) == NULL ) {
-        printf("main: potential_create_LJ126 failed with potential_err=%i.\n",potential_err);
-        errs_dump(stdout);
-        return 1;
-    }
-    printf("main: constructed ArAr-potential with %i intervals.\n",pot_ArAr->n); fflush(stdout);
-
-
-    /* register the particle types. */
-    if ( ( pAr.typeId = engine_addtype( &_Engine , 39.948 , 0.0 , "Ar" , "Ar" ) ) < 0 ) {
-        printf("main: call to engine_addtype failed.\n");
-        errs_dump(stdout);
-        return 1;
-    }
-
-    // TODO: total hack, fix engine_add_type to include radius. 
-    _Engine.types[pAr.typeId].radius = 0.5;
-
-    // register these potentials.
-    if ( engine_addpot( &_Engine , pot_ArAr , pAr.typeId , pAr.typeId ) < 0 ){
-        printf("main: call to engine_addpot failed.\n");
-        errs_dump(stdout);
-        return 1;
-    }
-
-    // set fields for all particles
-    srand(6178);
-
-    pAr.flags = PARTICLE_NONE;
-    for (int k = 0 ; k < 3 ; k++ ) {
-        pAr.x[k] = 0.0;
-        pAr.v[k] = 0.0;
-        pAr.f[k] = 0.0;
-    }
-
-    // create and add the particles
-    printf("main: initializing particles... "); fflush(stdout);
-
-    // total velocity squared
-    float totV2 = 0;
-
-    float vscale = 10.0;
-
-    pAr.radius = 0.5;
-
-    for(int i = 0; i < pos.size(); ++i) {
-        pAr.id = i;
-
-        pAr.v[0] = vscale * (((double)rand()) / RAND_MAX - 0.5);
-        pAr.v[1] = vscale * (((double)rand()) / RAND_MAX - 0.5);
-        pAr.v[2] = vscale * (((double)rand()) / RAND_MAX - 0.5);
-
-        totV2 +=   pAr.v[0]*pAr.v[0] + pAr.v[1]*pAr.v[1] + pAr.v[2]*pAr.v[2] ;
-
-        x[0] = pos[i][0];
-        x[1] = pos[i][1];
-        x[2] = pos[i][2];
-
-        if (engine_addpart( &_Engine , &pAr , x, NULL ) != 0 ) {
-            printf("main: space_addpart failed with space_err=%i.\n",space_err);
-            errs_dump(stdout);
-            return 1;
-        }
-    }
-
-
-
-    printf("done.\n"); fflush(stdout);
-    printf("main: inserted %i particles.\n", _Engine.s.nr_parts);
-
-    // set the time and time-step by hand
-    _Engine.time = 0;
-
-    printf("main: dt set to %f fs.\n", _Engine.dt*1000 );
-
-    return S_OK;
-
-}
 
 CAPI_FUNC(HRESULT) MxSimulator_Show()
 {
@@ -1051,9 +894,6 @@ CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf, const
     /* Initialize scene particles */
     universe_init(conf.universeConfig);
 
-    if(conf.example.compare("argon")==0) {
-        example_argon(conf.universeConfig);
-    }
 
     if(conf.windowless()) {
 

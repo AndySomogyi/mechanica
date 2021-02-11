@@ -26,7 +26,7 @@ normal model::
   center = dim / 2
 
   # new simulator, don't load any example
-  m.Simulator(example="", dim=dim, cutoff=cutoff)
+  m.Simulator(dim=dim, cutoff=cutoff)
 
 Make big and small particles just like before, execept we now set the small
 particle dynamics to `Overdamped`. We use a Big cell to represent a yolk sac,

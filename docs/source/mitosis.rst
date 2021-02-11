@@ -36,7 +36,7 @@ and make a simulator ::
   cutoff = 1
   
   # new simulator, don't load any example
-  m.Simulator(example="", dim=[20., 20., 20.])
+  m.Simulator(dim=[20., 20., 20.])
 
 Make a soft sphere interaction potential. The `kappa` here is the strength of
 the repussion (peak repussion energy), and the `epsilon` is the depth of the

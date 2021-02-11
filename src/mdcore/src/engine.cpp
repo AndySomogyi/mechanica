@@ -68,6 +68,7 @@
 #include "engine.h"
 #include "engine_advance.h"
 #include "MxForce.h"
+#include "MxBoundaryConditions.hpp"
 #include <iostream>
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
@@ -1504,28 +1505,40 @@ int engine_finalize ( struct engine *e ) {
 }
 
 
-int engine_init ( struct engine *e , const double *origin , const double *dim , double *L ,
-        double cutoff , unsigned int period , int max_type , unsigned int flags ) {
+int engine_init ( struct engine *e , const double *origin , const double *dim , int *cells ,
+        double cutoff , PyObject *boundaryConditions , int max_type , unsigned int flags ) {
 
     int cid;
 
     /* make sure the inputs are ok */
-    if ( e == NULL || origin == NULL || dim == NULL || L == NULL )
+    if ( e == NULL || origin == NULL || dim == NULL || cells == NULL )
         return error(engine_err_null);
+    
+    // set up boundary conditions, adjust cell count if needed
+    HRESULT err = MxBoundaryConditions_Init(&(e->boundary_conditions), cells, boundaryConditions);
+    if(FAILED(err)) {
+        return err;
+    }
+    
+    // figure out spatials size...
+    Magnum::Vector3d domain_dim {dim[0] - origin[0], dim[1] - origin[1], dim[2] - origin[2]};
+    
+    Magnum::Vector3d L = {domain_dim[0] / cells[0], domain_dim[1] / cells[1], domain_dim[2] / cells[2]};
 
+    // initialize the engine
+    printf("engine: initializing the engine... ");
+    printf("engine: requesting origin = [ %f , %f , %f ].\n", origin[0], origin[1], origin[2] );
+    printf("engine: requesting dimensions = [ %f , %f , %f ].\n", dim[0], dim[1], dim[2] );
+    printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
+    printf("engine: requesting cutoff = %22.16e.\n", cutoff);
+    
     /* default Boltzmann constant to 1 */
     e->K = 1.0;
 
     e->integrator_flags = 0;
 
-    /* Check for bad flags. */
-#ifdef FPTYPE_DOUBLE
-    if ( e->particle_flags & engine_flag_cuda )
-        return error(engine_err_cudasp);
-#endif
-
     /* init the space with the given parameters */
-    if ( space_init( &(e->s) , origin , dim , L , cutoff , period ) < 0 )
+    if ( space_init( &(e->s) , origin , dim , L.data() , cutoff , e->boundary_conditions.periodic ) < 0 )
         return error(engine_err_space);
 
     /* Set some flag implications. */

@@ -6,8 +6,7 @@ import numpy as np
 # dimensions of universe
 dim=np.array([30., 30., 30.])
 
-m.Simulator(example="",
-            dim=dim,
+m.Simulator(dim=dim,
             cutoff=10,
             integrator=m.FORWARD_EULER,
             cells=[1, 1, 1],

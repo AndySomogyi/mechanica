@@ -3,7 +3,7 @@ import numpy as np
 
 cutoff = 1
 
-m.Simulator(example="", dim=[10., 10., 10.])
+m.Simulator(dim=[10., 10., 10.])
 
 class Argon(m.Particle):
     mass = 39.4

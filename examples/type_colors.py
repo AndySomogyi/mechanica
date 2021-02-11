@@ -4,8 +4,8 @@ import numpy as np
 # dimensions of universe
 dim=[20., 20., 20.]
 
-# new simulator, don't load any example
-m.Simulator(example="", dim=dim)
+# new simulator
+m.Simulator(dim=dim)
 
 # loop over arays for x/y coords
 for x in np.arange(0., 20., 2.):

@@ -42,6 +42,7 @@
 #include <rendering/MxKeyEvent.hpp>
 #include <MxSecreteUptake.hpp>
 #include <DissapativeParticleDynamics.hpp>
+#include <MxBoundaryConditions.hpp>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -347,6 +348,8 @@ static PyObject * moduleinit(void)
     _MxSecreteUptake_Init(m);
     
     _DPDPotential_Init(m);
+    
+    _MxBoundaryConditions_Init(m);
 
     mechanicaModule = m;
 
