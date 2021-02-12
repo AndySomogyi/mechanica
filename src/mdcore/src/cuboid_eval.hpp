@@ -24,7 +24,7 @@
 
 #include "MxPotential.h"
 #include "MxCuboid.hpp"
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 #include "engine.h"
 #include "space_cell.h"
 

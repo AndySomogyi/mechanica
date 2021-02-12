@@ -51,10 +51,11 @@
 #include "MxForce.h"
 #include <MxPotential.h>
 #include "cuboid_eval.hpp"
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 #include "flux_eval.hpp"
 #include "smoothing_kernel.hpp"
 #include "dpd_eval.hpp"
+#include "boundary_eval.hpp"
 
 /* the error macro. */
 #define error(id)				( runner_err = errs_register( id , runner_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
@@ -513,6 +514,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     FPTYPE e, f, dx[4], pix[4];
 #endif
     
+    const unsigned cell_flags = c->flags;
+    
     //print_thread();
     
     /* break early if one of the cells is empty */
@@ -523,7 +526,6 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     /* get some useful data */
     eng = r->e;
     s = &(eng->s);
-    pots = eng->p;
     psbs = eng->p_singlebody;
     cutoff = s->cutoff;
     cutoff2 = s->cutoff2;
@@ -565,6 +567,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         for(MxCuboid *cuboid : cuboids) {
             potential_eval_cuboid_particle(cuboid, part_i, c);
         }
+        
+        
 
         /* loop over all other particles */
         for ( j = i + 1 ; j < count ; j++ ) {

@@ -260,7 +260,8 @@ typedef struct _bonded_sets {
 
 /* Function to add a conflict. */
 static int confl_add (bonded_sets *bs, int i , int j ) {
-	if ( bs->confl_count == bs->confl_size && ( bs->confl = (_bonded_set*)realloc( bs->confl , sizeof(int) * 2 * (bs->confl_size *= 2) ) ) == NULL )
+	if ( bs->confl_count == bs->confl_size &&
+        ( bs->confl = (bonded_set*)realloc( bs->confl , sizeof(bonded_set) * (bs->confl_size *= 2) ) ) == NULL )
 		return error(engine_err_malloc);
 	bs->confl[bs->confl_count].i = i; bs->confl[bs->confl_count].j = j;
 	bs->nconfl[i] += 1; bs->nconfl[j] += 1;

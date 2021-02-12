@@ -266,9 +266,9 @@ typedef struct space {
 
 
 /* associated functions */
-CAPI_FUNC(int) space_init ( struct space *s , const double *origin ,
+CAPI_FUNC(int) space_init (struct space *s , const double *origin ,
                            const double *dim , double *L ,
-                           double cutoff , unsigned int period );
+                           double cutoff,  const struct MxBoundaryConditions *bc);
 
 CAPI_FUNC(int) space_getsid ( struct space *s , struct space_cell **ci ,
                              struct space_cell **cj , FPTYPE *shift );

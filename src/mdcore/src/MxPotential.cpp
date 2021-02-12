@@ -36,7 +36,7 @@
 /* include local headers */
 #include "errs.h"
 #include "fptype.h"
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 
 #include <iostream>
 #include <cmath>

@@ -46,6 +46,7 @@
 #include "../../rendering/NOMStyle.hpp"
 #include <iostream>
 #include "smoothing_kernel.hpp"
+#include "MxBoundaryConditions.hpp"
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
@@ -613,8 +614,8 @@ struct task *space_addtask ( struct space *s , int type , int subtype , int flag
  * generates the cell-pair list.
  */
 
-int space_init ( struct space *s , const double *origin , const double *dim ,
-        double *L , double cutoff , unsigned int period ) {
+int space_init (struct space *s , const double *origin , const double *dim ,
+        double *L , double cutoff, const struct MxBoundaryConditions *bc) {
 
     int i, j, k, l[3], ii, jj, kk;
     int id1, id2, sid;
@@ -644,11 +645,13 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     s->cutoff2 = cutoff*cutoff;
 
     /* set the periodicity */
-    s->period = period;
+    s->period = bc->periodic;
 
     /* allocate the cells */
     s->nr_cells = s->cdim[0] * s->cdim[1] * s->cdim[2];
     s->cells = (struct space_cell *)malloc( sizeof(struct space_cell) * s->nr_cells );
+    bzero(s->cells, sizeof(struct space_cell) * s->nr_cells);
+    
     if ( s->cells == NULL )
         return error(space_err_malloc);
 
@@ -657,6 +660,9 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
         s->h[i] = s->dim[i] / s->cdim[i];
         s->ih[i] = 1.0 / s->h[i];
     }
+    
+    int frc = 0, bac = 0, toc = 0, boc = 0;
+    
     /* initialize the cells  */
     for ( l[0] = 0 ; l[0] < s->cdim[0] ; l[0]++ ) {
         o[0] = origin[0] + l[0] * s->h[0];
@@ -664,11 +670,42 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
             o[1] = origin[1] + l[1] * s->h[1];
             for ( l[2] = 0 ; l[2] < s->cdim[2] ; l[2]++ ) {
                 o[2] = origin[2] + l[2] * s->h[2];
-                if ( space_cell_init( &(s->cells[space_cellid(s,l[0],l[1],l[2])]) , l , o , s->h ) < 0 )
+                
+                space_cell *c = &(s->cells[space_cellid(s,l[0],l[1],l[2])]);
+                
+                if ( space_cell_init(c, l, o, s->h) < 0 )
                     return error(space_err_cell);
+                
+                if(l[0] == 0 && bc->left.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_left;
+                }
+                else if(l[0] + 1 == s->cdim[0] && bc->right.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_right;
+                }
+                
+                if(l[1] == 0 && bc->front.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_front;
+                    frc++;
+                }
+                else if(l[1] + 1 == s->cdim[1] && bc->back.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_back;
+                    bac++;
+                }
+                
+                if(l[2] == 0 && bc->bottom.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_bottom;
+                    boc++;
+                }
+                else if(l[2] + 1 == s->cdim[2] && bc->top.kind & BOUNDARY_ACTIVE) {
+                    c->flags |= cell_boundary_top;
+                    toc++;
+                
+                }
             }
         }
     }
+    
+    std::cout << "front: " << frc << ", back: " << bac << ", top: " << toc << ", bottom: " << boc << std::endl;
 
     /* Make ghost layers if needed. */
     if ( s->period & space_periodic_ghost_x )
@@ -880,6 +917,7 @@ int space_init ( struct space *s , const double *origin , const double *dim ,
     
     if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
         return error(space_err_cell);
+    
 
     /* all is well that ends well... */
     return space_err_ok;

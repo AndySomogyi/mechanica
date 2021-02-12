@@ -16,7 +16,8 @@
 
 
 
-MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian, MxParticle *pi, MxParticle *pj, float* dx, float r2 , FPTYPE *energy) {
+MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian,
+                               MxParticle *pi, MxParticle *pj, float* dx, float r2 , FPTYPE *energy) {
     
     static const float delta = 1.f / std::sqrt(_Engine.dt);
     
@@ -50,6 +51,9 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian, MxParticle *pi, 
     pj->force = {pj->f[0] - f * e[0], pj->f[1] - f * e[1], pj->f[2] - f * e[2] };
     
     pi->force = {pi->f[0] + f * e[0], pi->f[1] + f * e[1], pi->f[2] + f * e[2] };
+    
+    // TODO: correct energy
+    *energy = 0;
     
     return true;
 }

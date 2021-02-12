@@ -1538,7 +1538,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->integrator_flags = 0;
 
     /* init the space with the given parameters */
-    if ( space_init( &(e->s) , origin , dim , L.data() , cutoff , e->boundary_conditions.periodic ) < 0 )
+    if ( space_init( &(e->s) , origin , dim , L.data() , cutoff , &e->boundary_conditions) < 0 )
         return error(engine_err_space);
 
     /* Set some flag implications. */

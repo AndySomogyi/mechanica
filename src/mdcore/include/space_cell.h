@@ -18,6 +18,7 @@
  * 
  ******************************************************************************/
 
+#pragma once
 #ifndef INCLUDE_SPACE_CELL_H_
 #define INCLUDE_SPACE_CELL_H_
 
@@ -40,15 +41,25 @@
 #define cell_partalign                  64
 
 /** Cell flags */
-#define cell_flag_none                  0
-#define cell_flag_ghost                 1
-#define cell_flag_wait                  2
-#define cell_flag_waited                4
-#define cell_flag_marked                8
-#define cell_flag_large                 16
+
+enum CellFlags {
+    cell_flag_none    = 0,
+    cell_flag_ghost   = 1 << 0,
+    cell_flag_wait    = 1 << 1,
+    cell_flag_waited  = 1 << 2,
+    cell_flag_marked  = 1 << 3,
+    cell_flag_large   = 1 << 4,
+    
+    cell_boundary_top      = 1 << 5,
+    cell_boundary_bottom   = 1 << 6,
+    cell_boundary_left     = 1 << 7,
+    cell_boundary_right    = 1 << 8,
+    cell_boundary_front    = 1 << 9,
+    cell_boundary_back     = 1 << 10,
+};
 
 
-MDCORE_BEGIN_DECLS
+
 
 
 /* Map shift vector to sortlist. */
@@ -220,6 +231,9 @@ int space_cell_load ( struct space_cell *c , struct MxParticle *parts ,
 int space_cell_flush ( struct space_cell *c ,
         struct MxParticle **partlist , struct space_cell **celllist );
 
-MDCORE_END_DECLS
+std::ostream& operator<<(std::ostream& os, const space_cell* );
+
+
+
 
 #endif // INCLUDE_SPACE_CELL_H_

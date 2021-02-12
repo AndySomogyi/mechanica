@@ -114,6 +114,39 @@ PyTypeObject MxBoundaryCondition_Type = {
     .tp_finalize =       0,
 };
 
+/**
+ * boundary was initialized from flags, set individual values
+ */
+static void boundaries_from_flags(MxBoundaryConditions *bc) {
+    
+    if(bc->periodic & space_periodic_x) {
+        bc->left.kind = BOUNDARY_PERIODIC;
+        bc->right.kind = BOUNDARY_PERIODIC;
+    }
+    else if(bc->periodic & SPACE_FREESLIP_X) {
+        bc->left.kind = BOUNDARY_FREESLIP;
+        bc->right.kind = BOUNDARY_FREESLIP;
+    }
+    
+    if(bc->periodic & space_periodic_y) {
+        bc->front.kind = BOUNDARY_PERIODIC;
+        bc->back.kind = BOUNDARY_PERIODIC;
+    }
+    else if(bc->periodic & SPACE_FREESLIP_Y) {
+        bc->front.kind = BOUNDARY_FREESLIP;
+        bc->back.kind = BOUNDARY_FREESLIP;
+    }
+    
+    if(bc->periodic & space_periodic_z) {
+        bc->top.kind = BOUNDARY_PERIODIC;
+        bc->bottom.kind = BOUNDARY_PERIODIC;
+    }
+    else if(bc->periodic & SPACE_FREESLIP_Z) {
+        bc->top.kind = BOUNDARY_FREESLIP;
+        bc->bottom.kind = BOUNDARY_FREESLIP;
+    }
+}
+
 
 HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject *args) {
     
@@ -121,6 +154,7 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
         
         if(args && mx::check<int>(args)) {
             bc->periodic = mx::cast<uint32_t>(args);
+            boundaries_from_flags(bc);
         }
         else if(args && PyDict_Check(args)) {
             
@@ -128,6 +162,7 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
         else {
             // default value
             bc->periodic = space_periodic_full;
+            boundaries_from_flags(bc);
         }
         
         if(cells[0] < 3 && (bc->periodic & space_periodic_x)) {

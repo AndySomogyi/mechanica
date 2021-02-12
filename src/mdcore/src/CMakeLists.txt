@@ -65,9 +65,6 @@ set(PUBLIC_HEADERS
 set(PRIVATE_HEADERS
   btree.h
   mainpage.h
-  potential_eval.h
-  flux_eval.hpp
-  cuboid_eval.hpp
   smoothing_kernel.hpp
   reader.h
   MxConstraint.hpp
@@ -76,8 +73,12 @@ set(PRIVATE_HEADERS
   MxSecreteUptake.hpp
   SpaceQueue.hpp
   DissapativeParticleDynamics.hpp
-  dpd_eval.hpp
   MxBoundaryConditions.hpp
+  potential_eval.hpp
+  flux_eval.hpp
+  dpd_eval.hpp
+  cuboid_eval.hpp
+  boundary_eval.hpp
   )
 
 if(MX_THREADING)

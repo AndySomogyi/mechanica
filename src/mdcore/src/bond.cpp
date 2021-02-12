@@ -48,7 +48,7 @@
 #include "lock.h"
 #include <MxParticle.h>
 #include <MxPotential.h>
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 #include <space_cell.h>
 #include "space.h"
 #include "engine.h"

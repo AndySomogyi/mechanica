@@ -12,6 +12,7 @@
 #include "errs.h"
 #include "MxCluster.hpp"
 #include "Flux.hpp"
+#include "boundary_eval.hpp"
 
 #include <sstream>
 #pragma clang diagnostic ignored "-Wwritable-strings"
@@ -43,13 +44,16 @@
 /* the error macro. */
 #define error(id) ( engine_err = errs_register( id , engine_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
 
-
 static std::mutex space_mutex;
 static std::mutex tot_energy_mutex;
 
 static int engine_advance_forward_euler ( struct engine *e );
 static int engine_advance_runge_kutta_4 ( struct engine *e );
-static bool engine_enforce_boundary(engine *e, MxParticle *p, space_cell *c) {
+
+/**
+ * old boundary code, keep here for now, in case issues with new stuff.
+ */
+static bool boundary_update_pos_vel_old(MxParticle *p, space_cell *c) {
     
 #define ENFORCE_BC(i)                                                   \
     if(ppos[i] < 0) {                                                   \
@@ -62,6 +66,8 @@ static bool engine_enforce_boundary(engine *e, MxParticle *p, space_cell *c) {
         p->velocity[i] *= -restitution;                                 \
         enforced = true;                                                \
     }                                                                   \
+
+    static const engine *e = &_Engine;
     
     
     float restitution = 1.0;
@@ -88,20 +94,6 @@ static bool engine_enforce_boundary(engine *e, MxParticle *p, space_cell *c) {
     if(e->s.period & SPACE_FREESLIP_Z) {
         ENFORCE_BC(2);
     }
-    
-    /*
-    for(int i = 0; i != 3; ++i) {
-        if(ppos[i] < _lowerDomainBound[i]) {
-            ppos[i] += (_lowerDomainBound[i] - ppos[i])*(restitution + 1.0f);
-            pvel[i] *= -restitution;
-            bVelChanged = true;
-        } else if(ppos[i] > _upperDomainBound[i]) {
-            ppos[i] -= (ppos[i] - _upperDomainBound[i])*(restitution + 1.0f);
-            pvel[i] *= -restitution;
-            bVelChanged = true;
-        }
-    }
-     */
     
     return enforced;
 };
@@ -148,7 +140,6 @@ Magnum::Quaternion integrate_angular_velocity_exact_1(const Magnum::Vector3& em,
     if (len > 0) {
         ha *= std::sin(len) / len;
         double w = std::cos(len);
-        double s = std::sin(len) / len;
         return Magnum::Quaternion(ha, w);
     } else {
         return Magnum::Quaternion(ha, 1.0);
@@ -253,7 +244,7 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
         if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
             
             // if we enforce boundary, reflect back into same cell
-            if(engine_enforce_boundary(&_Engine, p, c)) {
+            if(boundary_update_pos_vel(p, c)) {
                 pid += 1;
             }
             // otherwise move to different cell

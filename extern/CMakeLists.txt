@@ -70,7 +70,7 @@ endif()
 # For reliability of parallel build, make the NanoGUI targets dependencies
 #set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 
-add_subdirectory(Voroxx)
+# add_subdirectory(Voroxx)
 
 
 
@@ -137,14 +137,14 @@ set(BUILD_IDA            OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 set(BUILD_IDAS           OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 set(BUILD_KINSOL         OFF CACHE BOOL "Build this SUNDIALS feature" FORCE)
 
-add_subdirectory(sundials)
+# add_subdirectory(sundials)
 
-add_library(DirectXMath INTERFACE)
+#add_library(DirectXMath INTERFACE)
 
-target_compile_options(DirectXMath INTERFACE -fms-extensions)
+#target_compile_options(DirectXMath INTERFACE -fms-extensions)
 
-target_include_directories(DirectXMath INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXMath/Inc/>
-  #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
-)
+#target_include_directories(DirectXMath INTERFACE
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DirectXMath/Inc/>
+#  #$<INSTALL_INTERFACE:include/mylib>  # <prefix>/include/mylib
+#)

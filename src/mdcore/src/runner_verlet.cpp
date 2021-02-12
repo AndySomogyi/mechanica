@@ -54,7 +54,7 @@
 #include <space_cell.h>
 #include "space.h"
 #include <MxPotential.h>
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 #include "engine.h"
 #include "runner.h"
 

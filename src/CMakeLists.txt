@@ -283,8 +283,8 @@ target_link_libraries(mechanica_obj
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  voro++
-  sundials_cvode_static
+  #voro++
+  #sundials_cvode_static
   ${OPENGL_LIBRARIES}
   mdcore_single
   )
@@ -387,8 +387,8 @@ target_link_libraries(mechanica_py PRIVATE
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  voro++
-  sundials_cvode_static
+  #voro++
+  #sundials_cvode_static
   MagnumGlfwApplication
   Magnum::SceneGraph
   Magnum::Primitives
@@ -494,8 +494,8 @@ target_link_libraries(mechanica_shared
   Magnum::Application
   Magnum::Magnum
   Magnum::Shaders
-  voro++
-  sundials_cvode_static
+  #voro++
+  #sundials_cvode_static
   MagnumGlfwApplication
   Magnum::SceneGraph
   Magnum::Primitives

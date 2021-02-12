@@ -14,7 +14,7 @@
 #include "space_cell.h"
 #include "runner.h"
 #include "MxParticle.h"
-#include "potential_eval.h"
+#include "potential_eval.hpp"
 
 
 static HRESULT virial_pair (float cutoff,

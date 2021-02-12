@@ -497,7 +497,7 @@ int MxConstantForce_Check(PyObject *o) {
 int constantforce_init(MxConstantForce *self, PyObject *args, PyObject *kwds) {
     try {
         self->setValue(mx::arg<PyObject*>("value", 0, args, kwds));
-        self->updateInterval = mx::arg<double>("period", 1, args, kwds, std::numeric_limits<double>::max());
+        self->updateInterval = mx::arg<float>("period", 1, args, kwds, std::numeric_limits<float>::max());
         self->func = (MxForce_OneBodyPtr)constant_force;
         return 0;
     }

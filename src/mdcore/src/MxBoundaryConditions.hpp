@@ -9,9 +9,23 @@
 #define SRC_MDCORE_SRC_BOUNDARYCONDITIONS_H_
 
 #include <platform.h>
+#include <Magnum/Magnum.h>
+#include <Magnum/Math/Vector3.h>
+
+enum BoundaryConditionKind {
+    BOUNDARY_VELOCITY       = 1 << 0,
+    BOUNDARY_PERIODIC       = 1 << 1,
+    BOUNDARY_FREESLIP       = 1 << 2,
+    BOUNDARY_FORCE          = 1 << 3,
+    BOUNDARY_ACTIVE         = BOUNDARY_FREESLIP | BOUNDARY_VELOCITY | BOUNDARY_FORCE
+};
 
 struct MxBoundaryCondition : PyObject {
+    BoundaryConditionKind kind;
     
+    // id of this boundary, id's go from 0 to 6 (top, bottom, etc..)
+    int id;
+    Magnum::Vector3 vecocity;
 };
 
 struct MxBoundaryConditions: PyObject {
