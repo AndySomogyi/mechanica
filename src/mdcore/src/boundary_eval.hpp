@@ -14,6 +14,16 @@
 
 #include <iostream>
 
+// velocity boundary conditions:
+//
+// r_new = r_old + 2 d n_w,
+// where d is distance particle penetrated into wall, and
+// n_w is normal vector into simulation domain.
+//
+// v_new = 2 U_wall - v_old
+// where U_wall is wall velocity.
+
+
 MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
     
     #define ENFORCE_FREESLIP_LOW(i)                              \
@@ -25,6 +35,16 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
         p->position[i] = c->dim[i] - (p->position[i] - c->dim[i]) * restitution;          \
         p->velocity[i] *= -restitution;                          \
         enforced = true;                                         \
+
+   #define ENFORCE_VELOCITY_LOW(i, bc)  \
+        p->position[i] = -p->position[i];  \
+        p->velocity = 2.f * bc.velocity - p->velocity; \
+        enforced = true; \
+
+    #define ENFORCE_VELOCITY_HIGH(i, bc)  \
+        p->position[i] = 2.f * c->dim[i] - p->position[i];        \
+        p->velocity = 2.f * bc.velocity - p->velocity; \
+        enforced = true;  \
 
     
     static const MxBoundaryConditions *bc = &_Engine.boundary_conditions;
@@ -39,7 +59,9 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_LOW(0);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_LOW(0, bc->left);
+                break;
             default:
                 break;
         }
@@ -50,11 +72,12 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_HIGH(0);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_HIGH(0, bc->right);
+                break;
             default:
                 break;
         }
-        
     }
     
     if(c->flags & cell_boundary_front && p->x[1] <= 0) {
@@ -62,7 +85,9 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_LOW(1);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_LOW(1, bc->front);
+                break;
             default:
                 break;
         }
@@ -73,7 +98,9 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_HIGH(1);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_HIGH(1, bc->back);
+                break;
             default:
                 break;
         }
@@ -84,7 +111,9 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_LOW(2);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_LOW(2, bc->top);
+                break;
             default:
                 break;
         }
@@ -95,7 +124,9 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             case BOUNDARY_FREESLIP:
                 ENFORCE_FREESLIP_HIGH(2);
                 break;
-                
+            case BOUNDARY_VELOCITY:
+                ENFORCE_VELOCITY_HIGH(2, bc->top);
+                break;
             default:
                 break;
         }

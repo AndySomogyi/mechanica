@@ -147,6 +147,20 @@ static void boundaries_from_flags(MxBoundaryConditions *bc) {
     }
 }
 
+void test(MxBoundaryConditions *bc) {
+    bc->periodic = space_periodic_x | SPACE_FREESLIP_Y;
+    
+    bc->left.kind = BOUNDARY_PERIODIC;
+    bc->right.kind = BOUNDARY_PERIODIC;
+    
+    bc->front.kind = BOUNDARY_FREESLIP;
+    bc->back.kind = BOUNDARY_FREESLIP;
+    
+    bc->top.kind = BOUNDARY_VELOCITY;
+    bc->bottom.kind = BOUNDARY_VELOCITY;
+    
+}
+
 
 HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject *args) {
     
@@ -164,6 +178,8 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
             bc->periodic = space_periodic_full;
             boundaries_from_flags(bc);
         }
+        
+        test(bc);
         
         if(cells[0] < 3 && (bc->periodic & space_periodic_x)) {
             cells[0] = 3;

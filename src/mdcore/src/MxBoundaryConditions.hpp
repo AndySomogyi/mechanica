@@ -25,7 +25,7 @@ struct MxBoundaryCondition : PyObject {
     
     // id of this boundary, id's go from 0 to 6 (top, bottom, etc..)
     int id;
-    Magnum::Vector3 vecocity;
+    Magnum::Vector3 velocity;
 };
 
 struct MxBoundaryConditions: PyObject {
