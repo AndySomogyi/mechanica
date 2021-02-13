@@ -988,7 +988,7 @@ HRESULT MxBond_Energy (MxBond *b, double *epot_out) {
     s = &_Engine.s;
     partlist = s->partlist;
     celllist = s->celllist;
-    ld_pots = _Engine.max_type;
+
     for ( k = 0 ; k < 3 ; k++ )
         h[k] = s->h[k];
     

@@ -17,6 +17,7 @@ enum BoundaryConditionKind {
     BOUNDARY_PERIODIC       = 1 << 1,
     BOUNDARY_FREESLIP       = 1 << 2,
     BOUNDARY_FORCE          = 1 << 3,
+    BOUNDARY_NO_SLIP        = 1 << 4, // really just velocity with zero velocity
     BOUNDARY_ACTIVE         = BOUNDARY_FREESLIP | BOUNDARY_VELOCITY | BOUNDARY_FORCE
 };
 
@@ -26,6 +27,13 @@ struct MxBoundaryCondition : PyObject {
     // id of this boundary, id's go from 0 to 6 (top, bottom, etc..)
     int id;
     Magnum::Vector3 velocity;
+    
+    // restoring percent
+    float restore;
+    
+    const char* name;
+    
+    std::string str(bool show_name) const;
 };
 
 struct MxBoundaryConditions: PyObject {

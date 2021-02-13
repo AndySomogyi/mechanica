@@ -37,13 +37,13 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
         enforced = true;                                         \
 
    #define ENFORCE_VELOCITY_LOW(i, bc)  \
-        p->position[i] = -p->position[i];  \
-        p->velocity = 2.f * bc.velocity - p->velocity; \
+        p->position[i] = -p->position[i] * bc.restore;  \
+        p->velocity = 2.f * bc.velocity - (p->velocity * bc.restore); \
         enforced = true; \
 
     #define ENFORCE_VELOCITY_HIGH(i, bc)  \
-        p->position[i] = 2.f * c->dim[i] - p->position[i];        \
-        p->velocity = 2.f * bc.velocity - p->velocity; \
+        p->position[i] = 2.f * c->dim[i] - (p->position[i] * bc.restore);        \
+        p->velocity = 2.f * bc.velocity - (p->velocity * bc.restore); \
         enforced = true;  \
 
     
@@ -112,7 +112,7 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
                 ENFORCE_FREESLIP_LOW(2);
                 break;
             case BOUNDARY_VELOCITY:
-                ENFORCE_VELOCITY_LOW(2, bc->top);
+                ENFORCE_VELOCITY_LOW(2, bc->bottom);
                 break;
             default:
                 break;

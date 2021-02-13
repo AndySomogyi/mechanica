@@ -1,7 +1,13 @@
 # build glfw here, set up variables so magnum does not try to find it
 # glfw has to come before carbon (and libsbml)
 
-set(WITH_PNGIMPORTER       OFF CACHE BOOL "build PNG importer"    FORCE)
+set(WITH_PNGIMPORTER OFF CACHE BOOL "build PNG importer"    FORCE)
+
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "stuff" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "stuff" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "stuff" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "stuff" FORCE)
 
 add_subdirectory(glfw)
 

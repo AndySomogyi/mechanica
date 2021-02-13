@@ -9,6 +9,190 @@
 #include "MxConvert.hpp"
 #include "space.h"
 
+#include <algorithm>
+#include <string>
+
+
+static PyObject* bc_str(MxBoundaryCondition *bc);
+
+static PyObject* bcs_str(MxBoundaryConditions *bcs);
+
+static PyGetSetDef bc_getset[] = {
+    {
+        .name = "name",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+            return mx::cast(std::string(bc->name));
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "kind",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+            std::string kind;
+            switch(bc->kind) {
+                case BOUNDARY_PERIODIC:
+                    kind = "PERIODIC";
+                    break;
+                case BOUNDARY_FREESLIP:
+                    kind = "FREESLIP";
+                    break;
+                case BOUNDARY_VELOCITY:
+                    kind = "VELOCITY";
+                    break;
+                default:
+                    kind = "INVALID";
+                    break;
+            }
+            return mx::cast(kind);
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "velocity",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+            return mx::cast(bc->velocity);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+                bc->velocity = mx::cast<Magnum::Vector3>(val);
+                return 0;
+            }
+            catch(const std::exception &e) {
+                return C_EXP(e);
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "restore",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+            return mx::cast(bc->restore);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            try {
+                MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+                bc->restore = mx::cast<float>(val);
+                return 0;
+            }
+            catch(const std::exception &e) {
+                return C_EXP(e);
+            }
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {NULL}
+};
+
+static PyGetSetDef bcs_getset[] = {
+    {
+        .name = "left",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->left;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "right",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->right;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "front",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->front;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "back",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->back;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "bottom",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->bottom;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "top",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryConditions *bcs = (MxBoundaryConditions*)obj;
+            PyObject *res = &bcs->top;
+            Py_INCREF(res);
+            return res;
+        },
+        .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {NULL}
+};
 
 PyTypeObject MxBoundaryConditions_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -20,13 +204,13 @@ PyTypeObject MxBoundaryConditions_Type = {
     .tp_getattr =        0,
     .tp_setattr =        0,
     .tp_as_async =       0,
-    .tp_repr =           0,
+    .tp_repr =           (reprfunc)bcs_str,
     .tp_as_number =      0,
     .tp_as_sequence =    0,
     .tp_as_mapping =     0,
     .tp_hash =           0,
     .tp_call =           0,
-    .tp_str =            0,
+    .tp_str =            (reprfunc)bcs_str,
     .tp_getattro =       0,
     .tp_setattro =       0,
     .tp_as_buffer =      0,
@@ -40,7 +224,7 @@ PyTypeObject MxBoundaryConditions_Type = {
     .tp_iternext =       0,
     .tp_methods =        0,
     .tp_members =        0,
-    .tp_getset =         0,
+    .tp_getset =         bcs_getset,
     .tp_base =           0,
     .tp_dict =           0,
     .tp_descr_get =      0,
@@ -73,13 +257,13 @@ PyTypeObject MxBoundaryCondition_Type = {
     .tp_getattr =        0,
     .tp_setattr =        0,
     .tp_as_async =       0,
-    .tp_repr =           0,
+    .tp_repr =           (reprfunc)bc_str,
     .tp_as_number =      0,
     .tp_as_sequence =    0,
     .tp_as_mapping =     0,
     .tp_hash =           0,
     .tp_call =           0,
-    .tp_str =            0,
+    .tp_str =            (reprfunc)bc_str,
     .tp_getattro =       0,
     .tp_setattro =       0,
     .tp_as_buffer =      0,
@@ -93,7 +277,7 @@ PyTypeObject MxBoundaryCondition_Type = {
     .tp_iternext =       0,
     .tp_methods =        0,
     .tp_members =        0,
-    .tp_getset =         0,
+    .tp_getset =         bc_getset,
     .tp_base =           0,
     .tp_dict =           0,
     .tp_descr_get =      0,
@@ -147,75 +331,315 @@ static void boundaries_from_flags(MxBoundaryConditions *bc) {
     }
 }
 
-void test(MxBoundaryConditions *bc) {
-    bc->periodic = space_periodic_x | SPACE_FREESLIP_Y;
+// check if object is string. If not string, return -1, if string,
+// check if valid type, and return, if string and invalid string, throw exception.
+static uint bc_kind_from_pystring(PyObject *o) {
     
-    bc->left.kind = BOUNDARY_PERIODIC;
-    bc->right.kind = BOUNDARY_PERIODIC;
+    int result = -1;
     
-    bc->front.kind = BOUNDARY_FREESLIP;
-    bc->back.kind = BOUNDARY_FREESLIP;
+    if(mx::check<std::string>(o)) {
+        std::string s = mx::cast<std::string>(o);
+        std::transform(s.begin(), s.end(),s.begin(), ::toupper);
+        
+        if(s.compare("PERIODIC") == 0) {
+            result = BOUNDARY_PERIODIC;
+        }
+        
+        else if (s.compare("FREE_SLIP") == 0 || s.compare("FREESLIP") == 0) {
+            result = BOUNDARY_FREESLIP;
+        }
+        
+        else if (s.compare("NO_SLIP") == 0 || s.compare("NOSLIP") == 0) {
+            result = BOUNDARY_NO_SLIP;
+        }
+        
+        else {
+            std::string msg = "invalid choice of value for boundary condition, \"";
+            msg += mx::cast<std::string>(o);
+            msg += "\", only \"periodic\" and \"free_slip\" are supported for cardinal direction init";
+            throw std::invalid_argument(msg);
+        }
+    }
     
-    bc->top.kind = BOUNDARY_VELOCITY;
-    bc->bottom.kind = BOUNDARY_VELOCITY;
+    return result;
+}
+
+static int init_bc_direction(MxBoundaryCondition *low_bl, MxBoundaryCondition *high_bl, PyObject *o) {
+    if(mx::check<std::string>(o)) {
+        int kind = bc_kind_from_pystring(o);
+        
+        if(kind == BOUNDARY_NO_SLIP) {
+            low_bl->kind = high_bl->kind = BOUNDARY_VELOCITY;
+            low_bl->velocity = high_bl->velocity = Magnum::Vector3{0.f, 0.f, 0.f};
+        }
+        else {
+            low_bl->kind = (BoundaryConditionKind)kind;
+            high_bl->kind = (BoundaryConditionKind)kind;
+        }
+        
+        return kind;
+    }
+    else {
+        std::string msg = "invalid boundary initialization type (";
+        msg += o->ob_type->tp_name;
+        msg += "), only string and dictionary types are supported";
+        throw std::invalid_argument(msg);
+    }
+}
+
+// init a bc from a dict, dict is already known to be a dictionary
+static uint init_bc(MxBoundaryCondition* bc, PyObject *o) {
     
+    PyObject *item = PyDict_GetItemString(o, bc->name);
+    
+    if(!item) {
+        return 0;
+    }
+    if(mx::check<std::string>(item)) {
+        bc->kind = (BoundaryConditionKind)bc_kind_from_pystring(item);
+        if(bc->kind == BOUNDARY_NO_SLIP) {
+            bc->kind = BOUNDARY_VELOCITY;
+            bc->velocity = Magnum::Vector3{};
+        }
+        return bc->kind;
+    }
+    else if(PyDict_Check(item)) {
+        
+        PyObject *vel = PyDict_GetItemString(item, "velocity");
+        
+        if(!vel) {
+            throw std::invalid_argument("attempt to initialize a boundary condition with a "
+                                        "dictionary that does not contain a \'velocity\' item, "
+                                        "only velocity boundary conditions support dictionary init");
+        }
+        
+        PyObject *r = PyDict_GetItemString(item, "restore");
+        if(r) {
+            bc->restore = mx::cast<float>(r);
+        }
+        
+        bc->kind = BOUNDARY_VELOCITY;
+        bc->velocity = mx::cast<Magnum::Vector3>(vel);
+        return bc->kind;
+    }
+    else {
+        std::string msg = "invalid type (";
+        msg += item->ob_type->tp_name;
+        msg += "), for \'";
+        msg += bc->name;
+        msg += "\', boundary condition initialization, only dictionary is supported";
+        throw std::invalid_argument(msg);
+    }
+}
+
+static void check_periodicy(MxBoundaryCondition *low_bc, MxBoundaryCondition *high_bc) {
+    if((low_bc->kind & BOUNDARY_PERIODIC) ^ (high_bc->kind & BOUNDARY_PERIODIC)) {
+        MxBoundaryCondition *has;
+        MxBoundaryCondition *notHas;
+    
+        if(low_bc->kind & BOUNDARY_PERIODIC) {
+            has = low_bc;
+            notHas = high_bc;
+        }
+        else {
+            has = high_bc;
+            notHas = low_bc;
+        }
+        
+        std::string msg = "only ";
+        msg += has->name;
+        msg += "has periodic boundary conditions set, but not ";
+        msg += notHas->name;
+        msg += ", setting both to periodic";
+        
+        low_bc->kind = BOUNDARY_PERIODIC;
+        high_bc->kind = BOUNDARY_PERIODIC;
+        
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
 }
 
 
 HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject *args) {
     
-    try {
-        
-        if(args && mx::check<int>(args)) {
-            bc->periodic = mx::cast<uint32_t>(args);
-            boundaries_from_flags(bc);
-        }
-        else if(args && PyDict_Check(args)) {
-            
-        }
-        else {
-            // default value
-            bc->periodic = space_periodic_full;
-            boundaries_from_flags(bc);
-        }
-        
-        test(bc);
-        
-        if(cells[0] < 3 && (bc->periodic & space_periodic_x)) {
-            cells[0] = 3;
-            std::string msg = "requested periodic_x and " + std::to_string(cells[0]) +
-            " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-            PyErr_WarnEx(NULL, msg.c_str(), 0);
-        }
-        if(cells[1] < 3 && (bc->periodic & space_periodic_y)) {
-            cells[1] = 3;
-            std::string msg = "requested periodic_x and " + std::to_string(cells[1]) +
-            " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-            PyErr_WarnEx(NULL, msg.c_str(), 0);
-        }
-        if(cells[2] < 3 && (bc->periodic & space_periodic_z)) {
-            cells[2] = 3;
-            std::string msg = "requested periodic_x and " + std::to_string(cells[2]) +
-            " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
-            PyErr_WarnEx(NULL, msg.c_str(), 0);
-        }
-        
-        printf("engine periodic x : %s\n", bc->periodic & space_periodic_x ? "true" : "false");
-        printf("engine periodic y : %s\n", bc->periodic & space_periodic_y ? "true" : "false");
-        printf("engine periodic z : %s\n", bc->periodic & space_periodic_z ? "true" : "false");
-        printf("engine freeslip x : %s\n", bc->periodic & SPACE_FREESLIP_X ? "true" : "false");
-        printf("engine freeslip y : %s\n", bc->periodic & SPACE_FREESLIP_Y ? "true" : "false");
-        printf("engine freeslip z : %s\n", bc->periodic & SPACE_FREESLIP_Z ? "true" : "false");
-        printf("engine periodic ghost x : %s\n", bc->periodic & space_periodic_ghost_x ? "true" : "false");
-        printf("engine periodic ghost y : %s\n", bc->periodic & space_periodic_ghost_y ? "true" : "false");
-        printf("engine periodic ghost z : %s\n", bc->periodic & space_periodic_ghost_z ? "true" : "false");
-        
-        return S_OK;
-        
+    if (PyType_IS_GC(&MxBoundaryConditions_Type)) {
+        assert(0 && "should not get here");
     }
-    catch(const std::exception &e) {
-        return C_EXP(e);
+    
+    bzero(bc, MxBoundaryConditions_Type.tp_basicsize);
+
+    PyObject_INIT(bc, &MxBoundaryConditions_Type);
+    PyObject_INIT(&(bc->top), &MxBoundaryCondition_Type);
+    PyObject_INIT(&(bc->bottom), &MxBoundaryCondition_Type);
+    PyObject_INIT(&(bc->left), &MxBoundaryCondition_Type);
+    PyObject_INIT(&(bc->right), &MxBoundaryCondition_Type);
+    PyObject_INIT(&(bc->front), &MxBoundaryCondition_Type);
+    PyObject_INIT(&(bc->back), &MxBoundaryCondition_Type);
+    
+    bc->left.name = "left";     bc->left.restore = 1.f;
+    bc->right.name = "right";   bc->right.restore = 1.f;
+    bc->front.name = "front";   bc->front.restore = 1.f;
+    bc->back.name = "back";     bc->back.restore = 1.f;
+    bc->top.name = "top";       bc->top.restore = 1.f;
+    bc->bottom.name = "bottom"; bc->bottom.restore = 1.f;
+    
+    if(args) {
+        try {
+            if(mx::check<int>(args)) {
+                bc->periodic = mx::cast<uint32_t>(args);
+                boundaries_from_flags(bc);
+            }
+            else if(PyDict_Check(args)) {
+                // check if we have x, y, z directions
+                PyObject *o;
+                
+                if((o = PyDict_GetItemString(args, "x"))) {
+                    switch(init_bc_direction(&(bc->left), &(bc->right), o)) {
+                        case BOUNDARY_PERIODIC:
+                            bc->periodic |= space_periodic_x;
+                            break;
+                        case BOUNDARY_FREESLIP:
+                            bc->periodic |= SPACE_FREESLIP_X;
+                            break;
+                        default:
+                            assert(0);
+                    }
+                }
+                
+                if((o = PyDict_GetItemString(args, "y"))) {
+                    switch(init_bc_direction(&(bc->front), &(bc->back), o)) {
+                        case BOUNDARY_PERIODIC:
+                            bc->periodic |= space_periodic_y;
+                            break;
+                        case BOUNDARY_FREESLIP:
+                            bc->periodic |= SPACE_FREESLIP_Y;
+                            break;
+                        default:
+                            assert(0);
+                    }
+                }
+                
+                if((o = PyDict_GetItemString(args, "z"))) {
+                    switch(init_bc_direction(&(bc->top), &(bc->bottom), o)) {
+                        case BOUNDARY_PERIODIC:
+                            bc->periodic |= space_periodic_z;
+                            break;
+                        case BOUNDARY_FREESLIP:
+                            bc->periodic |= SPACE_FREESLIP_Z;
+                            break;
+                        default:
+                            assert(0);
+                    }
+                }
+                
+                switch(init_bc(&(bc->left), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_x;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_X;
+                        break;
+                }
+                
+                switch(init_bc(&(bc->right), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_x;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_X;
+                        break;
+                }
+                
+                switch(init_bc(&(bc->front), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_y;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_Y;
+                        break;
+                }
+                
+                switch(init_bc(&(bc->back), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_y;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_Y;
+                        break;
+                }
+                
+                switch(init_bc(&(bc->top), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_z;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_Z;
+                        break;
+                }
+                
+                switch(init_bc(&(bc->bottom), args)) {
+                    case BOUNDARY_PERIODIC:
+                        bc->periodic |= space_periodic_z;
+                        break;
+                    case BOUNDARY_FREESLIP:
+                        bc->periodic |= SPACE_FREESLIP_Z;
+                        break;
+                }
+                
+                check_periodicy(&(bc->left), &(bc->right));
+                check_periodicy(&(bc->front), &(bc->back));
+                check_periodicy(&(bc->top), &(bc->bottom));
+            }
+            else {
+                std::string msg = "invalid type, (";
+                msg += args->ob_type->tp_name;
+                msg += ") given for boundary condition init, only integer, string or dictionary allowed";
+                throw std::logic_error(msg);
+            }
+        }
+        catch(const std::exception &e) {
+            return C_EXP(e);
+        }
     }
+    // no args given, use default init value
+    else {
+        // default value
+        bc->periodic = space_periodic_full;
+        boundaries_from_flags(bc);
+    }
+    
+    if(cells[0] < 3 && (bc->periodic & space_periodic_x)) {
+        cells[0] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[0]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+    if(cells[1] < 3 && (bc->periodic & space_periodic_y)) {
+        cells[1] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[1]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+    if(cells[2] < 3 && (bc->periodic & space_periodic_z)) {
+        cells[2] = 3;
+        std::string msg = "requested periodic_x and " + std::to_string(cells[2]) +
+        " space cells in the x direction, need at least 3 cells for periodic, setting cell count to 3";
+        PyErr_WarnEx(NULL, msg.c_str(), 0);
+    }
+    
+    printf("engine periodic x : %s\n", bc->periodic & space_periodic_x ? "true" : "false");
+    printf("engine periodic y : %s\n", bc->periodic & space_periodic_y ? "true" : "false");
+    printf("engine periodic z : %s\n", bc->periodic & space_periodic_z ? "true" : "false");
+    printf("engine freeslip x : %s\n", bc->periodic & SPACE_FREESLIP_X ? "true" : "false");
+    printf("engine freeslip y : %s\n", bc->periodic & SPACE_FREESLIP_Y ? "true" : "false");
+    printf("engine freeslip z : %s\n", bc->periodic & SPACE_FREESLIP_Z ? "true" : "false");
+    printf("engine periodic ghost x : %s\n", bc->periodic & space_periodic_ghost_x ? "true" : "false");
+    printf("engine periodic ghost y : %s\n", bc->periodic & space_periodic_ghost_y ? "true" : "false");
+    printf("engine periodic ghost z : %s\n", bc->periodic & space_periodic_ghost_z ? "true" : "false");
+    
+    return S_OK;
+        
+
 }
 
 
@@ -244,3 +668,60 @@ HRESULT _MxBoundaryConditions_Init(PyObject* m) {
 }
 
 
+PyObject* bc_str(MxBoundaryCondition *bc) {
+    return mx::cast(bc->str(true));
+}
+
+PyObject* bcs_str(MxBoundaryConditions *bcs) {
+    std::string s = "BoundaryConditions(\n";
+    s += "  " + bcs->left.str(false) + ", \n";
+    s += "  " + bcs->right.str(false) + ", \n";
+    s += "  " + bcs->front.str(false) + ", \n";
+    s += "  " + bcs->back.str(false) + ", \n";
+    s += "  " + bcs->bottom.str(false) + ", \n";
+    s += "  " + bcs->top.str(false) + ", \n";
+    s += ")";
+    return mx::cast(s);
+}
+
+std::string MxBoundaryCondition::str(bool show_type) const
+{
+    std::string s;
+    
+    if(show_type) {
+        s +=  "BoundaryCondition(";
+    }
+    
+    s += "\'";
+    s += this->name;
+    s += "\' : {";
+    
+    s += "\'kind\' : \'";
+    switch (kind) {
+        case BOUNDARY_PERIODIC:
+            s += "PERIODIC";
+            break;
+        case BOUNDARY_FORCE:
+            s += "FORCE";
+            break;
+        case BOUNDARY_FREESLIP:
+            s += "FREESLIP";
+            break;
+        case BOUNDARY_VELOCITY:
+            s += "VELOCITY";
+            break;
+        default:
+            s += "INVALID";
+            break;
+    }
+    s += "\'";
+    s += ", \'velocity\' : [" + std::to_string(velocity[0]) + ", " + std::to_string(velocity[1]) + ", " + std::to_string(velocity[2]) + "]";
+    s += ", \'restore\' : " + std::to_string(restore);
+    s += "}";
+    
+    if(show_type) {
+        s +=  ")";
+    }
+    
+    return s;
+}

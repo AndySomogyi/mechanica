@@ -192,7 +192,10 @@ Magnum::Vector3 MxUniverse::dim()
     return Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
 
-HRESULT _MxUniverse_init(PyObject* m)
+// TODO hack to deal with pybind, have to get rid of this crap...
+// this adds the objects to the module, only after can we do things like
+// make alias.
+static HRESULT pybind_hack(PyObject* m)
 {
     py::class_<PyUniverse> u(m, "Universe");
     
@@ -307,8 +310,35 @@ HRESULT _MxUniverse_init(PyObject* m)
     uc.def_readwrite("space_grid_size", &MxUniverseConfig::spaceGridSize);
     uc.def_readwrite("cutoff", &MxUniverseConfig::cutoff);
     uc.def_readwrite("flags", &MxUniverseConfig::flags);
+    
+    u.def_property_readonly_static("boundary_conditions",
+           [](py::object self) -> py::handle {
+                Py_IncRef((PyObject*)&_Engine.boundary_conditions);
+                return (PyObject*)&_Engine.boundary_conditions;
+           }
+    );
 
 
+    return S_OK;
+};
+
+HRESULT _MxUniverse_init(PyObject* m)
+{
+    HRESULT res = pybind_hack(m);
+    
+    if(FAILED(res)) {
+        return res;
+    }
+    
+   
+    PyObject *universe = PyObject_GetAttrString(m, "Universe");
+    
+    if(!universe) {
+        return c_error(E_FAIL, "could not get universe from main module");
+    }
+    
+    PyModule_AddObject(m, "universe", universe);
+    
     return S_OK;
 }
 
@@ -502,20 +532,6 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
 
     return S_OK;
 }
-
-
-//CAPI_FUNC(HRESULT) MxUniverse_Init(const MxUniverseConfig &conf) {
-//    double origin[3] = {conf.origin[0], conf.origin[1], conf.origin[2]};
-//    double dim[3] = {conf.dim[0], conf.dim[1], conf.dim[2]};
-//    double L[3] = {conf.dim[0] / conf.spaceGridSize[0], conf.dim[1] / conf.spaceGridSize[1], conf.dim[2] / conf.spaceGridSize[2]};
-//
-//
-//
-//    int er = engine_init ( &_Engine , origin , dim , L ,
-//            conf.cutoff, space_periodic_full , conf.maxTypes , conf.flags );
-//
-//    return S_OK;
-//}
 
 // TODO: does it make sense to return an hresult???
 int MxUniverse_Flag(MxUniverse_Flags flag)

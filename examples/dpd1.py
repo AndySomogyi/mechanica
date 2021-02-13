@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 m.Simulator(dt=0.1, dim=[15, 12, 10],
-            bc=m.PERIODIC_X | m.FREESLIP_Y | m.FREESLIP_Z)
+            bc={'x':'periodic', 'y':'freeslip', 'z':'freeslip'})
 
 # lattice spacing
 a = 0.7
