@@ -231,6 +231,7 @@ int space_cell_load ( struct space_cell *c , struct MxParticle *parts ,
 int space_cell_flush ( struct space_cell *c ,
         struct MxParticle **partlist , struct space_cell **celllist );
 
+#include <iostream>
 std::ostream& operator<<(std::ostream& os, const space_cell* );
 
 

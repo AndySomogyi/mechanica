@@ -333,7 +333,7 @@ static void boundaries_from_flags(MxBoundaryConditions *bc) {
 
 // check if object is string. If not string, return -1, if string,
 // check if valid type, and return, if string and invalid string, throw exception.
-static uint bc_kind_from_pystring(PyObject *o) {
+static unsigned bc_kind_from_pystring(PyObject *o) {
     
     int result = -1;
     
@@ -388,7 +388,7 @@ static int init_bc_direction(MxBoundaryCondition *low_bl, MxBoundaryCondition *h
 }
 
 // init a bc from a dict, dict is already known to be a dictionary
-static uint init_bc(MxBoundaryCondition* bc, PyObject *o) {
+static unsigned init_bc(MxBoundaryCondition* bc, PyObject *o) {
     
     PyObject *item = PyDict_GetItemString(o, bc->name);
     
