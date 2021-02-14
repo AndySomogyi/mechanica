@@ -305,7 +305,7 @@ struct CAPI_EXPORT MxSimulator {
         int argc = 0;
 
         char** argv = NULL;
-
+        
     private:
         std::string _title;
         Vector2i _size;

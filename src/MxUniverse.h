@@ -71,6 +71,13 @@ struct CAPI_EXPORT MxUniverseConfig {
     // a dictionary or integer, parse this object when we initialize the engine.
     PyObject *boundaryConditionsPtr;
     double max_distance;
+    
+    
+    // bitmask of timers to show in performance counter output.
+    uint32_t timers_mask;
+    
+    long timer_output_period;
+    
     MxUniverseConfig();
     
     // just set the object, borow a pointer to python handle

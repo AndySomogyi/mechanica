@@ -50,7 +50,8 @@ MxSimulator::Config::Config():
             _size{800, 600},
             _dpiScalingPolicy{DpiScalingPolicy::Default},
             queues{4},
-           _windowless{ false } {
+           _windowless{ false }
+{
     _windowFlags = MxSimulator::WindowFlags::Resizable | 
                    MxSimulator::WindowFlags::Focused   | 
                    MxSimulator::WindowFlags::Hidden;  // make the window initially hidden 
@@ -233,6 +234,14 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     if((o = PyDict_GetItemString(kwargs, "window_size"))) {
         Magnum::Vector2i windowSize = mx::cast<Magnum::Vector2i>(o);
         conf.setWindowSize(windowSize);
+    }
+    
+    if((o = PyDict_GetItemString(kwargs, "perfcounters"))) {
+        conf.universeConfig.timers_mask = mx::cast<uint32_t>(o);
+    }
+    
+    if((o = PyDict_GetItemString(kwargs, "perfcounter_period"))) {
+        conf.universeConfig.timer_output_period = mx::cast<int>(o);
     }
 }
 
@@ -576,8 +585,6 @@ int universe_init (const MxUniverseConfig &conf ) {
                                    (float)cells[1],
                                    (float)cells[2]};
 
-    Magnum::Vector3d L = length / spaceGridSize;
-
     double   cutoff = conf.cutoff;
 
     int  nr_runners = conf.threads;
@@ -599,6 +606,9 @@ int universe_init (const MxUniverseConfig &conf ) {
     _Engine.dt = conf.dt;
     _Engine.temperature = conf.temp;
     _Engine.integrator = conf.integrator;
+    
+    _Engine.timers_mask = conf.timers_mask;
+    _Engine.timer_output_period = conf.timer_output_period;
     
     if(conf.max_distance >= 0) {
         // max_velocity is in absolute units, convert

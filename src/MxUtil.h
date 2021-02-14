@@ -118,6 +118,13 @@ PyObject *MxInstructionSetFeatruesDict();
 PyObject *MxCompileFlagsDict();
 
 uint64_t MxInstructionSetFeatures();
+    
+    
+CAPI_FUNC(double) MxWallTime();
+
+CAPI_FUNC(double) MxCPUTime();
+    
+    
 
 
 HRESULT _MxUtil_init(PyObject *m);

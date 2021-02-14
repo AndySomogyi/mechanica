@@ -229,6 +229,8 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     // the incomprehensible template madness way of doing things.
     // Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&_points[0]), _points.size() * 3);
     // _bufferParticles.setData(data);
+    
+    ticks tic = getticks();
 
     _dirty = false;
 
@@ -370,6 +372,8 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     sphereShader.draw(sphereMesh);
     sphereShader.draw(largeSphereMesh);
     sphereShader.draw(cuboidMesh);
+    
+    _Engine.timers[engine_timer_render] += getticks() - tic;
     
     return *this;
 }
