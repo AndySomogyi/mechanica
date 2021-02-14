@@ -724,6 +724,14 @@ static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
             argv = py::module::import("sys").attr("argv");
         }
         
+        PyObject *a = argv.ptr();
+        
+        if(PyList_Size(a) > 0) {
+            Universe.name = mx::cast<std::string>(PyList_GetItem(a, 0));
+        }
+        
+  
+        
         MxSimulator::Config conf;
         MxSimulator::GLConfig glConf;
         

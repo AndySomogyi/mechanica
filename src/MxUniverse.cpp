@@ -35,13 +35,7 @@ namespace py = pybind11;
 using Magnum::Vector3;
 
 MxUniverse Universe = {
-    .isRunning = false,
-    .performance_info_display_interval = 100,
-    .performance_info_flags =
-        ENGINE_TIMER_STEP |
-        ENGINE_TIMER_NONBOND |
-        ENGINE_TIMER_BONDED |
-        ENGINE_TIMER_ADVANCE
+    .isRunning = false
 };
 
 
@@ -517,12 +511,14 @@ double ms(ticks tks)
 
 void print_performance_counters() {
     std::cout << "performance_timers : { " << std::endl;
+    std::cout << "\t name:" << Universe.name << std::endl;
     std::cout << "\t fps: " << _Engine.time / _Engine.wall_time << std::endl;
-    std::cout << "\t engine_step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
-    std::cout << "\t engine_nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
-    std::cout << "\t engine_bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
-    std::cout << "\t engine_advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
+    std::cout << "\t step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
+    std::cout << "\t nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
+    std::cout << "\t bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
+    std::cout << "\t advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
     std::cout << "\t rendering: " << ms(_Engine.timers[engine_timer_render]) << std::endl;
+    std::cout << "\t time_steps: " << _Engine.time  << std::endl;
     std::cout << "}" << std::endl;
 }
 

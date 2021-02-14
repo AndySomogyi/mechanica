@@ -1,29 +1,32 @@
-dpd1:
 performance_timers : {
-	 fps: 227.135
-	 engine_step: 10.9791
-	 engine_nonbond: 10.0555
-	 engine_bonded: 0.00258236
-	 engine_advance: 11.0522
-	 rendering: 4.30593
+	 name:dpd1.py
+	 fps: 228.403
+	 step: 10.9176
+	 nonbond: 9.97877
+	 bonded: 0.00277167
+	 advance: 10.9904
+	 rendering: 4.31122
+	 time_steps: 3600
+}
+        
+performance_timers : {
+	 name:dpd2.py
+	 fps: 108.794
+	 step: 22.9264
+	 nonbond: 19.7704
+	 bonded: 0.00350491
+	 advance: 23.2832
+	 rendering: 20.0511
+	 time_steps: 3700
 }
 
-dpd2:
 performance_timers : {
-	 fps: 100.104
-	 engine_step: 24.9174
-	 engine_nonbond: 21.7326
-	 engine_bonded: 0.00379187
-	 engine_advance: 25.2886
-	 rendering: 20.3328
-}
-
-argon:
-performance_timers : {
-	 fps: 117.798
-	 engine_step: 21.1722
-	 engine_nonbond: 18.7835
-	 engine_bonded: 0.00301096
-	 engine_advance: 21.3881
-	 rendering: 13.3248
+	 name:argon.py
+	 fps: 125.369
+	 step: 19.8958
+	 nonbond: 17.5278
+	 bonded: 0.00313944
+	 advance: 20.1079
+	 rendering: 12.9829
+	 time_steps: 3000
 }
