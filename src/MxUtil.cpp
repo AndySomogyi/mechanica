@@ -17,6 +17,7 @@
 
 #include <CConvert.hpp>
 #include <mdcore_config.h>
+#include <engine.h>
 
 #include "Magnum/Mesh.h"
 #include "Magnum/Math/Vector3.h"
@@ -1764,4 +1765,16 @@ double MxCPUTime(){
     return (double)clock() / CLOCKS_PER_SEC;
 }
 #endif
+
+
+
+
+WallTime::WallTime() {
+    start = MxWallTime();
+}
+
+WallTime::~WallTime() {
+    _Engine.wall_time += (MxWallTime() - start);
+}
+   
 

@@ -69,6 +69,9 @@
 #include "engine_advance.h"
 #include "MxForce.h"
 #include "MxBoundaryConditions.hpp"
+
+#include "../../MxUtil.h"
+
 #include <iostream>
 
 #pragma clang diagnostic ignored "-Wwritable-strings"
@@ -1169,6 +1172,8 @@ int engine_nonbond_eval ( struct engine *e ) {
  * are updated and the particles are re-sorted in the #space.
  */
 int engine_step ( struct engine *e ) {
+    
+    WallTime wt;
 
     ticks tic = getticks(), tic_step = tic;
 

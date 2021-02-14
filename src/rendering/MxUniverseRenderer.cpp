@@ -53,6 +53,8 @@
 #include <rendering/WireframeObjects.h>
 #include <rendering/NOMStyle.hpp>
 
+#include <MxUtil.h>
+
 #include <assert.h>
 #include <iostream>
 
@@ -229,6 +231,8 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     // the incomprehensible template madness way of doing things.
     // Containers::ArrayView<const float> data(reinterpret_cast<const float*>(&_points[0]), _points.size() * 3);
     // _bufferParticles.setData(data);
+    
+    WallTime wt;
     
     ticks tic = getticks();
 

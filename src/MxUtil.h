@@ -123,6 +123,14 @@ uint64_t MxInstructionSetFeatures();
 CAPI_FUNC(double) MxWallTime();
 
 CAPI_FUNC(double) MxCPUTime();
+
+
+class WallTime {
+public:
+    WallTime();
+    ~WallTime();
+    double start;
+};
     
     
 

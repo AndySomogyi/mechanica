@@ -459,9 +459,6 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
         return E_FAIL;
     }
 
-    ticks tic = getticks();
-    double now = MxWallTime();
-
     if ( engine_step( &_Engine ) != 0 ) {
         printf("main: engine_step failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
@@ -474,9 +471,6 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
     if(_Engine.timer_output_period > 0 && _Engine.time % _Engine.timer_output_period == 0 ) {
         print_performance_counters();
     }
-
-    _Engine.timers[engine_timer_total] += getticks() - tic;
-    _Engine.wall_time += MxWallTime() - now;
 
     return S_OK;
 }
@@ -518,6 +512,7 @@ void print_performance_counters() {
     std::cout << "\t bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
     std::cout << "\t advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
     std::cout << "\t rendering: " << ms(_Engine.timers[engine_timer_render]) << std::endl;
+    std::cout << "\t total: " << ms(_Engine.timers[engine_timer_render] + _Engine.timers[engine_timer_step]) << std::endl;
     std::cout << "\t time_steps: " << _Engine.time  << std::endl;
     std::cout << "}" << std::endl;
 }
