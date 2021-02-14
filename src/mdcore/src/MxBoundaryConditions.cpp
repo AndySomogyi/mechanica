@@ -8,6 +8,7 @@
 #include "MxBoundaryConditions.hpp"
 #include "MxConvert.hpp"
 #include "space.h"
+#include "engine.h"
 
 #include <algorithm>
 #include <string>
@@ -467,7 +468,7 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     }
     
     bzero(bc, MxBoundaryConditions_Type.tp_basicsize);
-
+    
     PyObject_INIT(bc, &MxBoundaryConditions_Type);
     PyObject_INIT(&(bc->top), &MxBoundaryCondition_Type);
     PyObject_INIT(&(bc->bottom), &MxBoundaryCondition_Type);
@@ -476,12 +477,14 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     PyObject_INIT(&(bc->front), &MxBoundaryCondition_Type);
     PyObject_INIT(&(bc->back), &MxBoundaryCondition_Type);
     
-    bc->left.name = "left";     bc->left.restore = 1.f;
-    bc->right.name = "right";   bc->right.restore = 1.f;
-    bc->front.name = "front";   bc->front.restore = 1.f;
-    bc->back.name = "back";     bc->back.restore = 1.f;
-    bc->top.name = "top";       bc->top.restore = 1.f;
-    bc->bottom.name = "bottom"; bc->bottom.restore = 1.f;
+    bc->potenntials = (MxPotential**)malloc(6 * engine::max_type * sizeof(MxPotential**));
+    
+    bc->left.name = "left";     bc->left.restore = 1.f;     bc->left.potenntials =   &bc->potenntials[0 * engine::max_type];
+    bc->right.name = "right";   bc->right.restore = 1.f;    bc->right.potenntials =  &bc->potenntials[1 * engine::max_type];
+    bc->front.name = "front";   bc->front.restore = 1.f;    bc->front.potenntials =  &bc->potenntials[2 * engine::max_type];
+    bc->back.name = "back";     bc->back.restore = 1.f;     bc->back.potenntials =   &bc->potenntials[3 * engine::max_type];
+    bc->top.name = "top";       bc->top.restore = 1.f;      bc->top.potenntials =    &bc->potenntials[4 * engine::max_type];
+    bc->bottom.name = "bottom"; bc->bottom.restore = 1.f;   bc->bottom.potenntials = &bc->potenntials[5 * engine::max_type];
     
     if(args) {
         try {
@@ -642,6 +645,15 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
 
 }
 
+int MxBoundaryCondition_Check(const PyObject *obj)
+{
+    return obj && obj->ob_type == &MxBoundaryCondition_Type;
+}
+
+int MxBoundaryConditions_Check(const PyObject *obj)
+{
+    return obj && obj->ob_type == &MxBoundaryConditions_Type;
+}
 
 HRESULT _MxBoundaryConditions_Init(PyObject* m) {
     if (PyType_Ready((PyTypeObject*)&MxBoundaryCondition_Type) < 0) {
@@ -684,6 +696,21 @@ PyObject* bcs_str(MxBoundaryConditions *bcs) {
     return mx::cast(s);
 }
 
+void MxBoundaryCondition::set_potential(struct MxParticleType *ptype,
+        struct MxPotential *pot)
+{
+    int i = ptype->id;
+    if(potenntials[i]) {
+        Py_DECREF(potenntials[i]);
+    }
+    
+    potenntials[i] = pot;
+    
+    if(pot) {
+        Py_INCREF(pot);
+    }
+}
+
 std::string MxBoundaryCondition::str(bool show_type) const
 {
     std::string s;
@@ -724,4 +751,15 @@ std::string MxBoundaryCondition::str(bool show_type) const
     }
     
     return s;
+}
+
+void MxBoundaryConditions::set_potential(struct MxParticleType *ptype,
+        struct MxPotential *pot)
+{
+    left.set_potential(ptype, pot);
+    right.set_potential(ptype, pot);
+    front.set_potential(ptype, pot);
+    back.set_potential(ptype, pot);
+    bottom.set_potential(ptype, pot);
+    top.set_potential(ptype, pot);
 }

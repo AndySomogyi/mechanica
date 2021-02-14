@@ -33,6 +33,21 @@ struct MxBoundaryCondition : PyObject {
     
     const char* name;
     
+    /**
+     * pointer to offset in main array allocated in MxBoundaryConditions.
+     */
+    struct MxPotential **potenntials;
+    
+    // many potentials act on the sum of both particle radii, so this
+    // paramter makes it looks like the wall has a sheet of particles of
+    // radius. 
+    float radius;
+    
+    /**
+     * sets the potential for the given particle type.
+     */
+    void set_potential(struct MxParticleType *ptype, struct MxPotential *pot);
+    
     std::string str(bool show_name) const;
 };
 
@@ -45,11 +60,26 @@ struct MxBoundaryConditions: PyObject {
     MxBoundaryCondition front;
     MxBoundaryCondition back;
     
+    // pointer to big array of potentials, 6 * max types.
+    // each boundary condition has a pointer that's an offset
+    // into this array, so allocate and free in single block.
+    // allocated in MxBoundaryConditions_Init. 
+    struct MxPotential **potenntials;
+    
+    /**
+     * sets a potential for ALL boundary conditions and the given potential.
+     */
+    void set_potential(struct MxParticleType *ptype, struct MxPotential *pot);
+    
     /**
      * bitmask of periodic boundary conditions
      */
     uint32_t periodic;
 };
+
+int MxBoundaryCondition_Check(const PyObject *obj);
+
+int MxBoundaryConditions_Check(const PyObject *obj);
 
 /**
  * initialize a boundary condition with either a number that's a bitmask of the

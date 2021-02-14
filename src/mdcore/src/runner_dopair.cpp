@@ -267,38 +267,13 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                 #else
             
                 if(pot) {
-            
-                    if(pot->kind == POTENTIAL_KIND_DPD) {
-                        /* update the forces if part in range */
-                        if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
-                            
-                            // the number density is a union after the force 3-vector.
-                            pif[3] += number_density;
-                            part_j->f[3] += number_density;
-                            
-                            /* tabulate the energy */
-                            epot += e;
-                        }
-                    }
-                    else {
                     
-                        /* update the forces if part in range */
-                        if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
-                            
-                            for ( k = 0 ; k < 3 ; k++ ) {
-                                w = f * dx[k];
-                                pif[k] -= w;
-                                part_j->f[k] += w;
-                            }
-                            
-                            // the number density is a union after the force 3-vector.
-                            pif[3] += number_density;
-                            part_j->f[3] += number_density;
-                            
-                            /* tabulate the energy */
-                            epot += e;
-                        }
-                    }
+                    //MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+                    //MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
+                    //float *dx, float r2, float number_density, float *epot) {
+                    
+                    potential_eval_super_ex(gaussian, gen, pot, part_i, part_j, dx,  r2, number_density, &epot);
+            
                 }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE
@@ -654,37 +629,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             /* update the forces if part in range */
             if(pot) {
                 
-                if(pot->kind == POTENTIAL_KIND_DPD) {
-                    /* update the forces if part in range */
-                    if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
-                        
-                        // the number density is a union after the force 3-vector.
-                        pif[3] += number_density;
-                        part_j->f[3] += number_density;
-                        
-                        /* tabulate the energy */
-                        epot += e;
-                    }
-                }
-                else {
-                
-                    /* update the forces if part in range */
-                    if (potential_eval_ex(pot, part_i->radius, part_j->radius, r2 , &e , &f )) {
-                        
-                        for ( k = 0 ; k < 3 ; k++ ) {
-                            w = f * dx[k];
-                            pif[k] -= w;
-                            part_j->f[k] += w;
-                        }
-                        
-                        // the number density is a union after the force 3-vector.
-                        pif[3] += number_density;
-                        part_j->f[3] += number_density;
-                        
-                        /* tabulate the energy */
-                        epot += e;
-                    }
-                }
+                potential_eval_super_ex(gaussian, gen, pot, part_i, part_j, dx,  r2, number_density, &epot);
+            
             }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE

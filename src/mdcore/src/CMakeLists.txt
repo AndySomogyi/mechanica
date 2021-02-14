@@ -79,6 +79,7 @@ set(PRIVATE_HEADERS
   dpd_eval.hpp
   cuboid_eval.hpp
   boundary_eval.hpp
+  MxBind.hpp
   )
 
 if(MX_THREADING)
@@ -135,6 +136,7 @@ SET(SOURCES
   SpaceQueue.cpp
   DissapativeParticleDynamics.cpp
   MxBoundaryConditions.cpp
+  MxBind.cpp
   )
 
 if(MDCORE_USE_MPI)

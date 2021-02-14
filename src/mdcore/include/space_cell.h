@@ -56,6 +56,12 @@ enum CellFlags {
     cell_boundary_right    = 1 << 8,
     cell_boundary_front    = 1 << 9,
     cell_boundary_back     = 1 << 10,
+    cell_boundary_any      = cell_boundary_top |
+                             cell_boundary_bottom |
+                             cell_boundary_left |
+                             cell_boundary_right |
+                             cell_boundary_front |
+                             cell_boundary_back
 };
 
 

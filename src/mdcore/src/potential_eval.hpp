@@ -3,20 +3,20 @@
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
  * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
 
 #ifndef _MDCORE_POTENTIAL_EVAL_H_
@@ -27,8 +27,8 @@
 
 
 /* This file contains the potential evaluation function als "extern inline",
-   such that they can be inlined in the respective modules. 
-   
+   such that they can be inlined in the respective modules.
+
    If your code wants to call any potential_eval functions, you must include
    this file.
 */
@@ -48,8 +48,8 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
 
 #include <iostream>
 
-    
-/** 
+
+/**
  * @brief Evaluates the given potential at the given point (interpolated).
  *
  * @param p The #potential to be evaluated.
@@ -65,31 +65,31 @@ void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f )
  */
 
 MX_ALWAYS_INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
-    
+
     int ind, k;
     FPTYPE x, ee, eff, *c, r;
-    
+
     /* Get r for the right type. */
     r = FPTYPE_SQRT(r2);
-    
+
     /* is r in the house? */
     /* if ( r < p->a || r > p->b )
      printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
-    
+
     /* compute the index */
     ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
-    
+
     /* if ( ind > p->n ) {
      printf("potential_eval: r=%.18e.\n",r);
      fflush(stdout);
      } */
-    
+
     /* get the table offset */
     c = &(p->c[ind * potential_chunk]);
-    
+
     /* adjust x to the interval */
     x = (r - c[0]) * c[1];
-    
+
     /* compute the potential and its derivative */
     ee = c[2] * x + c[3];
     eff = c[2];
@@ -97,37 +97,37 @@ MX_ALWAYS_INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYP
         eff = eff * x + ee;
         ee = ee * x + c[k];
     }
-    
+
     /* store the result */
     *e = ee; *f = eff * c[1] / r;
-    
+
 }
 
 MX_ALWAYS_INLINE bool potential_eval_ex(
     struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
-    
+
     unsigned ind, k;
     FPTYPE x, ee, eff, *c, r;
-    
+
     /* Get r for the right type. */
     r = FPTYPE_SQRT(r2);
-    
+
     if(p->flags & POTENTIAL_SCALED) {
         r = r / (ri + rj);
     }
     else if(p->flags & POTENTIAL_SHIFTED) {
         r = r - (ri + rj) + p->r0;
     }
-    
+
     r = r < p->a ? p->a : r;
-    
+
     /* is r in the house? */
     /* if ( r < p->a || r > p->b )
      printf("potential_eval: requested potential at r=%e, not in [%e,%e].\n",r,p->a,p->b); */
-    
+
     /* compute the index */
     ind = std::max( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2]) );
-    
+
     if(r > p->b || ind > p->n) {
         //*e = 0;
         //*f = 0;
@@ -135,13 +135,13 @@ MX_ALWAYS_INLINE bool potential_eval_ex(
         //r << ", min: " << p->a << ", max: " << p->b << std::endl;
         return false;
     }
-    
+
     /* get the table offset */
     c = &(p->c[ind * potential_chunk]);
-    
+
     /* adjust x to the interval */
     x = (r - c[0]) * c[1];
-    
+
     /* compute the potential and its derivative */
     ee = c[2] * x + c[3];
     eff = c[2];
@@ -149,16 +149,16 @@ MX_ALWAYS_INLINE bool potential_eval_ex(
         eff = eff * x + ee;
         ee = ee * x + c[k];
     }
-    
+
     /* store the result */
     *e = ee; *f = eff * c[1] / r;
-    
+
     return true;
 }
 
 
 
-/** 
+/**
  * @brief Evaluates the given potential at the given point (interpolated).
  *
  * @param p The #potential to be evaluated.
@@ -177,20 +177,20 @@ MX_ALWAYS_INLINE void potential_eval_r (struct MxPotential *p , FPTYPE r , FPTYP
 
     int ind, k;
     FPTYPE x, ee, eff, *c;
-    
+
     /* compute the index */
     ind = FPTYPE_FMAX( FPTYPE_ZERO , p->alpha[0] + r * (p->alpha[1] + r * p->alpha[2] ) );
-    
+
     /* is r in the house? */
     /* if ( ind > p->n )
         printf("potential_eval_r: requested potential at r=%e (ind=%.8e), not in [%e,%e].\n",r , p->alpha[0] + r * (p->alpha[1] + r * (p->alpha[2] + r * p->alpha[3])),p->a,p->b); */
-    
+
     /* get the table offset */
     c = &(p->c[ind * potential_chunk]);
-    
+
     /* adjust x to the interval */
     x = (r - c[0]) * c[1];
-    
+
     /* compute the potential and its derivative */
     ee = c[2] * x + c[3];
     eff = c[2];
@@ -201,13 +201,13 @@ MX_ALWAYS_INLINE void potential_eval_r (struct MxPotential *p , FPTYPE r , FPTYP
 
     /* store the result */
     *e = ee; *f = eff * c[1];
-        
+
     }
 
 
 /**
  * @brief Evaluates the given potential at the given radius explicitly.
- * 
+ *
  * @param p The #potential to be evaluated.
  * @param r2 The radius squared.
  * @param e A pointer to a floating point value in which to store the
@@ -235,46 +235,46 @@ MX_ALWAYS_INLINE void potential_eval_expl ( struct MxPotential *p , FPTYPE r2 , 
 
     /* Do we have a Lennard-Jones interaction? */
     if ( p->flags & POTENTIAL_LJ126 ) {
-    
+
         /* init some variables */
         ir4 = ir2 * ir2; ir6 = ir4 * ir2; ir12 = ir6 * ir6;
-        
+
         /* compute the energy and the force */
         ee = ( p->alpha[0] * ir12 - p->alpha[1] * ir6 );
         eff = 6.0 * ir * ( -2.0 * p->alpha[0] * ir12 + p->alpha[1] * ir6 );
-    
+
         }
-        
+
     /* Do we have an Ewald short-range part? */
     if ( p->flags & POTENTIAL_EWALD ) {
-    
+
         /* get some values we will re-use */
         t2 = r * kappa;
         t1 = erfc( t2 );
-    
+
         /* compute the energy and the force */
         ee += p->alpha[2] * t1 * ir;
         eff += p->alpha[2] * ( -2.0 * isqrtpi * exp( -t2 * t2 ) * kappa * ir - t1 * ir2 );
-    
+
         }
-    
+
     /* Do we have a Coulomb interaction? */
     if ( p->flags & POTENTIAL_COULOMB ) {
-    
+
         /* compute the energy and the force */
         ee += potential_escale * p->alpha[2] * ir;
         eff += -potential_escale * p->alpha[2] * ir2;
-    
+
         }
-        
+
     /* store the potential and force. */
     *e = ee;
     *f = eff;
-    
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -291,7 +291,7 @@ MX_ALWAYS_INLINE void potential_eval_expl ( struct MxPotential *p , FPTYPE r2 , 
  *
  * Computes four single-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE or AltiVec
  * and single precision! If @c mdcore was not compiled with SSE or AltiVec,
  * this function simply calls #potential_eval on each entry.
@@ -308,10 +308,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
         int i[4];
         } alpha[4], mi, hi, x, ee, eff, c[6], r, ind, t[8];
     // float *data[4];
-    
+
     /* Get r . */
     r.v = _mm_sqrt_ps( _mm_load_ps( r2 ) );
-    
+
     /* compute the index */
     alpha[0].v = _mm_load_ps( p[0]->alpha );
     alpha[1].v = _mm_load_ps( p[1]->alpha );
@@ -325,7 +325,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
     alpha[1].m = _mm_unpackhi_epi64( t[0].m , t[1].m );
     alpha[2].m = _mm_unpacklo_epi64( t[2].m , t[3].m );
     ind.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha[0].v , _mm_mul_ps( r.v , _mm_add_ps( alpha[1].v , _mm_mul_ps( r.v , alpha[2].v ) ) ) ) ) );
-    
+
     /* Check ranges. */
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind.i[j] == 0 || ind.i[j] > p[j]->n ) {
@@ -334,7 +334,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
                 p[j]->n , p[j]->a , p[j]->b );
             fflush(stdout);
             } */
-            
+
     /* Unpack/transpose the coefficient data. */
     mi.v = _mm_load_ps( &p[0]->c[ ind.i[0] * potential_chunk ] );
     hi.v = _mm_load_ps( &p[1]->c[ ind.i[1] * potential_chunk ] );
@@ -346,10 +346,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
     c[4].v = _mm_load_ps( &p[2]->c[ ind.i[2] * potential_chunk + 4 ] );
     c[5].v = _mm_load_ps( &p[3]->c[ ind.i[3] * potential_chunk + 4 ] );
     _MM_TRANSPOSE4_PS( c[2].v , c[3].v , c[4].v , c[5].v );
-    
+
     /* adjust x to the interval */
     x.v = _mm_mul_ps( _mm_sub_ps( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = c[0].v;
     ee.v = _mm_add_ps( _mm_mul_ps( eff.v , x.v ) , c[1].v );
@@ -365,7 +365,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
     /* store the result */
     _mm_store_ps( e , ee.v );
     _mm_store_ps( f , _mm_mul_ps( eff.v , _mm_div_ps( hi.v , r.v ) ) );
-    
+
 #elif defined(__ALTIVEC__) && defined(FPTYPE_SINGLE)
     int j, k;
     union {
@@ -377,25 +377,25 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
         unsigned int i[4];
         } ind;
     float *data[4];
-    
+
     /* Get r . */
     r.v = vec_sqrt( *((vector float *)r2) );
-    
+
     /* compute the index (vec_ctu maps negative floats to 0) */
     alpha0.v = vec_load4( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = vec_load4( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
     alpha2.v = vec_load4( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] );
     ind.v = vec_ctu( vec_madd( r.v , vec_madd( r.v , alpha2.v , alpha1.v ) , alpha0.v ) , 0 );
-    
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = vec_load4( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = vec_load4( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = vec_mul( vec_sub( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = vec_load4( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = vec_load4( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -409,7 +409,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
     /* store the result */
     *((vector float *)e) = ee.v;
     *((vector float *)f) = vec_mul( eff.v , vec_div( hi.v , r.v ) );
-        
+
 #else
     int k;
     FPTYPE ee, eff;
@@ -418,11 +418,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
         e[k] = ee; f[k] = eff;
         }
 #endif
-        
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -439,7 +439,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single ( struct MxPotential *p[4] , fl
  *
  * Computes four single-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE or AltiVec
  * and single precision! If @c mdcore was not compiled with SSE or AltiVec,
  * this function simply calls #potential_eval on each entry.
@@ -456,16 +456,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
         int i[4];
         } alpha0, alpha1, alpha2, mi, hi, x, ee, eff, c, r, ind;
     float *data[4];
-    
+
     /* Get r . */
     r.v = _mm_sqrt_ps( _mm_load_ps( r2 ) );
-    
+
     /* compute the index */
     alpha0.v = _mm_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = _mm_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
     alpha2.v = _mm_setr_ps( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] );
     ind.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0.v , _mm_mul_ps( r.v , _mm_add_ps( alpha1.v , _mm_mul_ps( r.v , alpha2.v ) ) ) ) ) );
-    
+
     /* Check ranges. */
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind.i[j] == 0 || ind.i[j] > p[j]->n ) {
@@ -474,16 +474,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
                 p[j]->n , p[j]->a , p[j]->b );
             fflush(stdout);
             } */
-    
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = _mm_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = _mm_mul_ps( _mm_sub_ps( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = _mm_setr_ps( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -497,7 +497,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
     /* store the result */
     _mm_store_ps( e , ee.v );
     _mm_store_ps( f , _mm_mul_ps( eff.v , _mm_div_ps( hi.v , r.v ) ) );
-    
+
 #elif defined(__ALTIVEC__) && defined(FPTYPE_SINGLE)
     int j, k;
     union {
@@ -509,25 +509,25 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
         unsigned int i[4];
         } ind;
     float *data[4];
-    
+
     /* Get r . */
     r.v = vec_sqrt( *((vector float *)r2) );
-    
+
     /* compute the index (vec_ctu maps negative floats to 0) */
     alpha0.v = vec_load4( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = vec_load4( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
     alpha2.v = vec_load4( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] );
     ind.v = vec_ctu( vec_madd( r.v , vec_madd( r.v , alpha2.v , alpha1.v ) , alpha0.v ) , 0 );
-    
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = vec_load4( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = vec_load4( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = vec_mul( vec_sub( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = vec_load4( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = vec_load4( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -541,7 +541,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
     /* store the result */
     *((vector float *)e) = ee.v;
     *((vector float *)f) = vec_mul( eff.v , vec_div( hi.v , r.v ) );
-        
+
 #else
     int k;
     FPTYPE ee, eff;
@@ -550,7 +550,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_old ( struct MxPotential *p[4] 
         e[k] = ee; f[k] = eff;
         }
 #endif
-        
+
     }
 
 
@@ -567,10 +567,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[
         int i[4];
         } ind;
     FPTYPE *data[4];
-    
+
     /* Get r . */
     r.v = sqrtf( *( (vector(4,float) *)r2 ) );
-    
+
     /* compute the index */
     for ( k = 0 ; k < 4 ; k++ ) {
         alpha0.f[k] = p[k]->alpha[0];
@@ -578,7 +578,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[
         alpha2.f[k] = p[k]->alpha[2];
         }
     ind.v = max( (vector(4,int)){0,0,0,0} , (vector(4,int))( alpha0.v + r.v*( alpha1.v + r.v*alpha2.v ) ) );
-    
+
     /* Check ranges. */
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind.i[j] == 0 || ind.i[j] > p[j]->n ) {
@@ -587,18 +587,18 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[
                 p[j]->n , p[j]->a , p[j]->b );
             fflush(stdout);
             } */
-    
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     for ( k = 0 ; k < 4 ; k++ ) {
         mi.f[k] = data[k][0];
         hi.f[k] = data[k][1];
         }
     x.v = ( r.v - mi.v ) * hi.v;
-    
+
     /* compute the potential and its derivative */
     for ( k = 0 ; k < 4 ; k++ ) {
         eff.f[k] = data[k][2];
@@ -615,12 +615,12 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[
     /* store the result */
     *( (vector(4,float) *)e ) = ee.v;
     *( (vector(4,float) *)f ) = eff.v*( hi.v / r.v );
-    
+
     }
 #endif
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -637,7 +637,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_gccvec ( struct MxPotential *p[
  *
  * Computes four single-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE or AltiVec
  * and single precision! If @c mdcore was not compiled with SSE or AltiVec,
  * this function simply calls #potential_eval on each entry.
@@ -654,16 +654,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
         int i[4];
         } alpha0, alpha1, alpha2, mi, hi, x, ee, eff, c, r, ind;
     float *data[4];
-    
+
     /* Get r . */
     r.v = _mm_load_ps( r_in );
-    
+
     /* compute the index */
     alpha0.v = _mm_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = _mm_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
     alpha2.v = _mm_setr_ps( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] );
     ind.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0.v , _mm_mul_ps( r.v , _mm_add_ps( alpha1.v , _mm_mul_ps( r.v , alpha2.v ) ) ) ) ) );
-    
+
     /* Check ranges. */
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind.i[j] > p[j]->n ) {
@@ -672,16 +672,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
                 p[j]->n , p[j]->a , p[j]->b );
             fflush(stdout);
             } */
-            
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = _mm_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = _mm_mul_ps( _mm_sub_ps( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = _mm_setr_ps( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -695,7 +695,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
     /* store the result */
     _mm_store_ps( e , ee.v );
     _mm_store_ps( f , _mm_mul_ps( eff.v , hi.v ) );
-    
+
 #elif defined(__ALTIVEC__) && defined(FPTYPE_SINGLE)
     int j, k;
     union {
@@ -707,25 +707,25 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
         unsigned int i[4];
         } ind;
     float *data[4];
-    
+
     /* Get r . */
     r.v = *((vector float *)r_in);
-    
+
     /* compute the index (vec_ctu maps negative floats to 0) */
     alpha0.v = vec_load4( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = vec_load4( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
     alpha2.v = vec_load4( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] );
     ind.v = vec_ctu( vec_madd( r.v , vec_madd( r.v , alpha2.v , alpha1.v ) , alpha0.v ) , 0 );
-    
+
     /* get the table offset */
     for ( k = 0 ; k < 4 ; k++ )
         data[k] = &( p[k]->c[ ind.i[k] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = vec_load4( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = vec_load4( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = vec_mul( vec_sub( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = vec_load4( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = vec_load4( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -739,7 +739,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
     /* store the result */
     *((vector float *)e) = ee.v;
     *((vector float *)f) = vec_mul( eff.v , hi.v );
-        
+
 #else
     int k;
     FPTYPE ee, eff;
@@ -748,11 +748,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
         e[k] = ee; f[k] = eff;
         }
 #endif
-        
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -769,7 +769,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4single_r ( struct MxPotential *p[4] , 
  *
  * Computes eight single-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE or AltiVec
  * and single precision! If @c mdcore was not compiled with SSE or AltiVec,
  * this function simply calls #potential_eval on each entry.
@@ -786,16 +786,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
         int i[8];
         } alpha0, alpha1, alpha2, mi, hi, x, ee, eff, c, r, ind;
     float *data[8];
-    
+
     /* Get r . */
     r.v = _mm256_sqrt_ps( _mm256_load_ps( r2 ) );
-    
+
     /* compute the index */
     alpha0.v = _mm256_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] , p[4]->alpha[0] , p[5]->alpha[0] , p[6]->alpha[0] , p[7]->alpha[0] );
     alpha1.v = _mm256_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] , p[4]->alpha[1] , p[5]->alpha[1] , p[6]->alpha[1] , p[7]->alpha[1] );
     alpha2.v = _mm256_setr_ps( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] , p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind.m = _mm256_cvttps_epi32( _mm256_max_ps( _mm256_setzero_ps() , _mm256_add_ps( alpha0.v , _mm256_mul_ps( r.v , _mm256_add_ps( alpha1.v , _mm256_mul_ps( r.v , alpha2.v ) ) ) ) ) );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind.i[1] * potential_chunk ] );
@@ -805,12 +805,12 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     data[5] = &( p[5]->c[ ind.i[5] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind.i[6] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind.i[7] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm256_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] , data[4][0] , data[5][0] , data[6][0] , data[7][0] );
     hi.v = _mm256_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] , data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x.v = _mm256_mul_ps( _mm256_sub_ps( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm256_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] , data[4][2] , data[5][2] , data[6][2] , data[7][2] );
     c.v = _mm256_setr_ps( data[0][3] , data[1][3] , data[2][3] , data[3][3] , data[4][3] , data[5][3] , data[6][3] , data[7][3] );
@@ -824,7 +824,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     /* store the result */
     _mm256_store_ps( e , ee.v );
     _mm256_store_ps( f , _mm256_mul_ps( eff.v , _mm256_div_ps( hi.v , r.v ) ) );
-    
+
 #elif defined(__SSE__) && defined(FPTYPE_SINGLE)
     int j;
     union {
@@ -835,11 +835,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
         } alpha0_1, alpha1_1, alpha2_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1, ind_1,
           alpha0_2, alpha1_2, alpha2_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2, ind_2;
     float *data[8];
-    
+
     /* Get r . */
     r_1.v = _mm_sqrt_ps( _mm_load_ps( &r2[0] ) );
     r_2.v = _mm_sqrt_ps( _mm_load_ps( &r2[4] ) );
-    
+
     /* compute the index */
     alpha0_1.v = _mm_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1_1.v = _mm_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -849,7 +849,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     alpha2_2.v = _mm_setr_ps( p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind_1.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0_1.v , _mm_mul_ps( r_1.v , _mm_add_ps( alpha1_1.v , _mm_mul_ps( r_1.v , alpha2_1.v ) ) ) ) ) );
     ind_2.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0_2.v , _mm_mul_ps( r_2.v , _mm_add_ps( alpha1_2.v , _mm_mul_ps( r_2.v , alpha2_2.v ) ) ) ) ) );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind_1.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind_1.i[1] * potential_chunk ] );
@@ -859,7 +859,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     data[5] = &( p[5]->c[ ind_2.i[1] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind_2.i[2] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind_2.i[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = _mm_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi_1.v = _mm_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
@@ -867,7 +867,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     hi_2.v = _mm_setr_ps( data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x_1.v = _mm_mul_ps( _mm_sub_ps( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = _mm_mul_ps( _mm_sub_ps( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = _mm_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     eff_2.v = _mm_setr_ps( data[4][2] , data[5][2] , data[6][2] , data[7][2] );
@@ -889,7 +889,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     _mm_store_ps( &e[4] , ee_2.v );
     _mm_store_ps( &f[0] , _mm_mul_ps( eff_1.v , _mm_div_ps( hi_1.v , r_1.v ) ) );
     _mm_store_ps( &f[4] , _mm_mul_ps( eff_2.v , _mm_div_ps( hi_2.v , r_2.v ) ) );
-    
+
 #elif defined(__ALTIVEC__) && defined(FPTYPE_SINGLE)
     int j;
     union {
@@ -900,11 +900,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
         } alpha0_1, alpha1_1, alpha2_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1, ind_1,
           alpha0_2, alpha1_2, alpha2_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2, ind_2;
     float *data[8];
-    
+
     /* Get r . */
     r_1.v = vec_sqrt( *((vector float *)&r2[0]) );
     r_2.v = vec_sqrt( *((vector float *)&r2[4]) );
-    
+
     /* compute the index */
     alpha0_1.v = vec_load4( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1_1.v = vec_load4( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -914,7 +914,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     alpha2_2.v = vec_load4( p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind_1.m = vec_ctu( vec_madd( r_1.v , vec_madd( r_1.v , alpha2_1.v , alpha1_1.v ) , alpha0_1.v ) , 0 );
     ind_2.m = vec_ctu( vec_madd( r_2.v , vec_madd( r_2.v , alpha2_2.v , alpha1_2.v ) , alpha0_2.v ) , 0 );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind_1.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind_1.i[1] * potential_chunk ] );
@@ -924,7 +924,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     data[5] = &( p[5]->c[ ind_2.i[1] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind_2.i[2] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind_2.i[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = vec_load4( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi_1.v = vec_load4( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
@@ -932,7 +932,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     hi_2.v = vec_load4( data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x_1.v = vec_mul( vec_sub( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = vec_mul( vec_sub( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = vec_load4( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     eff_2.v = vec_load4( data[4][2] , data[5][2] , data[6][2] , data[7][2] );
@@ -956,7 +956,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
     memcpy( &f[0] , &eff_1 , sizeof(vector float) );
     memcpy( &e[4] , &ee_2 , sizeof(vector float) );
     memcpy( &f[4] , &eff_2 , sizeof(vector float) );
-    
+
 #else
     int k;
     FPTYPE ee, eff;
@@ -965,7 +965,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single ( struct MxPotential *p[8] , fl
         e[k] = ee; f[k] = eff;
         }
 #endif
-        
+
     }
 
 
@@ -980,16 +980,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
         int i[8];
         } alpha0, alpha1, alpha2, mi, hi, x, ee, eff, c, r, ind;
     float *data[8];
-    
+
     /* Get r . */
     r.v = _mm256_load_ps( r2 );
-    
+
     /* compute the index */
     alpha0.v = _mm256_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] , p[4]->alpha[0] , p[5]->alpha[0] , p[6]->alpha[0] , p[7]->alpha[0] );
     alpha1.v = _mm256_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] , p[4]->alpha[1] , p[5]->alpha[1] , p[6]->alpha[1] , p[7]->alpha[1] );
     alpha2.v = _mm256_setr_ps( p[0]->alpha[2] , p[1]->alpha[2] , p[2]->alpha[2] , p[3]->alpha[2] , p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind.m = _mm256_cvttps_epi32( _mm256_max_ps( _mm256_setzero_ps() , _mm256_add_ps( alpha0.v , _mm256_mul_ps( r.v , _mm256_add_ps( alpha1.v , _mm256_mul_ps( r.v , alpha2.v ) ) ) ) ) );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind.i[1] * potential_chunk ] );
@@ -999,12 +999,12 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     data[5] = &( p[5]->c[ ind.i[5] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind.i[6] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind.i[7] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm256_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] , data[4][0] , data[5][0] , data[6][0] , data[7][0] );
     hi.v = _mm256_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] , data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x.v = _mm256_mul_ps( _mm256_sub_ps( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm256_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] , data[4][2] , data[5][2] , data[6][2] , data[7][2] );
     c.v = _mm256_setr_ps( data[0][3] , data[1][3] , data[2][3] , data[3][3] , data[4][3] , data[5][3] , data[6][3] , data[7][3] );
@@ -1018,7 +1018,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     /* store the result */
     _mm256_store_ps( e , ee.v );
     _mm256_store_ps( f , _mm256_mul_ps( eff.v , hi.v ) );
-    
+
 #elif defined(__SSE__) && defined(FPTYPE_SINGLE)
     int j;
     union {
@@ -1029,11 +1029,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
         } alpha0_1, alpha1_1, alpha2_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1, ind_1,
           alpha0_2, alpha1_2, alpha2_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2, ind_2;
     float *data[8];
-    
+
     /* Get r . */
     r_1.v = _mm_load_ps( &r2[0] );
     r_2.v = _mm_load_ps( &r2[4] );
-    
+
     /* compute the index */
     alpha0_1.v = _mm_setr_ps( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1_1.v = _mm_setr_ps( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -1043,7 +1043,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     alpha2_2.v = _mm_setr_ps( p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind_1.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0_1.v , _mm_mul_ps( r_1.v , _mm_add_ps( alpha1_1.v , _mm_mul_ps( r_1.v , alpha2_1.v ) ) ) ) ) );
     ind_2.m = _mm_cvttps_epi32( _mm_max_ps( _mm_setzero_ps() , _mm_add_ps( alpha0_2.v , _mm_mul_ps( r_2.v , _mm_add_ps( alpha1_2.v , _mm_mul_ps( r_2.v , alpha2_2.v ) ) ) ) ) );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind_1.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind_1.i[1] * potential_chunk ] );
@@ -1053,7 +1053,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     data[5] = &( p[5]->c[ ind_2.i[1] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind_2.i[2] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind_2.i[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = _mm_setr_ps( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi_1.v = _mm_setr_ps( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
@@ -1061,7 +1061,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     hi_2.v = _mm_setr_ps( data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x_1.v = _mm_mul_ps( _mm_sub_ps( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = _mm_mul_ps( _mm_sub_ps( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = _mm_setr_ps( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     eff_2.v = _mm_setr_ps( data[4][2] , data[5][2] , data[6][2] , data[7][2] );
@@ -1083,7 +1083,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     _mm_store_ps( &e[4] , ee_2.v );
     _mm_store_ps( &f[0] , _mm_mul_ps( eff_1.v , hi_1.v ) );
     _mm_store_ps( &f[4] , _mm_mul_ps( eff_2.v , hi_2.v ) );
-    
+
 #elif defined(__ALTIVEC__) && defined(FPTYPE_SINGLE)
     int j;
     union {
@@ -1094,11 +1094,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
         } alpha0_1, alpha1_1, alpha2_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1, ind_1,
           alpha0_2, alpha1_2, alpha2_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2, ind_2;
     float *data[8];
-    
+
     /* Get r . */
     r_1.v = *((vector float *)&r2[0]);
     r_2.v = *((vector float *)&r2[4]);
-    
+
     /* compute the index */
     alpha0_1.v = vec_load4( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1_1.v = vec_load4( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -1108,7 +1108,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     alpha2_2.v = vec_load4( p[4]->alpha[2] , p[5]->alpha[2] , p[6]->alpha[2] , p[7]->alpha[2] );
     ind_1.m = vec_ctu( vec_madd( r_1.v , vec_madd( r_1.v , alpha2_1.v , alpha1_1.v ) , alpha0_1.v ) , 0 );
     ind_2.m = vec_ctu( vec_madd( r_2.v , vec_madd( r_2.v , alpha2_2.v , alpha1_2.v ) , alpha0_2.v ) , 0 );
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind_1.i[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind_1.i[1] * potential_chunk ] );
@@ -1118,7 +1118,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     data[5] = &( p[5]->c[ ind_2.i[1] * potential_chunk ] );
     data[6] = &( p[6]->c[ ind_2.i[2] * potential_chunk ] );
     data[7] = &( p[7]->c[ ind_2.i[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = vec_load4( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi_1.v = vec_load4( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
@@ -1126,7 +1126,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     hi_2.v = vec_load4( data[4][1] , data[5][1] , data[6][1] , data[7][1] );
     x_1.v = vec_mul( vec_sub( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = vec_mul( vec_sub( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = vec_load4( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     eff_2.v = vec_load4( data[4][2] , data[5][2] , data[6][2] , data[7][2] );
@@ -1150,7 +1150,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
     memcpy( &f[0] , &eff_1 , sizeof(vector float) );
     memcpy( &e[4] , &ee_2 , sizeof(vector float) );
     memcpy( &f[4] , &eff_2 , sizeof(vector float) );
-    
+
 #else
     int k;
     FPTYPE ee, eff;
@@ -1159,11 +1159,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
         e[k] = ee; f[k] = eff;
         }
 #endif
-        
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -1180,7 +1180,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_8single_r ( struct MxPotential *p[8] , 
  *
  * Computes two double-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE2 and
  * double precision! If @c mdcore was not compiled with SSE2 enabled, this
  * function simply calls #potential_eval on each entry.
@@ -1195,10 +1195,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FP
         double f[2];
         } alpha0, alpha1, alpha2, rind, mi, hi, x, ee, eff, c, r;
     double *data[2];
-    
+
     /* Get r . */
     r.v = _mm_sqrt_pd( _mm_load_pd( r2 ) );
-    
+
     /* compute the index */
     alpha0.v = _mm_setr_pd( p[0]->alpha[0] , p[1]->alpha[0] );
     alpha1.v = _mm_setr_pd( p[0]->alpha[1] , p[1]->alpha[1] );
@@ -1206,16 +1206,16 @@ MX_ALWAYS_INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FP
     rind.v = _mm_max_pd( _mm_setzero_pd() , _mm_add_pd( alpha0.v , _mm_mul_pd( r.v , _mm_add_pd( alpha1.v , _mm_mul_pd( r.v , alpha2.v ) ) ) ) );
     ind[0] = rind.f[0];
     ind[1] = rind.f[1];
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind[1] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm_setr_pd( data[0][0] , data[1][0] );
     hi.v = _mm_setr_pd( data[0][1] , data[1][1] );
     x.v = _mm_mul_pd( _mm_sub_pd( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm_setr_pd( data[0][2] , data[1][2] );
     c.v = _mm_setr_pd( data[0][3] , data[1][3] );
@@ -1229,17 +1229,17 @@ MX_ALWAYS_INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FP
     /* store the result */
     _mm_store_pd( e , ee.v );
     _mm_store_pd( f , _mm_mul_pd( eff.v , _mm_div_pd( hi.v , r.v ) ) );
-        
+
 #else
     int k;
     for ( k = 0 ; k < 2 ; k++ )
         potential_eval( p[k] , r2[k] , &e[k] , &f[k] );
 #endif
-        
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -1256,7 +1256,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_2double ( struct MxPotential *p[2] , FP
  *
  * Computes four double-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE2 and
  * double precision! If @c mdcore was not compiled with SSE2 enabled, this
  * function simply calls #potential_eval on each entry.
@@ -1271,10 +1271,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
         double f[4];
         } alpha0, alpha1, alpha2, rind, mi, hi, x, ee, eff, c, r;
     double *data[4];
-    
+
     /* Get r . */
     r.v = _mm256_sqrt_pd( _mm256_load_pd( r2 ) );
-    
+
     /* compute the index */
     alpha0.v = _mm256_setr_pd( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = _mm256_setr_pd( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -1284,18 +1284,18 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
     ind[1] = rind.f[1];
     ind[2] = rind.f[2];
     ind[3] = rind.f[3];
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind[1] * potential_chunk ] );
     data[2] = &( p[2]->c[ ind[2] * potential_chunk ] );
     data[3] = &( p[3]->c[ ind[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm256_setr_pd( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = _mm256_setr_pd( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = _mm256_mul_pd( _mm256_sub_pd( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm256_setr_pd( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = _mm256_setr_pd( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -1309,7 +1309,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
     /* store the result */
     _mm256_store_pd( e , ee.v );
     _mm256_store_pd( f , _mm256_mul_pd( eff.v , _mm256_div_pd( hi.v , r.v ) ) );
-        
+
 #elif defined(__SSE2__) && defined(FPTYPE_DOUBLE)
     int ind[4], j;
     union {
@@ -1318,11 +1318,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
         } alpha0_1, alpha1_1, alpha2_1, rind_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1,
         alpha0_2, alpha1_2, alpha2_2, rind_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2;
     double *data[4];
-    
+
     /* Get r . */
     r_1.v = _mm_sqrt_pd( _mm_load_pd( &r2[0] ) );
     r_2.v = _mm_sqrt_pd( _mm_load_pd( &r2[2] ) );
-    
+
     /* compute the index */
     alpha0_1.v = _mm_setr_pd( p[0]->alpha[0] , p[1]->alpha[0] );
     alpha1_1.v = _mm_setr_pd( p[0]->alpha[1] , p[1]->alpha[1] );
@@ -1336,19 +1336,19 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
     ind[1] = rind_1.f[1];
     ind[2] = rind_2.f[0];
     ind[3] = rind_2.f[1];
-    
+
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind[j] > p[j]->n ) {
             printf("potential_eval_vec_4double: dookie.\n");
             fflush(stdout);
             } */
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind[1] * potential_chunk ] );
     data[2] = &( p[2]->c[ ind[2] * potential_chunk ] );
     data[3] = &( p[3]->c[ ind[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = _mm_setr_pd( data[0][0] , data[1][0] );
     hi_1.v = _mm_setr_pd( data[0][1] , data[1][1] );
@@ -1356,7 +1356,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
     hi_2.v = _mm_setr_pd( data[2][1] , data[3][1] );
     x_1.v = _mm_mul_pd( _mm_sub_pd( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = _mm_mul_pd( _mm_sub_pd( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = _mm_setr_pd( data[0][2] , data[1][2] );
     eff_2.v = _mm_setr_pd( data[2][2] , data[3][2] );
@@ -1378,17 +1378,17 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
     _mm_store_pd( &f[0] , _mm_mul_pd( eff_1.v , _mm_div_pd( hi_1.v , r_1.v ) ) );
     _mm_store_pd( &e[2] , ee_2.v );
     _mm_store_pd( &f[2] , _mm_mul_pd( eff_2.v , _mm_div_pd( hi_2.v , r_2.v ) ) );
-        
+
 #else
     int k;
     for ( k = 0 ; k < 4 ; k++ )
         potential_eval( p[k] , r2[k] , &e[k] , &f[k] );
 #endif
-        
+
     }
 
 
-/** 
+/**
  * @brief Evaluates the given potential at a set of points (interpolated).
  *
  * @param p Pointer to an array of pointers to the #potentials to be evaluated.
@@ -1405,7 +1405,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double ( struct MxPotential *p[4] , FP
  *
  * Computes four double-precision interactions simultaneously using vectorized
  * instructions.
- * 
+ *
  * This function is only available if mdcore was compiled with SSE2 and
  * double precision! If @c mdcore was not compiled with SSE2 enabled, this
  * function simply calls #potential_eval on each entry.
@@ -1420,10 +1420,10 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
         double f[4];
         } alpha0, alpha1, alpha2, rind, mi, hi, x, ee, eff, c, r;
     double *data[4];
-    
+
     /* Get r . */
     r.v = _mm256_load_pd( r_in );
-    
+
     /* compute the index */
     alpha0.v = _mm256_setr_pd( p[0]->alpha[0] , p[1]->alpha[0] , p[2]->alpha[0] , p[3]->alpha[0] );
     alpha1.v = _mm256_setr_pd( p[0]->alpha[1] , p[1]->alpha[1] , p[2]->alpha[1] , p[3]->alpha[1] );
@@ -1433,18 +1433,18 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
     ind[1] = rind.f[1];
     ind[2] = rind.f[2];
     ind[3] = rind.f[3];
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind[1] * potential_chunk ] );
     data[2] = &( p[2]->c[ ind[2] * potential_chunk ] );
     data[3] = &( p[3]->c[ ind[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi.v = _mm256_setr_pd( data[0][0] , data[1][0] , data[2][0] , data[3][0] );
     hi.v = _mm256_setr_pd( data[0][1] , data[1][1] , data[2][1] , data[3][1] );
     x.v = _mm256_mul_pd( _mm256_sub_pd( r.v , mi.v ) , hi.v );
-    
+
     /* compute the potential and its derivative */
     eff.v = _mm256_setr_pd( data[0][2] , data[1][2] , data[2][2] , data[3][2] );
     c.v = _mm256_setr_pd( data[0][3] , data[1][3] , data[2][3] , data[3][3] );
@@ -1458,7 +1458,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
     /* store the result */
     _mm256_store_pd( e , ee.v );
     _mm256_store_pd( f , _mm256_mul_pd( eff.v , hi.v ) );
-        
+
 #elif defined(__SSE2__) && defined(FPTYPE_DOUBLE)
     int ind[4], j;
     union {
@@ -1467,11 +1467,11 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
         } alpha0_1, alpha1_1, alpha2_1, rind_1, mi_1, hi_1, x_1, ee_1, eff_1, c_1, r_1,
         alpha0_2, alpha1_2, alpha2_2, rind_2, mi_2, hi_2, x_2, ee_2, eff_2, c_2, r_2;
     double *data[4];
-    
+
     /* Get r . */
     r_1.v = _mm_load_pd( &r_in[0] );
     r_2.v = _mm_load_pd( &r_in[2] );
-    
+
     /* compute the index */
     alpha0_1.v = _mm_setr_pd( p[0]->alpha[0] , p[1]->alpha[0] );
     alpha1_1.v = _mm_setr_pd( p[0]->alpha[1] , p[1]->alpha[1] );
@@ -1485,19 +1485,19 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
     ind[1] = rind_1.f[1];
     ind[2] = rind_2.f[0];
     ind[3] = rind_2.f[1];
-    
+
     /* for ( j = 0 ; j < 4 ; j++ )
         if ( ind[j] > p[j]->n ) {
             printf("potential_eval_vec_4double: dookie.\n");
             fflush(stdout);
             } */
-    
+
     /* get the table offset */
     data[0] = &( p[0]->c[ ind[0] * potential_chunk ] );
     data[1] = &( p[1]->c[ ind[1] * potential_chunk ] );
     data[2] = &( p[2]->c[ ind[2] * potential_chunk ] );
     data[3] = &( p[3]->c[ ind[3] * potential_chunk ] );
-    
+
     /* adjust x to the interval */
     mi_1.v = _mm_setr_pd( data[0][0] , data[1][0] );
     hi_1.v = _mm_setr_pd( data[0][1] , data[1][1] );
@@ -1505,7 +1505,7 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
     hi_2.v = _mm_setr_pd( data[2][1] , data[3][1] );
     x_1.v = _mm_mul_pd( _mm_sub_pd( r_1.v , mi_1.v ) , hi_1.v );
     x_2.v = _mm_mul_pd( _mm_sub_pd( r_2.v , mi_2.v ) , hi_2.v );
-    
+
     /* compute the potential and its derivative */
     eff_1.v = _mm_setr_pd( data[0][2] , data[1][2] );
     eff_2.v = _mm_setr_pd( data[2][2] , data[3][2] );
@@ -1527,19 +1527,19 @@ MX_ALWAYS_INLINE void potential_eval_vec_4double_r ( struct MxPotential *p[4] , 
     _mm_store_pd( &f[0] , _mm_mul_pd( eff_1.v , hi_1.v ) );
     _mm_store_pd( &e[2] , ee_2.v );
     _mm_store_pd( &f[2] , _mm_mul_pd( eff_2.v , hi_2.v ) );
-        
+
 #else
     int k;
     for ( k = 0 ; k < 4 ; k++ )
         potential_eval_r( p[k] , r_in[k] , &e[k] , &f[k] );
 #endif
-        
+
 }
 
 MX_ALWAYS_INLINE MxPotential *get_potential(const MxParticle *a, const MxParticle *b) {
     int index = _Engine.max_type * a->typeId + b->typeId;
     if ((a->flags & b->flags & PARTICLE_BOUND) && (a->clusterId == b->clusterId)) {
-        return _Engine.p_bound[index];
+        return _Engine.p_cluster[index];
     }
     else {
         return _Engine.p[index];

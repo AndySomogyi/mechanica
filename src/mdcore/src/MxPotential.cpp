@@ -38,6 +38,8 @@
 #include "fptype.h"
 #include "potential_eval.hpp"
 
+#include "MxBind.hpp"
+
 #include <iostream>
 #include <cmath>
 
@@ -2877,7 +2879,12 @@ static PyMethodDef potential_methods[] = {
         METH_VARARGS | METH_KEYWORDS | METH_STATIC,
         "calc force"
     },
-    
+    {
+        "bind",
+        (PyCFunction)MxPotential_Bind,
+        METH_VARARGS | METH_KEYWORDS,
+        "bind potential to stuff"
+    },
     {NULL}
 };
 

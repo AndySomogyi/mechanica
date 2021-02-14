@@ -9,8 +9,11 @@
 #define SRC_MDCORE_SRC_BOUNDARY_EVAL_HPP_
 
 #include "MxParticle.h"
+#include "MxPotential.h"
 #include "space_cell.h"
 #include "engine.h"
+#include "dpd_eval.hpp"
+#include "potential_eval.hpp"
 
 #include <iostream>
 
@@ -134,6 +137,71 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
     
     return enforced;
 };
+
+
+MX_ALWAYS_INLINE bool boundary_potential_eval_ex(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+                            MxPotential *pot, MxParticle *part, MxBoundaryCondition *bc,
+                            float *dx, float r2, double *epot) {
+    
+    float e = 0;
+    
+    if(pot->kind == POTENTIAL_KIND_DPD) {
+        /* update the forces if part in range */
+        if (dpd_boundary_eval((DPDPotential*)pot, gaussian(gen), part, bc->velocity.data(), dx, r2 , &e)) {
+                        
+            /* tabulate the energy */
+            *epot += e;
+        }
+    }
+    else {
+        float f;
+    
+        /* update the forces if part in range */
+        if (potential_eval_ex(pot, part->radius, bc->radius, r2 , &e , &f )) {
+            
+            for (int k = 0 ; k < 3 ; k++ ) {
+                float w = f * dx[k];
+                part->f[k] -= w;
+            }
+            
+            /* tabulate the energy */
+            *epot += e;
+        }
+    }
+}
+
+
+//MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+//                            MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
+//                            float *dx, float r2, float number_density, double *epot) {
+
+MX_ALWAYS_INLINE bool boundary_eval(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+    MxBoundaryConditions *bc, struct space_cell *cell, MxParticle *part, double *epot ) {
+    
+    if(!(cell->flags & cell_boundary_any)) {
+        return false;
+    }
+    
+    MxPotential *pot;
+    float r;
+    
+    float dx[3] = {0.f, 0.f, 0.f};
+    
+    
+    if((cell->flags & cell_boundary_left) &&
+       (pot = bc->left.potenntials[part->typeId]) &&
+       ((r = part->x[0]) <= pot->b)) {
+        
+        dx[0] = -r;
+        
+        boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->left, dx, r*r, epot);
+        
+        
+    }
+    
+    
+    
+}
 
 
 
