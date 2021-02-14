@@ -1,20 +1,20 @@
 /*******************************************************************************
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
 
 
@@ -78,7 +78,7 @@ int engine_err = engine_err_ok;
 
 /** TODO, clean up this design for types and static engine. */
 /** What is the maximum nr of types? */
-int engine::max_type = 128;
+const int engine::max_type = 128;
 int engine::nr_types = 0;
 
 /**
@@ -383,7 +383,7 @@ int engine_flush_ghosts ( struct engine *e ) {
 }
 
 
-/** 
+/**
  * @brief Set the explicit electrostatic potential.
  *
  * @param e The #engine.
@@ -905,13 +905,13 @@ int engine_gettype2 ( struct engine *e , char *name2 ) {
  */
 int engine_addtype ( struct engine *e , double mass , double charge ,
         const char *name , const char *name2 ) {
-    
+
     /* check for nonsense. */
     if ( e == NULL )
         return error(engine_err_null);
     if ( e->nr_types >= e->max_type )
         return error(engine_err_range);
-    
+
     MxParticleType *type = MxParticleType_ForEngine(e, mass, charge, name, name2);
     return type != NULL ? type->id : -1;
 }
@@ -937,13 +937,13 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 		return error(engine_err_null);
 	if ( i < 0 || i >= e->nr_types || j < 0 || j >= e->nr_types )
 		return error(engine_err_range);
-    
-    MxPotential **pots = p->flags & POTENTIAL_BOUND ? e->p_bound : e->p;
+
+    MxPotential **pots = p->flags & POTENTIAL_BOUND ? e->p_cluster : e->p;
 
 	/* store the potential. */
 	pots[ i * e->max_type + j ] = p;
     Py_INCREF(p);
-    
+
     if ( i != j ) {
 		pots[ j * e->max_type + i ] = p;
         Py_INCREF(p);
@@ -959,11 +959,11 @@ CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i )
         return error(engine_err_null);
     if ( i < 0 || i >= e->nr_types  )
         return error(engine_err_range);
-        
+
     /* store the force. */
     e->p_singlebody[i] = p;
     Py_INCREF(p);
-    
+
     if(MxConstantForce_Check(p)) {
         Py_INCREF(p);
         e->constant_forces.push_back((MxConstantForce*)p);
@@ -1112,7 +1112,7 @@ int engine_start ( struct engine *e , int nr_runners , int nr_queues ) {
 
 /**
  * @brief Compute the nonbonded interactions in the current step.
- * 
+ *
  * @param e The #engine on which to run.
  *
  * @return #engine_err_ok or < 0 on error (see #engine_err).
@@ -1224,7 +1224,7 @@ int engine_step ( struct engine *e ) {
     if(!SUCCEEDED(CMulticastTimeEvent_Invoke(e->on_time, e->time * e->dt))) {
         return error(engine_err);
     }
-    
+
     for(MxConstantForce* p : e->constant_forces) {
         p->onTime(e->time * e->dt);
     }
@@ -1261,7 +1261,7 @@ int engine_force(struct engine *e) {
         /* Store the timing. */
         e->timers[engine_timer_verlet] += getticks() - tic;
     }
-    
+
 
     /* Otherwise, if async MPI, move the particles accross the
        node boundaries. */
@@ -1272,7 +1272,7 @@ int engine_force(struct engine *e) {
         }
         e->timers[engine_timer_advance] += getticks() - tic;
     }
-    
+
 
 #ifdef WITH_MPI
     /* Re-distribute the particles to the processors. */
@@ -1457,7 +1457,7 @@ int engine_finalize ( struct engine *e ) {
         for ( j = 0 ; j < e->nr_types ; j++ ) {
             for ( k = j ; k < e->nr_types ; k++ ) {
                 if ( e->p[ j*e->max_type + k ] != NULL )
-                    potential_clear( e->p_bound[ j*e->max_type + k ] );
+                    potential_clear( e->p_cluster[ j*e->max_type + k ] );
             }
         }
 
@@ -1513,16 +1513,16 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* make sure the inputs are ok */
     if ( e == NULL || origin == NULL || dim == NULL || cells == NULL )
         return error(engine_err_null);
-    
+
     // set up boundary conditions, adjust cell count if needed
     HRESULT err = MxBoundaryConditions_Init(&(e->boundary_conditions), cells, boundaryConditions);
     if(FAILED(err)) {
         return err;
     }
-    
+
     // figure out spatials size...
     Magnum::Vector3d domain_dim {dim[0] - origin[0], dim[1] - origin[1], dim[2] - origin[2]};
-    
+
     Magnum::Vector3d L = {domain_dim[0] / cells[0], domain_dim[1] / cells[1], domain_dim[2] / cells[2]};
 
     // initialize the engine
@@ -1531,7 +1531,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     printf("engine: requesting dimensions = [ %f , %f , %f ].\n", dim[0], dim[1], dim[2] );
     printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
     printf("engine: requesting cutoff = %22.16e.\n", cutoff);
-    
+
     /* default Boltzmann constant to 1 */
     e->K = 1.0;
 
@@ -1601,7 +1601,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         return error(engine_err_malloc);
     e->nr_dihedrals = 0;
 
-    
+
     /* Init the sets. */
     e->sets = NULL;
     e->nr_sets = 0;
@@ -1609,23 +1609,23 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* allocate the interaction matrices */
     if ( ( e->p = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
-    
+
     /* allocate the flux interaction matrices */
     if ( ( e->fluxes = ( MxFluxes **)malloc( sizeof(MxFluxes*) * e->max_type * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
 
-    if ( ( e->p_bound = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
+    if ( ( e->p_cluster = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type * e->max_type ) ) == NULL )
             return error(engine_err_malloc);
-    
+
     if ( ( e->cuboid_potentials = (struct MxPotential **)malloc( sizeof(MxPotential*) * e->max_type ) ) == NULL )
         return error(engine_err_malloc);
 
     bzero( e->p , sizeof(struct MxPotential *) * e->max_type * e->max_type );
-    
+
     bzero( e->fluxes , sizeof(struct MxFluxes *) * e->max_type * e->max_type );
 
-    bzero( e->p_bound , sizeof(struct MxPotential *) * e->max_type * e->max_type );
-    
+    bzero( e->p_cluster , sizeof(struct MxPotential *) * e->max_type * e->max_type );
+
     bzero( e->cuboid_potentials , sizeof(struct MxPotential *) * e->max_type );
 
     e->dihedralpots_size = 100;
@@ -1662,13 +1662,13 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     /* Init the comm arrays. */
     e->send = NULL;
     e->recv = NULL;
-    
+
     e->on_time = CMulticastTimeEvent_New();
 
     e->integrator = EngineIntegrator::FORWARD_EULER;
 
     e->flags |= engine_flag_initialized;
-    
+
     e->particle_max_dist_fraction = 0.05;
 
     /* all is well... */
@@ -1699,7 +1699,7 @@ double engine_kinetic_energy(struct engine *e)
     for(int i = 0; i < engine::nr_types; ++i) {
         engine::types[i].kinetic_energy = 0;
     }
-    
+
     for(int cid = 0; cid < _Engine.s.nr_cells; ++cid) {
         space_cell *cell = &_Engine.s.cells[cid];
         for(int pid = 0; pid < cell->count; ++pid) {
@@ -1708,14 +1708,14 @@ double engine_kinetic_energy(struct engine *e)
                     (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
         }
     }
-    
+
     for(int i = 1; i < engine::nr_types; ++i) {
         engine::types[0].kinetic_energy += engine::types[i].kinetic_energy;
         engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].parts.nr_parts);
     }
-    
+
     // TODO: super lame hack to work around bug with
-    // not setting root particle count. FIX THIS. 
+    // not setting root particle count. FIX THIS.
     engine::types[0].kinetic_energy /= (2. * engine::types[0].parts.nr_parts);
     return engine::types[0].kinetic_energy;
 }
@@ -1757,7 +1757,7 @@ int engine_addpart(struct engine *e, struct MxParticle *p, double *x,
     }
 
     e->types[p->typeId].addpart(p->id);
-    
+
     return engine_err_ok;
 }
 
@@ -1767,7 +1767,7 @@ int engine_addcuboid(struct engine *e, struct MxCuboid *p, struct MxCuboid **res
     if(space_addcuboid(&(e->s), p, result ) != 0) {
         return error(engine_err_space);
     }
-    
+
     return engine_err_ok;
 }
 
@@ -1784,7 +1784,7 @@ int engine_next_partid(struct engine *e)
     // TODO: not the most effecient algorithm...
     space *s = &e->s;
     int i;
-    
+
     for(i = 0; i < s->nr_parts; ++i) {
         if(s->partlist[i] == NULL) {
             return i;
@@ -1796,30 +1796,30 @@ int engine_next_partid(struct engine *e)
 CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
 {
     std::cout << "time: " << e->time * e->dt << ", deleting particle id: " << pid << std::endl;
-    
+
     if(pid < 0 || pid >= e->s.size_parts) {
         return c_error(E_FAIL, "pid out of range");
     }
-    
+
     MxParticle *part = e->s.partlist[pid];
-    
+
     if(part == NULL) {
         return c_error(E_FAIL, "particle already null");
     }
-    
+
     MxParticleType *type = &e->types[part->typeId];
-    
+
     HRESULT hr = type->del_part(pid);
     if(!SUCCEEDED(hr)) {
         return hr;
     }
-    
+
     std::vector<int32_t> bonds = MxBond_IdsForParticle(pid);
-    
+
     for(int i = 0; i < bonds.size(); ++i) {
         MxBond_Destroy(&_Engine.bonds[bonds[i]]);
     }
-    
+
     return space_del_particle(&e->s, pid);
 }
 
@@ -1839,11 +1839,11 @@ int engine_add_cuboid_potential (struct engine *e , struct MxPotential *p , int 
         return error(engine_err_null);
     if ( partTypeId < 0 || partTypeId >= e->nr_types)
         return error(engine_err_range);
-    
+
     if(e->cuboid_potentials[partTypeId]) {
         Py_DECREF(e->cuboid_potentials[partTypeId]);
     }
-    
+
     /* store the potential. */
     e->cuboid_potentials[partTypeId] = p;
     Py_INCREF(p);

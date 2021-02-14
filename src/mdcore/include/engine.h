@@ -2,20 +2,20 @@
  * This file is part of mdcore.
  * Coypright (c) 2010 Pedro Gonnet (pedro.gonnet@durham.ac.uk)
  * Coypright (c) 2017 Andy Somogyi (somogyie at indiana dot edu)
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  ******************************************************************************/
 #ifndef INCLUDE_ENGINE_H_
 #define INCLUDE_ENGINE_H_
@@ -171,8 +171,8 @@ CAPI_DATA(const char *) engine_err_msg[];
 
 struct MxConstantForce;
 
-/** 
- * The #engine structure. 
+/**
+ * The #engine structure.
  */
 typedef struct engine {
 
@@ -203,18 +203,18 @@ typedef struct engine {
 
 	/** TODO, clean up this design for types and static engine. */
 	/** What is the maximum nr of types? */
-	static int max_type;
+	static const int max_type;
 	static int nr_types;
 
 	/** The particle types. */
     static struct MxParticleType *types;
 
 	/** The interaction matrix */
-	struct MxPotential **p, **p_dihedral, **p_bound;
+	struct MxPotential **p, **p_dihedral, **p_cluster;
 
 	/** The explicit electrostatic potential. */
 	struct MxPotential *ep;
-    
+
     /**
      * array of potentials for cuboid interactions,
      * TODO: for now, onle have one cuboid type, so this array is of length
@@ -227,7 +227,7 @@ typedef struct engine {
 	 * by type id.
 	 */
 	struct MxForce **p_singlebody;
-    
+
     /**
      * interaction matrix of pointers to fluxes, same layout as
      * potential matrix p.
@@ -264,18 +264,18 @@ typedef struct engine {
      * total number of bonds, active or not.
      */
     int nr_bonds;
-    
+
     /**
      * number of active bonds.
      * note, active bonds are not necessarily in contigous order.
      */
     int nr_active_bonds;
-    
+
     /**
      * allocate size of bonds array
      */
     int bonds_size;
-    
+
     // mutex for anything that modifies the *number* of bonds.
     std::mutex bonds_mutex;
 
@@ -348,15 +348,15 @@ typedef struct engine {
 	int nr_sets;
 
 	struct CMulticastTimeEvent *on_time;
-    
-    
+
+
     /**
      * vector of constant forces. Because these forces get
      * updates from user defined functions, we keep a copy of them
-     * here in addtion to the other copy in p_singlebody. 
+     * here in addtion to the other copy in p_singlebody.
      */
     std::vector<MxConstantForce*> constant_forces;
-    
+
     /**
      * particle maximum velocity as a fraction of space cell size.
      * good values for this are around 0.2, meaning that a particle can
@@ -369,14 +369,14 @@ typedef struct engine {
      * defaults to 0.1.
      */
     float particle_max_dist_fraction;
-    
+
     /**
-     * 
+     *
      */
     float computed_volume;
 
 	EngineIntegrator integrator;
-    
+
     MxBoundaryConditions boundary_conditions;
 } engine;
 
@@ -483,7 +483,7 @@ CAPI_FUNC(int) engine_gettype2 ( struct engine *e , char *name2 );
 
 /**
  * allocates a new bond, returns a pointer to it.
- * returns index of new object. 
+ * returns index of new object.
  */
 int engine_bond_alloc (struct engine *e, struct MxBond **result );
 
@@ -564,7 +564,7 @@ CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
  *      of the space.
  * @param dim An array of three doubles containing the size of the space.
  *
- * @param cells length 3 integer vector of number of cells in each direction. 
+ * @param cells length 3 integer vector of number of cells in each direction.
  *
  * @param cutoff The maximum interaction cutoff to use.
  * @param period A bitmask describing the periodicity of the domain
