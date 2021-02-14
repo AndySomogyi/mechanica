@@ -127,6 +127,8 @@ enum {
 	engine_timer_cuda_load,
 	engine_timer_cuda_unload,
 	engine_timer_cuda_dopairs,
+    engine_timer_render,
+    engine_timer_total,
 	engine_timer_last
 };
 
@@ -151,7 +153,8 @@ enum {
     ENGINE_TIMER_CUDA_LOAD      = 1 << 15,
     ENGINE_TIMER_CUDA_UNLOAD    = 1 << 16,
     ENGINE_TIMER_CUDA_DOPAIRS   = 1 << 17,
-    ENGINE_TIMER_LAST           = 1 << 18
+    ENGINE_TIMER_RENDER         = 1 << 18,
+    ENGINE_TIMER_LAST           = 1 << 19
 };
 
 enum {
@@ -346,6 +349,13 @@ typedef struct engine {
 	/** Bonded sets. */
 	struct engine_set *sets;
 	int nr_sets;
+    
+    double wall_time;
+    
+    // bitmask of timers to show in performance counter output.
+    uint32_t timers_mask;
+    
+    long timer_output_period;
 
 	struct CMulticastTimeEvent *on_time;
 
@@ -714,6 +724,8 @@ inline MxParticle *MxParticle_FromId(int id) {
 inline MxParticle *MxParticleType::particle(int i) {
     return _Engine.s.partlist[this->parts.parts[i]];
 }
+
+
 
 #endif // INCLUDE_ENGINE_H_
 

@@ -103,7 +103,9 @@ MxUniverseConfig::MxUniverseConfig() :
     threads{mx::ThreadPool::hardwareThreadSize()},
     integrator{EngineIntegrator::FORWARD_EULER},
     boundaryConditionsPtr{NULL},
-    max_distance(-1)
+    max_distance{-1},
+    timers_mask {0},
+    timer_output_period {-1}
 {
 }
 
@@ -463,6 +465,9 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
         return E_FAIL;
     }
 
+    ticks tic = getticks();
+    double now = MxWallTime();
+
     if ( engine_step( &_Engine ) != 0 ) {
         printf("main: engine_step failed with engine_err=%i.\n",engine_err);
         errs_dump(stdout);
@@ -472,9 +477,12 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
 
     MxSimulator_Redraw();
 
-    if(universe_flags & MxUniverse_Flags::MX_SHOW_PERF_STATS ) {
+    if(_Engine.timer_output_period > 0 && _Engine.time % _Engine.timer_output_period == 0 ) {
         print_performance_counters();
     }
+
+    _Engine.timers[engine_timer_total] += getticks() - tic;
+    _Engine.wall_time += MxWallTime() - now;
 
     return S_OK;
 }
@@ -508,15 +516,13 @@ double ms(ticks tks)
 
 
 void print_performance_counters() {
-    if(_Engine.time % Universe.performance_info_display_interval) {
-        return;
-    }
-
     std::cout << "performance_timers : { " << std::endl;
+    std::cout << "\t fps: " << _Engine.time / _Engine.wall_time << std::endl;
     std::cout << "\t engine_step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
     std::cout << "\t engine_nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
     std::cout << "\t engine_bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
     std::cout << "\t engine_advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
+    std::cout << "\t rendering: " << ms(_Engine.timers[engine_timer_render]) << std::endl;
     std::cout << "}" << std::endl;
 }
 

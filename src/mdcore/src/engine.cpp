@@ -187,6 +187,8 @@ int engine_shuffle ( struct engine *e ) {
  */
 
 int engine_timers_reset ( struct engine *e ) {
+    
+    e->wall_time = 0;
 
 	int k;
 
@@ -1851,4 +1853,10 @@ int engine_add_cuboid_potential (struct engine *e , struct MxPotential *p , int 
     /* end on a good note. */
     return engine_err_ok;
 }
+    
+    
+    
+  
+    
+    
 
