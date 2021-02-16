@@ -27,8 +27,6 @@
 #include <vector>
 
 
-MDCORE_BEGIN_DECLS
-
 /* space error codes */
 #define space_err_ok                    0
 #define space_err_null                  -1
@@ -345,5 +343,4 @@ CAPI_FUNC(int) space_getcell ( struct space *s , struct space_cell **out );
 CAPI_FUNC(int) space_verlet_force ( struct space *s , FPTYPE *f , double epot );
 CAPI_FUNC(int) space_releasepair ( struct space *s , int ci , int cj );
 
-MDCORE_END_DECLS
 #endif // INCLUDE_SPACE_H_

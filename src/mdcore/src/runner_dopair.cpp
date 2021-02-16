@@ -491,6 +491,15 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     
     const unsigned cell_flags = c->flags;
     
+    const bool boundary = cell_flags | cell_boundary_any;
+    
+    bool top = cell_flags | cell_boundary_top;
+    bool bottom = cell_flags | cell_boundary_bottom;
+    bool left = cell_flags | cell_boundary_left;
+    bool right = cell_flags | cell_boundary_right;
+    bool front = cell_flags | cell_boundary_front;
+    bool back = cell_flags | cell_boundary_back;
+    
     //print_thread();
     
     /* break early if one of the cells is empty */
@@ -543,8 +552,10 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             potential_eval_cuboid_particle(cuboid, part_i, c);
         }
         
+        if(boundary) {
+            boundary_eval(gaussian, gen, &_Engine.boundary_conditions, c, part_i, &epot);
+        }
         
-
         /* loop over all other particles */
         for ( j = i + 1 ; j < count ; j++ ) {
 
@@ -628,9 +639,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             
             /* update the forces if part in range */
             if(pot) {
-                
                 potential_eval_super_ex(gaussian, gen, pot, part_i, part_j, dx,  r2, number_density, &epot);
-            
             }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE

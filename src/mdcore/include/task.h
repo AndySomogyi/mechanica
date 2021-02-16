@@ -17,11 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  ******************************************************************************/
+
+#pragma once
 #ifndef INCLUDE_TASK_H_
 #define INCLUDE_TASK_H_
+
 #include "platform.h"
 
-MDCORE_BEGIN_DECLS
 
 /* task error codes */
 #define task_err_ok                    0
@@ -84,6 +86,9 @@ typedef struct task {
 /* associated functions */
 int task_addunlock ( struct task *ta , struct task *tb );
 
-MDCORE_END_DECLS
+#include <iostream>
+std::ostream& operator<<(std::ostream& os, const struct task* );
+
+
 #endif // INCLUDE_TASK_H_
 

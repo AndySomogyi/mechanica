@@ -354,6 +354,10 @@ static unsigned bc_kind_from_pystring(PyObject *o) {
             result = BOUNDARY_NO_SLIP;
         }
         
+        else if (s.compare("POTENTIAL") == 0 ) {
+            result = BOUNDARY_POTENTIAL | BOUNDARY_FREESLIP;
+        }
+        
         else {
             std::string msg = "invalid choice of value for boundary condition, \"";
             msg += mx::cast<std::string>(o);
@@ -365,7 +369,7 @@ static unsigned bc_kind_from_pystring(PyObject *o) {
     return result;
 }
 
-static int init_bc_direction(MxBoundaryCondition *low_bl, MxBoundaryCondition *high_bl, PyObject *o) {
+static unsigned init_bc_direction(MxBoundaryCondition *low_bl, MxBoundaryCondition *high_bl, PyObject *o) {
     if(mx::check<std::string>(o)) {
         int kind = bc_kind_from_pystring(o);
         
@@ -477,7 +481,10 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     PyObject_INIT(&(bc->front), &MxBoundaryCondition_Type);
     PyObject_INIT(&(bc->back), &MxBoundaryCondition_Type);
     
+    int s = 6 * engine::max_type * sizeof(MxPotential**);
+    
     bc->potenntials = (MxPotential**)malloc(6 * engine::max_type * sizeof(MxPotential**));
+    bzero(bc->potenntials, 6 * engine::max_type * sizeof(MxPotential**));
     
     bc->left.name = "left";     bc->left.restore = 1.f;     bc->left.potenntials =   &bc->potenntials[0 * engine::max_type];
     bc->right.name = "right";   bc->right.restore = 1.f;    bc->right.potenntials =  &bc->potenntials[1 * engine::max_type];
@@ -495,100 +502,86 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
             else if(PyDict_Check(args)) {
                 // check if we have x, y, z directions
                 PyObject *o;
-                
+                unsigned dir;
+
                 if((o = PyDict_GetItemString(args, "x"))) {
-                    switch(init_bc_direction(&(bc->left), &(bc->right), o)) {
-                        case BOUNDARY_PERIODIC:
-                            bc->periodic |= space_periodic_x;
-                            break;
-                        case BOUNDARY_FREESLIP:
-                            bc->periodic |= SPACE_FREESLIP_X;
-                            break;
-                        default:
-                            assert(0);
+                    dir = init_bc_direction(&(bc->left), &(bc->right), o);
+                    if(dir & BOUNDARY_PERIODIC) {
+                        bc->periodic |= space_periodic_x;
+                    }
+                    if(dir & BOUNDARY_FREESLIP) {
+                        bc->periodic |= SPACE_FREESLIP_X;
                     }
                 }
-                
+
                 if((o = PyDict_GetItemString(args, "y"))) {
-                    switch(init_bc_direction(&(bc->front), &(bc->back), o)) {
-                        case BOUNDARY_PERIODIC:
-                            bc->periodic |= space_periodic_y;
-                            break;
-                        case BOUNDARY_FREESLIP:
-                            bc->periodic |= SPACE_FREESLIP_Y;
-                            break;
-                        default:
-                            assert(0);
+                    dir = init_bc_direction(&(bc->front), &(bc->back), o);
+                    if(dir & BOUNDARY_PERIODIC) {
+                        bc->periodic |= space_periodic_y;
+                    }
+                    if(dir & BOUNDARY_FREESLIP) {
+                        bc->periodic |= SPACE_FREESLIP_Y;
                     }
                 }
-                
+
                 if((o = PyDict_GetItemString(args, "z"))) {
-                    switch(init_bc_direction(&(bc->top), &(bc->bottom), o)) {
-                        case BOUNDARY_PERIODIC:
-                            bc->periodic |= space_periodic_z;
-                            break;
-                        case BOUNDARY_FREESLIP:
-                            bc->periodic |= SPACE_FREESLIP_Z;
-                            break;
-                        default:
-                            assert(0);
+                    dir = init_bc_direction(&(bc->top), &(bc->bottom), o);
+                    if(dir & BOUNDARY_PERIODIC) {
+                        bc->periodic |= space_periodic_z;
+                    }
+                    if(dir & BOUNDARY_FREESLIP) {
+                        bc->periodic |= SPACE_FREESLIP_Z;
                     }
                 }
-                
-                switch(init_bc(&(bc->left), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_x;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_X;
-                        break;
+
+                dir = init_bc(&(bc->left), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_x;
                 }
-                
-                switch(init_bc(&(bc->right), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_x;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_X;
-                        break;
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_X;
                 }
-                
-                switch(init_bc(&(bc->front), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_y;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_Y;
-                        break;
+
+                dir = init_bc(&(bc->right), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_x;
                 }
-                
-                switch(init_bc(&(bc->back), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_y;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_Y;
-                        break;
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_X;
                 }
-                
-                switch(init_bc(&(bc->top), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_z;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_Z;
-                        break;
+
+                dir = init_bc(&(bc->front), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_y;
                 }
-                
-                switch(init_bc(&(bc->bottom), args)) {
-                    case BOUNDARY_PERIODIC:
-                        bc->periodic |= space_periodic_z;
-                        break;
-                    case BOUNDARY_FREESLIP:
-                        bc->periodic |= SPACE_FREESLIP_Z;
-                        break;
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_Y;
                 }
-                
+
+                dir = init_bc(&(bc->back), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_y;
+                }
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_Y;
+                }
+
+                dir = init_bc(&(bc->top), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_z;
+                }
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_Z;
+                }
+
+                dir = init_bc(&(bc->bottom), args);
+                if(dir & BOUNDARY_PERIODIC) {
+                    bc->periodic |= space_periodic_z;
+                }
+                if(dir & BOUNDARY_FREESLIP) {
+                    bc->periodic |= SPACE_FREESLIP_Z;
+                }
+
                 check_periodicy(&(bc->left), &(bc->right));
                 check_periodicy(&(bc->front), &(bc->back));
                 check_periodicy(&(bc->top), &(bc->bottom));
@@ -728,8 +721,8 @@ std::string MxBoundaryCondition::str(bool show_type) const
         case BOUNDARY_PERIODIC:
             s += "PERIODIC";
             break;
-        case BOUNDARY_FORCE:
-            s += "FORCE";
+        case BOUNDARY_POTENTIAL:
+            s += "POTENTIAL";
             break;
         case BOUNDARY_FREESLIP:
             s += "FREESLIP";

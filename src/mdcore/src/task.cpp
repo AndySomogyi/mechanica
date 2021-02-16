@@ -80,6 +80,47 @@ int task_addunlock ( struct task *ta , struct task *tb ) {
     /* Ta-da! */
     return task_err_ok;
     
+}
+
+
+std::ostream& operator<<(std::ostream& os, const struct task* t) {
+
+    
+    
+    /** Task type/subtype. */
+    os << "task { type: ";
+    
+    switch(t->type) {
+        case task_type_none:
+            os << "none";
+            break;
+        case task_type_self:
+            os << "self";
+            break;
+        case task_type_pair:
+            os << "pair";
+            break;
+        case  task_type_sort:
+            os << "sort";
+            break;
+        case   task_type_bonded:
+            os << "bonded";
+            break;
+        case  task_type_count:
+            os << "count";
+            break;
+        default:
+            os << "error";
+            break;
     }
+    
+    os << ", subtype: " << t->subtype;
+    
+    os << ", i: " << t->i << ", j: " << t->j ;
+    
+    os << ", unlocks: " << t->nr_unlock << "}" << std::endl;
+    
+    return os;
+}
 
     

@@ -705,7 +705,11 @@ int space_init (struct space *s , const double *origin , const double *dim ,
         }
     }
     
-    std::cout << "front: " << frc << ", back: " << bac << ", top: " << toc << ", bottom: " << boc << std::endl;
+    std::cout << "cells: " << s->nr_cells <<
+    ", a_front: " << frc <<
+    ", a_back: " << bac <<
+    ", a_top: " << toc <<
+    ", a_bottom: " << boc << std::endl;
 
     /* Make ghost layers if needed. */
     if ( s->period & space_periodic_ghost_x )
@@ -756,6 +760,7 @@ int space_init (struct space *s , const double *origin , const double *dim ,
     s->tasks_size = s->nr_cells * ( (2*s->span[0] + 1) * (2*s->span[1] + 1) * (2*s->span[2] + 1) + 1 );
     if ( ( s->tasks = (struct task *)malloc( sizeof(struct task) * s->tasks_size ) ) == NULL )
         return error(space_err_malloc);
+    
 
     /* fill the cell pairs array */
     s->nr_tasks = 0;
@@ -914,6 +919,10 @@ int space_init (struct space *s , const double *origin , const double *dim ,
     // the large particle cell is at the global origin,
     // so has zero offset for loc.
     l[0] = l[1] = l[1] = 0;
+    
+    for(int i = 0; i < s->nr_tasks; ++i) {
+        std::cout << "task: " << i << ": " << &s->tasks[i];
+    }
     
     if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
         return error(space_err_cell);

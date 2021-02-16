@@ -60,7 +60,7 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian,
 }
 
 MX_ALWAYS_INLINE bool dpd_boundary_eval(DPDPotential *p, float gaussian,
-                               MxParticle *pi, const float *velocity, float* dx, float r2 , FPTYPE *energy) {
+                               MxParticle *pi, const float *velocity, const float* dx, float r2 , FPTYPE *energy) {
     
     static const float delta = 1.f / std::sqrt(_Engine.dt);
     
@@ -106,6 +106,7 @@ MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &g
                             float *dx, float r2, float number_density, double *epot) {
     
     float e;
+    bool result = false;
     
     if(pot->kind == POTENTIAL_KIND_DPD) {
         /* update the forces if part in range */
@@ -117,6 +118,7 @@ MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &g
             
             /* tabulate the energy */
             *epot += e;
+            result = true;
         }
     }
     else {
@@ -137,8 +139,11 @@ MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &g
             
             /* tabulate the energy */
             *epot += e;
+            result = true;
         }
     }
+
+    return result;
 }
 
 
