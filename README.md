@@ -19,6 +19,34 @@ course).
 History
 =======
 
+Version Alpha 1.0.15.4
+----------------------
+* generalized boundary conditions
+* add potentials to boundary conditions
+* velocity, free-slip, no-slip and periodic boundary conditions
+* render updates, back face culling
+* headless rendering, rendering without X11 using GLES on Linux
+* generalized power potential
+* much improved error handling, much more consistency
+* particle list fixes
+* Rigid Body Dynamics ! (only cuboids currently supported, but still rigid bodies)
+* add potentials to rigid bodies
+* python api rigid body updates
+* rendering updates, more consistency, simplify
+* rigid body particle interactions
+* friction force
+* more expunging pybind, soon, soon we will be rid of pybind.
+* bond dissociation_energy (break strength)
+* lattice initializer
+* add bonds to lattice initliazer
+* performance logging
+* updates to dissapative particle dynamics forces
+* enable adding DPD force to boundaries. 
+* generlized single body force (external force)
+* fluid dynamics examples
+* visco-elastic materials, with bond breaking
+* single-body time-dependent force definitions in python
+
 Version Alpha 1.0.15.2
 ----------------------
 * initial dissapative particle dynamics
