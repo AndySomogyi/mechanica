@@ -9,6 +9,7 @@
 #include <MxParticle.h>
 #include <engine.h>
 #include <bond.h>
+#include <string>
 
 static PyObject *potential_bind_ptype_ptype();
 

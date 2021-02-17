@@ -104,13 +104,13 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
 
     struct MxParticle *part_i, *part_j;
     struct space *s;
-    int i, j, k;
+    int i, j;
     struct MxParticle *parts_i, *parts_j;
     struct MxPotential *pot;
     MxFluxes *fluxes;
     struct engine *eng;
     int dmaxdist, dnshift;
-    FPTYPE cutoff, cutoff2, r2, w;
+    FPTYPE cutoff, cutoff2, r2;
     unsigned int *iparts, *jparts;
     FPTYPE dscale;
     FPTYPE shift[3], nshift, bias;
@@ -129,7 +129,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     FPTYPE f[VEC_SIZE] __attribute__ ((aligned (VEC_ALIGN)));
     FPTYPE dxq[3*VEC_SIZE];
 #else
-    FPTYPE e, f, dx[4], pix[4];
+    FPTYPE dx[4], pix[4];
 #endif
     
     /* break early if one of the cells is empty */
@@ -464,15 +464,15 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     struct MxParticle *part_i, *part_j;
     struct space *s;
     int count = 0;
-    int i, j, k;
+    int i, j;
     struct MxParticle *parts;
     double epot = 0.0;
-    struct MxPotential *pot, **pots;
+    struct MxPotential *pot;
     MxFluxes *fluxes;
     // single body force and forces
     MxForce *psb, **psbs;
     struct engine *eng;
-    FPTYPE cutoff, cutoff2, r2, w;
+    FPTYPE cutoff, cutoff2, r2;
     FPTYPE *pif;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
@@ -486,20 +486,13 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     FPTYPE dxq[VEC_SIZE*3];
 #else
     float number_density;
-    FPTYPE e, f, dx[4], pix[4];
+    FPTYPE dx[4], pix[4];
 #endif
     
     const unsigned cell_flags = c->flags;
     
-    const bool boundary = cell_flags | cell_boundary_any;
-    
-    bool top = cell_flags | cell_boundary_top;
-    bool bottom = cell_flags | cell_boundary_bottom;
-    bool left = cell_flags | cell_boundary_left;
-    bool right = cell_flags | cell_boundary_right;
-    bool front = cell_flags | cell_boundary_front;
-    bool back = cell_flags | cell_boundary_back;
-    
+    const bool boundary = cell_flags & cell_boundary_any;
+        
     //print_thread();
     
     /* break early if one of the cells is empty */
