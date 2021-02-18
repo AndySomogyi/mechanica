@@ -115,7 +115,7 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
 };
 
 
-MX_ALWAYS_INLINE bool boundary_potential_eval_ex(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+MX_ALWAYS_INLINE bool boundary_potential_eval_ex(const struct space_cell *cell,
                             MxPotential *pot, MxParticle *part, MxBoundaryCondition *bc,
                             float *dx, float r2, double *epot) {
     float e = 0;
@@ -123,7 +123,7 @@ MX_ALWAYS_INLINE bool boundary_potential_eval_ex(std::normal_distribution<float>
 
     if(pot->kind == POTENTIAL_KIND_DPD) {
         /* update the forces if part in range */
-        if (dpd_boundary_eval((DPDPotential*)pot, gaussian(gen), part, bc->velocity.data(), dx, r2 , &e)) {
+        if (dpd_boundary_eval((DPDPotential*)pot, space_cell_gaussian(cell->id), part, bc->velocity.data(), dx, r2 , &e)) {
             /* tabulate the energy */
             *epot += e;
             result = true;
@@ -153,9 +153,8 @@ MX_ALWAYS_INLINE bool boundary_potential_eval_ex(std::normal_distribution<float>
 //                            MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
 //                            float *dx, float r2, float number_density, double *epot) {
 
-MX_ALWAYS_INLINE bool boundary_eval(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+MX_ALWAYS_INLINE bool boundary_eval(
     MxBoundaryConditions *bc, const struct space_cell *cell, MxParticle *part, double *epot ) {
-    
     
     MxPotential *pot;
     float r;
@@ -167,42 +166,42 @@ MX_ALWAYS_INLINE bool boundary_eval(std::normal_distribution<float> &gaussian, s
        (pot = bc->left.potenntials[part->typeId]) &&
        ((r = part->x[0]) <= pot->b)) {
         dx[0] = r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->left, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->left, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_right) &&
        (pot = bc->right.potenntials[part->typeId]) &&
        ((r = cell->dim[0] - part->x[0]) <= pot->b)) {
         dx[0] = -r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->right, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->right, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_front) &&
        (pot = bc->front.potenntials[part->typeId]) &&
        ((r = part->x[1]) <= pot->b)) {
         dx[1] = r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->front, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->front, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_back) &&
        (pot = bc->back.potenntials[part->typeId]) &&
        ((r = cell->dim[1] - part->x[1]) <= pot->b)) {
         dx[1] = -r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->back, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->back, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_bottom) &&
        (pot = bc->bottom.potenntials[part->typeId]) &&
        ((r = part->x[2]) <= pot->b)) {
         dx[2] = r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->bottom, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->bottom, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_top) &&
        (pot = bc->top.potenntials[part->typeId]) &&
        ((r = cell->dim[2] - part->x[2]) <= pot->b)) {
         dx[2] = -r;
-        result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->top, dx, r*r, epot);
+        result |= boundary_potential_eval_ex(cell, pot, part, &bc->top, dx, r*r, epot);
     }
     return result;
 }

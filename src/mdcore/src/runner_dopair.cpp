@@ -64,18 +64,8 @@
 extern const char *runner_err_msg[];
 extern unsigned int runner_rcount;
 
-thread_local std::size_t threadId = std::hash<std::thread::id>{}(std::this_thread::get_id());
-thread_local std::mt19937 gen(threadId);
-// instance of class std::normal_distribution with 0 mean, and 1 stdev
-thread_local std::normal_distribution<float> gaussian(0.f, 1.f);
-
 static std::mutex _mutexPrint;
 
-static void print_thread()
-{
-    std::lock_guard<std::mutex> guard(_mutexPrint);
-    std::cout << "current thread id: " << std::this_thread::get_id() << ", static id: " << threadId << std::endl;
-}
 
 
 
@@ -272,7 +262,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
                     //MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
                     //float *dx, float r2, float number_density, float *epot) {
                     
-                    potential_eval_super_ex(gaussian, gen, pot, part_i, part_j, dx,  r2, number_density, &epot);
+                    potential_eval_super_ex(cell_i, pot, part_i, part_j, dx,  r2, number_density, &epot);
             
                 }
                 #endif // EXPLICIT_POTENTIALS
@@ -546,7 +536,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         }
         
         if(boundary) {
-            boundary_eval(gaussian, gen, &_Engine.boundary_conditions, c, part_i, &epot);
+            boundary_eval(&_Engine.boundary_conditions, c, part_i, &epot);
         }
         
         /* loop over all other particles */
@@ -632,7 +622,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
             
             /* update the forces if part in range */
             if(pot) {
-                potential_eval_super_ex(gaussian, gen, pot, part_i, part_j, dx,  r2, number_density, &epot);
+                potential_eval_super_ex(c, pot, part_i, part_j, dx,  r2, number_density, &epot);
             }
                 #endif // EXPLICIT_POTENTIALS
             #endif // VECTORIZE

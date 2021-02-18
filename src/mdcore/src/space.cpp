@@ -48,6 +48,9 @@
 #include "smoothing_kernel.hpp"
 #include "MxBoundaryConditions.hpp"
 
+#include <vector>
+#include <random>
+
 #pragma clang diagnostic ignored "-Wwritable-strings"
 
 
@@ -71,6 +74,12 @@ const char *space_err_msg[10] = {
         "An error occured when calling a task function.",
         "Invalid particle id"
 };
+
+static std::vector<std::mt19937> generators;
+
+//thread_local std::mt19937 gen(threadId);
+// instance of class std::normal_distribution with 0 mean, and 1 stdev
+static std::vector<std::normal_distribution<float>> distributions;
 
 
 /** 
@@ -651,6 +660,19 @@ int space_init (struct space *s , const double *origin , const double *dim ,
     s->nr_cells = s->cdim[0] * s->cdim[1] * s->cdim[2];
     s->cells = (struct space_cell *)malloc( sizeof(struct space_cell) * s->nr_cells );
     bzero(s->cells, sizeof(struct space_cell) * s->nr_cells);
+    
+    /** init random generators for cells */
+    generators.resize(s->nr_cells);
+    distributions.resize(s->nr_cells);
+    for(int i = 0; i < s->nr_cells; ++i) {
+        
+        //thread_local std::mt19937 gen(threadId);
+        // instance of class std::normal_distribution with 0 mean, and 1 stdev
+        //thread_local std::normal_distribution<float> gaussian(0.f, 1.f);
+        
+        generators[i] = std::mt19937(i);
+        distributions[i] = std::normal_distribution<float>(0.f, 1.f);
+    }
     
     if ( s->cells == NULL )
         return error(space_err_malloc);
@@ -1549,4 +1571,13 @@ HRESULT space_update_style( struct space *s ) {
         }
     }
     return S_OK;
+}
+
+
+/**
+ * only one thead at a time can access a cell, so create a big list of
+ * random generators that are access by the cell id.
+ */
+float space_cell_gaussian(int cell_id) {
+    return distributions[cell_id](generators[cell_id]);
 }

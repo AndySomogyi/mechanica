@@ -25,6 +25,8 @@
 #include "platform.h"
 #include "pthread.h"
 
+#include <random>
+
 
 /* cell error codes */
 #define cell_err_ok                     0
@@ -135,9 +137,6 @@ typedef struct space_cell {
 	/* Sorting task for this cell. */
 	struct task *sort;
 
-	/*ID of the GPU this cell belongs to. */
-	int GPUID;
-
 } space_cell;
 
 
@@ -154,8 +153,7 @@ typedef struct space_cell {
  *
  * @return #cell_err_ok or < 0 on error (see #cell_err).
  */
-int space_cell_init ( struct space_cell *c , int *loc , double *origin ,
-        double *dim );
+int space_cell_init ( struct space_cell *c , int *loc , double *origin , double *dim );
 
 /**
  * @brief Add a particle to a cell.
@@ -224,6 +222,12 @@ int space_cell_welcome ( struct space_cell *c ,
  */
 int space_cell_load ( struct space_cell *c , struct MxParticle *parts ,
         int nr_parts , struct MxParticle **partlist , struct space_cell **celllist );
+
+/**
+ * only one thead at a time can access a cell, so create a big list of
+ * random generators that are access by the cell id.
+ */
+float space_cell_gaussian(int cell_id);
 
 /**
  * @brief Flush all the parts from a #cell.

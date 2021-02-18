@@ -403,7 +403,7 @@ struct MxParticle *space_cell_add ( struct space_cell *c , struct MxParticle *p 
  * @return #cell_err_ok or < 0 on error (see #cell_err).
  */
 
-int space_cell_init ( struct space_cell *c , int *loc , double *origin , double *dim ) {
+int space_cell_init (struct space_cell *c , int *loc , double *origin , double *dim ) {
 
 	int i;
 
@@ -414,6 +414,18 @@ int space_cell_init ( struct space_cell *c , int *loc , double *origin , double 
 	/* default flags. */
 	c->flags = cell_flag_none;
 	c->nodeID = 0;
+    
+    /*
+    
+    void* genAddr = &c->gen;
+    void* gaussAddr = &c->gaussian;
+    
+    std::mt19937 *gen = new(genAddr) std::mt19937(size_t(c));
+    
+    // instance of class std::normal_distribution with 0 mean, and 1 stdev
+    std::normal_distribution<float> *gaussian = new(gaussAddr) std::normal_distribution<float>(0.f, 1.f);
+     */
+
 
 	/* Init this cell's mutex. */
 	if ( pthread_mutex_init( &c->cell_mutex , NULL ) != 0 )

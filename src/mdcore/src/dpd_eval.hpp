@@ -101,7 +101,7 @@ MX_ALWAYS_INLINE bool dpd_boundary_eval(DPDPotential *p, float gaussian,
 
 // MX_ALWAYS_INLINE void potential_eval ( struct MxPotential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
 
-MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &gaussian, std::mt19937 &gen,
+MX_ALWAYS_INLINE bool potential_eval_super_ex(const space_cell *cell,
                             MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
                             float *dx, float r2, float number_density, double *epot) {
     
@@ -110,7 +110,7 @@ MX_ALWAYS_INLINE bool potential_eval_super_ex(std::normal_distribution<float> &g
     
     if(pot->kind == POTENTIAL_KIND_DPD) {
         /* update the forces if part in range */
-        if (dpd_eval((DPDPotential*)pot, gaussian(gen), part_i, part_j, dx, r2 , &e)) {
+        if (dpd_eval((DPDPotential*)pot, space_cell_gaussian(cell->id), part_i, part_j, dx, r2 , &e)) {
             
             // the number density is a union after the force 3-vector.
             part_i->f[3] += number_density;
