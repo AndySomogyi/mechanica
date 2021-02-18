@@ -138,8 +138,8 @@ PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff)
     p->alpha = alpha;
     p->gamma = gamma;
     p->sigma = sigma;
+    p->a = std::sqrt(std::numeric_limits<float>::epsilon());
     p->b = cutoff;
-    
     return p;
 }
 

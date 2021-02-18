@@ -120,6 +120,13 @@ MX_ALWAYS_INLINE bool boundary_potential_eval_ex(const struct space_cell *cell,
                             float *dx, float r2, double *epot) {
     float e = 0;
     bool result = false;
+    
+    if(r2 < pot->a) {
+        r2 = pot->a * pot->a;
+        dx[0] = bc->normal[0] * pot->a;
+        dx[1] = bc->normal[1] * pot->a;
+        dx[2] = bc->normal[2] * pot->a;
+    }
 
     if(pot->kind == POTENTIAL_KIND_DPD) {
         /* update the forces if part in range */

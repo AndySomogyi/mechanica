@@ -32,6 +32,8 @@ struct MxBoundaryCondition : PyObject {
     float restore;
 
     const char* name;
+    
+    Magnum::Vector3 normal;
 
     /**
      * pointer to offset in main array allocated in MxBoundaryConditions.

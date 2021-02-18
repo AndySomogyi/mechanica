@@ -80,6 +80,19 @@ static PyGetSetDef bc_getset[] = {
         .closure = NULL
     },
     {
+        .name = "normal",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
+            return mx::cast(bc->normal);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_TypeError, "readonly property");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
         .name = "restore",
         .get = [](PyObject *obj, void *p) -> PyObject* {
             MxBoundaryCondition *bc = (MxBoundaryCondition*)obj;
@@ -493,6 +506,13 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     bc->top.name = "top";       bc->top.restore = 1.f;      bc->top.potenntials =    &bc->potenntials[4 * engine::max_type];
     bc->bottom.name = "bottom"; bc->bottom.restore = 1.f;   bc->bottom.potenntials = &bc->potenntials[5 * engine::max_type];
     
+    bc->left.normal =   { 1.f,  0.f,  0.f};
+    bc->right.normal =  {-1.f,  0.f,  0.f};
+    bc->front.normal =  { 0.f,  1.f,  0.f};
+    bc->back.normal =   { 0.f, -1.f,  0.f};
+    bc->bottom.normal = { 0.f,  0.f,  1.f};
+    bc->top.normal =    { 0.f,  0.f, -1.f};
+
     if(args) {
         try {
             if(mx::check<int>(args)) {

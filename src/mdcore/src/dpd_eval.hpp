@@ -30,6 +30,8 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian,
     
     float r = std::sqrt(r2);
     
+    assert(r >= p->a);
+    
     // unit vector
     Magnum::Vector3 e = {dx[0] / r, dx[1] / r, dx[2] / r};
     
@@ -107,6 +109,19 @@ MX_ALWAYS_INLINE bool potential_eval_super_ex(const space_cell *cell,
     
     float e;
     bool result = false;
+    
+    // if distance is less that potential min distance, define random
+    // for repulsive force.
+    if(r2 < pot->a * pot->a) {
+        dx[0] = space_cell_gaussian(cell->id);
+        dx[1] = space_cell_gaussian(cell->id);
+        dx[2] = space_cell_gaussian(cell->id);
+        float len = std::sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+        dx[0] = dx[0] * pot->a / len;
+        dx[1] = dx[1] * pot->a / len;
+        dx[2] = dx[2] * pot->a / len;
+        r2 = pot->a * pot->a;
+    }
     
     if(pot->kind == POTENTIAL_KIND_DPD) {
         /* update the forces if part in range */
