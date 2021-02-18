@@ -19,6 +19,12 @@ course).
 History
 =======
 
+Version Alpha 1.0.15.5
+----------------------
+* bug fix with force calculation when distance too short: pic random separation
+  vector of with minimal distance. Seems to work...
+* better diagnostic messages
+
 Version Alpha 1.0.15.4
 ----------------------
 * generalized boundary conditions
