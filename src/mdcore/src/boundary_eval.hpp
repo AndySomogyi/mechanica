@@ -171,21 +171,21 @@ MX_ALWAYS_INLINE bool boundary_eval(std::normal_distribution<float> &gaussian, s
     }
     
     if((cell->flags & cell_boundary_right) &&
-       (pot = bc->left.potenntials[part->typeId]) &&
+       (pot = bc->right.potenntials[part->typeId]) &&
        ((r = cell->dim[0] - part->x[0]) <= pot->b)) {
         dx[0] = -r;
         result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->right, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_front) &&
-       (pot = bc->left.potenntials[part->typeId]) &&
+       (pot = bc->front.potenntials[part->typeId]) &&
        ((r = part->x[1]) <= pot->b)) {
         dx[1] = r;
         result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->front, dx, r*r, epot);
     }
     
     if((cell->flags & cell_boundary_back) &&
-       (pot = bc->left.potenntials[part->typeId]) &&
+       (pot = bc->back.potenntials[part->typeId]) &&
        ((r = cell->dim[1] - part->x[1]) <= pot->b)) {
         dx[1] = -r;
         result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->back, dx, r*r, epot);
@@ -199,7 +199,7 @@ MX_ALWAYS_INLINE bool boundary_eval(std::normal_distribution<float> &gaussian, s
     }
     
     if((cell->flags & cell_boundary_top) &&
-       (pot = bc->bottom.potenntials[part->typeId]) &&
+       (pot = bc->top.potenntials[part->typeId]) &&
        ((r = cell->dim[2] - part->x[2]) <= pot->b)) {
         dx[2] = -r;
         result |= boundary_potential_eval_ex(gaussian, gen, pot, part, &bc->top, dx, r*r, epot);
