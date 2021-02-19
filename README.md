@@ -19,6 +19,11 @@ course).
 History
 =======
 
+
+Version Alpha 1.0.15.5
+----------------------
+* bug fix with boundary condition constants
+
 Version Alpha 1.0.15.5
 ----------------------
 * bug fix with force calculation when distance too short: pic random separation
