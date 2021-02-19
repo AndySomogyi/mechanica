@@ -5,7 +5,7 @@ m.Simulator(dt=0.1, dim=[15, 12, 10],
             bc={'x':'no_slip',
                 'y':'periodic',
                 'bottom':'no_slip',
-                'top':{'velocity':[-1, 0, 0]}},
+                'top':{'velocity':[-0.4, 0, 0]}},
             perfcounter_period=100)
 
 # lattice spacing
@@ -19,9 +19,9 @@ class A (m.Particle):
     dynamics = m.Newtonian
     mass=10
 
-dpd = m.Potential.dpd(alpha=0.5, gamma=0.1, sigma=1, cutoff=0.5)
+dpd = m.Potential.dpd(alpha=0.3, gamma=1, sigma=1, cutoff=0.6)
 dpd_wall = m.Potential.dpd(alpha=0.5, gamma=10, sigma=1, cutoff=0.1)
-dpd_left = m.Potential.dpd(alpha=0.5, gamma=100, sigma=1, cutoff=0.5)
+dpd_left = m.Potential.dpd(alpha=1, gamma=100, sigma=0, cutoff=0.5)
 
 m.bind(dpd, A, A)
 m.bind(dpd_wall, A, m.Universe.boundary_conditions.top)

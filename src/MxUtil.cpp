@@ -580,24 +580,16 @@ PyObject* MxPoints(PyObject *m, PyObject *args, PyObject *kwargs)
     }
 }
 
-#define MODULE_ADDINT(m, name, val) \
-    { \
-        PyObject* o = mx::cast((int)val); \
-        PyModule_AddObject(m, name, o); \
-        Py_DECREF(o); \
-    } \
-
-
 
 
 HRESULT _MxUtil_init(PyObject *m)
 {
-    MODULE_ADDINT(m, "Sphere", MxPointsType::Sphere);
-    MODULE_ADDINT(m, "SolidSphere", MxPointsType::SolidSphere);
-    MODULE_ADDINT(m, "Disk", MxPointsType::Disk);
-    MODULE_ADDINT(m, "SolidCube", MxPointsType::SolidCube);
-    MODULE_ADDINT(m, "Cube", MxPointsType::Cube);
-    MODULE_ADDINT(m, "Ring", MxPointsType::Ring);
+    PyModule_AddIntConstant(m, "Sphere", MxPointsType::Sphere);
+    PyModule_AddIntConstant(m, "SolidSphere", MxPointsType::SolidSphere);
+    PyModule_AddIntConstant(m, "Disk", MxPointsType::Disk);
+    PyModule_AddIntConstant(m, "SolidCube", MxPointsType::SolidCube);
+    PyModule_AddIntConstant(m, "Cube", MxPointsType::Cube);
+    PyModule_AddIntConstant(m, "Ring", MxPointsType::Ring);
 
     return S_OK;
 }

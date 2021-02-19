@@ -2,7 +2,7 @@ import mechanica as m
 import numpy as np
 
 m.Simulator(dt=0.1, dim=[15, 12, 10],
-            bc={'x':'periodic', 'y':'freeslip', 'z':'freeslip'},
+            bc={'x':'periodic', 'z':'no_slip', 'y' : 'periodic'},
             perfcounter_period=100)
 
 # lattice spacing
@@ -18,7 +18,7 @@ dpd = m.Potential.dpd(sigma=1.5)
 
 m.bind(dpd, A, A)
 
-f = m.forces.ConstantForce([0.005, 0, 0])
+f = m.forces.ConstantForce([0.01, 0, 0])
 
 m.bind(f, A)
 

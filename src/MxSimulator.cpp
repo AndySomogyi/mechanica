@@ -353,13 +353,10 @@ static py::object ftest() {
     return py::cpp_function([](int x) -> int {return x + 10;});
 }
 
-
-
-
 HRESULT _MxSimulator_init(PyObject* m) {
 
     std::cout << MX_FUNCTION << std::endl;
-
+    
     py::class_<PySimulator> sim(m, "Simulator");
     sim.def(py::init(&PySimulator_New), py::return_value_policy::reference);
     sim.def_property_readonly("foo", &PySimulator::foo);
@@ -401,21 +398,7 @@ HRESULT _MxSimulator_init(PyObject* m) {
             .value("RUNGE_KUTTA_4", EngineIntegrator::RUNGE_KUTTA_4)
             .export_values();
 
-    py::enum_<PeriodicFlags>(m, "BoundaryConditions", py::arithmetic())
-        .value("BOUNDARY_NONE",       space_periodic_none)
-        .value("PERIODIC_X",          space_periodic_x)
-        .value("PERIODIC_Y",          space_periodic_y)
-        .value("PERIODIC_Z",          space_periodic_z)
-        .value("PERIODIC_FULL",       space_periodic_full)
-        .value("PERIODIC_GHOST_X",    space_periodic_ghost_x)
-        .value("PERIODIC_GHOST_Y",    space_periodic_ghost_y)
-        .value("PERIODIC_GHOST_Z",    space_periodic_ghost_z)
-        .value("PERIODIC_GHOST_FULL", space_periodic_ghost_full)
-        .value("FREESLIP_X",          SPACE_FREESLIP_X)
-        .value("FREESLIP_Y",          SPACE_FREESLIP_Y)
-        .value("FREESLIP_Z",          SPACE_FREESLIP_Z)
-        .value("FREESLIP_FULL",       SPACE_FREESLIP_FULL)
-        .export_values();
+ 
 
     py::class_<MxSimulator::Config> sc(sim, "Config");
     sc.def(py::init());
@@ -523,6 +506,7 @@ HRESULT _MxSimulator_init(PyObject* m) {
             return Simulator->app->setWindowAttribute(attr, val);
         }
     );
+    
 
 
     return S_OK;

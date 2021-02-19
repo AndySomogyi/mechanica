@@ -413,6 +413,7 @@ static unsigned init_bc(MxBoundaryCondition* bc, PyObject *o) {
     if(!item) {
         return 0;
     }
+
     if(mx::check<std::string>(item)) {
         bc->kind = (BoundaryConditionKind)bc_kind_from_pystring(item);
         if(bc->kind == BOUNDARY_NO_SLIP) {
@@ -516,7 +517,33 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     if(args) {
         try {
             if(mx::check<int>(args)) {
-                bc->periodic = mx::cast<uint32_t>(args);
+                int value = mx::cast<int>(args);
+                
+                int test = SPACE_FREESLIP_FULL;
+                
+                
+                switch(value) {
+                    case space_periodic_none :
+                    case space_periodic_x:
+                    case space_periodic_y:
+                    case space_periodic_z:
+                    case space_periodic_full:
+                    case space_periodic_ghost_x:
+                    case space_periodic_ghost_y:
+                    case space_periodic_ghost_z:
+                    case space_periodic_ghost_full:
+                    case SPACE_FREESLIP_X:
+                    case SPACE_FREESLIP_Y:
+                    case SPACE_FREESLIP_Z:
+                    case SPACE_FREESLIP_FULL:
+                        bc->periodic = value;
+                        break;
+                    default: {
+                        std::string msg = "invalid value " + std::to_string(value) + ", for integer boundary condition";
+                        throw std::logic_error(msg);
+                    }
+                }
+                
                 boundaries_from_flags(bc);
             }
             else if(PyDict_Check(args)) {
@@ -669,6 +696,21 @@ int MxBoundaryConditions_Check(const PyObject *obj)
 }
 
 HRESULT _MxBoundaryConditions_Init(PyObject* m) {
+    
+    PyModule_AddIntConstant(m, "BOUNDARY_NONE",       space_periodic_none);
+    PyModule_AddIntConstant(m, "PERIODIC_X",          space_periodic_x);
+    PyModule_AddIntConstant(m, "PERIODIC_Y",          space_periodic_y);
+    PyModule_AddIntConstant(m, "PERIODIC_Z",          space_periodic_z);
+    PyModule_AddIntConstant(m, "PERIODIC_FULL",       space_periodic_full);
+    PyModule_AddIntConstant(m, "PERIODIC_GHOST_X",    space_periodic_ghost_x);
+    PyModule_AddIntConstant(m, "PERIODIC_GHOST_Y",    space_periodic_ghost_y);
+    PyModule_AddIntConstant(m, "PERIODIC_GHOST_Z",    space_periodic_ghost_z);
+    PyModule_AddIntConstant(m, "PERIODIC_GHOST_FULL", space_periodic_ghost_full);
+    PyModule_AddIntConstant(m, "FREESLIP_X",          SPACE_FREESLIP_X);
+    PyModule_AddIntConstant(m, "FREESLIP_Y",          SPACE_FREESLIP_Y);
+    PyModule_AddIntConstant(m, "FREESLIP_Z",          SPACE_FREESLIP_Z);
+    PyModule_AddIntConstant(m, "FREESLIP_FULL",       SPACE_FREESLIP_FULL);
+    
     if (PyType_Ready((PyTypeObject*)&MxBoundaryCondition_Type) < 0) {
         return E_FAIL;
     }
