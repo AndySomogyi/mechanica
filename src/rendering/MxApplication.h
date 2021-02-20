@@ -287,6 +287,11 @@ public:
     virtual Magnum::GL::AbstractFramebuffer& framebuffer() = 0;
     
     
+    virtual bool contextMakeCurrent() = 0;
+    
+    virtual bool contextIsCurrent() = 0;
+    
+    virtual bool contextRelease() = 0;
     
     
 protected:

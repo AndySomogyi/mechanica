@@ -150,6 +150,13 @@ public:
     
     Magnum::GL::AbstractFramebuffer& framebuffer() override;
     
+    
+    bool contextMakeCurrent() override;
+    
+    bool contextIsCurrent() override;
+    
+    bool contextRelease() override;
+    
 
 private:
     virtual int exec() override { return 0; };

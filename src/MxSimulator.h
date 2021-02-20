@@ -327,6 +327,11 @@ struct CAPI_EXPORT MxSimulator {
     enum Flags {
         Running = 1 << 0
     };
+    
+    /**
+     * gets the global simulator object, throws exception if fail. 
+     */
+    static MxSimulator *Get();
 };
 
 

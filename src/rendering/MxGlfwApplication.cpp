@@ -512,3 +512,15 @@ HRESULT MxGlfwApplication::showWindow()
 
     MXGLFW_CHECK();
 }
+
+bool MxGlfwApplication::contextMakeCurrent()
+{
+}
+
+bool MxGlfwApplication::contextIsCurrent()
+{
+}
+
+bool MxGlfwApplication::contextRelease()
+{
+}

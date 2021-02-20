@@ -45,6 +45,51 @@ static void simulator_interactive_run();
 static void ipythonInputHook(py::args args);
 
 
+static PyObject *context_is_current(PyObject *args, PyObject *kwargs) {
+    try {
+        
+    }
+    catch(const std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+static PyObject *context_make_current(PyObject *args, PyObject *kwargs) {
+    try {
+        
+    }
+    catch(const std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+static PyObject *context_release(PyObject *args, PyObject *kwargs) {
+    try {
+        
+    }
+    catch(const std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+static PyObject *camera_rotate(PyObject *args, PyObject *kwargs) {
+
+        MxSimulator *sim = MxSimulator::Get();
+    
+    
+        
+        MxUniverseRenderer *renderer = sim->app->getRenderer();
+        
+        Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
+        
+        Magnum::Vector3 eulerAngles = mx::arg<Magnum::Vector3>("euler_angles", 0, args, kwargs);
+        
+        ab->rotate(eulerAngles);
+        
+        Py_RETURN_NONE;
+}
+
+
 MxSimulator::Config::Config():
             _title{"Mechanica Application"},
             _size{800, 600},
@@ -369,6 +414,19 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("irun", [] () { PY_CHECK(MxSimulator_InteractiveRun()); });
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
     sim.def_static("close", [] () { PY_CHECK(MxSimulator_Close()); });
+    
+    sim.def_static("context_is_current", [](py::args args, py::kwargs kwargs) -> py::handle {
+        return context_is_current(args.ptr(), kwargs.ptr());
+    });
+    sim.def_static("context_make_current", [](py::args args, py::kwargs kwargs) -> py::handle {
+        return context_make_current(args.ptr(), kwargs.ptr());
+    });
+    sim.def_static("context_release", [](py::args args, py::kwargs kwargs) -> py::handle {
+        return context_release(args.ptr(), kwargs.ptr());
+    });
+    sim.def_static("camera_rotate", [](py::args args, py::kwargs kwargs) -> py::handle {
+        return camera_rotate(args.ptr(), kwargs.ptr());
+    });
     
     sim.def_property_readonly_static("threads", [] (py::object) -> int {
         PYSIMULATOR_CHECK();
@@ -962,4 +1020,15 @@ CAPI_FUNC(bool) Mx_IsIpython() {
 
     Py_XDECREF(ipy);
     return result;
+}
+
+
+/**
+ * gets the global simulator object, throws exception if fail.
+ */
+MxSimulator *MxSimulator::Get() {
+    if(Simulator) {
+        return Simulator;
+    }
+    throw std::logic_error("Simulator is not initiazed");
 }

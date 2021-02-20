@@ -518,11 +518,9 @@ void MxUniverseRenderer::draw() {
     window->framebuffer().clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
     /* Call arcball update in every frame. This will do nothing if the camera
-           has not been changed. Otherwise, camera transformation will be
-           propagated into the camera objects. */
-    bool camChanged = _arcball->update();
+           has not been changed. */
+    bool camChanged = _arcball->updateTransformation();
 
-    //Magnum::Debug{} << _arcball->projectionMatrix();
 
     /* Trigger drawable object to update the particles to the GPU */
     setDirty();

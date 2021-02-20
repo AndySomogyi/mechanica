@@ -151,6 +151,12 @@ public:
     HRESULT messageLoop(double et) override;
             
     HRESULT showWindow();
+            
+    bool contextMakeCurrent() override;
+    
+    bool contextIsCurrent() override;
+    
+    bool contextRelease() override;
 };
 
 

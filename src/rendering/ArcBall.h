@@ -108,6 +108,11 @@ class ArcBall {
 
         /* Return the distance from the camera position to the center view */
         Float viewDistance() const { return Math::abs(_targetZooming); }
+    
+        /**
+         * rotate about the Euler angles
+         */
+        void rotate(const Vector3& eulerAngles);
 
     protected:
         /* Update the camera transformations */

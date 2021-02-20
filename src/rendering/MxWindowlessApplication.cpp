@@ -177,3 +177,15 @@ HRESULT MxWindowlessApplication::messageLoop(double et)
 Magnum::GL::AbstractFramebuffer& MxWindowlessApplication::framebuffer() {
     return frameBuffer;
 }
+
+bool MxWindowlessApplication::contextMakeCurrent()
+{
+}
+
+bool MxWindowlessApplication::contextIsCurrent()
+{
+}
+
+bool MxWindowlessApplication::contextRelease()
+{
+}

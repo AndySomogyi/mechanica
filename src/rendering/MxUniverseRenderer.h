@@ -28,8 +28,6 @@
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Mesh.h>
 
-#include <Magnum/SceneGraph/Camera.h>
-
 #include <MxUniverse.h>
 #include <rendering/MxRenderer.h>
 #include <rendering/MxGlfwWindow.h>
@@ -53,7 +51,6 @@
 #include <Magnum/Platform/GlfwApplication.h>
 
 #include <rendering/MxWindow.h>
-
 #include <rendering/ArcBallCamera.h>
 
 using namespace Magnum;
