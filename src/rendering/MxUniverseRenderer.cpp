@@ -162,8 +162,8 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
 
     // setup up lighting properties. TODO: move these to style
     sphereShader.setShininess(2000.0f)
-        .setLightPositions({{-20, 40, 20}})
-        .setLightColor({0.9, 0.9, 0.9, 1})
+        .setLightPositions({{-20, 40, 20, 0.f}})
+        .setLightColors({Magnum::Color3{0.9, 0.9, 0.9}})
         .setShininess(100)
         .setAmbientColor({0.4, 0.4, 0.4, 1})
         .setDiffuseColor({1, 1, 1, 0})

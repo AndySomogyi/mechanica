@@ -23,6 +23,8 @@
 // mdcore errs.h
 #include <errs.h>
 
+#include <thread>
+
 
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
@@ -44,49 +46,51 @@ static void simulator_interactive_run();
 
 static void ipythonInputHook(py::args args);
 
+static PyObject *context_has_current(PyObject *args, PyObject *kwargs) {
+    
+    std::thread::id id = std::this_thread::get_id();
+    std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
 
-static PyObject *context_is_current(PyObject *args, PyObject *kwargs) {
-    try {
-        
-    }
-    catch(const std::exception &e) {
-        C_RETURN_EXP(e);
-    }
+    MxSimulator *sim = MxSimulator::Get();
+    
+    return mx::cast(sim->app->contextHasCurrent());
 }
 
 static PyObject *context_make_current(PyObject *args, PyObject *kwargs) {
-    try {
-        
-    }
-    catch(const std::exception &e) {
-        C_RETURN_EXP(e);
-    }
+    
+    std::thread::id id = std::this_thread::get_id();
+    std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+
+    MxSimulator *sim = MxSimulator::Get();
+    sim->app->contextMakeCurrent();
+    
+    Py_RETURN_NONE;
 }
 
 static PyObject *context_release(PyObject *args, PyObject *kwargs) {
-    try {
-        
-    }
-    catch(const std::exception &e) {
-        C_RETURN_EXP(e);
-    }
+    
+    std::thread::id id = std::this_thread::get_id();
+    std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+
+    MxSimulator *sim = MxSimulator::Get();
+    sim->app->contextRelease();
+    
+    Py_RETURN_NONE;
 }
 
 static PyObject *camera_rotate(PyObject *args, PyObject *kwargs) {
 
-        MxSimulator *sim = MxSimulator::Get();
+    MxSimulator *sim = MxSimulator::Get();
+
+    MxUniverseRenderer *renderer = sim->app->getRenderer();
     
+    Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
     
-        
-        MxUniverseRenderer *renderer = sim->app->getRenderer();
-        
-        Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
-        
-        Magnum::Vector3 eulerAngles = mx::arg<Magnum::Vector3>("euler_angles", 0, args, kwargs);
-        
-        ab->rotate(eulerAngles);
-        
-        Py_RETURN_NONE;
+    Magnum::Vector3 eulerAngles = mx::arg<Magnum::Vector3>("euler_angles", 0, args, kwargs);
+    
+    ab->rotate(eulerAngles);
+    
+    Py_RETURN_NONE;
 }
 
 
@@ -119,27 +123,6 @@ MxSimulator::GLConfig::~GLConfig() = default;
 
 
 
-struct Foo {
-    Foo(const std::string &name) : name(name) { }
-    void setName(const std::string &name_) { name = name_; }
-    const std::string &getName() const { return name; }
-    
-    void stuff(py::args args, py::kwargs kwargs) {
-        
-        
-        std::cout << "hi" << std::endl;
-    }
-
-    std::string name;
-
-    Magnum::Vector3 vec;
-};
-
-
-
-
-
-
 #define SIMULATOR_CHECK()  if (!Simulator) { return mx_error(E_INVALIDARG, "Simulator is not initialized"); }
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
@@ -150,44 +133,6 @@ struct Foo {
     } \
 }
 
-
-
-
-void test(const Foo& f) {
-    std::cout << "hello from test" << f.name << std::endl;
-}
-
-Foo *make_foo(py::str ps) {
-    std::string s = py::cast<std::string>(ps);
-    return new Foo(s);
-}
-
-
-
-
-void foo(PyObject *m) {
-    py::class_<Foo> c(m, "Foo");
-    
-    
-        c.def(py::init<const std::string &>());
-        c.def(py::init(&make_foo));
-        c.def("setName", &Foo::setName);
-        c.def("getName", &Foo::getName);
-    
-        c.def("stuff", &Foo::stuff);
-    
-    c.def_readwrite("vec", &Foo::vec);
-
-    py::implicitly_convertible<py::str, Foo>();
-
-        PyObject *p = c.ptr();
-
-        py::module mm = py::reinterpret_borrow<py::module>(m);
-
-        mm.def("test", &test);
-    
-    std::cout << "name: " << p->ob_type->tp_name << std::endl;
-}
 
 
 /**
@@ -415,8 +360,8 @@ HRESULT _MxSimulator_init(PyObject* m) {
     sim.def_static("show", [] () { PY_CHECK(MxSimulator_Show()); });
     sim.def_static("close", [] () { PY_CHECK(MxSimulator_Close()); });
     
-    sim.def_static("context_is_current", [](py::args args, py::kwargs kwargs) -> py::handle {
-        return context_is_current(args.ptr(), kwargs.ptr());
+    sim.def_static("context_has_current", [](py::args args, py::kwargs kwargs) -> py::handle {
+        return context_has_current(args.ptr(), kwargs.ptr());
     });
     sim.def_static("context_make_current", [](py::args args, py::kwargs kwargs) -> py::handle {
         return context_make_current(args.ptr(), kwargs.ptr());
@@ -749,6 +694,10 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
 }
 
 static HRESULT simulator_init(py::args args, py::kwargs kwargs) {
+    
+    std::thread::id id = std::this_thread::get_id();
+    std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+    
     try {
         
         if(Simulator) {

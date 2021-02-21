@@ -289,7 +289,7 @@ public:
     
     virtual bool contextMakeCurrent() = 0;
     
-    virtual bool contextIsCurrent() = 0;
+    virtual bool contextHasCurrent() = 0;
     
     virtual bool contextRelease() = 0;
     

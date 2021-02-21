@@ -153,7 +153,7 @@ public:
     
     bool contextMakeCurrent() override;
     
-    bool contextIsCurrent() override;
+    bool contextHasCurrent() override;
     
     bool contextRelease() override;
     

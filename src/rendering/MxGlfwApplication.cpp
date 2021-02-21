@@ -35,6 +35,10 @@
   #include <GLFW/glfw3native.h>
 #endif
 
+#include "access_private.hpp"
+
+ACCESS_PRIVATE_FIELD(Magnum::Platform::GlfwApplication, Containers::Pointer<Platform::GLContext>, _context);
+
 #define MXGLFW_ERROR() { \
         const char* glfwErrorDesc = NULL; \
         glfwGetError(&glfwErrorDesc); \
@@ -515,12 +519,23 @@ HRESULT MxGlfwApplication::showWindow()
 
 bool MxGlfwApplication::contextMakeCurrent()
 {
+    Magnum::Platform::GlfwApplication &app = *this;
+    
+    Containers::Pointer<Platform::GLContext> &context = access_private::_context(app);
+    
+    Platform::GLContext *p = context.get();
+    
+    Magnum::GL::Context::makeCurrent(p);
+
+    return true;
 }
 
-bool MxGlfwApplication::contextIsCurrent()
+bool MxGlfwApplication::contextHasCurrent()
 {
+    return Magnum::GL::Context::hasCurrent();
 }
 
 bool MxGlfwApplication::contextRelease()
 {
+    return false;
 }
