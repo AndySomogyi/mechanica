@@ -388,6 +388,13 @@ typedef struct engine {
 	EngineIntegrator integrator;
 
     MxBoundaryConditions boundary_conditions;
+    
+    
+    /**
+     * saved objects from init
+     */
+    PyObject *_init_boundary_conditions;
+    int _init_cells[3];
 } engine;
 
 
@@ -587,6 +594,12 @@ CAPI_FUNC(int) engine_addtype ( struct engine *e , double mass , double charge ,
  */
 CAPI_FUNC(int) engine_init ( struct engine *e , const double *origin , const double *dim , int *cells ,
 		double cutoff , PyObject *boundaryConditions , int max_type , unsigned int flags );
+
+
+/**
+ * clears all the uaer allocated objects, resets to state when created.
+ */
+CAPI_FUNC(int) engine_reset ( struct engine *e  );
 
 
 CAPI_FUNC(int) engine_load_ghosts ( struct engine *e , double *x , double *v , int *type , int *pid ,

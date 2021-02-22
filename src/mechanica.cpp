@@ -144,26 +144,26 @@ static PyObject* flux(PyObject *m, PyObject *args, PyObject *kwargs) {
 
 
 static PyMethodDef methods[] = {
-        { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
-        { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_VARARGS, NULL },
-        { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, METH_NOARGS, NULL },
-        { "initializeGraphics", (PyCFunction)MxPyUI_InitializeGraphics, METH_VARARGS, NULL },
-        { "createTestWindow", (PyCFunction)MxPyUI_CreateTestWindow, METH_VARARGS, NULL },
-        { "testWin", (PyCFunction)PyTestWin, METH_VARARGS, NULL },
-        { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
-        { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "on_keypress", (PyCFunction)MxKeyEvent_AddDelegate, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "random_points", (PyCFunction)MxRandomPoints, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "points", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "bind_pairwise", (PyCFunction)bind_pairwise, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "bind_sphere", (PyCFunction)bind_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
-        { "flux", (PyCFunction)flux, METH_VARARGS | METH_KEYWORDS, NULL },
-        { NULL, NULL, 0, NULL }
+    { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
+    { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_VARARGS, NULL },
+    { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, METH_NOARGS, NULL },
+    { "initializeGraphics", (PyCFunction)MxPyUI_InitializeGraphics, METH_VARARGS, NULL },
+    { "createTestWindow", (PyCFunction)MxPyUI_CreateTestWindow, METH_VARARGS, NULL },
+    { "testWin", (PyCFunction)PyTestWin, METH_VARARGS, NULL },
+    { "destroyTestWindow", (PyCFunction)MxPyUI_DestroyTestWindow, METH_VARARGS, NULL },
+    { "on_time", (PyCFunction)MxOnTime, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "on_keypress", (PyCFunction)MxKeyEvent_AddDelegate, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "invoke_time", (PyCFunction)MxInvokeTime, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "random_points", (PyCFunction)MxRandomPoints, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "points", (PyCFunction)MxPoints, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "bind", (PyCFunction)MxBind, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "bind_pairwise", (PyCFunction)bind_pairwise, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "bind_sphere", (PyCFunction)bind_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "flux", (PyCFunction)flux, METH_VARARGS | METH_KEYWORDS, NULL },
+    { NULL, NULL, 0, NULL }
 };
 
 

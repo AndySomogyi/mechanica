@@ -23,6 +23,10 @@ Version Alpha 1.0.16.1
 ----------------------
 * finally, completly expunged pybind11! pybind11 is finally GONE!
 * context managment methods for multi-threaded headless rendering. 
+* universe.reset() method, clears objects
+* set window title to script name
+* add 'positions()', 'velocities()' and 'forces()' methods to particle list. 
+* universe.particles() is now a method, and returns a proper list
 
 Version Alpha 1.0.15.5
 ----------------------

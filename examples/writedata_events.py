@@ -59,7 +59,7 @@ m.on_time(MyCell, period=0.05, distribution="exponential")
 def write_data(time):
     print("time is now: ", time)
 
-    positions = [list(p.position) for p in m.Universe.particles]
+    positions = [list(p.position) for p in m.Universe.particles()]
 
     print(positions)
 

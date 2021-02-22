@@ -64,7 +64,7 @@ static PyObject *ipythonInputHook(PyObject *self,
                            PyObject *const *args,
                                   Py_ssize_t nargs);
 
-static PyObject *simulator_context_has_current(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *MxSystem_ContextHasCurrent(PyObject *self) {
     
     try {
         std::thread::id id = std::this_thread::get_id();
@@ -80,7 +80,7 @@ static PyObject *simulator_context_has_current(PyObject *self, PyObject *args, P
     }
 }
 
-static PyObject *simulator_context_make_current(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *MxSystem_ContextMakeCurrent(PyObject *self) {
     try {
         std::thread::id id = std::this_thread::get_id();
         std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
@@ -95,7 +95,7 @@ static PyObject *simulator_context_make_current(PyObject *self, PyObject *args, 
     }
 }
 
-static PyObject *simulator_context_release(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *MxSystem_ContextRelease(PyObject *self) {
     try {
         std::thread::id id = std::this_thread::get_id();
         std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
@@ -110,7 +110,7 @@ static PyObject *simulator_context_release(PyObject *self, PyObject *args, PyObj
     }
 }
 
-static PyObject *simulator_camera_rotate(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *MxSystem_CameraRotate(PyObject *self, PyObject *args, PyObject *kwargs) {
     try {
         MxSimulator *sim = MxSimulator::Get();
         
@@ -519,14 +519,14 @@ static PyObject *simulator_init(PyObject *self, PyObject *args, PyObject *kwargs
             }
         }
 
-
-        if(PyList_Size(argv) > 0) {
-            Universe.name = mx::cast<std::string>(PyList_GetItem(argv, 0));
-        }
-
-
         MxSimulator::Config conf;
         MxSimulator::GLConfig glConf;
+        
+        if(PyList_Size(argv) > 0) {
+            std::string name = mx::cast<std::string>(PyList_GetItem(argv, 0));
+            Universe.name = name;
+            conf.setTitle(name);
+        }
 
         if(kwargs && PyDict_Size(kwargs) > 0) {
             parse_kwargs(kwargs, conf);
@@ -911,7 +911,7 @@ static PyObject *simulator_show(PyObject *self, PyObject *args, PyObject *kwargs
     SIM_FINALLY(NULL);
 }
 
-static PyObject *simulator_close(PyObject *self, PyObject *args, PyObject *kwargs) {
+static PyObject *simulator_close(PyObject *self) {
     SIM_TRY();
     SIM_CHECK(MxSimulator_Close());
     SIM_FINALLY(NULL);
@@ -924,11 +924,11 @@ static PyMethodDef simulator_methods[] = {
     { "run", (PyCFunction)simulator_run, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "irun", (PyCFunction)simultor_irun, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "show", (PyCFunction)simulator_show, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
-    { "close", (PyCFunction)simulator_close, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
-    { "context_has_current", (PyCFunction)simulator_context_has_current, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
-    { "context_make_current", (PyCFunction)simulator_context_make_current, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
-    { "context_release", (PyCFunction)simulator_context_release, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
-    { "camera_rotate", (PyCFunction)simulator_camera_rotate, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "close", (PyCFunction)simulator_close, METH_STATIC| METH_NOARGS, NULL },
+    { "context_has_current", (PyCFunction)MxSystem_ContextHasCurrent, METH_STATIC| METH_NOARGS, NULL },
+    { "context_make_current", (PyCFunction)MxSystem_ContextMakeCurrent, METH_STATIC| METH_NOARGS, NULL },
+    { "context_release", (PyCFunction)MxSystem_ContextRelease, METH_STATIC| METH_NOARGS, NULL },
+    { "camera_rotate", (PyCFunction)MxSystem_CameraRotate, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "_input_hook", (PyCFunction)ipythonInputHook, METH_STATIC | METH_FASTCALL, NULL },
     { NULL, NULL, 0, NULL }
 };

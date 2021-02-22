@@ -94,6 +94,12 @@ CAPI_FUNC(PyObject*) MxParticleList_Pack(Py_ssize_t n, ...);
 
 
 /**
+ * iterates all particles, creates a list of them.
+ */
+CAPI_FUNC(MxParticleList*) MxParticleList_All();
+
+
+/**
  * The type of each individual particle.
  */
 CAPI_DATA(PyTypeObject) MxParticleList_Type;

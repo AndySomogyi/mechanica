@@ -1,5 +1,7 @@
 #!/bin/sh
-python="python3"
+python=$1
+
+echo $python
 
 $($python argon.py)
 $($python colormaps.py)
@@ -22,7 +24,7 @@ $($python fluxtest2.py)
 $($python plot.py)
 $($python sphere_test.py)
 $($python two_particle_tstat.py)
-$($python bond_ball.py)
+#$($python bond_ball.py)
 $($python data_output.py)
 $($python epiboly2_plotting.py)
 $($python gargon.py)

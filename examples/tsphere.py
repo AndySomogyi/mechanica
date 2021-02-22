@@ -45,7 +45,7 @@ rforce = m.forces.random(0, 0.01, durration=0.1)
 m.bind(pot_yc, Big, Green)
 m.bind(pot_cc, Green, Green)
 
-m.bind_pairwise(pot, [p for p in m.Universe.particles if p.position[1] < m.Universe.center[1]], 1)
+m.bind_pairwise(pot, [p for p in m.Universe.particles() if p.position[1] < m.Universe.center[1]], 1)
 
 # run the model
 m.show()

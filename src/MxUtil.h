@@ -113,9 +113,9 @@ enum Mx_InstructionSet : std::int64_t {
     IS_XSAVE              = 1ll << 50,
 };
 
-PyObject *MxInstructionSetFeatruesDict();
+PyObject *MxInstructionSetFeatruesDict(PyObject *o);
 
-PyObject *MxCompileFlagsDict();
+PyObject *MxCompileFlagsDict(PyObject *o);
 
 uint64_t MxInstructionSetFeatures();
     

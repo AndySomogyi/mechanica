@@ -13,7 +13,7 @@
 
 static PyObject *potential_bind_ptype_ptype();
 
-static PyObject *potential_bind_ptype_boundary(MxPotential *pot, MxParticleType *ptype, MxBoundaryCondition *bc);
+
 
 HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool bound) {
     MxParticleType *a_type = MxParticleType_Get(a);
@@ -96,9 +96,7 @@ HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool b
     return mx_error(E_FAIL, "can only add potential to particle types or instances");
 }
 
-PyObject *potential_bind_ptype_boundary(MxPotential *pot, MxParticleType *ptype, MxBoundaryCondition *bc) {
-    
-}
+
 
 
 PyObject *MxPotential_Bind(MxPotential *pot, PyObject *args, PyObject *kwargs) {

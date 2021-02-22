@@ -38,6 +38,8 @@ struct MxGlfwWindow : MxWindow
 
     void redraw() override;
     
+    void setTitle(const char* title);
+    
     Magnum::GL::AbstractFramebuffer &framebuffer() override;
     
 };

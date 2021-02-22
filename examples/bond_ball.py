@@ -57,12 +57,9 @@ r = m.forces.random(0, 5)
 m.bind(r, A)
 m.bind(r, B)
 
-#m.bind_pairwise(ph, [p for p in m.Universe.particles if p.position[2] < m.Universe.center[2] + 1], 2)
 m.bind_pairwise(ph, B.items(), 1)
-#m.bind_pairwise(ph, B.items(), 2)
 
 def update(e):
-    
     print(B.items().center_of_mass())
 
 m.on_time(update, period=0.01)

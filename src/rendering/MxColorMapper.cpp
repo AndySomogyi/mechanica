@@ -242,7 +242,7 @@ MxColorMapper *MxColorMapper_New(PyObject *args, PyObject *kwargs) {
     return obj;
 }
 
-static PyObject *colormap_names(PyObject *, PyObject *) {
+static PyObject *colormap_names(PyObject *) {
     int size = sizeof(colormap_items) / sizeof(ColormapItem);
     PyObject *items = PyList_New(size);
     

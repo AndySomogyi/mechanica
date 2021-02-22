@@ -1495,7 +1495,7 @@ public:
 // Initialize static member data
 //const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
 
-PyObject *MxCompileFlagsDict() {
+PyObject *MxCompileFlagsDict(PyObject *o) {
     PyObject *dict = PyDict_New();
     
     // Defining Lambda function and
@@ -1568,7 +1568,7 @@ PyObject *MxCompileFlagsDict() {
     return dict;
 }
           
-PyObject *MxInstructionSetFeatruesDict() {
+PyObject *MxInstructionSetFeatruesDict(PyObject *o) {
      
      PyObject *dict = PyDict_New();
 

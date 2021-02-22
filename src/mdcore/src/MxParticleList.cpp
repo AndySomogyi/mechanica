@@ -30,6 +30,10 @@ static PyObject* list_copy(MxParticleList *self, PyObject *args, PyObject *kwarg
 
 static PyObject* list_positions(MxParticleList *self);
 
+static PyObject* list_velocities(MxParticleList *self);
+
+static PyObject* list_forces(MxParticleList *self);
+
 static PyObject* list_spherical_positions(MxParticleList *self, PyObject *args, PyObject *kwargs);
 
 
@@ -196,6 +200,8 @@ static PyMethodDef list_methods[] = {
     { "copy", (PyCFunction)list_copy, METH_VARARGS | METH_KEYWORDS, NULL },
     { "positions", (PyCFunction)list_positions, METH_NOARGS , NULL },
     { "spherical_positions", (PyCFunction)list_spherical_positions, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "velocities", (PyCFunction)list_velocities, METH_NOARGS , NULL },
+    { "forces", (PyCFunction)list_forces, METH_NOARGS , NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -471,6 +477,49 @@ PyObject* list_positions(MxParticleList *self) {
     return (PyObject*)array;
 }
 
+PyObject* list_velocities(MxParticleList *self) {
+    int nd = 2;
+    
+    int typenum = NPY_DOUBLE;
+    
+    npy_intp dims[] = {self->nr_parts,3};
+    
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+    
+    double *data = (double*)PyArray_DATA(array);
+    
+    for(int i = 0; i < self->nr_parts; ++i) {
+        MxParticle *part = _Engine.s.partlist[self->parts[i]];
+        data[i * 3 + 0] = part->velocity[0];
+        data[i * 3 + 1] = part->velocity[1];
+        data[i * 3 + 2] = part->velocity[2];
+    }
+    
+    return (PyObject*)array;
+}
+
+PyObject* list_forces(MxParticleList *self) {
+    int nd = 2;
+    
+    int typenum = NPY_DOUBLE;
+    
+    npy_intp dims[] = {self->nr_parts,3};
+    
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(nd, dims, typenum);
+    
+    double *data = (double*)PyArray_DATA(array);
+    
+    for(int i = 0; i < self->nr_parts; ++i) {
+        MxParticle *part = _Engine.s.partlist[self->parts[i]];
+        
+        data[i * 3 + 0] = part->force[0];
+        data[i * 3 + 1] = part->force[1];
+        data[i * 3 + 2] = part->force[2];
+    }
+    
+    return (PyObject*)array;
+}
+
 PyObject* list_spherical_positions(MxParticleList *self, PyObject *args, PyObject *kwargs) {
 
     Magnum::Vector3 origin;
@@ -559,5 +608,24 @@ PyObject *MxParticleList_Pack(Py_ssize_t n, ...)
     }
     va_end(vargs);
     return result;
+}
+
+MxParticleList* MxParticleList_All() {
+    MxParticleList* list = MxParticleList_New(_Engine.s.nr_parts, 0);
+    
+    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
+        space_cell *cell = &_Engine.s.cells[cid];
+        for (int pid = 0 ; pid < cell->count ; pid++ ) {
+            MxParticle *p  = &cell->parts[pid];
+            list->insert(p->id);
+        }
+    }
+    
+    for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
+        MxParticle *p  = &_Engine.s.largeparts.parts[pid];
+        list->insert(p->id);
+    }
+    
+    return list;
 }
 

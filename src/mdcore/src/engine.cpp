@@ -91,6 +91,8 @@ int engine::nr_types = 0;
  */
 MxParticleData *engine::types = NULL;
 
+static int init_types = 0;
+
 
 /* the error macro. */
 #define error(id)				( engine_err = errs_register( id , engine_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
@@ -1516,6 +1518,9 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         double cutoff , PyObject *boundaryConditions , int max_type , unsigned int flags ) {
 
     int cid;
+    
+    // TODO: total hack
+    init_types = engine::nr_types;
 
     /* make sure the inputs are ok */
     if ( e == NULL || origin == NULL || dim == NULL || cells == NULL )
@@ -1677,10 +1682,15 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->flags |= engine_flag_initialized;
 
     e->particle_max_dist_fraction = 0.05;
-
+    
+    e->_init_boundary_conditions = boundaryConditions;
+    Py_IncRef(boundaryConditions);
+    e->_init_cells[0] = cells[0];
+    e->_init_cells[1] = cells[1];
+    e->_init_cells[2] = cells[2];
+    
     /* all is well... */
     return engine_err_ok;
-
 }
 
 
@@ -1859,7 +1869,22 @@ int engine_add_cuboid_potential (struct engine *e , struct MxPotential *p , int 
     return engine_err_ok;
 }
     
+int engine_reset ( struct engine *e  ) {
     
+    MxParticleList *parts = MxParticleList_All();
+    
+    HRESULT hr;
+    
+    for(int i = 0; i < parts->nr_parts; ++i) {
+        if(FAILED(hr = engine_del_particle(e, parts->parts[i]))) {
+            return hr;
+        }
+    }
+    
+    /* all is well... */
+    return engine_err_ok;
+}
+
     
   
     

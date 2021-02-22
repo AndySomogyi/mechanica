@@ -147,6 +147,19 @@ static PyObject *universe_bind_pairwise(PyObject *self, PyObject *args, PyObject
     UNIVERSE_FINALLY(NULL);
 }
 
+static PyObject *universe_reset(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    engine_reset(&_Engine);
+    Py_RETURN_NONE;
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyObject *universe_particles(PyObject *self) {
+    UNIVERSE_TRY();
+    return (PyObject*)MxParticleList_All();
+    UNIVERSE_FINALLY(NULL);
+}
+
 static PyMethodDef universe_methods[] = {
     { "bind", (PyCFunction)universe_bind, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "bind_pairwise", (PyCFunction)universe_bind_pairwise, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
@@ -154,6 +167,8 @@ static PyMethodDef universe_methods[] = {
     { "step", (PyCFunction)universe_step, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "stop", (PyCFunction)universe_stop, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "start", (PyCFunction)universe_start, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "reset", (PyCFunction)universe_reset, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "particles", (PyCFunction)universe_particles, METH_STATIC | METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -220,24 +235,6 @@ PyGetSetDef universe_getsets[] = {
         .get = [](PyObject *obj, void *p) -> PyObject* {
             UNIVERSE_TRY();
             Py_INCREF(_Engine.on_time); return (PyObject*)_Engine.on_time;
-            UNIVERSE_FINALLY(0);
-        },
-        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
-            PyErr_SetString(PyExc_PermissionError, "read only");
-            return -1;
-        },
-        .doc = "test doc",
-        .closure = NULL
-    },
-    {
-        .name = "particles",
-        .get = [](PyObject *obj, void *p) -> PyObject* {
-            UNIVERSE_TRY();
-            int32_t *ids = (int32_t*)malloc(_Engine.s.nr_parts * sizeof(int32_t));
-            for(int i = 0; i < _Engine.s.nr_parts; ++i) {
-                ids[i] = i;
-            }
-            return (PyObject*)MxParticleList_NewFromData(_Engine.s.nr_parts, ids);
             UNIVERSE_FINALLY(0);
         },
         .set = [](PyObject *obj, PyObject *val, void *p) -> int {

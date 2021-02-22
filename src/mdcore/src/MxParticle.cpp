@@ -1390,7 +1390,10 @@ HRESULT engine_particle_base_init(PyObject *m)
     
 
     if(PyType_Ready(ob) < 0) {
-        return mx_error(E_FAIL, "PyType_Ready on base particle failed");
+        PyObject *err = PyErr_Occurred();
+        std::string s = carbon::str(err);
+        s = "PyType_Ready on base particle failed" + s;
+        return mx_error(E_FAIL, s.c_str());
     }
     
     MxParticleType *pt = (MxParticleType*)ob;

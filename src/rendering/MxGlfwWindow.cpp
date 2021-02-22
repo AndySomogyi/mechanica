@@ -159,3 +159,7 @@ Magnum::GL::AbstractFramebuffer &MxGlfwWindow::framebuffer() {
     return Magnum::GL::defaultFramebuffer;
 }
 
+void MxGlfwWindow::setTitle(const char* title) {
+    
+}
+

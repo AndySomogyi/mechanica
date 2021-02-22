@@ -661,6 +661,10 @@ private:
 };
 
 
+PyObject *MxSystem_CameraRotate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject *MxSystem_ContextRelease(PyObject *self);
+PyObject *MxSystem_ContextMakeCurrent(PyObject *self);
+PyObject *MxSystem_ContextHasCurrent(PyObject *self);
 
 // const Vector3 &origin, const Vector3 &dim,
 // int nParticles, double dt = 0.005, float temp = 100

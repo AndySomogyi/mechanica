@@ -75,8 +75,8 @@ const char *bond_err_msg[2] = {
 };
 
 static PyObject* bond_destroy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
-static PyObject* bond_energy(MxBondHandle *_self, PyObject *args, PyObject *kwargs);
-static PyObject *bond_bonds();
+static PyObject* bond_energy(MxBondHandle *_self);
+static PyObject *bond_bonds(PyObject *self);
 
 
 /**
@@ -689,7 +689,7 @@ static PyGetSetDef bond_getset[] = {
     {NULL}
 };
 
-PyObject *bond_bonds() {
+PyObject *bond_bonds(PyObject *self) {
     PyObject *list = PyList_New(_Engine.nr_bonds);
     
     for(int i = 0; i < _Engine.nr_bonds; ++i) {
@@ -957,7 +957,7 @@ PyObject* bond_destroy(MxBondHandle *self, PyObject *args,
     Py_RETURN_NONE;
 }
 
-PyObject* bond_energy(MxBondHandle *self, PyObject *args, PyObject *kwargs)
+PyObject* bond_energy(MxBondHandle *self)
 {
     std::cout << MX_FUNCTION << std::endl;
     
