@@ -12,7 +12,6 @@
 #include <rendering/MxWindowless.h>
 #include <rendering/MxApplication.h>
 
-static PyObject *system_module;
 
 static PyObject *_gl_info(PyObject *mod, PyObject *args, PyObject *kwds) {
     return Mx_GlInfo(args, kwds);
