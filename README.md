@@ -19,6 +19,10 @@ course).
 History
 =======
 
+Version Alpha 1.0.16.2
+----------------------
+* initialize Mechanica either via m.init, m.Simulator, or m.simulator.init
+
 Version Alpha 1.0.16.1
 ----------------------
 * finally, completly expunged pybind11! pybind11 is finally GONE!

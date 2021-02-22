@@ -280,8 +280,6 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     }
 }
 
-static PyObject *simulator_init(PyObject *self, PyObject *args, PyObject *kwargs);
-
 static std::string gl_info(const Magnum::Utility::Arguments &args);
 
 static PyObject *not_initialized_error();
@@ -491,7 +489,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
     }
 }
 
-static PyObject *simulator_init(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     std::thread::id id = std::this_thread::get_id();
     std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
@@ -918,6 +916,7 @@ static PyObject *simulator_close(PyObject *self) {
 }
 
 static PyMethodDef simulator_methods[] = {
+    { "init", (PyCFunction)MxSimulator_Init, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "poll_events", (PyCFunction)simulator_poll_events, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "wait_events", (PyCFunction)simulator_wait_events, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "post_empty_event", (PyCFunction)post_empty_event, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
@@ -983,7 +982,7 @@ PyTypeObject MxSimulator_Type = {
     .tp_as_sequence =    0,
     .tp_as_mapping =     0,
     .tp_hash =           0,
-    .tp_call =           simulator_init,
+    .tp_call =           MxSimulator_Init,
     .tp_str =            0,
     .tp_getattro =       0,
     .tp_setattro =       0,

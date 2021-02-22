@@ -143,7 +143,9 @@ static PyObject* flux(PyObject *m, PyObject *args, PyObject *kwargs) {
 }
 
 
+
 static PyMethodDef methods[] = {
+    { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
     { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
     { "waitEvents", (PyCFunction)MxPyUI_WaitEvents, METH_VARARGS, NULL },
     { "postEmptyEvent", (PyCFunction)MxPyUI_PostEmptyEvent, METH_NOARGS, NULL },

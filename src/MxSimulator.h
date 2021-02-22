@@ -666,6 +666,11 @@ PyObject *MxSystem_ContextRelease(PyObject *self);
 PyObject *MxSystem_ContextMakeCurrent(PyObject *self);
 PyObject *MxSystem_ContextHasCurrent(PyObject *self);
 
+/**
+ * main simulator init method
+ */
+PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs);
+
 // const Vector3 &origin, const Vector3 &dim,
 // int nParticles, double dt = 0.005, float temp = 100
 
