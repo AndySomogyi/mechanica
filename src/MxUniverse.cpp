@@ -9,7 +9,6 @@
 #endif
 
 #include <MxUniverse.h>
-#include <MxUniverseIterators.h>
 #include <MxForce.h>
 #include <MxPy.h>
 #include <MxSimulator.h>
@@ -22,15 +21,13 @@
 #include <MxThreadPool.hpp>
 #include <MxCuboid.hpp>
 #include <MxBind.hpp>
+#include <MxPy.h>
 #include "Magnum/Math/Matrix4.h"
 
-#include <pybind11/pybind11.h>
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
 
 static void print_performance_counters();
-
-namespace py = pybind11;
 
 using Magnum::Vector3;
 
@@ -42,7 +39,7 @@ MxUniverse Universe = {
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a);
 
-static PyObject *universe_virial(PyObject *_args, PyObject *_kwargs);
+static PyObject *universe_virial(PyObject *self, PyObject *_args, PyObject *_kwargs);
 
 static Magnum::Vector3 universe_center();
 
@@ -64,15 +61,6 @@ CAPI_FUNC(struct engine*) engine_get()
     return &_Engine;
 }
 
-#define UNIVERSE_CHECK() { \
-    if (_Engine.flags == 0 ) { \
-        std::string err = "Error in "; \
-        err += MX_FUNCTION; \
-        err += ", Universe not initialized"; \
-        throw std::domain_error(err.c_str()); \
-    } \
-    }
-
 
 // TODO: fix error handling values
 #define UNIVERSE_CHECKERROR() { \
@@ -82,6 +70,24 @@ CAPI_FUNC(struct engine*) engine_get()
         err += ", Universe not initialized"; \
         return mx_error(E_FAIL, err.c_str()); \
     } \
+    }
+
+#define UNIVERSE_TRY() \
+    try {\
+        if(_Engine.flags == 0) { \
+            std::string err = MX_FUNCTION; \
+            err += "universe not initialized"; \
+            throw std::domain_error(err.c_str()); \
+        }
+
+#define UNIVERSE_CHECK(hr) \
+    if(SUCCEEDED(hr)) { Py_RETURN_NONE; } \
+    else {return NULL;}
+
+#define UNIVERSE_FINALLY(retval) \
+    } \
+    catch(const std::exception &e) { \
+        C_EXP(e); return retval; \
     }
 
 MxUniverseConfig::MxUniverseConfig() :
@@ -103,35 +109,198 @@ MxUniverseConfig::MxUniverseConfig() :
 {
 }
 
-/**
- *  basic wrapper for universe functions.
- *
- *  Everything is static in the universe.
- */
-struct PyUniverse {
+
+static PyObject *universe_bind(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    PyObject *result = NULL;
+    UNIVERSE_CHECK(MxUniverse_Bind(args, kwargs, &result));
+    Py_RETURN_NONE;
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyObject *universe_step(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    double until = mx::arg<double>("until", 0, args, kwargs, 0);
+    double dt = mx::arg<double>("dt", 1, args, kwargs, 0);
+    UNIVERSE_CHECK(MxUniverse_Step(until, dt));
+    Py_RETURN_NONE;
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyObject *universe_stop(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    UNIVERSE_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, false));
+    Py_RETURN_NONE;
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyObject *universe_start(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    UNIVERSE_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, true));
+    Py_RETURN_NONE;
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyObject *universe_bind_pairwise(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    return MxPyUniverse_BindPairwise(args, kwargs);
+    UNIVERSE_FINALLY(NULL);
+}
+
+static PyMethodDef universe_methods[] = {
+    { "bind", (PyCFunction)universe_bind, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "bind_pairwise", (PyCFunction)universe_bind_pairwise, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "virial", (PyCFunction)universe_virial, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "step", (PyCFunction)universe_step, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "stop", (PyCFunction)universe_stop, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "start", (PyCFunction)universe_start, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { NULL, NULL, 0, NULL }
 };
 
 
-static Vector3 universe_dim(py::object /* self */) {
-    UNIVERSE_CHECK();
-    return Magnum::Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
-}
+PyGetSetDef universe_getsets[] = {
+    {
+        .name = "dim",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            return mx::cast(MxUniverse::dim());
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "temperature",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            return mx::cast(engine_temperature(&_Engine));
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "time",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            return mx::cast(_Engine.time * _Engine.dt);
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "dt",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            return mx::cast(_Engine.dt);
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "on_time",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            Py_INCREF(_Engine.on_time); return (PyObject*)_Engine.on_time;
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "particles",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            int32_t *ids = (int32_t*)malloc(_Engine.s.nr_parts * sizeof(int32_t));
+            for(int i = 0; i < _Engine.s.nr_parts; ++i) {
+                ids[i] = i;
+            }
+            return (PyObject*)MxParticleList_NewFromData(_Engine.s.nr_parts, ids);
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "center",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            Magnum::Vector3 center = universe_center();
+            PyObject *result = mx::cast(center);
+            return result;
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "boundary_conditions",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            Py_IncRef((PyObject*)&_Engine.boundary_conditions);
+            return (PyObject*)&_Engine.boundary_conditions;
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {
+        .name = "kinetic_energy",
+        .get = [](PyObject *obj, void *p) -> PyObject* {
+            UNIVERSE_TRY();
+            return mx::cast(engine_kinetic_energy(&_Engine));
+            UNIVERSE_FINALLY(0);
+        },
+        .set = [](PyObject *obj, PyObject *val, void *p) -> int {
+            PyErr_SetString(PyExc_PermissionError, "read only");
+            return -1;
+        },
+        .doc = "test doc",
+        .closure = NULL
+    },
+    {NULL}
+};
 
-//static PyUniverse *py_universe_init(const MxUniverseConfig &conf) {
-//    if(_Engine.flags) {
-//        throw std::domain_error("Error, Universe is already initialized");
-//    }
 
-//
-//    MxUniverse_Init(conf);
-//
-//    return new PyUniverse();
-//}
 
 PyTypeObject MxUniverse_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name =           "Universe",
-    .tp_basicsize =      sizeof(MxUniverse),
+    .tp_name =           "MxUniverse",
+    .tp_basicsize =      sizeof(PyObject),
     .tp_itemsize =       0,
     .tp_dealloc =        0,
                          0, // .tp_print changed to tp_vectorcall_offset in python 3.8
@@ -156,9 +325,9 @@ PyTypeObject MxUniverse_Type = {
     .tp_weaklistoffset = 0,
     .tp_iter =           0,
     .tp_iternext =       0,
-    .tp_methods =        0,
+    .tp_methods =        universe_methods,
     .tp_members =        0,
-    .tp_getset =         0,
+    .tp_getset =         universe_getsets,
     .tp_base =           0,
     .tp_dict =           0,
     .tp_descr_get =      0,
@@ -189,151 +358,21 @@ Magnum::Vector3 MxUniverse::dim()
     return Vector3{(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
 }
 
-// TODO hack to deal with pybind, have to get rid of this crap...
-// this adds the objects to the module, only after can we do things like
-// make alias.
-static HRESULT pybind_hack(PyObject* m)
-{
-    py::class_<PyUniverse> u(m, "Universe");
-
-    //u.def(py::init(&py_universe_init));
-     //sim.def(py::init(&PySimulator_New), py::return_value_policy::reference);
-     //sim.def_property_readonly("foo", &PySimulator::foo);
-     //sim.def_static("poll_events", [](){PY_CHECK(MxSimulator_PollEvents());});
-     //sim.def_static("wait_events", &pysimulator_wait_events);
-     //sim.def_static("post_empty_event", [](){PY_CHECK(MxSimulator_PostEmptyEvent());});
-
-    u.def_property_readonly_static("dim", &universe_dim);
-
-    u.def_property_readonly_static("temperature",
-        [](py::object self) -> double {
-            UNIVERSE_CHECK();
-            return engine_temperature(&_Engine);
-        }
-    );
-
-    u.def_property_readonly_static("kinetic_energy",
-        [](py::object self) -> double {
-            UNIVERSE_CHECK();
-            return engine_kinetic_energy(&_Engine);
-        }
-    );
-
-    u.def_property_readonly_static("time",
-        [](py::object self) -> double {
-            UNIVERSE_CHECK();
-            return _Engine.time * _Engine.dt;
-        }
-    );
-
-    u.def_property_readonly_static("dt",
-        [](py::object self) -> double {
-            UNIVERSE_CHECK();
-            return _Engine.dt;
-        }
-    );
-
-    u.def_property_readonly_static("on_time",
-            [](py::object self) -> py::handle {
-                UNIVERSE_CHECK();
-                return (PyObject*)_Engine.on_time;
-        }
-    );
-
-    u.def_property_readonly_static("particles",
-            [](py::object self) -> py::handle {
-                static PyParticles particles;
-                return py::cast(particles).release();
-            }
-        );
-
-
-    u.def_property_readonly_static("center",
-           [](py::object self) -> py::handle {
-               Magnum::Vector3 center = universe_center();
-               PyObject *result = mx::cast(center);
-               return result;
-        }
-    );
-
-    u.def_static("bind", [](py::args args, py::kwargs kwargs) -> py::handle {
-            UNIVERSE_CHECK();
-            PyObject *result = NULL;
-            PY_CHECK(MxUniverse_Bind(args.ptr(), kwargs.ptr(), &result));
-            if(!result) {
-                Py_RETURN_NONE;
-            }
-            return result;
-        }
-    );
-
-    u.def_static("virial", [](py::args args, py::kwargs kwargs) -> py::handle {
-            UNIVERSE_CHECK();
-            return universe_virial(args.ptr(), kwargs.ptr());
-        }
-    );
-
-    u.def_static("bind_pairwise", [](py::args args, py::kwargs kwargs) -> py::handle {
-        UNIVERSE_CHECK();
-        return MxPyUniverse_BindPairwise(args.ptr(), kwargs.ptr());
-        }
-    );
-
-    u.def_static("start", []() -> void {
-            UNIVERSE_CHECK();
-            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, true));
-            return;
-        }
-    );
-
-    u.def_static("stop", []() -> void {
-            PY_CHECK(MxUniverse_SetFlag(MxUniverse_Flags::MX_RUNNING, false));
-            return;
-        }
-    );
-
-    u.def_static("step", [](py::args args, py::kwargs kwargs) -> void {
-        double until = mx::arg<double>("until", 0, args.ptr(), kwargs.ptr(), 0);
-        double dt = mx::arg<double>("dt", 1, args.ptr(), kwargs.ptr(), 0);
-        PY_CHECK(MxUniverse_Step(until, dt));
-    });
-
-
-
-    py::class_<MxUniverseConfig> uc(u, "Config");
-    uc.def(py::init());
-    uc.def_readwrite("origin", &MxUniverseConfig::origin);
-    uc.def_readwrite("dim", &MxUniverseConfig::dim);
-    uc.def_readwrite("space_grid_size", &MxUniverseConfig::spaceGridSize);
-    uc.def_readwrite("cutoff", &MxUniverseConfig::cutoff);
-    uc.def_readwrite("flags", &MxUniverseConfig::flags);
-
-    u.def_property_readonly_static("boundary_conditions",
-           [](py::object self) -> py::handle {
-                Py_IncRef((PyObject*)&_Engine.boundary_conditions);
-                return (PyObject*)&_Engine.boundary_conditions;
-           }
-    );
-
-
-    return S_OK;
-};
 
 HRESULT _MxUniverse_init(PyObject* m)
 {
-    HRESULT res = pybind_hack(m);
-
-    if(FAILED(res)) {
-        return res;
+    if (PyType_Ready((PyTypeObject*)&MxUniverse_Type) < 0) {
+        return E_FAIL;
     }
-
-
-    PyObject *universe = PyObject_GetAttrString(m, "Universe");
+    
+    PyObject* universe = PyObject_New(PyObject, &MxUniverse_Type);
 
     if(!universe) {
         return c_error(E_FAIL, "could not get universe from main module");
     }
 
+    PyModule_AddObject(m, "Universe", universe);
+    
     PyModule_AddObject(m, "universe", universe);
 
     return S_OK;
@@ -444,14 +483,6 @@ static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
     return mx_error(E_FAIL, "can only add force to particle types");
 }
 
-static void universe_step(py::args args, py::kwargs kwargs) {
-
-    double until = mx::arg<double>("until", 0, args.ptr(), kwargs.ptr());
-    double dt = mx::arg<double>("dt", 1, args.ptr(), kwargs.ptr());
-
-    PY_CHECK(MxUniverse_Step(until, dt));
-}
-
 
 CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
 
@@ -518,7 +549,7 @@ void print_performance_counters() {
 }
 
 
-PyObject *universe_virial(PyObject *_args, PyObject *_kwargs) {
+PyObject *universe_virial(PyObject *self, PyObject *_args, PyObject *_kwargs) {
     try {
         PyObject *_origin = mx::py_arg("origin", 0, _args, _kwargs);
         PyObject *_radius = mx::py_arg("radius", 1, _args, _kwargs);

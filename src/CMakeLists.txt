@@ -75,7 +75,6 @@ set(SRC
   MxSurfaceSimulator.cpp
   MxCylinderModel.cpp
   MxUniverse.cpp
-  MxUniverseIterators.cpp
 
   MxUtil.cpp
 
@@ -160,7 +159,6 @@ set(HEADERS
   MxSurfaceSimulator.h
   MxCylinderModel.h
   MxUniverse.h
-  MxUniverseIterators.h
 
   MxUtil.h
 

@@ -66,5 +66,13 @@ PyObject *PyImport_GetModule(PyObject *name)
 #endif
 
 
+PyObject *PyImport_ImportString(const char* name) {
+    PyObject *s = mx::cast(std::string(name));
+    PyObject *mod = PyImport_Import(s);
+    Py_DECREF(s);
+    return mod;
+}
+
+
 
 

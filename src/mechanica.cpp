@@ -23,7 +23,6 @@
 #include "MxCylinderModel.h"
 #include "mdcore_single.h"
 #include "MxUniverse.h"
-#include "MxUniverseIterators.h"
 #include "rendering/MxWindow.h"
 #include <rendering/MxGlfwWindow.h>
 #include "rendering/MxWindowProxy.h"
@@ -57,8 +56,6 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL MECHANICA_ARRAY_API
 #include "numpy/arrayobject.h"
-
-#include <pybind11/pybind11.h>
 
 
 #include <string>
@@ -97,10 +94,6 @@ static PyObject* primes(PyObject *m, PyObject *args, PyObject *kwargs) {
 
         return (PyObject*)array;
 
-    }
-    catch(pybind11::error_already_set &e){
-        e.restore();
-        return NULL;
     }
     catch (const std::exception &e) {
         C_EXP(e); return NULL;
@@ -327,8 +320,6 @@ static PyObject * moduleinit(void)
     _MxColormap_Init(m);
     
     _MxKeyEvent_Init(m);
-
-    _MxUniverseIterators_init(m);
 
     _MxForces_init(m);
 

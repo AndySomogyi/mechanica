@@ -19,6 +19,10 @@ course).
 History
 =======
 
+Version Alpha 1.0.16.1
+----------------------
+* finally, completly expunged pybind11! pybind11 is finally GONE!
+* context managment methods for multi-threaded headless rendering. 
 
 Version Alpha 1.0.15.5
 ----------------------

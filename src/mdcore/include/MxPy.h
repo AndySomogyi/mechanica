@@ -5,6 +5,7 @@
  *      Author: andy
  */
 
+#pragma once
 #ifndef SRC_MDCORE_SRC_MXPY_H_
 #define SRC_MDCORE_SRC_MXPY_H_
 
@@ -72,6 +73,10 @@ inline size_t constexpr offset_of(Type Klass::*member) {
 
 
 std::ostream& operator<<(std::ostream& os, const PyObject *obj);
+
+
+PyObject *PyImport_ImportString(const char* name);
+
 
 /**
  * same as python delitemstring, except no error if no key.
