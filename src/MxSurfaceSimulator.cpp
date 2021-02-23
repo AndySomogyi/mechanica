@@ -74,6 +74,7 @@ static PyObject* _imageData(MxSurfaceSimulator* self, PyObject* args) {
     const GL::PixelFormat format = self->frameBuffer.implementationColorReadFormat();
     Image2D image = self->frameBuffer.read(self->frameBuffer.viewport(), PixelFormat::RGBA8Unorm);
 
+    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
 
     /* Open file */
@@ -315,20 +316,18 @@ void MxSurfaceSimulator::draw() {
 PyObject* MxSurfaceSimulator_ImageData(MxSurfaceSimulator* self,
         const char* path)
 {
-
     const GL::PixelFormat format = self->frameBuffer.implementationColorReadFormat();
     Image2D image = self->frameBuffer.read(self->frameBuffer.viewport(), PixelFormat::RGBA8Unorm);
 
 
+    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
-
 
     /* Open file */
     if(!Utility::Directory::write(path, jpegData)) {
         Error() << "Trade::AbstractImageConverter::exportToFile(): cannot write to file" << "triangle.jpg";
         return NULL;
     }
-
 
     return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
 }

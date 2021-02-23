@@ -157,7 +157,7 @@ static PyObject *particle_repr(MxParticleHandle *obj);
 //    PyObject *s = PyObject_Str(name);
 //    PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
 //    const char *cstr = PyBytes_AS_STRING(pyStr);
-//    std::cout << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
+//    Log(LOG_DEBUG) << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
 //    return PyObject_GenericGetAttr(obj, name);
 //}
 
@@ -178,24 +178,26 @@ PyGetSetDef gsd = {
         .name = "descr",
         .get = [](PyObject *obj, void *p) -> PyObject* {
             const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
-            std::cout << "getter(obj.type:" << on << ", p:" << p << ")" << std::endl;
+            
+
+            Log(LOG_TRACE) << "getter(obj.type:" << on << ", p:" << p << ")";
 
             bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
             bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
 
-            std::cout << "is particle: " << isParticle << std::endl;
-            std::cout << "is particle type: " << isParticleType << std::endl;
+            Log(LOG_DEBUG) << "is particle: " << isParticle;
+            Log(LOG_DEBUG) << "is particle type: " << isParticleType;
             return PyLong_FromLong(567);
         },
         .set = [](PyObject *obj, PyObject *, void *p) -> int {
             const char* on = obj != NULL ? obj->ob_type->tp_name : "NULL";
-            std::cout << "setter(obj.type:" << on << ", p:" << p << ")" << std::endl;
+            Log(LOG_DEBUG) << "setter(obj.type:" << on << ", p:" << p << ")";
 
             bool isParticle = PyObject_IsInstance(obj, (PyObject*)MxParticle_GetType());
             bool isParticleType = PyObject_IsInstance(obj, (PyObject*)&MxParticleType_Type);
 
-            std::cout << "is particle: " << isParticle << std::endl;
-            std::cout << "is particle type: " << isParticleType << std::endl;
+            Log(LOG_DEBUG) << "is particle: " << isParticle;
+            Log(LOG_DEBUG) << "is particle type: " << isParticleType;
 
             return 0;
         },
@@ -720,7 +722,7 @@ static PyMethodDef particletype_methods[] = {
 
 
 static PyObject* particle_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
-    //std::cout << MX_FUNCTION << ", type: " << type->tp_name << std::endl;
+    //Log(LOG_DEBUG) << MX_FUNCTION << ", type: " << type->tp_name;
     return PyType_GenericNew(type, args, kwargs);
 }
 
@@ -780,11 +782,11 @@ MxParticleType MxParticle_Type = {
       .tp_subclasses =     0, 
       .tp_weaklist =       0, 
       .tp_del =            [] (PyObject *p) -> void {
-          std::cout << "tp_del MxPyParticle" << std::endl;
+          Log(LOG_DEBUG) << "tp_del MxPyParticle";
       },
       .tp_version_tag =    0, 
       .tp_finalize =       [] (PyObject *p) -> void {
-          // std::cout << "tp_finalize MxPyParticle" << std::endl;
+          // Log(LOG_DEBUG) << "tp_finalize MxPyParticle";
       }
     }
   },
@@ -800,7 +802,7 @@ static PyObject *particle_type_getattro(PyObject* obj, PyObject *name) {
     // PyObject *s = PyObject_Str(name);
     // PyObject* pyStr = PyUnicode_AsEncodedString(s, "utf-8", "Error ~");
     //const char *cstr = PyBytes_AS_STRING(pyStr);
-    //std::cout << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
+    //Log(LOG_DEBUG) << obj->ob_type->tp_name << ": " << __PRETTY_FUNCTION__ << ":" << cstr << "\n";
     return savedFunc(obj, name);
 }
 
@@ -825,12 +827,12 @@ PyObject *particle_type_alloc(PyTypeObject *type, Py_ssize_t nitems)
         return NULL;
     }
     else if(engine::nr_types >= engine::max_type) {
-        std::cout << "out of memory for new type " << engine::nr_types << std::endl;
+        Log(LOG_DEBUG) << "out of memory for new type " << engine::nr_types;
         PyErr_SetString(PyExc_MemoryError, "out of memory for new particle type");
         return NULL;
     }
 
-    std::cout << "Creating new particle type " << engine::nr_types << std::endl;
+    Log(LOG_DEBUG) << "Creating new particle type " << engine::nr_types;
 
     obj = &engine::types[engine::nr_types];
     memset(obj, '\0', size);
@@ -855,7 +857,7 @@ particle_type_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     std::string a = carbon::str(args);
     std::string k = carbon::str(kwds);
     
-    std::cout << MX_FUNCTION << "(type: " << t << ", args: " << a << ", kwargs: " << k << ")" << std::endl;
+    Log(LOG_DEBUG) << MX_FUNCTION << "(type: " << t << ", args: " << a << ", kwargs: " << k << ")";
     
     PyTypeObject *result;
 
@@ -920,7 +922,7 @@ static PyGetSetDef particle_type_getset[] = {
 //static PyObject *
 //particle_type_descr_get(PyMemberDescrObject *descr, PyObject *obj, PyObject *type)
 //{
-//    std::cout << "PyType_Type.tp_descr_get: " << PyType_Type.tp_descr_get << std::endl;
+//    Log(LOG_DEBUG) << "PyType_Type.tp_descr_get: " << PyType_Type.tp_descr_get;
 //    return PyType_Type.tp_descr_get((PyObject*)descr, obj, type);
 //}
 
@@ -930,7 +932,7 @@ static int particle_type_init(MxParticleType *self, PyObject *args, PyObject *kw
     std::string a = carbon::str(args);
     std::string k = carbon::str(kwds);
     
-    std::cout << MX_FUNCTION << "(self: " << s << ", args: " << a << ", kwargs: " << k << ")" << std::endl;
+    Log(LOG_DEBUG) << MX_FUNCTION << "(self: " << s << ", args: " << a << ", kwargs: " << k << ")";
     
     //args is a tuple of (name, (bases, .), dict),
     
@@ -1008,12 +1010,12 @@ int particle_err = PARTICLE_ERR_OK;
 //    uint32_t is_gc = p->tp_flags & Py_TPFLAGS_HAVE_GC;
 //
 //
-//    std::cout << "type: {" << std::endl;
-//    std::cout << "  name: " << name << std::endl;
-//    std::cout << "  type_name: " << Py_TYPE(p)->tp_name << std::endl;
-//    std::cout << "  basetype_name:" << p->tp_base->tp_name << std::endl;
-//    std::cout << "  have gc: " << std::to_string((bool)PyType_IS_GC(p)) << std::endl;
-//    std::cout << "}" << std::endl;
+//    Log(LOG_DEBUG) << "type: {";
+//    Log(LOG_DEBUG) << "  name: " << name;
+//    Log(LOG_DEBUG) << "  type_name: " << Py_TYPE(p)->tp_name;
+//    Log(LOG_DEBUG) << "  basetype_name:" << p->tp_base->tp_name;
+//    Log(LOG_DEBUG) << "  have gc: " << std::to_string((bool)PyType_IS_GC(p));
+//    Log(LOG_DEBUG) << "}";
 //
 //    /*
 //    if(p->tp_getattro) {
@@ -1036,7 +1038,7 @@ HRESULT _MxParticle_init(PyObject *m)
     //     return NULL;
     MxParticleType_Type.tp_base = &PyType_Type;
     if (PyType_Ready((PyTypeObject*)&MxParticleType_Type) < 0) {
-        std::cout << "could not initialize MxParticleType_Type " << std::endl;
+        Log(LOG_DEBUG) << "could not initialize MxParticleType_Type ";
         return E_FAIL;
     }
     
@@ -1059,7 +1061,7 @@ HRESULT _MxParticle_init(PyObject *m)
     //Py_TYPE(&MxParticle_Type) = &MxParticleType_Type;
     //MxParticle_Type.tp_base = &PyBaseObject_Type;
     //if (PyType_Ready((PyTypeObject*)&MxParticle_Type) < 0) {
-    //    std::cout << "could not initialize MxParticle_Type " << std::endl;
+    //    Log(LOG_DEBUG) << "could not initialize MxParticle_Type ";
     //    return E_FAIL;
     //}
     
@@ -1380,10 +1382,10 @@ HRESULT engine_particle_base_init(PyObject *m)
     ob->tp_new =           particle_new;
     ob->tp_as_sequence =   &MxCluster_Sequence;
     ob->tp_del =           [] (PyObject *p) -> void {
-        std::cout << "tp_del MxParticleHandle" << std::endl;
+        Log(LOG_DEBUG) << "tp_del MxParticleHandle";
     };
     ob->tp_finalize =      [] (PyObject *p) -> void {
-        std::cout << "tp_finalize MxParticleHandle" << std::endl;
+        Log(LOG_DEBUG) << "tp_finalize MxParticleHandle";
     };
     ob->tp_str =           (reprfunc)particle_repr;
     ob->tp_repr =          (reprfunc)particle_repr;
@@ -1417,7 +1419,7 @@ HRESULT engine_particle_base_init(PyObject *m)
         return E_FAIL;
     }
 
-    std::cout << "added Particle to mechanica module" << std::endl;
+    Log(LOG_DEBUG) << "added Particle to mechanica module";
     
     engine::nr_types = 1;
     
@@ -1742,7 +1744,7 @@ PyObject* MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs) {
     
     
     if(particle_init((MxParticleHandle*)pyPart, args, kwargs) < 0) {
-        std::cout << "bad stuff" << std::endl;
+        Log(LOG_DEBUG) << "bad stuff";
         return NULL;
     }
     
@@ -2029,7 +2031,7 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     }
     
     if(PyObject_IsSubclass((PyObject*)type, (PyObject*)MxCluster_GetType())) {
-        std::cout << "making cluster" << std::endl;
+        Log(LOG_DEBUG) << "making cluster";
         part.flags |= PARTICLE_CLUSTER;
     }
     
@@ -2084,7 +2086,7 @@ MxParticleHandle* MxParticle_NewEx(PyObject *type,
     
 
     if(particle_init_ex((MxParticleHandle*)pyPart, pos, velocity, clusterId) < 0) {
-        std::cout << "bad stuff" << std::endl;
+        Log(LOG_DEBUG) << "bad stuff";
         return NULL;
     }
 

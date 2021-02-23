@@ -70,7 +70,7 @@ PyTypeObject MxForce_Type = {
     .tp_alloc =          0,
     .tp_new =            PyType_GenericNew,
     .tp_free =           [] (void* p) {
-        std::cout << "freeing force" << std::endl;
+        Log(LOG_DEBUG) <<  "freeing force";
         PyObject_Free(p);
     },
     .tp_is_gc =          0,
@@ -185,7 +185,7 @@ PyTypeObject MxConstantForce_Type = {
     .tp_alloc =          0,
     .tp_new =            0,
     .tp_free =           [] (void* p) {
-        std::cout << "freeing force" << std::endl;
+        Log(LOG_DEBUG) << "freeing force";
         PyObject_Free(p);
     },
     .tp_is_gc =          0,
@@ -264,13 +264,11 @@ static PyObject *forces_module;
 HRESULT _MxForces_init(PyObject *m)
 {
      if (PyType_Ready((PyTypeObject*)&MxForce_Type) < 0) {
-         std::cout << "could not initialize MxForce_Type " << std::endl;
-         return E_FAIL;
+         return c_error(E_FAIL, "could not initialize MxForce_Type " );
      }
     
     if (PyType_Ready((PyTypeObject*)&MxConstantForce_Type) < 0) {
-        std::cout << "could not initialize MxConstantForce_Type " << std::endl;
-        return E_FAIL;
+        return c_error(E_FAIL, "could not initialize MxConstantForce_Type " );
     }
     
      forces_module = PyModule_Create(&forces_moduledef);

@@ -134,26 +134,26 @@ typedef struct {
 
 // sq_length
 static Py_ssize_t cluster_length(PyObject *self) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     MxParticle *part = MxParticle_Get(self);
     return part->nr_parts;
 }
 
 // sq_concat
 static PyObject *cluster_concat(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
 // sq_repeat
 static PyObject *cluster_repeat(PyObject *, Py_ssize_t) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
 // sq_item
 static PyObject *cluster_item(PyObject *self, Py_ssize_t i) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     MxParticle *part = MxParticle_Get(self);
     
     if (part) {
@@ -169,25 +169,25 @@ static PyObject *cluster_item(PyObject *self, Py_ssize_t i) {
 
 // sq_ass_item
 static int cluster_ass_item(PyObject *, Py_ssize_t, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
 // sq_contains
 static int cluster_contains(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
 // sq_inplace_concat
 static PyObject *cluster_inplace_concat(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
 // sq_inplace_repeat
 static PyObject *cluster_inplace_repeat(PyObject *, Py_ssize_t) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return 0;
 }
 
@@ -211,8 +211,8 @@ MxParticleType *MxCluster_TypePtr;
 //PyObject *);
 PyObject *cluster_particle_ctor(PyObject *a, PyObject *b, PyObject *c) {
     
-    std::cout << "a: " << carbon::str(a) << std::endl;
-    std::cout << "b: " << carbon::str(b) << std::endl;
+    Log(LOG_TRACE) << "a: " << carbon::str(a) << std::endl;
+    Log(LOG_TRACE) << "b: " << carbon::str(b) << std::endl;
     Py_RETURN_NONE;
 }
 
@@ -225,7 +225,7 @@ PyMethodDef wrap = {
 };
 
 static int cluster_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     int result = 0;
     
@@ -234,8 +234,8 @@ static int cluster_init(MxParticleHandle *self, PyObject *_args, PyObject *_kwds
     
     PyTypeObject *base = pytype->tp_base;
     
-    std::cout << "me: " << pytype->tp_name << std::endl;
-    std::cout << "base: " << base->tp_name << std::endl;
+    Log(LOG_TRACE) << "me: " << pytype->tp_name << std::endl;
+    Log(LOG_TRACE) << "base: " << base->tp_name << std::endl;
     
     
     
@@ -270,11 +270,11 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
     
     while (PyDict_Next(dict, &pos, &key, &value)) {
         
-        std::cout << "checking (" << carbon::str(key)
+        Log(LOG_TRACE) << "checking (" << carbon::str(key)
         << ", " << carbon::str(value) << ")" << std::endl;
         
         if(PyType_Check(value) && PyObject_IsSubclass(value, (PyObject*)MxParticle_GetType())) {
-            std::cout << "found a particle type: " << carbon::str(key) << std::endl;
+            Log(LOG_TRACE) << "found a particle type: " << carbon::str(key) << std::endl;
             
             PyObject *descr = MxClusterParticleCtor_New((MxParticleType*)self, (MxParticleType*)value);
             
@@ -287,7 +287,7 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
             
             PyObject *o = PyDict_GetItem(dict, key);
             
-            std::cout << "new obj " << carbon::str(o) << std::endl;
+            Log(LOG_TRACE) << "new obj " << carbon::str(o) << std::endl;
         }
     }
     return S_OK;
@@ -295,7 +295,7 @@ HRESULT MxClusterType_Init(MxParticleType *self, PyObject *_dict) {
 
 PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plane) {
     
-    Magnum::Debug() << MX_FUNCTION << ", plane: " << plane;
+    Magnum::Debug() << ", plane: " << plane;
     
     // particles to move to daughter cluster.
     // only perform a split if the contained particles can be split into
@@ -319,7 +319,7 @@ PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plan
         MxCluster *daughter = (MxCluster*)MxParticle_Get(_daughter);
         assert(daughter);
         
-        std::cout << "split cluster "
+        Log(LOG_TRACE) << "split cluster "
         << cluster->id << " into ("
         << cluster->id << ":" << (cluster->nr_parts - dparts.size())
         << ", "
@@ -340,7 +340,7 @@ PyObject* cluster_fission_plane(MxParticle *cluster, const Magnum::Vector4 &plan
 static PyObject* cluster_fission_normal_point(MxParticle *cluster,
     const Magnum::Vector3 &normal, const Magnum::Vector3 &point) {
     
-    Magnum::Debug() << MX_FUNCTION << "normal: " << normal
+    Magnum::Debug() << "normal: " << normal
                     << ", point: " << point << ", cluster center: "
                     << cluster->global_position();
     
@@ -353,7 +353,7 @@ static PyObject* cluster_fission_normal_point(MxParticle *cluster,
 static PyObject* cluster_fission_axis(MxParticle *cluster,
     const Magnum::Vector3 &axis) {
     
-    Magnum::Debug() << MX_FUNCTION << "axis: " << axis;
+    Magnum::Debug() << "axis: " << axis;
     
     Magnum::Vector3 p1 = cluster->global_position();
     
@@ -440,7 +440,7 @@ static PyObject* cluster_fission_random(MxParticle *cluster)
 static PyObject* cluster_fission(PyObject *_self, PyObject *args,
                                  PyObject *kwargs)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     MxParticle *cluster = MxParticle_Get(_self);
     
@@ -474,7 +474,7 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
        (a = PyTuple_GetItem(args, 0)) &&
        PyNumber_Check(a)) {
         float t = PyFloat_AsDouble(a);
-        std::cout << "cluster split event(cluster id: " << cluster->id
+        Log(LOG_TRACE) << "cluster split event(cluster id: " << cluster->id
                   << ", count: " << cluster->nr_parts
                   << ", time: " << t << ")" << std::endl;
         point = cluster->global_position();
@@ -485,7 +485,7 @@ static PyObject* cluster_fission(PyObject *_self, PyObject *args,
         normal = mx::arg("normal", 0, args, kwargs, MxRandomUnitVector());
         point = mx::arg("point", 1, args, kwargs, Magnum::Vector3{-1, -1, -1});
         
-        std::cout << "using cleavage plane to split cluster" << std::endl;
+        Log(LOG_TRACE) << "using cleavage plane to split cluster" << std::endl;
         
         if(point[0] < 0 || point[1] < 0 || point[3] < 0) {
             point = cluster->global_position();
@@ -529,10 +529,10 @@ HRESULT cluster_type_init(PyObject *m)
     ob->tp_init =          (initproc)cluster_init;
     ob->tp_new =           0;
     ob->tp_del =           [] (PyObject *p) -> void {
-        std::cout << "tp_del MxCluster" << std::endl;
+        Log(LOG_TRACE) << "tp_del MxCluster" << std::endl;
     };
     ob->tp_finalize =      [] (PyObject *p) -> void {
-        std::cout << "tp_finalize MxCluster" << std::endl;
+        Log(LOG_TRACE) << "tp_finalize MxCluster" << std::endl;
     };
 
 
@@ -563,7 +563,7 @@ HRESULT cluster_type_init(PyObject *m)
         return E_FAIL;
     }
 
-    std::cout << "added Cluster to mechanica module" << std::endl;
+    Log(LOG_TRACE) << "added Cluster to mechanica module" << std::endl;
 
     engine::nr_types = 2;
 
@@ -590,10 +590,10 @@ static Magnum::Vector3 random_point_solid_sphere(float radius) {
 
 PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
                 void *wrapped, PyObject *kwds) {
-    std::cout << "self: " << carbon::str(self) << std::endl;
-    std::cout << "args: " << carbon::str(args) << std::endl;
-    std::cout << "kwds: " << carbon::str(kwds) << std::endl;
-    std::cout << "wrapped: " << carbon::str((PyObject*)wrapped) << std::endl;
+    Log(LOG_TRACE) << "self: " << carbon::str(self) << std::endl;
+    Log(LOG_TRACE) << "args: " << carbon::str(args) << std::endl;
+    Log(LOG_TRACE) << "kwds: " << carbon::str(kwds) << std::endl;
+    Log(LOG_TRACE) << "wrapped: " << carbon::str((PyObject*)wrapped) << std::endl;
     
     if(kwds) {
         Py_INCREF(kwds);
@@ -739,7 +739,7 @@ MxParticle *remove_particle_at_index(MxCluster *cluster, int index) {
 }
 
 HRESULT _MxCluster_init(PyObject *m) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     return cluster_type_init(m);
 }
 

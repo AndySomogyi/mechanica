@@ -530,7 +530,7 @@ static int _bond_init(MxBondHandle *self, uint32_t flags, int32_t i, int32_t j,
 
 static int bond_init(MxBondHandle *self, PyObject *args, PyObject *kwargs) {
 
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
 
     try {
         PyObject *pot  = mx::arg<PyObject*>("potential", 0, args, kwargs);
@@ -780,7 +780,7 @@ static PyObject *bonds_module = NULL;
 HRESULT _MxBond_init(PyObject *m)
 {
     if (PyType_Ready((PyTypeObject*)&MxBondHandle_Type) < 0) {
-        std::cout << "could not initialize MxBondHandle_Type " << std::endl;
+        Log(LOG_ERROR) << "could not initialize MxBondHandle_Type ";
         return E_FAIL;
     }
 
@@ -893,7 +893,7 @@ PyObject* MxBond_PairwiseNew(
         make_pairlist(parts, cutoff, ppairs, pairs);
         
         bonds = PyList_New(pairs.size());
-        std::cout << "list size: " << PyList_Size(bonds) << std::endl;
+        Log(LOG_DEBUG) << "list size: " << PyList_Size(bonds);
         
         double half_life = mx::arg<double>("half_life", 3, args, kwds, std::numeric_limits<double>::max());
         double bond_energy = mx::arg<double>("bond_energy", 4, args, kwds, std::numeric_limits<double>::max());
@@ -951,7 +951,7 @@ CAPI_FUNC(HRESULT) MxBond_Destroy(struct MxBond *b) {
 PyObject* bond_destroy(MxBondHandle *self, PyObject *args,
                                  PyObject *kwargs)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
     
     MxBond_Destroy(self->get());
     Py_RETURN_NONE;
@@ -959,7 +959,7 @@ PyObject* bond_destroy(MxBondHandle *self, PyObject *args,
 
 PyObject* bond_energy(MxBondHandle *self)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
     
     MxBond *bond = self->get();
     double energy = 0;

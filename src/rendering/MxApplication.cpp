@@ -80,8 +80,8 @@ PyObject* MxTestImage(PyObject *module, PyObject* self, PyObject* args) {
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
 
 
+    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
-
 
     /* Open file */
     if(!Utility::Directory::write("triangle.jpg", jpegData)) {
@@ -105,6 +105,7 @@ PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* arg
     
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
+    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
     
     return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
@@ -150,7 +151,7 @@ HRESULT MxApplication::simulationStep() {
 
 HRESULT MxApplication::run(double et)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     MxUniverse_SetFlag(MX_RUNNING, true);
     HRESULT result = messageLoop(et);
     MxUniverse_SetFlag(MX_RUNNING, false);

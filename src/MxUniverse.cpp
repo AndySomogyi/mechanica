@@ -535,6 +535,7 @@ void print_performance_counters() {
     std::cout << "performance_timers : { " << std::endl;
     std::cout << "\t name:" << Universe.name << std::endl;
     std::cout << "\t fps: " << _Engine.time / _Engine.wall_time << std::endl;
+    std::cout << "\t kinetic energy: " << engine_kinetic_energy(&_Engine) << std::endl;
     std::cout << "\t step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
     std::cout << "\t nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
     std::cout << "\t bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;

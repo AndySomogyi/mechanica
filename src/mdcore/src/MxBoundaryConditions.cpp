@@ -670,15 +670,15 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
         PyErr_WarnEx(NULL, msg.c_str(), 0);
     }
     
-    printf("engine periodic x : %s\n", bc->periodic & space_periodic_x ? "true" : "false");
-    printf("engine periodic y : %s\n", bc->periodic & space_periodic_y ? "true" : "false");
-    printf("engine periodic z : %s\n", bc->periodic & space_periodic_z ? "true" : "false");
-    printf("engine freeslip x : %s\n", bc->periodic & SPACE_FREESLIP_X ? "true" : "false");
-    printf("engine freeslip y : %s\n", bc->periodic & SPACE_FREESLIP_Y ? "true" : "false");
-    printf("engine freeslip z : %s\n", bc->periodic & SPACE_FREESLIP_Z ? "true" : "false");
-    printf("engine periodic ghost x : %s\n", bc->periodic & space_periodic_ghost_x ? "true" : "false");
-    printf("engine periodic ghost y : %s\n", bc->periodic & space_periodic_ghost_y ? "true" : "false");
-    printf("engine periodic ghost z : %s\n", bc->periodic & space_periodic_ghost_z ? "true" : "false");
+    Log(LOG_INFORMATION) << "engine periodic x : " << (bool)(bc->periodic & space_periodic_x) ;
+    Log(LOG_INFORMATION) << "engine periodic y : " << (bool)(bc->periodic & space_periodic_y) ;
+    Log(LOG_INFORMATION) << "engine periodic z : " << (bool)(bc->periodic & space_periodic_z) ;
+    Log(LOG_INFORMATION) << "engine freeslip x : " << (bool)(bc->periodic & SPACE_FREESLIP_X) ;
+    Log(LOG_INFORMATION) << "engine freeslip y : " << (bool)(bc->periodic & SPACE_FREESLIP_Y) ;
+    Log(LOG_INFORMATION) << "engine freeslip z : " << (bool)(bc->periodic & SPACE_FREESLIP_Z) ;
+    Log(LOG_INFORMATION) << "engine periodic ghost x : " << (bool)(bc->periodic & space_periodic_ghost_x) ;
+    Log(LOG_INFORMATION) << "engine periodic ghost y : " << (bool)(bc->periodic & space_periodic_ghost_y) ;
+    Log(LOG_INFORMATION) << "engine periodic ghost z : " << (bool)(bc->periodic & space_periodic_ghost_z) ;
     
     return S_OK;
         

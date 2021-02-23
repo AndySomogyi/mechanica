@@ -21,6 +21,12 @@ History
 
 Version Alpha 1.0.16.2
 ----------------------
+* Logging, standardized all logging output, python api for setting log level. 
+* fix kinetic energy reporting
+* synchronize gl contexts between GLFW and Magnum for multi-thread rendering
+
+Version Alpha 1.0.16.2
+----------------------
 * initialize Mechanica either via m.init, m.Simulator, or m.simulator.init
 
 Version Alpha 1.0.16.1

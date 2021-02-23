@@ -198,54 +198,54 @@ static PyObject *version_create() {
     PyObject *m = PyModule_Create(&version_module);
 
     if(PyModule_AddObject(m, "version", PyUnicode_FromString(version_str().c_str())) != 0) {
-        std::cout << "could not add version info string" << std::endl;
+        Log(LOG_ERROR) << "could not add version info string";
         return NULL;
     }
 
     if(PyModule_AddObject(m, "system_name", PyUnicode_FromString(MX_SYSTEM_NAME)) != 0) {
-        std::cout << "could not add version info string" << std::endl;
+        Log(LOG_ERROR) << "could not add version info string";
         return NULL;
     }
 
     if(PyModule_AddObject(m, "system_version", PyUnicode_FromString(MX_SYSTEM_VERSION)) != 0) {
-        std::cout << "could not add version info string" << std::endl;
+        Log(LOG_ERROR) << "could not add version info string";
         return NULL;
     }
 
     if(PyModule_AddObject(m, "compiler", PyUnicode_FromString(MX_COMPILER_ID)) != 0) {
-        std::cout << "could not add version info string" << std::endl;
+        Log(LOG_ERROR) << "could not add version info string";
         return NULL;
     }
 
     if(PyModule_AddObject(m, "compiler_version", PyUnicode_FromString(MX_COMPILER_VERSION)) != 0) {
-        std::cout << "could not add version info string" << std::endl;
+        Log(LOG_ERROR) << "could not add version info string";
         return NULL;
     }
 
     std::string datetime = std::string(__DATE__)+ ", " + __TIME__;
 
     if(PyModule_AddObject(m, "build_date", PyUnicode_FromString(datetime.c_str())) != 0) {
-            std::cout << "could not add version info string" << std::endl;
+            Log(LOG_ERROR) << "could not add version info string";
             return NULL;
     }
 
     if(PyModule_AddObject(m, "major", PyLong_FromLong(MX_VERSION_MAJOR)) != 0) {
-                std::cout << "could not add version info string" << std::endl;
+                Log(LOG_ERROR) << "could not add version info string";
                 return NULL;
     }
 
     if(PyModule_AddObject(m, "minor", PyLong_FromLong(MX_VERSION_MINOR)) != 0) {
-                std::cout << "could not add version info string" << std::endl;
+                Log(LOG_ERROR) << "could not add version info string";
                 return NULL;
     }
 
     if(PyModule_AddObject(m, "patch", PyLong_FromLong(MX_VERSION_PATCH)) != 0) {
-                std::cout << "could not add version info string" << std::endl;
+                Log(LOG_ERROR) << "could not add version info string";
                 return NULL;
     }
 
     if(PyModule_AddObject(m, "dev", PyLong_FromLong(MX_VERSION_DEV)) != 0) {
-                std::cout << "could not add version info string" << std::endl;
+                Log(LOG_ERROR) << "could not add version info string";
                 return NULL;
     }
 
@@ -261,7 +261,7 @@ CAPI_FUNC(PyObject*) Mx_GetModule() {
 
 static PyObject * moduleinit(void)
 {
-    std::cout << "Mechanica " << MX_FUNCTION << ", initializing numpy... " << std::endl;
+    Log(LOG_DEBUG) << ", initializing numpy... " ;
 
     /* Load all of the `numpy` functionality. */
     import_array();
@@ -272,28 +272,39 @@ static PyObject * moduleinit(void)
     PyObject *carbonModule = PyInit_carbon();
 
     if(carbonModule == NULL) {
-        std::cout << "could not initialize carbon: "  << std::endl;
+        Log(LOG_FATAL) << "could not initialize carbon: ";
         return NULL;
     }
 
     m = PyModule_Create(&mechanica_module);
+    
+    // make a reference to a logger to the carbon logger
+    PyObject *logger = PyObject_GetAttrString(carbonModule, "Logger");
+    if(logger == NULL) {
+        Log(LOG_FATAL) << "could not get Logger from carbon module" ;
+    }
 
     if (m == NULL) {
-        std::cout << "could not create mechanica module: "  << std::endl;
+        Log(LOG_FATAL) << "could not create mechanica module: " ;
         return NULL;
+    }
+    
+    if(PyModule_AddObject(m, "Logger", logger) != 0) {
+        Log(LOG_FATAL) << "could not add logger to mechanica module";
     }
 
     if(PyModule_AddObject(m, "__version__", PyUnicode_FromString(version_str().c_str())) != 0) {
-        std::cout << "could not add version"  << std::endl;
+        Log(LOG_FATAL) << "could not add version" ;
         return NULL;
     }
 
     if(PyModule_AddObject(m, "version", version_create()) != 0) {
-        std::cout << "error creating version info module" << std::endl;
+        Log(LOG_FATAL) << "error creating version info module";
+        return NULL;
     }
 
     if(PyModule_AddObject(m, "carbon", carbonModule) != 0) {
-        std::cout << "could not add carbon module "  << std::endl;
+        Log(LOG_FATAL) << "could not add carbon module ";
         return NULL;
     }
 
@@ -361,7 +372,7 @@ CAPI_FUNC(PyObject*) PyInit__mechanica(void)
  */
 CAPI_FUNC(HRESULT) Mx_Initialize(int args) {
 
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
 
     HRESULT result = E_FAIL;
 

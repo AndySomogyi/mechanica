@@ -299,7 +299,7 @@ MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, f
 
 MxFluxes *MxFluxes_New(int32_t init_size) {
     
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
 
     struct MxFluxes *obj = NULL;
     

@@ -218,8 +218,8 @@ HRESULT MxGlfwApplication::messageLoop(double et)
         endTime = initTime + et;
     }
     
-    std::cout << "MxGlfwApplication::messageLoop(" << et 
-              << ") {now_time: " << initTime << ", end_time: " << endTime <<  "}" << std::endl;
+    Log(LOG_DEBUG) << "MxGlfwApplication::messageLoop(" << et
+                   << ") {now_time: " << initTime << ", end_time: " << endTime <<  "}" ;
     
     // process initial messages.
     GlfwApplication::mainLoopIteration();
@@ -347,7 +347,7 @@ void MxGlfwApplication::mouseScrollEvent(MouseScrollEvent &event)
 
 void MxGlfwApplication::exitEvent(ExitEvent &event)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
 
     // stop the window from getting (getting destroyed)
     glfwSetWindowShouldClose(window(), false);
@@ -361,7 +361,7 @@ void MxGlfwApplication::exitEvent(ExitEvent &event)
 
 HRESULT MxGlfwApplication::destroy()
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
 
     GLFWwindow *window = GlfwApplication::window();
 
@@ -373,7 +373,7 @@ HRESULT MxGlfwApplication::destroy()
 
 HRESULT MxGlfwApplication::close()
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
     
     glfwHideWindow(window());
     
@@ -491,7 +491,7 @@ void ForceForgoundWindow2(GLFWwindow* wnd)
 
 HRESULT MxGlfwApplication::show()
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
     
     showWindow();
     
@@ -504,7 +504,7 @@ HRESULT MxGlfwApplication::show()
 
 HRESULT MxGlfwApplication::showWindow()
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_DEBUG);
     
     glfwShowWindow(window());
 
@@ -519,6 +519,10 @@ HRESULT MxGlfwApplication::showWindow()
 
 bool MxGlfwApplication::contextMakeCurrent()
 {
+    // tell open go to make the context current.
+    glfwMakeContextCurrent(_win->_window);
+    
+    // tell Magnum to set it's context
     Magnum::Platform::GlfwApplication &app = *this;
     
     Containers::Pointer<Platform::GLContext> &context = access_private::_context(app);
@@ -532,7 +536,17 @@ bool MxGlfwApplication::contextMakeCurrent()
 
 bool MxGlfwApplication::contextHasCurrent()
 {
-    return Magnum::GL::Context::hasCurrent();
+    bool hasGlfw = glfwGetCurrentContext() != NULL;
+    bool hasMagnum = Magnum::GL::Context::hasCurrent();
+    
+    if(!(hasGlfw ^ hasMagnum)) {
+        std::string msg = "GLFW and Magnum OpenGL contexts not synchronized, glfw context: ";
+        msg += std::to_string(hasGlfw);
+        msg += ", magnum context: " + std::to_string(hasMagnum);
+        throw std::runtime_error(msg);
+    }
+    
+    return hasGlfw && hasMagnum;
 }
 
 bool MxGlfwApplication::contextRelease()

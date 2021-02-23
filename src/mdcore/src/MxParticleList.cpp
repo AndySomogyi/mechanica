@@ -116,20 +116,20 @@ void particlelist_dealloc(MxParticleList *p) {
 
 // sq_length
 static Py_ssize_t plist_length(PyObject *_self) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     MxParticleList *self = (MxParticleList*)_self;
     return self->nr_parts;
 }
 
 // sq_concat
 static PyObject *plist_concat(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 
 // sq_repeat
 static PyObject *plist_repeat(PyObject *, Py_ssize_t) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 
@@ -153,25 +153,25 @@ static PyObject *plist_item(PyObject *_self, Py_ssize_t i) {
 
 // sq_ass_item
 static int plist_ass_item(PyObject *, Py_ssize_t, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 
 // sq_contains
 static int plist_contains(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 
 // sq_inplace_concat
 static PyObject *plist_inplace_concat(PyObject *, PyObject *) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 
 // sq_inplace_repeat
 static PyObject *plist_inplace_repeat(PyObject *, Py_ssize_t) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     return 0;
 }
 

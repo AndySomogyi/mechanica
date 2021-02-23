@@ -393,7 +393,7 @@ int engine_advance_forward_euler ( struct engine *e ) {
         }
 #endif
         
-        //std::cout << "step: " << _Engine.time  << ", computed volume: " << _Engine.computed_volume << std::endl;
+        Log(LOG_TRACE) << "step: " << _Engine.time  << ", computed volume: " << _Engine.computed_volume;
         
         /* set the new pos for the clusters.  */
         for ( cid = 0 ; cid < s->nr_real ; ++cid ) {

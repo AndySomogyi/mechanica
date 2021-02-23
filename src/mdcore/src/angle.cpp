@@ -643,8 +643,7 @@ PyTypeObject MxAngle_Type = {
 HRESULT _MxAngle_init(PyObject *module)
 {
     if (PyType_Ready((PyTypeObject*)&MxAngle_Type) < 0) {
-        std::cout << "could not initialize MxAngle_Type " << std::endl;
-        return E_FAIL;
+        return c_error(E_FAIL, "could not initialize MxAngle_Type " );
     }
 
 
@@ -659,7 +658,7 @@ HRESULT _MxAngle_init(PyObject *module)
 
 int angle_init(MxAngle *self, PyObject *args, PyObject *kwargs) {
     
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     
     try {
         PyObject *pot  = mx::arg<PyObject*>("potential", 0, args, kwargs);

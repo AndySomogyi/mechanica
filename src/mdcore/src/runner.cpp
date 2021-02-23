@@ -254,7 +254,7 @@ int runner_run ( struct runner *r ) {
     std::default_random_engine randeng;
 
     /* give a hoot */
-    printf( "runner_run: runner %i is up and running on queue %i (tasks)...\n" , r->id , myqid ); fflush(stdout);
+    Log(LOG_INFORMATION) << "runner_run: runner " << r->id << " is up and running on queue " << myqid << " (tasks)";
 
     /* main loop, in which the runner should stay forever... */
     while ( 1 ) {

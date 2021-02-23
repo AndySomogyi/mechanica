@@ -87,16 +87,7 @@ static PyObject *secrete(PyObject *self, PyObject *args, PyObject *kwargs) {
         return NULL;
     }
     
-    try{
-        //std::cout << "secrete(self: "
-        //    << carbon::repr(self)
-        //    << ", args:"
-        //    << carbon::repr(args)
-        //    << ", kwargs: "
-        //    << carbon::repr(kwargs)
-        //    << ")"
-        //    << std::endl;
-        
+    try{        
         float amount = carbon::cast<float>(carbon::py_arg("amount", 0, args, kwargs));
         
         PyObject *to = carbon::py_arg("to", 1, args, kwargs);

@@ -28,10 +28,9 @@ MxParticleType *MxParticleType_FromMethod(PyObject *e);
 
 PyObject* MxOnTime(PyObject *module, PyObject *args, PyObject *kwargs)
 {
-    std::cout << MX_FUNCTION << std::endl;
-    std::cout << "obj: " << PyUnicode_AsUTF8AndSize(PyObject_Str(module), NULL) << std::endl;
-    std::cout << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl;
-    std::cout << "kwargs: " << PyUnicode_AsUTF8AndSize(PyObject_Str(kwargs), NULL) << std::endl;
+    Log(LOG_TRACE) << "obj: " << PyUnicode_AsUTF8AndSize(PyObject_Str(module), NULL) << std::endl
+                   << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl
+                   << "kwargs: " << PyUnicode_AsUTF8AndSize(PyObject_Str(kwargs), NULL);
     
     MxParticleTimeEvent* event = (MxParticleTimeEvent*)CTimeEvent_New();
     
@@ -72,8 +71,8 @@ HRESULT MxParticleTimeEvent_BindParticleMethod(CTimeEvent *event,
                                                struct MxParticleType *target, PyObject *method)
 {
     
-    std::cout << "target: " << PyUnicode_AsUTF8AndSize(PyObject_Str((PyObject*)target), NULL) << std::endl;
-    std::cout << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(method), NULL) << std::endl;
+    Log(LOG_TRACE) << "target: " << PyUnicode_AsUTF8AndSize(PyObject_Str((PyObject*)target), NULL) << std::endl
+                   << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(method), NULL);
     
     
     return E_NOTIMPL;
@@ -210,8 +209,8 @@ HRESULT MxParticleType_BindEvent(MxParticleType *type, PyObject *e) {
 
 HRESULT MyParticleType_BindEvents(struct MxParticleType *type, PyObject *events)
 {
-    std::cout << "type: " << PyUnicode_AsUTF8AndSize(PyObject_Str((PyObject*)type), NULL) << std::endl;
-    std::cout << "events: " << PyUnicode_AsUTF8AndSize(PyObject_Str(events), NULL) << std::endl;
+    Log(LOG_DEBUG) << "type: " << PyUnicode_AsUTF8AndSize(PyObject_Str((PyObject*)type), NULL) << std::endl
+                   << "events: " << PyUnicode_AsUTF8AndSize(PyObject_Str(events), NULL) << std::endl;
     
     if (PySequence_Check(events) == 0) {
         return c_error(E_FAIL, "events must be a list");
@@ -254,9 +253,8 @@ HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double ti
     PyTuple_SET_ITEM(args, 0, mp->_pyparticle);
     PyTuple_SET_ITEM(args, 1, t);
     
-    //std::cout << MX_FUNCTION << std::endl;
-    //std::cout << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl;
-    //std::cout << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL) << std::endl;
+    Log(LOG_TRACE) << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl
+                   << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL);
     
     // time expired, so invoke the event.
     PyObject *result = PyObject_CallObject((PyObject*)event->method, args);
@@ -291,10 +289,6 @@ HRESULT particletimeevent_pyfunction_invoke_uniform_random(CTimeEvent *event, do
     PyObject *t = PyFloat_FromDouble(time);
     PyTuple_SET_ITEM(args, 0, _Engine.s.partlist[pid]->_pyparticle);
     PyTuple_SET_ITEM(args, 1, t);
-    
-    //std::cout << MX_FUNCTION << std::endl;
-    //std::cout << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl;
-    //std::cout << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL) << std::endl;
     
     // time expired, so invoke the event.
     // TODO: major memory leak, check result

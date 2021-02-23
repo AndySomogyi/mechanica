@@ -438,7 +438,7 @@ int space_addpart ( struct space *s , struct MxParticle *p , double *x, struct M
     
     // treat large particles in the large parts cell
     if(p->flags & PARTICLE_LARGE) {
-        std::cout << "adding large particle: " << p->id << std::endl;
+        Log(LOG_DEBUG) << "adding large particle: " << p->id;
         c = &s->largeparts;
     }
     else {
@@ -727,13 +727,11 @@ int space_init (struct space *s , const double *origin , const double *dim ,
         }
     }
     
-    /*
-    std::cout << "cells: " << s->nr_cells <<
+    Log(LOG_TRACE) << "cells: " << s->nr_cells <<
     ", a_front: " << frc <<
     ", a_back: " << bac <<
     ", a_top: " << toc <<
-    ", a_bottom: " << boc << std::endl;
-     */
+    ", a_bottom: " << boc;
 
     /* Make ghost layers if needed. */
     if ( s->period & space_periodic_ghost_x )
@@ -944,11 +942,11 @@ int space_init (struct space *s , const double *origin , const double *dim ,
     // so has zero offset for loc.
     l[0] = l[1] = l[1] = 0;
     
-    /*
-    for(int i = 0; i < s->nr_tasks; ++i) {
-        std::cout << "task: " << i << ": " << &s->tasks[i];
+    if(LOG_TRACE <= CLogger::getLevel()) {
+        for(int i = 0; i < s->nr_tasks; ++i) {
+            Log(LOG_TRACE) << "task: " << i << ": " << &s->tasks[i];
+        }
     }
-     */
     
     if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
         return error(space_err_cell);

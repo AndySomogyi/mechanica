@@ -68,7 +68,7 @@ PyObject *MxSystem_ContextHasCurrent(PyObject *self) {
     
     try {
         std::thread::id id = std::this_thread::get_id();
-        std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+        Log(LOG_INFORMATION)  << ", thread id: " << id ;
         
         MxSimulator *sim = MxSimulator::Get();
         
@@ -83,7 +83,7 @@ PyObject *MxSystem_ContextHasCurrent(PyObject *self) {
 PyObject *MxSystem_ContextMakeCurrent(PyObject *self) {
     try {
         std::thread::id id = std::this_thread::get_id();
-        std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+        Log(LOG_INFORMATION)  << ", thread id: " << id ;
         
         MxSimulator *sim = MxSimulator::Get();
         sim->app->contextMakeCurrent();
@@ -98,7 +98,7 @@ PyObject *MxSystem_ContextMakeCurrent(PyObject *self) {
 PyObject *MxSystem_ContextRelease(PyObject *self) {
     try {
         std::thread::id id = std::this_thread::get_id();
-        std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+        Log(LOG_INFORMATION)  << ", thread id: " << id ;
         
         MxSimulator *sim = MxSimulator::Get();
         sim->app->contextRelease();
@@ -183,7 +183,7 @@ struct ArgumentsWrapper  {
             strings.push_back(mx::cast<std::string>(o));
             cstrings.push_back(strings.back().c_str());
 
-            std::cout << "args: " << cstrings.back() << std::endl;
+            Log(LOG_INFORMATION) <<  "args: " << cstrings.back() ;;
         }
 
         // stupid thing is a int reference, keep an ivar around for it
@@ -278,6 +278,10 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     if((o = PyDict_GetItemString(kwargs, "perfcounter_period"))) {
         conf.universeConfig.timer_output_period = mx::cast<int>(o);
     }
+    
+    if((o = PyDict_GetItemString(kwargs, "logger_level"))) {
+        CLogger::setLevel(mx::cast<int>(o));
+    }
 }
 
 static std::string gl_info(const Magnum::Utility::Arguments &args);
@@ -293,7 +297,7 @@ const std::map<std::string, int> configItemMap {
 
 static int init(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_INFORMATION)  ;
 
     MxSimulator *s = new (self) MxSimulator();
     return 0;
@@ -376,7 +380,8 @@ int universe_init (const MxUniverseConfig &conf ) {
     }
 
 
-    printf("main: initializing the engine... "); fflush(stdout);
+    Log(LOG_INFORMATION) << "main: initializing the engine... ";
+    
     if ( engine_init( &_Engine , _origin , _dim , cells.data() , cutoff , conf.boundaryConditionsPtr ,
             conf.maxTypes , engine_flag_none ) != 0 ) {
         throw std::runtime_error(errs_getstring(0));
@@ -407,17 +412,15 @@ int universe_init (const MxUniverseConfig &conf ) {
         break;
     }
 
-    printf("engine integrator: %s \n", inte);
-    printf("engine: n_cells: %i, cell width set to %22.16e.\n", _Engine.s.nr_cells, cutoff);
-    printf("engine: cell dimensions = [ %i , %i , %i ].\n", _Engine.s.cdim[0] , _Engine.s.cdim[1] , _Engine.s.cdim[2] );
-    printf("engine: cell size = [ %e , %e , %e ].\n" , _Engine.s.h[0] , _Engine.s.h[1] , _Engine.s.h[2] );
-    printf("engine: cutoff set to %22.16e.\n", cutoff);
-    printf("engine: nr tasks: %i.\n",_Engine.s.nr_tasks);
-    printf("engine: nr cell pairs: %i.\n",_Engine.s.nr_pairs);
-
-
-    printf("engine: dt: %22.16e.\n",_Engine.dt);
-    printf("engine: max distance fraction: %22.16e.\n",_Engine.particle_max_dist_fraction);
+    Log(LOG_INFORMATION) << "engine integrator: " << inte;
+    Log(LOG_INFORMATION) << "engine: n_cells: " << _Engine.s.nr_cells << ", cell width set to " << cutoff;
+    Log(LOG_INFORMATION) << "engine: cell dimensions = [" << _Engine.s.cdim[0] << ", " << _Engine.s.cdim[1] << ", " << _Engine.s.cdim[2] << "]";
+    Log(LOG_INFORMATION) << "engine: cell size = [" << _Engine.s.h[0]  << ", " <<_Engine.s.h[1] << ", " << _Engine.s.h[2] << "]";
+    Log(LOG_INFORMATION) << "engine: cutoff set to " << cutoff;
+    Log(LOG_INFORMATION) << "engine: nr tasks: " << _Engine.s.nr_tasks;
+    Log(LOG_INFORMATION) << "engine: nr cell pairs: %i.\n" <<_Engine.s.nr_pairs;
+    Log(LOG_INFORMATION) << "engine: dt: %22.16e." << _Engine.dt;
+    Log(LOG_INFORMATION) << "engine: max distance fraction: " << _Engine.particle_max_dist_fraction;
 
     // start the engine
 
@@ -453,21 +456,21 @@ CAPI_FUNC(HRESULT) MxSimulator_Run(double et)
 {
     SIMULATOR_CHECK();
 
-    std::cout << "simulator run(" << et << ")" << std::endl;
+    Log(LOG_INFORMATION) <<  "simulator run(" << et << ")" ;;
 
     return Simulator->app->run(et);
 }
 
 CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
 {
-    std::cout << MX_FUNCTION << ",  start " << std::endl;
+    Log(LOG_TRACE);
     
     SIMULATOR_CHECK();
 
     MxUniverse_SetFlag(MX_RUNNING, true);
 
 
-    std::fprintf(stderr, "checking for ipython \n");
+    Log(LOG_DEBUG) << "checking for ipython";
     if (Mx_IsIpython()) {
 
         if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
@@ -475,30 +478,34 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
             simulator_interactive_run();
         }
 
-        std::fprintf(stderr, "in ipython, calling interactive \n");
+        Log(LOG_DEBUG) <<  "in ipython, calling interactive";
 
         Simulator->app->show();
         
-        std::cout << MX_FUNCTION << ",  finished" << std::endl;
+        Log(LOG_DEBUG) << "finished";
 
         return S_OK;
     }
     else {
-        std::fprintf(stderr, "not ipython, returning MxSimulator_Run \n");
+        Log(LOG_DEBUG) << "not ipython, returning MxSimulator_Run";
         return MxSimulator_Run(-1);
     }
 }
 
+Magnum::Debug *magnum_debug;
+
 PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     std::thread::id id = std::this_thread::get_id();
-    std::cout << MX_FUNCTION << ", thread id: " << id << std::endl;
+    Log(LOG_INFORMATION) << "thread id: " << id;
 
     try {
 
         if(Simulator) {
             throw std::domain_error( "Error, Simulator is already initialized" );
         }
+        
+        magnum_debug = new Magnum::Debug{nullptr};
 
         MxSimulator *sim = new MxSimulator();
 
@@ -538,7 +545,7 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
         if(conf.windowless()) {
             ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
 
-            std::cout << "creating Windowless app" << std::endl;
+            Log(LOG_INFORMATION) <<  "creating Windowless app" ;;
 
             MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
 
@@ -554,7 +561,7 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
         else {
             ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
 
-            std::cout << "creating GLFW app" << std::endl;
+            Log(LOG_INFORMATION) <<  "creating GLFW app" ;;
 
             MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
 
@@ -563,7 +570,7 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
             sim->app = glfwApp;
         }
 
-        std::cout << MX_FUNCTION << std::endl;
+        Log(LOG_INFORMATION);
 
         Simulator = sim;
         Py_RETURN_NONE;
@@ -577,9 +584,6 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 static PyObject *ipythonInputHook(PyObject *self,
                                   PyObject *const *args,
                                   Py_ssize_t nargs) {
-    
-    
-    //std::cout << MX_FUNCTION << std::endl;
     SIM_TRY();
     
     if(nargs < 1) {
@@ -618,16 +622,13 @@ static PyObject *ipythonInputHook(PyObject *self,
         Simulator->app->mainLoopIteration(0.001);
     }
     
-    //std::cout << MX_FUNCTION << ", all done" << std::endl;
-    
     Py_RETURN_NONE;
     
     SIM_FINALLY(NULL);
 }
 
-
 static void simulator_interactive_run() {
-    std::cout << "entering " << MX_FUNCTION << std::endl;
+    Log(LOG_INFORMATION) <<  "entering ";
 
     if (MxUniverse_Flag(MxUniverse_Flags::MX_POLLING_MSGLOOP)) {
         return;
@@ -636,11 +637,11 @@ static void simulator_interactive_run() {
     // interactive run only works in terminal ipytythn.
     PyObject *ipy = CIPython_Get();
     const char* ipyname = ipy ? ipy->ob_type->tp_name : "NULL";
-    std::cout << "ipy type: " << ipyname << std::endl;
+    Log(LOG_INFORMATION) <<  "ipy type: " << ipyname ;;
 
     if(ipy && strcmp("TerminalInteractiveShell", ipy->ob_type->tp_name) == 0) {
 
-        std::cerr << "calling python interactive loop" << std::endl;
+        Log(LOG_DEBUG) << "calling python interactive loop";
         
         PyObject *mx_str = mx::cast(std::string("mechanica"));
 
@@ -667,21 +668,21 @@ static void simulator_interactive_run() {
 
         PyObject *pt_inputhooks = PyImport_ImportString("IPython.terminal.pt_inputhooks");
         
-        std::cout << "pt_inputhooks: " << carbon::str(pt_inputhooks) << std::endl;
+        Log(LOG_INFORMATION) <<  "pt_inputhooks: " << carbon::str(pt_inputhooks) ;;
         
         PyObject *reg = PyObject_GetAttrString(pt_inputhooks, "register");
         
-        std::cout << "reg: " << carbon::str(reg) << std::endl;
+        Log(LOG_INFORMATION) <<  "reg: " << carbon::str(reg) ;;
         
         PyObject *ih = PyObject_GetAttrString((PyObject*)&MxSimulator_Type, "_input_hook");
         
-        std::cout << "ih: " << carbon::str(ih) << std::endl;
+        Log(LOG_INFORMATION) <<  "ih: " << carbon::str(ih) ;;
 
         //py::cpp_function ih(ipythonInputHook);
         
         //reg("mechanica", ih);
         
-        std::cout << "calling reg...." << std::endl;
+        Log(LOG_INFORMATION) <<  "calling reg...." ;;
         
         PyObject *args = PyTuple_Pack(2, mx_str, ih);
         PyObject *reg_result = PyObject_Call(reg, args, NULL);
@@ -696,10 +697,10 @@ static void simulator_interactive_run() {
         // import IPython
         // ip = IPython.get_ipython()
         PyObject *ipython = PyImport_ImportString("IPython");
-        std::cout << "ipython: " << carbon::str(ipython) << std::endl;
+        Log(LOG_INFORMATION) <<  "ipython: " << carbon::str(ipython) ;;
         
         PyObject *get_ipython = PyObject_GetAttrString(ipython, "get_ipython");
-        std::cout << "get_ipython: " << carbon::str(get_ipython) << std::endl;
+        Log(LOG_INFORMATION) <<  "get_ipython: " << carbon::str(get_ipython) ;;
         
         args = PyTuple_New(0);
         PyObject *ip = PyObject_Call(get_ipython, args, NULL);
@@ -738,7 +739,7 @@ static void simulator_interactive_run() {
     }
 
     Py_XDECREF(ipy);
-    std::cerr << "leaving " << MX_FUNCTION << std::endl;
+    Log(LOG_INFORMATION) << "leaving ";
 }
 
 
@@ -746,7 +747,8 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
 {
     SIMULATOR_CHECK();
 
-    std::fprintf(stderr, "checking for ipython \n");
+    Log(LOG_TRACE) << "checking for ipython";
+    
     if (Mx_IsIpython()) {
 
         if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
@@ -754,16 +756,16 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
             simulator_interactive_run();
         }
 
-        std::fprintf(stderr, "in ipython, calling interactive \n");
+        Log(LOG_TRACE) << "in ipython, calling interactive";
 
         Simulator->app->show();
         
-        std::cout << MX_FUNCTION << ", Simulator->app->show() all done" << std::endl;
+        Log(LOG_INFORMATION) << ", Simulator->app->show() all done" ;
 
         return S_OK;
     }
     else {
-        std::fprintf(stderr, "not ipython, returning Simulator->app->show() \n");
+        Log(LOG_TRACE) << "not ipython, returning Simulator->app->show()";
         return Simulator->app->show();
     }
 }
@@ -809,7 +811,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf, const
     }
     else {
 
-        std::cout << "creating GLFW app" << std::endl;
+        Log(LOG_INFORMATION) <<  "creating GLFW app" ;;
 
         int argc = conf.argc;
 
@@ -822,7 +824,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InitConfig(const MxSimulator::Config &conf, const
         sim->app = glfwApp;
     }
 
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_INFORMATION);
 
     Simulator = sim;
 
@@ -1020,7 +1022,7 @@ PyTypeObject MxSimulator_Type = {
 
 HRESULT _MxSimulator_init(PyObject* m) {
 
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
 
     PyModule_AddIntConstant(m, "FORWARD_EULER", EngineIntegrator::FORWARD_EULER);
     PyModule_AddIntConstant(m, "RUNGE_KUTTA_4", EngineIntegrator::RUNGE_KUTTA_4);

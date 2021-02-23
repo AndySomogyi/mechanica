@@ -1056,7 +1056,7 @@ double Power(double base, double exp) {
     return result;
 }
 
-#define Log(x) std::log(x)
+#define MLog(x) std::log(x)
 
 static double potential_create_SS_e;
 static double potential_create_SS_k;
@@ -1138,7 +1138,7 @@ struct MxPotential *potential_create_SS1(double k, double e, double r0, double a
     if((err = potential_init(p ,&potential_create_SS1_f,
         &potential_create_SS1_dfdr , &potential_create_SS1_d6fdr6 , a , b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_TRACE) << "error creating potential: " << potential_err_msg[-err];
 		CAligned_Free(p);
         return NULL;
     }
@@ -1223,7 +1223,7 @@ struct MxPotential *potential_create_SS2(double k, double e, double r0, double a
                              &potential_create_SS2_dfdr ,
                              &potential_create_SS2_d6fdr6 , a , b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_TRACE) << "error creating potential: " << potential_err_msg[-err];
 		CAligned_Free(p);
         return NULL;
     }
@@ -1308,7 +1308,7 @@ struct MxPotential *potential_create_SS3(double k, double e, double r0, double a
                              &potential_create_SS3_dfdr ,
                              &potential_create_SS3_d6fdr6 , a , b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_TRACE) << "error creating potential: " << potential_err_msg[-err];
 		CAligned_Free(p);
         return NULL;
     }
@@ -1394,7 +1394,7 @@ struct MxPotential *potential_create_SS4(double k, double e, double r0, double a
                              &potential_create_SS4_dfdr ,
                              &potential_create_SS4_d6fdr6 , a , b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_TRACE) << "error creating potential: " << potential_err_msg[-err];
 		CAligned_Free(p);
         return NULL;
     }
@@ -1459,7 +1459,7 @@ static double overlapping_sphere_harmonic_r0;
 static double overlapping_sphere_harmonic_k;
 
 // overlapping sphere f
-//Piecewise(List(List(-x + x*Log(x),x <= 1)),-1 + Power(k,-2) - (Power(E,k - k*x)*(1 + k*(-1 + x)))/Power(k,2)),
+//Piecewise(List(List(-x + x*MLog(x),x <= 1)),-1 + Power(k,-2) - (Power(E,k - k*x)*(1 + k*(-1 + x)))/Power(k,2)),
 static double overlapping_sphere_f ( double x ) {
     double k = overlapping_sphere_k;
     double mu = overlapping_sphere_mu;
@@ -1468,19 +1468,19 @@ static double overlapping_sphere_f ( double x ) {
     
     double result;
     if(x <= 1) {
-        result =  -x + x*Log(x);
+        result =  -x + x*MLog(x);
     }
     else {
         result =  -1 + Power(k,-2) - (Power(M_E,k - k*x)*(1 + k*(-1 + x)))/Power(k,2);
     }
     
-    //std::cout << "fdata = Append[fdata, {" << x << ", " << result << "}];" << std::endl;
+    //Log(LOG_TRACE) << "fdata = Append[fdata, {" << x << ", " << result << "}];";
     return mu * result + harmonic_k*Power(-x + harmonic_r0,2);
     //return harmonic_k*Power(-x + harmonic_r0,2);
 }
 
 // overlapping sphere fp
-//Piecewise(List(List(Log(x),x < 1),List(Power(E,k*(1 - x))*(-1 + x),x >= 1)),0),
+//Piecewise(List(List(MLog(x),x < 1),List(Power(E,k*(1 - x))*(-1 + x),x >= 1)),0),
 static double overlapping_sphere_fp ( double x ) {
     double k = overlapping_sphere_k;
     double mu = overlapping_sphere_mu;
@@ -1488,13 +1488,13 @@ static double overlapping_sphere_fp ( double x ) {
     double harmonic_k = overlapping_sphere_harmonic_k;
     double result;
     if(x <= 1) {
-        result = Log(x);
+        result = MLog(x);
     }
     else {
         result =  Power(M_E,k*(1 - x))*(-1 + x);
     }
     
-    //std::cout << "fpdata = Append[fpdata, {" << x << ", " << result << "}];" << std::endl;
+    //Log(LOG_TRACE) << "fpdata = Append[fpdata, {" << x << ", " << result << "}];";
     return  mu * result + 2*harmonic_k*(-x + harmonic_r0);
     //return 2*harmonic_k*(-x + harmonic_r0);
 }
@@ -1513,7 +1513,7 @@ static double overlapping_sphere_f6p ( double x ) {
     else {
         result =  Power(M_E,k - k*x)*Power(k,4) - Power(M_E,k - k*x)*Power(k,4)*(-4 - k + k*x);
     }
-    //std::cout << "fp6data = Append[fp6data, {" << x << ", " << result << "}];" << std::endl;
+    //Log(LOG_TRACE) << "fp6data = Append[fp6data, {" << x << ", " << result << "}];";
     return mu * result;
     //return 0;
 }
@@ -1551,7 +1551,7 @@ struct MxPotential *potential_create_overlapping_sphere(double mu, double k,
                              &overlapping_sphere_fp ,
                              &overlapping_sphere_f6p , a , b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_ERROR) << "error creating potential: " << potential_err_msg[-err];
         CAligned_Free(p);
         return NULL;
     }
@@ -1573,7 +1573,7 @@ static double power_f ( double x ) {
     
     result =  k * Power(std::abs(-r0 + x), alpha);
     
-    //std::cout << "power_f(" << x << "): " << result;
+    //Log(LOG_TRACE) << "power_f(" << x << "): " << result;
     return result;
 }
 
@@ -1587,7 +1587,7 @@ static double power_fp ( double x ) {
     result = alpha * k + Power(std::abs(-r0 + x), -1 + alpha);
     
     
-    //std::cout << "power_fp(" << x << "): " << result;
+    //Log(LOG_TRACE) << "power_fp(" << x << "): " << result;
     return result;
 }
 
@@ -1606,7 +1606,7 @@ static double power_f6p ( double x ) {
            (-1 + alpha) *
            alpha * k * Power(std::abs(-r0 + x), -6 + alpha);
     
-    //std::cout << "power_f6p(" << x << "): " << result;
+    //Log(LOG_TRACE) << "power_f6p(" << x << "): " << result;
     return result;
 }
 
@@ -1647,7 +1647,7 @@ struct MxPotential *potential_create_power(double k, double r0, double alpha, do
                              &power_fp ,
                              &power_f6p , fudged_a , 1.2 * b , tol )) < 0 ) {
         
-        std::cout << "error creating potential: " << potential_err_msg[-err] << std::endl;
+        Log(LOG_ERROR) << "error creating potential: " << potential_err_msg[-err];
         CAligned_Free(p);
         return NULL;
     }
@@ -2340,7 +2340,7 @@ double potential_getalpha ( double (*f6p)( double ) , double a , double b ) {
 
 MxPotential *potential_alloc(PyTypeObject *type) {
 
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     struct MxPotential *obj = NULL;
 
@@ -2367,7 +2367,7 @@ MxPotential *potential_alloc(PyTypeObject *type) {
 }
 
 static void potential_dealloc(PyObject* obj) {
-	std::cout << MX_FUNCTION << std::endl;
+	Log(LOG_TRACE) ;
 	CAligned_Free(obj);
 }
 
@@ -2468,7 +2468,7 @@ static PyObject *potential_force(PyObject *_self, PyObject *_args, PyObject *_kw
 }
 
 static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double min = mx::arg<double>("min", 0, _args, _kwargs);
@@ -2485,7 +2485,7 @@ static PyObject *_lennard_jones_12_6(PyObject *_self, PyObject *_args, PyObject 
 
 
 static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double min = mx::arg<double>("min", 0, _args, _kwargs);
@@ -2502,7 +2502,7 @@ static PyObject *_lennard_jones_12_6_coulomb(PyObject *_self, PyObject *_args, P
 }
 
 static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double kappa = mx::arg<double>("kappa", 0, _args, _kwargs);
@@ -2521,7 +2521,7 @@ static PyObject *_soft_sphere(PyObject *_self, PyObject *_args, PyObject *_kwarg
 }
 
 static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double min = mx::arg<double>("min", 0, _args, _kwargs);
@@ -2538,7 +2538,7 @@ static PyObject *_ewald(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 
 
 static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double q = mx::arg<double>("q", 0, _args, _kwargs);
@@ -2554,7 +2554,7 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 
 
 static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double k =     mx::arg<double>("k", 0, _args, _kwargs);
@@ -2571,7 +2571,7 @@ static PyObject *_harmonic(PyObject *_self, PyObject *_args, PyObject *_kwargs){
 }
 
 static PyObject *_linear(PyObject *_self, PyObject *_args, PyObject *_kwargs){
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double k =     mx::arg<double>("k", 0, _args, _kwargs);
@@ -2586,7 +2586,7 @@ static PyObject *_linear(PyObject *_self, PyObject *_args, PyObject *_kwargs){
 }
 
 static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double k = mx::arg<double>("k", 0, _args, _kwargs);
@@ -2604,7 +2604,7 @@ static PyObject *_harmonic_angle(PyObject *_self, PyObject *_args, PyObject *_kw
 
 
 static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double k = mx::arg<double>("k", 0, _args, _kwargs);
@@ -2621,7 +2621,7 @@ static PyObject *_harmonic_dihedral(PyObject *_self, PyObject *_args, PyObject *
 // potential_create_well(double k, double n, double r0, double tol, double min, double max)
 
 static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
 
     try {
         double k =   mx::arg<double>("k",   0, _args, _kwargs);
@@ -2640,7 +2640,7 @@ static PyObject *_well(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 
 
 static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double e =   mx::arg<double>("e",   0, _args, _kwargs);
@@ -2661,7 +2661,7 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
 }
 
 static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double mu =   mx::arg<double>("mu",   0, _args, _kwargs, 1);
@@ -2682,7 +2682,7 @@ static PyObject *_overlapping_sphere(PyObject *_self, PyObject *_args, PyObject 
 
 
 static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE) ;
     
     try {
         double k =   mx::arg<double>("k",   0, _args, _kwargs, 1);
@@ -2729,7 +2729,7 @@ static PyObject *_potential_power(PyObject *_self, PyObject *_args, PyObject *_k
 
 
 static PyObject *_potential_dpd(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_TRACE);
     
     
     float alpha =   mx::arg<double>("alpha",   0, _args, _kwargs, 1);

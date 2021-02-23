@@ -292,8 +292,8 @@ if ( ( e->particle_flags & engine_flag_mpi ) && ( e->nr_nodes > 1 ) ) {
 	/* Do we have to rebuild the Verlet list? */
 	if ( s->verlet_rebuild ) {
 
-		/* printf("engine_verlet_update: re-building verlet lists next step...\n");
-        printf("engine_verlet_update: maxdx=%e, skin=%e.\n",maxdx,skin); */
+		/* Log(LOG_INFORMATION) << "engine_verlet_update: re-building verlet lists next step...\n");
+        Log(LOG_INFORMATION) << "engine_verlet_update: maxdx=%e, skin=%e.\n",maxdx,skin); */
 
 		/* Wait for any unterminated exchange. */
 		tic = getticks();
@@ -1538,11 +1538,11 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     Magnum::Vector3d L = {domain_dim[0] / cells[0], domain_dim[1] / cells[1], domain_dim[2] / cells[2]};
 
     // initialize the engine
-    printf("engine: initializing the engine... ");
-    printf("engine: requesting origin = [ %f , %f , %f ].\n", origin[0], origin[1], origin[2] );
-    printf("engine: requesting dimensions = [ %f , %f , %f ].\n", dim[0], dim[1], dim[2] );
-    printf("engine: requesting cell size = [ %f , %f , %f ].\n", L[0], L[1], L[2] );
-    printf("engine: requesting cutoff = %22.16e.\n", cutoff);
+    Log(LOG_INFORMATION) << "engine: initializing the engine... ";
+    Log(LOG_INFORMATION) << "engine: requesting origin = [" << origin[0] << ", " << origin[1] << ", " << origin[2] << "]";
+    Log(LOG_INFORMATION) << "engine: requesting dimensions = [" << dim[0] << ", " << dim[1] << ", " << dim[2]  << "]";
+    Log(LOG_INFORMATION) << "engine: requesting cell size = [" << L[0] << ", " << L[1] << ", " << L[2] << "]";
+    Log(LOG_INFORMATION) << "engine: requesting cutoff = " << cutoff;
 
     /* default Boltzmann constant to 1 */
     e->K = 1.0;
@@ -1702,9 +1702,9 @@ void engine_dump() {
         for(int pid = 0; pid < cell->count; ++pid) {
             MxParticle *p = &cell->parts[pid];
 
-            std::cout << "i: " << pid << ", pid: " << p->id <<
+            Log(LOG_NOTICE) << "i: " << pid << ", pid: " << p->id <<
                     ", {" << p->x[0] << ", " << p->x[1] << ", " << p->x[2] << "}"
-                    ", {" << p->v[0] << ", " << p->v[1] << ", " << p->v[2] << "}\n";
+                    ", {" << p->v[0] << ", " << p->v[1] << ", " << p->v[2] << "}";
 
         }
     }
@@ -1712,6 +1712,8 @@ void engine_dump() {
 
 double engine_kinetic_energy(struct engine *e)
 {
+    double total = 0;
+    
     // clear the ke in the types,
     for(int i = 0; i < engine::nr_types; ++i) {
         engine::types[i].kinetic_energy = 0;
@@ -1721,20 +1723,14 @@ double engine_kinetic_energy(struct engine *e)
         space_cell *cell = &_Engine.s.cells[cid];
         for(int pid = 0; pid < cell->count; ++pid) {
             MxParticle *p = &cell->parts[pid];
-            engine::types[p->typeId].kinetic_energy += engine::types[p->typeId].mass *
-                    (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
+            MxParticleType *type = &engine::types[p->typeId];
+            float e = 0.5 * type->mass * (p->v[0] * p->v[0] + p->v[1] * p->v[1] + p->v[2] * p->v[2]);
+            type->kinetic_energy += e;
+            total += e;
         }
     }
 
-    for(int i = 1; i < engine::nr_types; ++i) {
-        engine::types[0].kinetic_energy += engine::types[i].kinetic_energy;
-        engine::types[i].kinetic_energy = engine::types[i].kinetic_energy / (2. * engine::types[i].parts.nr_parts);
-    }
-
-    // TODO: super lame hack to work around bug with
-    // not setting root particle count. FIX THIS.
-    engine::types[0].kinetic_energy /= (2. * engine::types[0].parts.nr_parts);
-    return engine::types[0].kinetic_energy;
+    return total;
 }
 
 double engine_temperature(struct engine *e)
@@ -1812,7 +1808,7 @@ int engine_next_partid(struct engine *e)
 
 CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
 {
-    std::cout << "time: " << e->time * e->dt << ", deleting particle id: " << pid << std::endl;
+    Log(LOG_DEBUG) << "time: " << e->time * e->dt << ", deleting particle id: " << pid;
 
     if(pid < 0 || pid >= e->s.size_parts) {
         return c_error(E_FAIL, "pid out of range");

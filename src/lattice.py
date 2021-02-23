@@ -513,7 +513,7 @@ def create_lattice(unitcell, n, origin=None):
                         #print("ci: ", ci)
                         #print("cj: ", cj)
 
-                        print("bonding: ", ci[bond.part_ids[0]], cj[bond.part_ids[1]])
+                        m.Logger.log(m.Logger.LOG_TRACE, "bonding: ", ci[bond.part_ids[0]], cj[bond.part_ids[1]])
 
                         bond.func(ci[bond.part_ids[0]], cj[bond.part_ids[1]])
 
