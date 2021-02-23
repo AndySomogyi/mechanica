@@ -78,10 +78,9 @@ MxKeyEvent *MxKeyEvent_New(PyObject *args, PyObject *kwargs) {
 
 PyObject* MxKeyEvent_AddDelegate(PyObject *module, PyObject *args, PyObject *kwargs)
 {
-    std::cout << MX_FUNCTION << std::endl;
-    std::cout << "obj: " << PyUnicode_AsUTF8AndSize(PyObject_Str(module), NULL) << std::endl;
-    std::cout << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl;
-    std::cout << "kwargs: " << PyUnicode_AsUTF8AndSize(PyObject_Str(kwargs), NULL) << std::endl;
+    Log(LOG_DEBUG) << "obj: " << carbon::str(module)
+                   << "args: " << carbon::str(args)
+                   << "kwargs: " << carbon::str(kwargs);
     
     PyObject *method = NULL;
     

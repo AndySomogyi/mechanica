@@ -234,7 +234,7 @@ HRESULT MxGlfwApplication::messageLoop(double et)
     glfwPostEmptyEvent();
 
 #if defined(_WIN32)
-    std::fprintf(stderr, "set forground window \n");
+    Log(LOG_DEBUG) << "set forground window";
     GLFWwindow* wnd = window();
     HWND hwnd = glfwGetWin32Window(wnd);
     SetForegroundWindow(hwnd);
@@ -395,7 +395,7 @@ HRESULT MxGlfwApplication::setWindowAttribute(MxWindowAttributes attr, int val)
 
 HRESULT ForceForgoundWindow1(GLFWwindow *wnd) {
 
-    std::fprintf(stderr, "ForceForgoundWindow1 \n");
+    Log(LOG_DEBUG);
 
     HWND window = glfwGetWin32Window(wnd);
 
@@ -455,7 +455,7 @@ HRESULT ForceForgoundWindow1(GLFWwindow *wnd) {
 
 void ForceForgoundWindow2(GLFWwindow* wnd)
 {
-    std::fprintf(stderr, "ForceForgoundWindow2 \n");
+    Log(LOG_DEBUG);
 
     HWND hWnd = glfwGetWin32Window(wnd);
 
