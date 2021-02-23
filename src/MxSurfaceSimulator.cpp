@@ -74,7 +74,6 @@ static PyObject* _imageData(MxSurfaceSimulator* self, PyObject* args) {
     const GL::PixelFormat format = self->frameBuffer.implementationColorReadFormat();
     Image2D image = self->frameBuffer.read(self->frameBuffer.viewport(), PixelFormat::RGBA8Unorm);
 
-    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
 
     /* Open file */
@@ -319,8 +318,6 @@ PyObject* MxSurfaceSimulator_ImageData(MxSurfaceSimulator* self,
     const GL::PixelFormat format = self->frameBuffer.implementationColorReadFormat();
     Image2D image = self->frameBuffer.read(self->frameBuffer.viewport(), PixelFormat::RGBA8Unorm);
 
-
-    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
 
     /* Open file */

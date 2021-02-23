@@ -35,6 +35,7 @@
 #include <MagnumPlugins/TgaImageConverter/TgaImageConverter.h>
 #include <string.h>
 #include <tuple>
+#include <carbon.h>
 
 /* On Windows we need to circumvent conflicting definition of INT32 in
    <windows.h> (included from OpenGL headers). Problem with libjpeg-tubo only,
@@ -83,7 +84,7 @@ Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2
         case PixelFormat::RGBA8Unorm:
             components = 3;
             colorSpace = JCS_RGB;
-            Warning{} << "Trade::JpegImageConverter::exportToData(): ignoring alpha channel";
+            Log(LOG_DEBUG) << "convertImageDataToJpeg ignoring alpha channel";
             break;
         default:
             Error() << "Trade::JpegImageConverter::exportToData(): unsupported pixel format" << image.format();

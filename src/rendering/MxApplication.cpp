@@ -79,8 +79,6 @@ PyObject* MxTestImage(PyObject *module, PyObject* self, PyObject* args) {
     const GL::PixelFormat format = framebuffer.implementationColorReadFormat();
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
 
-
-    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
 
     /* Open file */
@@ -105,7 +103,6 @@ PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* arg
     
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
-    Magnum::Warning{nullptr};
     auto jpegData = convertImageDataToJpeg(image);
     
     return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
