@@ -47,6 +47,8 @@
 
 #include <rendering/MxWindowless.h>
 
+#include <MxConvert.hpp>
+
 #include <sstream>
 
 using namespace Magnum;
@@ -670,7 +672,42 @@ PyObject *Mx_GlInfo(PyObject *args, PyObject *kwds) {
 
     std::string str = gl_info(arg);
 
-    return PyUnicode_FromString(str.c_str());
+    //return PyUnicode_FromString(str.c_str());
+    
+    if(Magnum::GL::Context::hasCurrent()) {
+        Magnum::GL::Context& context = Magnum::GL::Context::current();
+        
+        PyObject *dict = PyDict_New();
+        
+        context.detectedDriver();
+        
+
+        
+        PyDict_SetItemString(dict, "vendor", mx::cast(context.vendorString()));
+        
+        PyDict_SetItemString(dict, "version", mx::cast(context.versionString()));
+        
+        PyDict_SetItemString(dict, "renderer", mx::cast(context.rendererString()));
+        
+        PyDict_SetItemString(dict, "shading_language_version", mx::cast(context.shadingLanguageVersionString()));
+        
+        {
+            std::vector<std::string> extensions = context.extensionStrings();
+            PyObject *ex = PyList_New(extensions.size());
+            
+            for (int i = 0; i < extensions.size(); ++i) {
+                PyList_SetItem(ex, i, mx::cast(extensions[i]));
+            }
+            
+            PyDict_SetItemString(dict, "extensions", ex);
+        }
+        
+        return dict;
+    }
+    
+    else {
+        Py_RETURN_NONE;
+    }
 }
 
 
