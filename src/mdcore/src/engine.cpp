@@ -89,7 +89,7 @@ int engine::nr_types = 0;
  *
  * Currently initialized in _MxParticle_init
  */
-MxParticleData *engine::types = NULL;
+MxParticleType *engine::types = NULL;
 
 static int init_types = 0;
 

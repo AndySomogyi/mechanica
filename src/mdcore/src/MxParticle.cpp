@@ -1360,11 +1360,11 @@ HRESULT engine_particle_base_init(PyObject *m)
         return mx_error(E_FAIL, "engine types already set");
     }
 
-    if((engine::types = (MxParticleData *)malloc( sizeof(MxParticleData) * engine::max_type )) == NULL ) {
+    if((engine::types = (MxParticleType *)malloc( sizeof(MxParticleType) * engine::max_type )) == NULL ) {
         return mx_error(E_FAIL, "could not allocate types memory");
     }
     
-    ::memset(engine::types, 0, sizeof(MxParticleData) * engine::max_type);
+    ::memset(engine::types, 0, sizeof(MxParticleType) * engine::max_type);
 
     //make an instance of the base particle type, all new instances of base
     //class mechanica.Particle will be of this type

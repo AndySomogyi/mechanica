@@ -159,7 +159,7 @@ struct MxParticle  {
 	int id, vid;
 
 	/** particle type. */
-	short int typeId;
+	int16_t typeId;
 
 	/**
 	 * Id of this parts
@@ -252,7 +252,7 @@ struct MxParticleType : PyHeapTypeObject {
     static const int MAX_NAME = 64;
 
     /** ID of this type */
-    int id;
+    int16_t id;
 
     /**
      *  type flags
@@ -329,8 +329,6 @@ struct MxParticleType : PyHeapTypeObject {
      */
     inline MxParticle *particle(int i);
 };
-
-typedef MxParticleType MxParticleData;
 
 /**
  * The type of each individual particle.

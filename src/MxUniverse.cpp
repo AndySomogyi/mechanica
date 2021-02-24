@@ -466,7 +466,7 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a) {
 
 
 static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
-    MxParticleData *a_type = MxParticleType_Get(a);
+    MxParticleType *a_type = MxParticleType_Get(a);
     if(a_type) {
         if(engine_addforce1(&_Engine, f, a_type->id) != engine_err_ok) {
             std::string msg = "failed to add force to engine: error";

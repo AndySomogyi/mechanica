@@ -35,23 +35,23 @@ Fluxes
 
 
 
-.. function:: secrete_flux(a, b, species_name, k, target_concentation,  [decay=0])
+.. function:: produce_flux(a, b, species_name, k, target,  [decay=0])
 
    An active flux that represents active transport, and is can be used to model
    such processes like membrane ion pumps. See :ref:`flux-label` for a detailed
-   discussion. Unlike the :ref:`uptake_flux`, the secrete flux uses the
+   discussion. Unlike the :ref:`consume_flux`, the produce flux uses the
    concentation of only the source to determine the rate. 
 
    :param type a: object type a
    :param type b: object type b
    :param string species_name:  string, textual name of the species to perform a flux with
    :param number k: flux rate constant
-   :param number target_concentation: target concentation of the :math:`b.S`
+   :param number target: target concentation of the :math:`b.S`
                                       species. 
    :param number decay: decay rate, optional, defaults to 0.
 
 
-   The secrete flux implements the reaction:
+   The produce flux implements the reaction:
 
    .. math::
       \begin{eqnarray}
@@ -62,7 +62,7 @@ Fluxes
 
 
 
-.. function:: uptake_flux(a, b, species_name, k, target_concentation,  [decay=0])
+.. function:: consume_flux(a, b, species_name, k, target_concentation,  [decay=0])
 
    An active flux that represents active transport, and is can be used to model
    such processes like membrane ion pumps. See :ref:`flux-label` for a detailed
@@ -72,16 +72,16 @@ Fluxes
    :param type b: object type b
    :param string species_name:  string, textual name of the species to perform a flux with
    :param number k: flux rate constant
-   :param number target_concentation: target concentation of the :math:`b.S`
+   :param number target: target concentation of the :math:`b.S`
                                       species. 
    :param number decay: decay rate, optional, defaults to 0.
 
 
-   The uptake flux implements the reaction:
+   The consume flux implements the reaction:
 
    .. math::
       \begin{eqnarray}
-      a.S & \rightarrow b.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}} \right)\left(1 - \frac{b.S}{b.S_{target}} \right)\left(a.S\right) \\
+      a.S & \rightarrow b.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}}\right)\left(b.S - b.S_{target} \right)\left(a.S\right) \\
       a.S & \rightarrow 0   \; &; \; \frac{d}{2} a.S \\
       b.S & \rightarrow 0   \; &; \; \frac{d}{2} b.S
       \end{eqnarray}

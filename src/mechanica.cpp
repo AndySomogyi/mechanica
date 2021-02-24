@@ -159,7 +159,12 @@ static PyMethodDef methods[] = {
     { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
     { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "flux", (PyCFunction)MxFluxes_FluxPy, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "fick_flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "secrete_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "uptake_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "produce_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

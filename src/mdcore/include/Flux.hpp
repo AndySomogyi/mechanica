@@ -11,6 +11,31 @@
 #include "platform.h"
 #include "mdcore_single_config.h"
 
+enum FluxKind {
+    FLUX_FICK = 0,
+    FLUX_SECRETE = 1,
+    FLUX_UPTAKE = 2
+};
+
+
+// keep track of the ids of the particle types, to determine
+// the reaction direction.
+struct TypeIdPair {
+    int16_t a;
+    int16_t b;
+};
+
+struct MxFlux {
+    int32_t       size; // temporary size until we get SIMD instructions.
+    int8_t        kinds[MX_SIMD_SIZE];
+    TypeIdPair    type_ids[MX_SIMD_SIZE];
+    int32_t       indices_a[MX_SIMD_SIZE];
+    int32_t       indices_b[MX_SIMD_SIZE];
+    float         coef[MX_SIMD_SIZE];
+    float         decay_coef[MX_SIMD_SIZE];
+    float         target[MX_SIMD_SIZE];
+};
+
 
 /**
  * flux is defined btween a pair of types, and acts on the
@@ -34,20 +59,19 @@
  */
 struct MxFluxes : PyObject
 {
-    int32_t size;          // size of how many fluxes this object has
-    int32_t alloc_size;    // size of how much space we have for fluxes.
+    int32_t size;          // how many individual flux objects this has
+    int32_t fluxes_size;   // how many fluxes (blocks) this has.
     static int32_t init;
-    
-    int32_t *indices_a;
-    int32_t *indices_b;
-    float *coef;
-    float *decay_coef;
+    MxFlux fluxes[];       // allocated in single block, this
 };
 
 MxFluxes *MxFluxes_New(int32_t init_size);
 
 
-MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, float k, float decay);
+MxFluxes *MxFluxes_AddFlux(FluxKind kind, MxFluxes *fluxes,
+                           int16_t typeId_a, int16_t typeId_b,
+                           int32_t index_a, int32_t index_b,
+                           float k, float decay, float target);
 
 
 /**
@@ -60,7 +84,31 @@ MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, f
  * looks for a fluxes between types a and b, adds a flux for the
  * species named 's' with coef k.
  */
-CAPI_FUNC(PyObject*) MxFluxes_FluxPy(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* MxFluxes_Fick(PyObject *self, PyObject *args, PyObject *kwargs);
+
+/**
+ * The global mechanica.flux function.
+ *
+ * python interface to add fluxes
+ *
+ * args a:ParticleType, b:ParticleType, s:String, k:Float
+ *
+ * looks for a fluxes between types a and b, adds a flux for the
+ * species named 's' with coef k.
+ */
+PyObject* MxFluxes_Secrete(PyObject *self, PyObject *args, PyObject *kwargs);
+
+/**
+ * The global mechanica.flux function.
+ *
+ * python interface to add fluxes
+ *
+ * args a:ParticleType, b:ParticleType, s:String, k:Float
+ *
+ * looks for a fluxes between types a and b, adds a flux for the
+ * species named 's' with coef k.
+ */
+PyObject* MxFluxes_Uptake(PyObject *self, PyObject *args, PyObject *kwargs);
 
 
 /**

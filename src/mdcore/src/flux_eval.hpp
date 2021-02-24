@@ -14,61 +14,70 @@
 #include "engine.h"
 #include <iostream>
 
+MX_ALWAYS_INLINE float flux_fick(MxFlux *flux, int i, float si, float sj) {
+    return flux->coef[i] * (si - sj);
+}
 
-/* This file contains the potential evaluation function als "extern inline",
- such that they can be inlined in the respective modules.
- 
- If your code wants to call any potential_eval functions, you must include
- this file.
- */
+MX_ALWAYS_INLINE float flux_secrete(MxFlux *flux, int i, float si, float sj) {
+    float q = flux->coef[i] * (si - flux->target[i]);
+    float scale = q > 0.f;  // forward only, 1 if > 0, 0 if < 0.
+    return scale * q;
+}
 
-/* Function prototypes. */
-/* void potential_eval ( struct potential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f );
- void potential_eval_expl ( struct potential *p , FPTYPE r2 , FPTYPE *e , FPTYPE *f );
- void potential_eval_vec_4single ( struct potential *p[4] , float *r2 , float *e , float *f );
- void potential_eval_vec_4single_r ( struct potential *p[4] , float *r_in , float *e , float *f );
- void potential_eval_vec_8single ( struct potential *p[4] , float *r2 , float *e , float *f );
- void potential_eval_vec_2double ( struct potential *p[4] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f );
- void potential_eval_vec_4double ( struct potential *p[4] , FPTYPE *r2 , FPTYPE *e , FPTYPE *f );
- void potential_eval_vec_4double_r ( struct potential *p[4] , FPTYPE *r , FPTYPE *e , FPTYPE *f );
- void potential_eval_r ( struct potential *p , FPTYPE r , FPTYPE *e , FPTYPE *f );
- */
+MX_ALWAYS_INLINE float flux_uptake(MxFlux *flux, int i, float si, float sj) {
+    float q = flux->coef[i] * (flux->target[i] - sj) * si;
+    float scale = q > 0.f;
+    return scale * q;
+}
 
-
-/* Get the inlining right. */
-#ifndef INLINE
-# if __GNUC__ && !__GNUC_STDC_INLINE__
-#  define INLINE extern inline
-# else
-#  define INLINE inline
-# endif
-#endif
-
-
-
-__attribute__ ((always_inline)) INLINE void flux_eval_ex(
+MX_ALWAYS_INLINE void flux_eval_ex(
     struct MxFluxes *f , FPTYPE r2 , MxParticle *part_i, MxParticle *part_j ) {
     
-    FPTYPE *si = part_i->state_vector->fvec;
-    FPTYPE *sj = part_j->state_vector->fvec;
-    
-    FPTYPE *qi = part_i->state_vector->q;
-    FPTYPE *qj = part_j->state_vector->q;
-    
-    int32_t *ii = f->indices_a;
-    int32_t *ij = f->indices_b;
-    
+    MxFlux *flux = &f->fluxes[0];
     float  r = std::sqrt(r2);
     float term = (1. - r / _Engine.s.cutoff);
     term = term * term;
     
-    for(int i = 0; i < f->size; ++i) {
+    for(int i = 0; i < flux->size; ++i) {
+        // NOTE: order important here, type ids could be the same, i.e.
+        // Fick flux, the true branch of each assignemnt gets evaluated.
+        MxParticle *pi = part_i->typeId == flux->type_ids[i].a ? part_i : part_j;
+        MxParticle *pj = part_j->typeId == flux->type_ids[i].b ? part_j : part_i;
+        
+        assert(pi->typeId == flux->type_ids[i].a);
+        assert(pj->typeId == flux->type_ids[i].b);
+        assert(pi != pj);
+        
+        FPTYPE *si = pi->state_vector->fvec;
+        FPTYPE *sj = pj->state_vector->fvec;
+        
+        FPTYPE *qi = pi->state_vector->q;
+        FPTYPE *qj = pj->state_vector->q;
+        
+        int32_t *ii = flux->indices_a;
+        int32_t *ij = flux->indices_b;
+        
         float ssi = si[ii[i]];
         float ssj = sj[ij[i]];
-        float q = f->coef[i] * term * (ssi - ssj);
-        float decay = f->decay_coef[i] * ssi;
-        qi[ii[i]] -= (q + decay);
-        qj[ij[i]] += q;
+        float q =  term;
+        
+        switch(flux->kinds[i]) {
+            case FLUX_FICK:
+                q *= flux_fick(flux, i, ssi, ssj);
+                break;
+            case FLUX_SECRETE:
+                q *= flux_secrete(flux, i, ssi, ssj);
+                break;
+            case FLUX_UPTAKE:
+                q *= flux_uptake(flux, i, ssi, ssj);
+                break;
+            default:
+                assert(0);
+        }
+        
+        float half_decay = flux->decay_coef[i] / 2.f;
+        qi[ii[i]] = qi[ii[i]] - q - half_decay * ssi;
+        qj[ij[i]] = qj[ij[i]] + q - half_decay * ssj;
     }
 }
 

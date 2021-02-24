@@ -18,6 +18,14 @@ course).
 
 History
 =======
+Version Alpha 1.0.18.1
+----------------------
+* generalized passive, consumer and producer fluxes
+* better OpenGL info reporting, `gl_info()`, `egl_info()`
+
+Version Alpha 1.0.17.1
+----------------------
+* multi-threaded rendering fixes
 
 Version Alpha 1.0.16.2
 ----------------------

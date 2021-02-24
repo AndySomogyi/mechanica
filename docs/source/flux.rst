@@ -170,6 +170,11 @@ a "= value" right hand side expression to the species string::
   >>> print(ia.initial_amount)
   1.2345
 
+
+
+.. _flux-label:
+
+
 Spatial Transport and Flux
 --------------------------
 
@@ -222,10 +227,6 @@ diffusive flux between the species attached to these two particle instances.
 
 
 
-
-.. _flux-label:
-
-
 Passive Flux: Diffusion
 -----------------------
 
@@ -249,15 +250,15 @@ distance between the two objects, :math:`r_{cutoff}` is the global cutoff
 distance, and :math:`d` is the optional decay term.
 
 
-Active Fluxes: Secretion and Uptake
------------------------------------
+Active Fluxes: Production and Consumption
+-----------------------------------------
 
 For active pumping, to implement such processes like membrane ion pumps, or
-other forms of active transport, we provide the :func:`secrete_flux` and
-:func:`uptake_flux` objects.
+other forms of active transport, we provide the :func:`produce_flux` and
+:func:`consume_flux` objects. 
 
 
-The secrete flux implements the reaction:
+The produce flux implements the reaction:
 
 .. math::
 
@@ -269,21 +270,15 @@ The secrete flux implements the reaction:
 
 
 
-The uptake flux implements the reaction:
+The consumer flux implements the reaction:
 
 .. math::
 
    \begin{eqnarray}
-   a.S & \rightarrow b.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}} \right)\left(1 - \frac{b.S}{b.S_{target}} \right)\left(a.S\right) \\
+   a.S & \rightarrow b.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}}\right)\left(b.S - b.S_{target} \right)\left(a.S\right) \\
    a.S & \rightarrow 0   \; &; \; \frac{d}{2} a.S \\
    b.S & \rightarrow 0   \; &; \; \frac{d}{2} b.S
    \end{eqnarray}
-
-
-
-
-   
-
 
 
 
