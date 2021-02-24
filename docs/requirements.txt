@@ -15,7 +15,7 @@ jedi==0.13.1
 Jinja2==2.10.1
 kiwisolver==1.0.1
 latexcodec==1.0.5
-MarkupSafe==1.0
+MarkupSafe>=1.1.0
 matplotlib==3.0.0
 numpy==1.15.2
 oset==0.1.3
