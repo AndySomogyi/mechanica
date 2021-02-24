@@ -226,9 +226,8 @@ diffusive flux between the species attached to these two particle instances.
 .. _flux-label:
 
 
-
-Diffusion and Passive Flux
---------------------------
+Passive Flux: Diffusion
+-----------------------
 
 We implement a diffusion process of chemical species located at object instances
 using the basic passive (Fickian) flux type, with the :py:func:`flux`. This flux
@@ -248,6 +247,10 @@ and b. A Fick flux of the species :math:`S` attached to object types
 object instances. :math:`k` is the flux constant, :math:`r` is the
 distance between the two objects, :math:`r_{cutoff}` is the global cutoff
 distance, and :math:`d` is the optional decay term.
+
+
+Active Fluxes: Secretion and Uptake
+-----------------------------------
 
 For active pumping, to implement such processes like membrane ion pumps, or
 other forms of active transport, we provide the :func:`secrete_flux` and
