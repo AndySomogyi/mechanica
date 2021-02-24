@@ -138,11 +138,6 @@ static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
     return MxUniverse_BindSphere(a, k);
 }
 
-static PyObject* flux(PyObject *m, PyObject *args, PyObject *kwargs) {
-    return MxFluxes_FluxPy(args, kwargs);
-}
-
-
 
 static PyMethodDef methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -164,7 +159,7 @@ static PyMethodDef methods[] = {
     { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
     { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "flux", (PyCFunction)flux, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "flux", (PyCFunction)MxFluxes_FluxPy, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

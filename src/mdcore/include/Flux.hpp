@@ -60,7 +60,7 @@ MxFluxes *MxFluxes_AddFlux(MxFluxes *fluxes, int32_t index_a, int32_t index_b, f
  * looks for a fluxes between types a and b, adds a flux for the
  * species named 's' with coef k.
  */
-CAPI_FUNC(PyObject*) MxFluxes_FluxPy(PyObject *args, PyObject *kwargs);
+CAPI_FUNC(PyObject*) MxFluxes_FluxPy(PyObject *self, PyObject *args, PyObject *kwargs);
 
 
 /**

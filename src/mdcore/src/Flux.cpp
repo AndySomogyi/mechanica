@@ -236,7 +236,7 @@ PyObject* MxFluxes_FluxEx(PyObject *_a, PyObject *_b, PyObject *sname, PyObject 
     return Py_INCREF(fluxes1), fluxes1;
 }
 
-PyObject* MxFluxes_FluxPy(PyObject *args, PyObject *kwargs) {
+PyObject* MxFluxes_FluxPy(PyObject *self, PyObject *args, PyObject *kwargs) {
     PyObject *decay = NULL;
     
     if(PyTuple_Size(args) < 4) {

@@ -1,6 +1,9 @@
 Chemical Reactions, Flux and Transport 
 =======================================
 
+.. py:module:: mechanica
+
+
 Unlike a traditional micro-scale molecular dynamics approach, where each
 computational particle represents an individual physical atom, a DPD is
 mesoscopic approach, where each computational particle represents a 'parcel' of
@@ -14,6 +17,21 @@ bulk fluid (solvent) with a set of chemical solutes at each particle. In tDPD,
 the main particles represent the bulk medium, or the 'solvent', and these carry
 along, or advect attached solutes. We introduce the term 'cargo' to refer to the
 localized chemical solutes at each particle.
+
+In general, the time evolution of the chemical species at each spatial object 
+is given as:
+
+.. math::
+
+   \frac{dS_i}{dt} = Q_i = \sum_{i \neq j} Q^T_{ij} +Q^R_i,
+
+where the rate of change of the vector of chemical species at an object is equal
+to the flux vector, :math:`Q_i`. This is the sum of the transport and reactive
+fluxes. :math:`Q^T`, is the *transport flux*, and :math:`Q^R_i` is a local
+reactive flux, in the form of a local reaction network. We will cover local
+reaction fluxes in later paper, for now we restrict this discussion to the
+*passive* or 'Fickian' flux, *secretion* flux and *uptake* flux.
+
 
 Before we cover spatial transport, we first cover adding chemical reaction
 networks to objects. 
@@ -200,95 +218,85 @@ We attach a flux between chemical cargo as::
 This creates a Fickian diffusive flux object ``q``, and binds it between species
 on two different particle types. Thus, whenever any pair of particles instances
 belonging to these types are near each other, the runtime will apply a Fickian
-diffusive flux between the species attached to these two particle instances. 
+diffusive flux between the species attached to these two particle instances.
 
-In general, the time evolution of the chemical species at each particle are
-defined by:
 
-.. math::
 
-   \frac{dC_i}{dt} = Q_i = \sum_{i \neq j} \left (Q^D_{ij} + Q^R_{ij} \right) +
-   Q^S_i,
 
-where :math:`Q^D`, :math:`Q^R` and :math:`Q^S` are the diffusive,
-random and reactive fluxes. These typically have the form:
+.. _flux-label:
+
+
+
+Diffusion and Passive Flux
+--------------------------
+
+We implement a diffusion process of chemical species located at object instances
+using the basic passive (Fickian) flux type, with the :py:func:`flux`. This flux
+implements a passive  transport between a species located on a pair of nearby objects of type a
+and b. A Fick flux of the species :math:`S` attached to object types
+:math:`A` and :math:`B` implements the reaction:
 
 .. math::
 
    \begin{eqnarray}
-     Q^D_{ij} &=& -\kappa_{ij} \left(1 - \frac{r_{ij}}{r_{cutoff}} \right)^2 \left( C_i - C_j \right)  \\
-     Q^R_{ij} &=& \epsilon_{ij} \left(1 - \frac{r_{ij}}{r_{cutoff}} \right)
-     \Delta t^{-1/2} \xi_{ij}
+   a.S & \leftrightarrow a.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}} \right)\left(a.S - b.S\right)     \\
+   a.S & \rightarrow 0   \; &; \; \frac{d}{2} a.S \\
+   b.S & \rightarrow 0   \; &; \; \frac{d}{2} b.S,
    \end{eqnarray}
+
+:math:`B` respectivly. :math:`S` is a chemical species located at each
+object instances. :math:`k` is the flux constant, :math:`r` is the
+distance between the two objects, :math:`r_{cutoff}` is the global cutoff
+distance, and :math:`d` is the optional decay term.
+
+For active pumping, to implement such processes like membrane ion pumps, or
+other forms of active transport, we provide the :func:`secrete_flux` and
+:func:`uptake_flux` objects.
+
+
+The secrete flux implements the reaction:
+
+.. math::
+
+   \begin{eqnarray}
+   a.S & \rightarrow b.S \; &; \;  k \left(r - \frac{r}{r_{cutoff}} \right)\left(a.S - a.S_{target} \right) \\
+   a.S & \rightarrow 0   \; &; \;  \frac{d}{2} a.S \\
+   b.S & \rightarrow 0   \; &; \;  \frac{d}{2} b.S
+   \end{eqnarray}
+
+
+
+The uptake flux implements the reaction:
+
+.. math::
+
+   \begin{eqnarray}
+   a.S & \rightarrow b.S \; &; \; k \left(1 - \frac{r}{r_{cutoff}} \right)\left(1 - \frac{b.S}{b.S_{target}} \right)\left(a.S\right) \\
+   a.S & \rightarrow 0   \; &; \; \frac{d}{2} a.S \\
+   b.S & \rightarrow 0   \; &; \; \frac{d}{2} b.S
+   \end{eqnarray}
+
+
+
 
    
-where :math:`\kappa`, :math:`\epsilon` are constants, and :math:`\xi` is a Gaussian
-random number. These fluxes are available in the ``fluxes.fickian`` and
-``fluxes.random`` packages. We provide more advanced functions, please refer to
-the ``fluxes`` package for details.
-
-
-The bulk motion or advection time evolution of a solvent tDPD bulk particle
-:math:`i` obeys both conservation of momentum and mass (solute amount), and is
-generally written as:
-
-.. math::
-
-   \frac{d^2\mathbf{r}_i}{dt^2} = \frac{d \mathbf{v}_i}{dt} = \sum_{i \neq j}
-   \left( \mathbf{F}^C_{ij} + \mathbf{F}^D_{ij} + \mathbf{F}^R_{ij} \right)
-   + \mathbf{F}^{ext}_i,
-     
-where  :math:`t`, :math:`\mathbf{r}_i`, :math:`\mathbf{v}_i`,
-:math:`\mathbf{F}` are time, position velocity, and force vectors,
-respectively, and :math:`\mathbf{F}_{ext}` is the external force on particle
-:math:`i`. Forces :math:`\mathbf{F}^C_{ij}`, :math:`\mathbf{F}^D_{ij}` and
-:math:`\mathbf{F}^R_{ij}` are the pairwise conservative, dissipative and random
-forces respectively.
-
-The conservative force represents the inertial forces in the fluid, and is
-typically a Lennard-Jones 12-6 type potential. The dissipative, or friction
-force :math:`\mathbf{F}^D` represents the dissipative forces, and the random
-force :math:`\mathbf{F}^R` is a pair-wise random force between particles. Users
-are of course free to choose any forces they like, but these are the most
-commonly used DPD ones. 
-
-
-The pairwise forces are commonly expressed as:
-
-.. math::
-
-   \begin{eqnarray}
-     \mathbf{F}^C_{ij} &=& a_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)\mathbf{e}_{ij}, \\
-     \mathbf{F}^D_{ij} &=& -\gamma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.41}(\mathbf{e}_{ij} \cdot
-     \mathbf{v}_{ij}) \mathbf{e}_{ij}, \\
-     \mathbf{F}^R_{ij} &=& \sigma_{ij}\left(1 - \frac{r_{ij}}{r_c}\right)^{0.2} \xi_{ij}\Delta t^{-1/2}\mathbf{e}_{ij},
-   \end{eqnarray}
-
-Here, :math:`r_{ij} = |\mathbf{r}_{ij}|`, :math:`\mathbf{r}_{ij} =
-\mathbf{r}_i - \mathbf{r}_j`, :math:`\mathbf{e}_{ij} = \mathbf{r}_{ij} /
-r_{ij}`.  :math:`\mathbf{v}_{ij} = \mathbf{v}_i -
-\mathbf{v}_j`.
-
-All of these pairwise forces are conveniently  available in the ``forces`` package
-as the :any:`forces.dpd_conservative`, :any:`forces.dpd_dissipative` and
-:any:`forces.dpd_random` respectively. 
 
 
 
 
-The parameters in the tDPD system are defined as
+Here, the :math:`\left(1 - \frac{b.S}{b.S_{target}} \right)` influences the
+forward rate, where :math:`[b.S]` is the concentration of the substance S, and
+:math:`b.S_{target}` is the target concentration. The flux will continue forward
+so long as there is both concentration of the reactant, :math:`a.S`, and
+the product :math:`b.S` remains below its target value. Notice that if the
+present concentation of :math:`b.S` is *above* its target, the reaction will
+proceed in the reverse direction. Thus, the :func:`pumping_flux` can be used to
+implement both secretion and uptake reactions. 
 
-* :math:`\rho = 4.0`
-* :math:`k_BT=1.0`
-* :math:`a=75k_B T/ \rho`
-* :math:`\gamma=4.5`
-* :math:`\omega^2=2k_B T \gamma`
-* :math:`r_c=r_{cc} = 1.58`
-* :math:`\omega_C(r) = (1 - r/r_c)`
-* :math:`\omega_D(r) = \omega^2_R(r) = (1 -r/r_c)^{0.41}` 
-* :math:`\omega_{DC}(r) = (1 - r/r_{cc})^2`
 
-and :math:`\kappa` ranges from 0 to 10.
+
+
+
 
 
 
