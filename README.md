@@ -22,6 +22,10 @@ Version Alpha 1.0.18.1
 ----------------------
 * generalized passive, consumer and producer fluxes
 * better OpenGL info reporting, `gl_info()`, `egl_info()`
+* enable boundary conditions on chemical speices, bug fix parsing init
+  conditions
+* use species boundary value to enable source / sinks
+* source / sinks in example
 
 Version Alpha 1.0.17.1
 ----------------------
