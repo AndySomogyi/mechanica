@@ -139,6 +139,7 @@ static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
 }
 
 
+
 static PyMethodDef methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
     { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
@@ -162,7 +163,7 @@ static PyMethodDef methods[] = {
     { "flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
     { "fick_flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
     { "secrete_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "uptake_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "uptake_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { "produce_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
     { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }

@@ -260,7 +260,8 @@ PyObject* MxFluxes_Uptake(PyObject *self, PyObject *args, PyObject *kwargs) {
 
 static void integrate_statevector(CStateVector *s) {
     for(int i = 0; i < s->size; ++i) {
-        s->fvec[i] += _Engine.dt * s->q[i];
+        float konst = (s->species_flags[i] & SPECIES_KONSTANT) ? 0.f : 1.f;
+        s->fvec[i] += _Engine.dt * s->q[i] * konst;
         s->q[i] = 0; // clear flux for next step
     }
 }
@@ -294,6 +295,11 @@ MxFluxes *MxFluxes_AddFlux(FluxKind kind, MxFluxes *fluxes,
         i = fluxes->fluxes[0].size;
         fluxes->size += 1;
         fluxes->fluxes[0].size += 1;
+    }
+    else {
+        std::string msg = "currently only ";
+        msg += std::to_string(MX_SIMD_SIZE) + " flux species supported, please let Andy know you want more. ";
+        throw std::logic_error(msg);
     }
     
     MxFlux *flux = &fluxes->fluxes[0];
