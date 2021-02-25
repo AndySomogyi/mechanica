@@ -3,6 +3,7 @@ python=$1
 
 echo $python
 
+$($python boundary_uptake_secrete.py)
 $($python argon.py)
 $($python colormaps.py)
 $($python epiboly1.py)
