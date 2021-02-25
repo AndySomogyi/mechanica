@@ -878,6 +878,9 @@ PyObject* MxUniverse_ResetSpecies(PyObject *self, PyObject *args, PyObject *kwar
         }
     }
     
+    // redraw, state changed. 
+    MxSimulator_Redraw();
+    
     Py_RETURN_NONE;
     
     UNIVERSE_FINALLY(NULL);
