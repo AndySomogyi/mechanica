@@ -166,6 +166,7 @@ static PyMethodDef methods[] = {
     { "uptake_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { "produce_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
     { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

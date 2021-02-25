@@ -22,6 +22,7 @@
 #include <MxCuboid.hpp>
 #include <MxBind.hpp>
 #include <MxPy.h>
+#include <CStateVector.hpp>
 #include "Magnum/Math/Matrix4.h"
 
 
@@ -169,6 +170,7 @@ static PyMethodDef universe_methods[] = {
     { "start", (PyCFunction)universe_start, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "reset", (PyCFunction)universe_reset, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "particles", (PyCFunction)universe_particles, METH_STATIC | METH_NOARGS, NULL },
+    { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
@@ -856,4 +858,27 @@ PyObject* MxUniverse_BindSphere(PyObject *args, PyObject *kwds) {
     catch (const std::exception &e) {
         C_RETURN_EXP(e);
     }
+}
+
+
+PyObject* MxUniverse_ResetSpecies(PyObject *self, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    
+    for(int i = 0; i < _Engine.s.nr_parts; ++i) {
+        MxParticle *part = _Engine.s.partlist[i];
+        if(part && part->state_vector) {
+            part->state_vector->reset();
+        }
+    }
+    
+    for(int i = 0; i < _Engine.s.largeparts.count; ++i) {
+        MxParticle *part = &_Engine.s.largeparts.parts[i];
+        if(part && part->state_vector) {
+            part->state_vector->reset();
+        }
+    }
+    
+    Py_RETURN_NONE;
+    
+    UNIVERSE_FINALLY(NULL);
 }

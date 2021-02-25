@@ -106,6 +106,9 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a, PyObject 
 CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a);
 
 
+PyObject* MxUniverse_ResetSpecies(PyObject *self, PyObject *args, PyObject *kwargs);
+
+
 /**
  * generate a surface mesh and bind it with a potential.
  *
