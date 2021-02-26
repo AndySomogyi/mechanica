@@ -16,6 +16,155 @@ of features you'd like to see.
 History
 =======
 
+Version Alpha 1.0.18.1
+----------------------
+* generalized passive, consumer and producer fluxes
+* better OpenGL info reporting, `gl_info()`, `egl_info()`
+* enable boundary conditions on chemical speices, bug fix parsing init
+  conditions
+* use species boundary value to enable source / sinks
+* source / sinks in example
+
+Version Alpha 1.0.17.1
+----------------------
+* multi-threaded rendering fixes
+
+Version Alpha 1.0.16.2
+----------------------
+* Logging, standardized all logging output, python api for setting log level. 
+* fix kinetic energy reporting
+* synchronize gl contexts between GLFW and Magnum for multi-thread rendering
+
+Version Alpha 1.0.16.2
+----------------------
+* initialize Mechanica either via m.init, m.Simulator, or m.simulator.init
+
+Version Alpha 1.0.16.1
+----------------------
+* finally, completly expunged pybind11! pybind11 is finally GONE!
+* context managment methods for multi-threaded headless rendering. 
+* universe.reset() method, clears objects
+* set window title to script name
+* add 'positions()', 'velocities()' and 'forces()' methods to particle list. 
+* universe.particles() is now a method, and returns a proper list
+
+Version Alpha 1.0.15.5
+----------------------
+* bug fix with boundary condition constants
+
+Version Alpha 1.0.15.5
+----------------------
+* bug fix with force calculation when distance too short: pic random separation
+  vector of with minimal distance. Seems to work...
+* better diagnostic messages
+* added normal to boundary vectors
+
+Version Alpha 1.0.15.4
+----------------------
+* generalized boundary conditions
+* add potentials to boundary conditions
+* velocity, free-slip, no-slip and periodic boundary conditions
+* render updates, back face culling
+* headless rendering, rendering without X11 using GLES on Linux
+* generalized power potential
+* much improved error handling, much more consistency
+* particle list fixes
+* Rigid Body Dynamics ! (only cuboids currently supported, but still rigid bodies)
+* add potentials to rigid bodies
+* python api rigid body updates
+* rendering updates, more consistency, simplify
+* rigid body particle interactions
+* friction force
+* more expunging pybind, soon, soon we will be rid of pybind.
+* bond dissociation_energy (break strength)
+* lattice initializer
+* add bonds to lattice initliazer
+* performance logging
+* updates to dissapative particle dynamics forces
+* enable adding DPD force to boundaries. 
+* generlized single body force (external force)
+* fluid dynamics examples
+* visco-elastic materials, with bond breaking
+* single-body time-dependent force definitions in python
+
+Version Alpha 1.0.15.2
+----------------------
+* initial dissapative particle dynamics
+* doc constant force, dpd
+
+Version Alpha 1.0.15.1
+----------------------
+
+
+Version Alpha 0.0.14.1
+----------------------
+* added convenience methods to get spherical and cartesian coords from lists
+* updated example models
+* update docs
+* added plot function in examples to plot polar angle velocity. 
+* code cleanup
+
+Version Alpha 0.0.14
+--------------------
+* All new FLUX / DIFFUSION / TRANSPORT, We've not got
+  Transport-Dissipative-Dynamics working!!!
+* secrete methods on particle to perform atomic secrete
+* bug fixes in neighbor list, make sure neighbor don't contain the particle
+* bug fixes in harmonic potential
+* new overlapped sphere potential
+* new potential plotting method, lots of nice improvements
+* new examples
+* update become to copy over species values
+* lattice initializers
+* add decay to flux
+* detect hardware concurrency
+* bug fix in Windows release-mode CPUID crash
+* multi-threaded integration
+* all new C++ thread pool, working on getting rid of OpenMP / pthreads
+* event system bug fixes
+* documentation updates
+
+
+
+Version Alpha 0.0.13
+--------------------
+* preliminary SBML species per object support
+* SBML parsing, create state vector per object
+* cpuinfo to determine instruction set support
+* neighbor list bug fixes
+* improve and simplify events
+* on_keypress event
+* colormap support per SBML species
+
+Version Alpha 0.0.12
+--------------------
+* free-slip boundary conditions
+* rendering updates
+* energy minimizer in initial condition generator
+* updates to init condition code
+* initial vertex model support
+
+
+Version Alpha 0.0.11
+--------------------
+* new linear potential
+* triagulated surface mesh generation for spheres, triangulate sphere
+  surfaces with particles and bonds, returns the set. 
+* banded spherical mesh generation
+* bug fixes in making particle list from python list
+* points works with spherical geometry
+* internal refactoring and updates
+* Dynamic Bonds! can dynamically create and destory bonds
+* lots of changes to deal with variable bond numbers
+* rendering updates for dyanmic bonds
+* particle init refactor
+* added metrics (pressure, center of mass, etc...) to particle lists
+* add properties and methods to Python bond API
+* bond energy calcs avail in python
+* bond_str and repr
+* automatically delete delete bond if particle is deleted
+
+
 Version Alpha 0.0.10-dev1
 -------------------------
 * bug fixes in bond pairwise search
@@ -186,44 +335,45 @@ Features to be implemented
 
 * Linux binaries
 * :strike:`mouse interction -- rotate, zoom simulation`
-* Documentation
+* :strike:`Documentation`
 * :strike:`Event system to hook up simulation events to user objects`
-* User definable visualization style
+* :strike: `User definable visualization style`
 * :strike:`Nosé–Hoover thermostat`
 * :strike:`Destroying particles`
 * Collision reactions (when particles collide, they react, and can create and
   destroy particles)
 * :strike:`Particle mitois`
-* attach chemical cargo to particles
-* inter-particle flux of chemical cargo
+* :strike: `attach chemical cargo to particles`
+* :strike: `inter-particle flux of chemical cargo`
 * reaction-kinetics network at each particle
-* Windows binaries
+* :strike: `Windows binaries`
 * Movable boundary conditions
-* reflective boundary conditions (only have periodic now)
+* :strike: `reflective boundary conditions (only have periodic now)`
 * mouse object picking
-* Python API for bonded interactions (bonds, angles, dihedrals, impropers)
-* pre-made DPD potentials (conservative, friction, thermostat)
-* With addition of particle chemical cargo, fluxes and above potentials, we will
+* :strike: `Python API for bonded interactions (bonds, angles, dihedrals, impropers)`
+* :strike: `pre-made DPD potentials (conservative, friction, thermostat)`
+* :strike: `With addition of particle chemical cargo, fluxes and above potentials, we will
   have complete transport-dissapative-particle-dynamics simulation. And
-  reactions gives us reactive TDPD.
-* Visualization:
-  We will attach a `style` attribute to the particle type that will let users
+  reactions gives us reactive TDPD.`
+* :strike: `Visualization:
+  We will attach a 'style' attribute to the particle type that will let users
   define how they're presented in the renderer. This will have attributes such
   as color, size, etc... We want to let users attach transfer functions here,
   that will read particle attributes, such as local chemical concentration and
   map this to a color. To get decent performance, we'll have to compile user
-  specified functions into pixel shader and run them on the GPU.
-* Multi-process rendering. Jupyter notebooks now uses a two process model, so
+  specified functions into pixel shader and run them on the GPU.`
+
+* :strike: `Multi-process rendering. Jupyter notebooks now uses a two process model, so
   it's probematic to create a window in a background process. We want to enable
   the simulator render to an off-screen buffer, and render to this buffer. Then
-  copy the buffer to the foreground process and display it here. 
+  copy the buffer to the foreground process and display it here.`
 
 
 Known Bugs
 ----------
 
-* In ipython, closing the window does not work correctly
-* energy is not conserved -- bug in integrator.
+* :strike: `In ipython, closing the window does not work correctly`
+* :strike: `energy is not conserved -- bug in integrator.`
 * only a subset of features are implmented
 
 Features for next release
