@@ -20,38 +20,10 @@ Simulator
 
    .. method:: Simulator.__init__(self, conf=None, **kwargs)
 
-      Initializes a simulation. All of the keyword arguments are the same as on the
-      Config object. You can initialize the simulator via a config :class:`.Config`
-      object , or via keyword arguments. The keywords have the same name as fields
-      on the config.
+      The ``Simulator(...)`` construtor call is really just a synonum for the
+      main :func:`init` function. We keep this call here as earlier versions
+      used this as the init. 
 
-
-       :Keyword Arguments:
-        * *dim* (``vector3 like``) --
-          [x,y,z] dimensions of the universe, defaults to [10., 10., 10.]
-
-        * *bc* (``number``) --
-          Boundary conditions, use one of the constants in the 
-          :ref:`Boundary Condition Constants` section. Defaults to :any:`PERIODIC_FULL`
-    
-        * *cutoff* (``number``) --
-          Cutoff distance for long range forces, try to keep small for best
-          performance, defaults to 1
-    
-        * *cells* (``vector3 like``) --
-          [x,y,z] dimensions of spatial cells, how we partition space. Defaults to [4,4,4]
-     
-        * *threads* (``number``) --
-          number of compute threads, defaults to 4
-       
-        * *integrator* (``number``) --
-          kind of integrator to use, defaults to :any:`FORWARD_EULER`
-
-        * *dt* (``number``) --
-          time step (:math:`\delta t`). If you encounter numerical instability,
-          reduce time step, defaults to 0.01
-  
-    
         
         
 

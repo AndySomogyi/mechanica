@@ -23,6 +23,7 @@ Contents:
    quick_start
    examples
    concepts
+   boundary
    clusters
    cleavage
    potentials
