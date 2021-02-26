@@ -2544,7 +2544,7 @@ static PyObject *_coulomb(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double q = mx::arg<double>("q", 0, _args, _kwargs);
         double min = mx::arg<double>("min", 1, _args, _kwargs, 0.01);
         double max = mx::arg<double>("max", 2, _args, _kwargs, 2);
-        double tol = mx::arg<double>("tol", 3, _args, _kwargs, 0.01 * (max-min));
+        double tol = mx::arg<double>("tol", 3, _args, _kwargs, 0.001 * (max-min));
         return potential_checkerr(potential_create_Coulomb( min, max, q, tol));
     }
     catch (const std::exception &e) {
