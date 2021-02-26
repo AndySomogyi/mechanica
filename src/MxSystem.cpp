@@ -43,7 +43,7 @@ static PyObject *test_headless(PyObject *mod, PyObject *args, PyObject *kwds) {
 
 
 static PyMethodDef system_methods[] = {
-    { "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
+    { "cpu_info", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
     //{ "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
     { "gl_info", (PyCFunction)_gl_info, METH_VARARGS | METH_KEYWORDS, NULL },
     { "egl_info", (PyCFunction)_egl_info, METH_VARARGS | METH_KEYWORDS, NULL },

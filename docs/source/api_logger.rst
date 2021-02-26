@@ -17,7 +17,7 @@ package.
 If one wants to display logging at the lowest level (LOG_TRACE), where every logging message is
 displayed, one would run::
 
-  m.Logging.setLevel(m.Logging.LOG_TRACE)
+  m.Logging.set_level(m.Logging.LOG_TRACE)
 
 Logging the following messages::
 
@@ -37,8 +37,8 @@ will produce the following output:
 
 If one wants different colors on the log, these can be set via::
 
-  rr.Logger.setProperty("traceColor", "red")
-  rr.Logger.setProperty("debugColor", "green")
+  rr.Logger.set_property("traceColor", "red")
+  rr.Logger.set_property("debugColor", "green")
 
 The available color property names and values are listed below at the Logger.setProperty method.
 
@@ -95,7 +95,7 @@ The Logger has the following logging levels:
 Logging Methods
 ^^^^^^^^^^^^^^^
 
-.. staticmethod:: Logger.setLevel([level])
+.. staticmethod:: Logger.set_level([level])
    :module: mechanica
 
    sets the logging level to one a value from Logger::Level
@@ -103,28 +103,28 @@ Logging Methods
    :param int level: the level to set, defaults to LOG_CURRENT if none is specified. 
 
 
-.. staticmethod:: Logger.getLevel()
+.. staticmethod:: Logger.get_level()
    :module: mechanica
 
    get the current logging level.
 
 
 
-.. staticmethod:: Logger.disableLogging()
+.. staticmethod:: Logger.disable_logging()
    :module: mechanica
 
    Suppresses all logging output
 
 
 
-.. staticmethod:: Logger.disableConsoleLogging()
+.. staticmethod:: Logger.disable_console_logging()
    :module: mechanica
 
    stops logging to the console, but file logging may continue.
 
 
 
-.. staticmethod:: Logger.enableConsoleLogging(level)
+.. staticmethod:: Logger.enable_console_logging(level)
    :module: mechanica
 
    turns on console logging (stderr) at the given level.
@@ -132,7 +132,7 @@ Logging Methods
    :param level: A logging level, one of the above listed LOG_* levels.
 
 
-.. staticmethod:: Logger.enableFileLogging(fileName, [level])
+.. staticmethod:: Logger.enable_file_logging(fileName, [level])
    :module: mechanica
 
    turns on file logging to the given file as the given level.
@@ -141,28 +141,28 @@ Logging Methods
    :param level: (optional) the logging level, defaults to LOG_CURRENT. 
 
 
-.. staticmethod:: Logger.disableFileLogging()
+.. staticmethod:: Logger.disable_file_logging()
    :module: mechanica
 
    turns off file logging, but has no effect on console logging.
 
 
 
-.. staticmethod:: Logger.getCurrentLevelAsString()
+.. staticmethod:: Logger.get_current_level_as_string()
    :module: mechanica
 
    get the textural form of the current logging level.
 
 
 
-.. staticmethod:: Logger.getFileName()
+.. staticmethod:: Logger.get_filename()
    :module: mechanica
 
    get the name of the currently used log file.
 
 
 
-.. staticmethod:: Logger.setFormattingPattern(format)
+.. staticmethod:: Logger.set_formatting_pattern(format)
    :module: mechanica
 
    Internally, Mechanica uses the Poco logging framework, so we
@@ -175,7 +175,7 @@ Logging Methods
    
    An example pattern of "%Y-%m-%d %H:%M:%S %p: %t" set via::
 
-     m.Logger.setFormattingPattern("%Y-%m-%d %H:%M:%S %p: %t")
+     m.Logger.set_formatting_pattern("%Y-%m-%d %H:%M:%S %p: %t")
       
    would produce the following output:
 
@@ -225,14 +225,14 @@ Logging Methods
 
    :param str format: the logging format string. Must be formatted using the above specifiers. 
 
-.. staticmethod:: Logger.getFormattingPattern()
+.. staticmethod:: Logger.get_formatting_pattern()
    :module: mechanica
 
    get the currently set formatting pattern.
 
 
 
-.. staticmethod:: Logger.levelToString(level)
+.. staticmethod:: Logger.level_to_string(level)
    :module: mechanica
 
    gets the textual form of a logging level Enum for a given value.
@@ -241,7 +241,7 @@ Logging Methods
 
 
 
-.. staticmethod:: Logger.stringToLevel(s)
+.. staticmethod:: Logger.string_to_level(s)
    :module: mechanica
 
    parses a string and returns a Logger::Level
@@ -250,14 +250,14 @@ Logging Methods
 
 
 
-.. staticmethod:: Logger.getColoredOutput()
+.. staticmethod:: Logger.get_colored_output()
    :module: mechanica
 
    check if we have colored logging enabled.
 
 
 
-.. staticmethod:: Logger.setColoredOutput(b)
+.. staticmethod:: Logger.set_colored_output(b)
    :module: mechanica
 
    enable / disable colored output
@@ -265,7 +265,7 @@ Logging Methods
    :param boolean b: turn colored logging on or off
 
 
-.. staticmethod:: Logger.setProperty(name, value)
+.. staticmethod:: Logger.set_property(name, value)
    :module: mechanica
 
    Set the color of the output logging messages.

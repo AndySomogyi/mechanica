@@ -28,6 +28,20 @@ built in methods event triggers.
    :param str distribution: [optional] String that identifies the statistical distribution for
                         event times. Only supported distibution currently is
                         "exponential". If there is no `distibution` argument,
-                        the event is called deterministically. 
+                        the event is called deterministically.
 
-   
+
+.. function:: on_keypress(callback)
+
+   Register for a key press event. The callback function will get called with a
+   key press object every time the user presses a key. The Keypress object has a
+   ``key_name`` property to get the key value::
+
+     def my_keypress_handler(e):
+         print("key pressed: ", e.key_name)
+
+     m.on_keypress(my_keypress_handler)
+
+
+
+
