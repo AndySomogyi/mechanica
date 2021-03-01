@@ -24,17 +24,17 @@ def _plot_potential(p, s = None, force=True, potential=False, show=True, ymin=No
 
     xx = None
 
-    min = kwargs["min"] if "min" in kwargs else 0
+    min = kwargs["min"] if "min" in kwargs else 0.00001
     max = kwargs["max"] if "max" in kwargs else p.max
     step = kwargs["step"] if "step" in kwargs else 0.001
-    range = kwargs["range"] if "range" in kwargs else (p.min, p.max, step)
+    range = kwargs["range"] if "range" in kwargs else (min, max, step)
 
     xx = n.arange(*range)
 
     yforce = None
     ypot = None
 
-    if p.flags & POTENTIAL_SCALED:
+    if p.flags & POTENTIAL_SCALED or p.flags & POTENTIAL_SHIFTED:
         if not s:
             warnings.warn("""plotting scaled function,
             but no 's' parameter for sum of radii given,
