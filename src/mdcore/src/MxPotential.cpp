@@ -2654,13 +2654,13 @@ static PyObject *_morse(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     
     try {
         double d = mx::arg<double>("d", 0, _args, _kwargs, 1);
-        double alpha = mx::arg<double>("alpha", 1, _args, _kwargs, 1);
+        double a = mx::arg<double>("a", 1, _args, _kwargs, 1);
         double r0 = mx::arg<double>("r0", 2, _args, _kwargs, 0);
         double min = mx::arg<double>("min", 3, _args, _kwargs, 0.05);
         double max = mx::arg<double>("max", 4, _args, _kwargs, 3);
         double tol = mx::arg<double>("tol", 5, _args, _kwargs, 0.001);
         
-        return potential_checkerr(potential_create_morse(d, alpha, r0, min, max, tol));
+        return potential_checkerr(potential_create_morse(d, a, r0, min, max, tol));
     }
     catch (const std::exception &e) {
         C_EXP(e); return NULL;
@@ -3385,7 +3385,7 @@ static double potential_create_morse_d6fdr6 ( double r ) {
 
 
 
-MxPotential *potential_create_morse(double d, double alpha, double r0,
+MxPotential *potential_create_morse(double d, double a, double r0,
                                    double min, double max, double tol)
 {
     MxPotential *p = NULL;
@@ -3404,7 +3404,7 @@ MxPotential *potential_create_morse(double d, double alpha, double r0,
     
     /* fill this potential */
     morse_d = d;
-    morse_a = alpha;
+    morse_a = a;
     
     p->r0_plusone = r0 + 1;
     

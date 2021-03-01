@@ -18,6 +18,14 @@ course).
 
 History
 =======
+Version Alpha 1.0.19.1
+----------------------
+* new Morse potential
+* major bug fix in potential calculation
+* add `reset_species` method on particle state vector
+* species syntax parsing fixes, read boundary and init condition correctly
+
+
 Version Alpha 1.0.18.1
 ----------------------
 * generalized passive, consumer and producer fluxes
