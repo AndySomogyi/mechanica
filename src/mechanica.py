@@ -9,7 +9,6 @@ from _mechanica import Particle
 from _mechanica import Potential
 from _mechanica import Universe
 
-print(type(ParticleType))
 
 try:
     import IPython

@@ -41,9 +41,8 @@ total_height = 2 * Yolk.radius + 2 * clump_radius
 yshift = total_height/2 - Yolk.radius
 cshift = total_height/2  - 1.9 * clump_radius
 
-#pot_yc = m.Potential.glj(e=500, r0=10, m=5, k=100, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_yc = m.Potential.glj(e=100, r0=5, m=3, k=500, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_cc = m.Potential.glj(e=1, r0=2, m=2, min=0.05, max=2.2*Cell.radius)
+pot_yc = m.Potential.glj(e=500, r0=1, m=3, k=500, min=0.1, max=2*Yolk.radius, tol=0.1)
+pot_cc = m.Potential.glj(e=50, r0=1, m=2, min=0.05, max=2.2*Cell.radius)
 
 # bind the potential with the *TYPES* of the particles
 m.Universe.bind(pot_yc, Yolk, Cell)

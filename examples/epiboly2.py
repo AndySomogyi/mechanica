@@ -41,9 +41,8 @@ total_height = 2 * Yolk.radius + 2 * clump_radius
 yshift = total_height/2 - Yolk.radius
 cshift = total_height/2  - 1.9 * clump_radius
 
-#pot_yc = m.Potential.glj(e=500, r0=10, m=5, k=100, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_yc = m.Potential.glj(e=100, r0=5, m=3, k=500, min=0.1, max=50*Cell.radius, tol=0.1)
-pot_cc = m.Potential.glj(e=1, r0=2, m=2, min=0.05, max=2.2*Cell.radius)
+pot_yc = m.Potential.glj(e=500, r0=1, m=3, k=500, min=0.1, max=2*Yolk.radius, tol=0.1)
+pot_cc = m.Potential.glj(e=50, r0=1, m=2, min=0.05, max=2.2*Cell.radius)
 
 # bind the potential with the *TYPES* of the particles
 m.Universe.bind(pot_yc, Yolk, Cell)
@@ -52,7 +51,7 @@ m.Universe.bind(pot_cc, Cell, Cell)
 # create a random force. In overdamped dynamcis, we neeed a random force to
 # enable the objects to move around, otherwise they tend to get trapped
 # in a potential
-rforce = m.forces.random(0, 100, durration=0.5)
+rforce = m.forces.random(0, 50, durration=0.5)
 
 # bind it just like any other force
 m.bind(rforce, Cell)

@@ -131,7 +131,7 @@ typedef struct MxPotential : PyObject {
     /** The coefficients. */
     FPTYPE *c;
 
-    FPTYPE r0;
+    FPTYPE r0_plusone;
 
     /** Interval edges. */
     float a, b;
@@ -215,6 +215,9 @@ CAPI_FUNC(struct MxPotential *) potential_create_SS(int eta, double k, double e,
                                                     double r0, double a , double b , double tol, bool scale = false);
 
 CAPI_FUNC(struct MxPotential *) potential_create_SS2(double k, double e, double r0, double a , double b ,double tol);
+
+CAPI_FUNC(struct MxPotential *) potential_create_morse(double d, double alpha, double r0,
+                                                        double min, double max, double tol);
 
 
 CAPI_FUNC(struct MxPotential *) potential_create_glj(

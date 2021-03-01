@@ -17,7 +17,7 @@ class A(m.Particle):
     style={"color":"MediumSeaGreen"}
 
 
-p = m.Potential.glj(e=0.1, m=3, max=3)
+p = m.Potential.glj(e=50, m=6, max=3)
 cp = m.Potential.coulomb(q=5000, min=0.05, max=10)
 
 m.bind(p, A, m.Cuboid)

@@ -107,19 +107,21 @@ MX_ALWAYS_INLINE bool potential_eval_ex(
     struct MxPotential *p , FPTYPE ri, FPTYPE rj, FPTYPE r2 , FPTYPE *e , FPTYPE *f ) {
 
     unsigned ind, k;
-    FPTYPE x, ee, eff, *c, r;
+    FPTYPE x, ee, eff, *c, r, ro;
 
     /* Get r for the right type. */
     r = FPTYPE_SQRT(r2);
-
+    
+    // cutoff min value, eval at lowest func interpolation.
+    r = r < p->a ? p->a : r;
+    ro = r;
+    
     if(p->flags & POTENTIAL_SCALED) {
         r = r / (ri + rj);
     }
     else if(p->flags & POTENTIAL_SHIFTED) {
-        r = r - (ri + rj) + p->r0;
+        r = r - (ri + rj) + p->r0_plusone;
     }
-
-    r = r < p->a ? p->a : r;
 
     /* is r in the house? */
     /* if ( r < p->a || r > p->b )
@@ -151,7 +153,7 @@ MX_ALWAYS_INLINE bool potential_eval_ex(
     }
 
     /* store the result */
-    *e = ee; *f = eff * c[1] / r;
+    *e = ee; *f = eff * c[1] / ro;
 
     return true;
 }

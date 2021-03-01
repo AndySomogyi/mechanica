@@ -27,6 +27,7 @@
 #include <MxParticle.h>
 #include <MxPy.h>
 #include <MxConvert.hpp>
+#include <CLogger.hpp>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,7 +59,7 @@ struct MxPotential potential_null = {
         .flags = POTENTIAL_NONE ,
         .alpha = {FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO , FPTYPE_ZERO } ,
         .c = c_null ,
-	    .r0 = 0.0,
+	    .r0_plusone = 1.0,
         .a = 0.0f ,
         .b = std::numeric_limits<float>::max(),
 	    .mu = 0.0,
@@ -1424,7 +1425,7 @@ struct MxPotential *potential_create_SS(int eta, double k, double e, double r0,
     
     if(result && shift) {
         result->flags |= POTENTIAL_SHIFTED;
-        result->r0 = r0;
+        result->r0_plusone = r0 + 1;
     }
     
     return result;
@@ -2375,30 +2376,16 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
     MxPotential *self = (MxPotential*)_self;
 
     try {
+        float r = mx::arg<double>("r",  0, _args, _kwargs);
+        float r0 = mx::arg<double>("r0",  1, _args, _kwargs, -1);
 
-        float r = mx::arg<double>("rr",  0, _args, _kwargs);
-        double ri = mx::arg<double>("ri",  1, _args, _kwargs, -1);
-        double rj = mx::arg<double>("rj",  2, _args, _kwargs, -1);
-        
         // if no r args are given, we pull the r0 from the potential,
         // and use the ri, rj to cancel them out.
-        if((self->flags & POTENTIAL_SHIFTED) && ri < 0 && rj < 0) {
-            ri = self->r0 / 2;
-            rj = self->r0 / 2;
-        }
-        
-        // if no r args are given, we pull the r0 from the potential,
-        // and use the ri, rj to cancel them out.
-        if((self->flags & POTENTIAL_SCALED)) {
-            double s = mx::arg<double>("s",  1, _args, _kwargs, -1);
-            if(s < 0) {
-                PyErr_Warn(PyExc_Warning, "calling scaled potential without s, sum of particle radii");
-                ri = 1 / 2;
-                rj = 1 / 2;
-            }
-            else {
-                ri = rj = s / 2;
-            }
+        if((self->flags & POTENTIAL_SCALED || self->flags & POTENTIAL_SHIFTED) && r0 < 0) {
+  
+            PyErr_Warn(PyExc_Warning, "calling scaled potential without s, sum of particle radii");
+            r0 = 1;
+
         }
         
         float e = 0;
@@ -2408,8 +2395,10 @@ static PyObject *potential_call(PyObject *_self, PyObject *_args, PyObject *_kwa
             potential_eval_r(self, r, &e, &f);
         }
         else {
-            potential_eval_ex(self, ri, rj, r*r, &e, &f);
+            potential_eval_ex(self, r0/2, r0/2, r*r, &e, &f);
         }
+        
+        Log(LOG_DEBUG) << "potential_eval(" << r << ") : (" << e << "," << f << ")";
         
         f = f * r;
         
@@ -2436,8 +2425,8 @@ static PyObject *potential_force(PyObject *_self, PyObject *_args, PyObject *_kw
         // if no r args are given, we pull the r0 from the potential,
         // and use the ri, rj to cancel them out.
         if((self->flags & POTENTIAL_SHIFTED) && ri < 0 && rj < 0) {
-            ri = self->r0 / 2;
-            rj = self->r0 / 2;
+            ri = 1 / 2;
+            rj = 1 / 2;
         }
         
         float e = 0;
@@ -2651,9 +2640,27 @@ static PyObject *_glj(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
         double min = mx::arg<double>("min", 5, _args, _kwargs, 0.05 * r0);
         double max = mx::arg<double>("max", 6, _args, _kwargs, 3 * r0);
         double tol = mx::arg<double>("tol", 7, _args, _kwargs, 0.01);
-        bool shifted = mx::arg<bool>("shifted", 8, _args, _kwargs, true);
+        bool shifted = mx::arg<bool>("shifted", 8, _args, _kwargs, false);
         
         return potential_checkerr(potential_create_glj(e, n, m, k, r0, min, max, tol, shifted));
+    }
+    catch (const std::exception &e) {
+        C_EXP(e); return NULL;
+    }
+}
+
+static PyObject *_morse(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
+    Log(LOG_TRACE) ;
+    
+    try {
+        double d = mx::arg<double>("d", 0, _args, _kwargs, 1);
+        double alpha = mx::arg<double>("alpha", 1, _args, _kwargs, 1);
+        double r0 = mx::arg<double>("r0", 2, _args, _kwargs, 0);
+        double min = mx::arg<double>("min", 3, _args, _kwargs, 0.05);
+        double max = mx::arg<double>("max", 4, _args, _kwargs, 3);
+        double tol = mx::arg<double>("tol", 5, _args, _kwargs, 0.001);
+        
+        return potential_checkerr(potential_create_morse(d, alpha, r0, min, max, tol));
     }
     catch (const std::exception &e) {
         C_EXP(e); return NULL;
@@ -2880,6 +2887,12 @@ static PyMethodDef potential_methods[] = {
         "calc force"
     },
     {
+        "morse",
+        (PyCFunction)_morse,
+        METH_VARARGS | METH_KEYWORDS | METH_STATIC,
+        "Morse potential"
+    },
+    {
         "bind",
         (PyCFunction)MxPotential_Bind,
         METH_VARARGS | METH_KEYWORDS,
@@ -3018,12 +3031,12 @@ static PyGetSetDef potential_getset[] = {
         .name = "r0",
         .get = [](PyObject *_obj, void *p) -> PyObject* {
             MxPotential *obj = (MxPotential*)_obj;
-            return PyFloat_FromDouble(obj->r0);
+            return PyFloat_FromDouble(obj->r0_plusone - 1);
         },
         .set = [](PyObject *_obj, PyObject *val, void *p) -> int {
             MxPotential *obj = (MxPotential*)_obj;
             if(PyNumber_Check(val)) {
-                obj->r0 = PyFloat_AsDouble(val);
+                obj->r0_plusone = PyFloat_AsDouble(val) + 1.;
             }
             else {
                 PyErr_SetString(PyExc_ValueError, "r0 is a number");
@@ -3297,6 +3310,8 @@ MxPotential *potential_create_glj(double e, double m, double n, double k,
                                   double r0, double min, double max,
                                   double tol, bool shifted)
 {
+    Log(LOG_DEBUG) << "e: " << e << ", r0: " << r0 << ", m: " << m << ", n:"
+                   << n << ", k:" << k << ", min: " << min << ", max: " << max << ", tol: " << tol;
     MxPotential *p = NULL;
     
     /* allocate the potential */
@@ -3325,7 +3340,7 @@ MxPotential *potential_create_glj(double e, double m, double n, double k,
     }
     
     if(shifted) {
-        p->r0 = r0;
+        p->r0_plusone = r0 + 1;
         p->flags &= ~POTENTIAL_SCALED;
         p->flags |= POTENTIAL_SHIFTED;
     }
@@ -3333,6 +3348,80 @@ MxPotential *potential_create_glj(double e, double m, double n, double k,
     /* return it */
     return p;
 }
+
+static double morse_d;
+static double morse_a;
+
+
+/* the potential functions */
+static double potential_create_morse_f ( double r ) {
+    
+    double d = morse_d;
+    double a = morse_a;
+
+    
+    return d*(Power(M_E,-2*a*(-1 + r)) - 2/Power(M_E,a*(-1 + r)));
+}
+
+/* the potential functions */
+static double potential_create_morse_dfdr ( double r ) {
+    
+    double d = morse_d;
+    double a = morse_a;
+    
+    return d*((-2*a)/Power(M_E,2*a*(-1 + r)) + (2*a)/Power(M_E,a*(-1 + r)));
+}
+
+
+/* the potential functions */
+static double potential_create_morse_d6fdr6 ( double r ) {
+    
+    double d = morse_d;
+    double a = morse_a;
+    
+    return d*((64*Power(a,6))/Power(M_E,2*a*(-1 + r)) - (2*Power(a,6))/Power(M_E,a*(-1 + r)));
+}
+
+
+
+
+MxPotential *potential_create_morse(double d, double alpha, double r0,
+                                   double min, double max, double tol)
+{
+    MxPotential *p = NULL;
+    
+    /* allocate the potential */
+    if ((p = potential_alloc(&MxPotential_Type)) == NULL ) {
+        error(potential_err_malloc);
+        return NULL;
+    }
+    
+    p->flags =  POTENTIAL_R2  | POTENTIAL_SHIFTED;
+    p->name = "Morse";
+    
+    p->flags &= ~POTENTIAL_SCALED;
+    p->flags |= POTENTIAL_SHIFTED;
+    
+    /* fill this potential */
+    morse_d = d;
+    morse_a = alpha;
+    
+    p->r0_plusone = r0 + 1;
+    
+    if (potential_init(p ,
+                       &potential_create_morse_f ,
+                       &potential_create_morse_dfdr ,
+                       &potential_create_morse_d6fdr6 ,
+                       min , max , tol ) < 0 ) {
+        CAligned_Free(p);
+        return NULL;
+    }
+    
+
+    /* return it */
+    return p;
+}
+
 
 int MxPotential_Check(PyObject *obj) {
     return PyObject_IsInstance(obj, (PyObject*)&MxPotential_Type);

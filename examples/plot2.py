@@ -12,7 +12,14 @@ def plot_glj2(r0, e=1, rr0=1, _m=2, n=3):
 
     p = m.Potential.glj(e=30, m=4, n=2, max=10)
 
-    p.plot(s=r0, min=0.7, max=1.7, potential=False, force=True)
+    p.plot(s=r0, min=0.5, max=2, potential=False, force=True)
+
+def plot_glj3(r0, e=1, rr0=1, _m=2, n=3):
+
+    p = m.Potential.glj(e=1, r0=1, m=3, k=0, min=0.1, max=1.5*20, tol=0.1)
+
+    p.plot(s=r0, min=19, max=21, potential=False, force=True)
+
 
 
 
@@ -23,4 +30,4 @@ radius = 0.01
 
 #p.plot()
 
-plot_glj2(1)
+plot_glj3(20)

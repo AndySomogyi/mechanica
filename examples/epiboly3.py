@@ -23,7 +23,7 @@ actin_percent = 1
 # The 'k' term here is the strength of the long-range harmonic attractin
 # of the yolk and other objects, we use this longer range attractioin
 # to model the effects of the external eveloping membrane
-p_yolk  = m.Potential.glj(e=15, m=2, k = 10, max=10)
+p_yolk  = m.Potential.glj(e=35, m=6, k = 10, max=10)
 
 # potential between the cell objects. Increasing e here makes the cell sheet want
 # to pull in and clump up into a ball. Decreasing it makes the cell sheet softer,
