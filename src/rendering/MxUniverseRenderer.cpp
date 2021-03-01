@@ -95,8 +95,12 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     {
         /* Setup the arcball after the camera objects */
         const Vector3 eye = Vector3(0.5f * sideLength, -2.2f * sideLength, 1.1f * sideLength);
-        const Vector3 center{0.f, 0.f, -0.1f * sideLength };
+        const Vector3 center{0.f, 0.f, -0.1f * sideLength};
         const Vector3 up = Vector3::zAxis();
+        
+        _eye = eye;
+        _center = center;
+        _up = up;
 
         _arcball = new Magnum::Mechanica::ArcBallCamera(eye, center, up, 45.0_degf,
             win->windowSize(), win->framebuffer().viewport().size());

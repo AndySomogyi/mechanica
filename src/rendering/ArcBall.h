@@ -89,6 +89,9 @@ class ArcBall {
 
         /* Zoom the camera (positive delta = zoom in, negative = zoom out) */
         void zoom(Float delta);
+    
+        /* zoom absolute */
+        void zoomTo(Float delta);
 
         /* Get the camera's view transformation as a qual quaternion */
         const DualQuaternion& view() const { return _view; }
@@ -112,7 +115,9 @@ class ArcBall {
         /**
          * rotate about the Euler angles
          */
-        void rotate(const Vector3& eulerAngles);
+        void rotateByEulerAngles(const Vector3& eulerAngles);
+    
+        void rotateToEulerAngles(const Vector3& eulerAngles);
 
     protected:
         /* Update the camera transformations */

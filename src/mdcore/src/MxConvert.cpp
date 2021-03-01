@@ -114,6 +114,26 @@ Magnum::Vector3 vector3_from_list(PyObject *obj) {
     
     return result;
 }
+
+Magnum::Vector2 vector2_from_list(PyObject *obj) {
+    Magnum::Vector2 result = {};
+    
+    if(PyList_Size(obj) != 2) {
+        throw std::domain_error("error, must be length 2 list to convert to vector3");
+    }
+    
+    for(int i = 0; i < 2; ++i) {
+        PyObject *item = PyList_GetItem(obj, i);
+        if(PyNumber_Check(item)) {
+            result[i] = PyFloat_AsDouble(item);
+        }
+        else {
+            throw std::domain_error("error, can not convert list item to number");
+        }
+    }
+    
+    return result;
+}
     
 Magnum::Vector3i vector3i_from_list(PyObject *obj) {
     Magnum::Vector3i result = {};
@@ -165,6 +185,28 @@ Magnum::Vector3 vector3_from_array(PyObject *obj) {
     if( PyArray_CopyInto(tmp, (PyArrayObject*)obj) == 0) {
         float *data = (float*)PyArray_GETPTR1(tmp, 0);
         for(int i = 0; i < 3; ++i) {
+            result[i] = data[i];
+        }
+    }
+    else {
+        Py_DecRef((PyObject*)tmp);
+        throw std::domain_error("could not convert array to float array, " + pyerror_str());
+        PyErr_Clear();
+    }
+    
+    Py_DecRef((PyObject*)tmp);
+    return result;
+}
+
+Magnum::Vector2 vector2_from_array(PyObject *obj) {
+    Magnum::Vector2 result = {};
+    
+    npy_intp dims[1] = {2};
+    PyArrayObject* tmp = (PyArrayObject*)PyArray_SimpleNew(1, dims, NPY_FLOAT);
+    
+    if( PyArray_CopyInto(tmp, (PyArrayObject*)obj) == 0) {
+        float *data = (float*)PyArray_GETPTR1(tmp, 0);
+        for(int i = 0; i < 2; ++i) {
             result[i] = data[i];
         }
     }
@@ -234,6 +276,18 @@ Magnum::Vector3 cast(PyObject *obj) {
     
     if(PyArray_Check(obj)) {
         return vector3_from_array(obj);
+    }
+    throw std::domain_error("can not convert non-list to vector");
+}
+
+template<>
+Magnum::Vector2 cast(PyObject *obj) {
+    if(PyList_Check(obj)) {
+        return vector2_from_list(obj);
+    }
+    
+    if(PyArray_Check(obj)) {
+        return vector2_from_array(obj);
     }
     throw std::domain_error("can not convert non-list to vector");
 }

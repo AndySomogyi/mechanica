@@ -24,6 +24,7 @@ Version Alpha 1.0.19.1
 * major bug fix in potential calculation
 * add `reset_species` method on particle state vector
 * species syntax parsing fixes, read boundary and init condition correctly
+* lots of new view camera rotation functions in python api.
 
 
 Version Alpha 1.0.18.1

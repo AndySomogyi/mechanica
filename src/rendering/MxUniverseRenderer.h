@@ -142,8 +142,18 @@ struct MxUniverseRenderer : MxRenderer {
         projMat = mat;
         return *this;
     }
-
-
+    
+    const Magnum::Vector3& defaultEye() const {
+        return _eye;
+    }
+    
+    const Magnum::Vector3& defaultCenter() const {
+        return _center;
+    }
+    
+    const Magnum::Vector3& defaultUp() const {
+        return _up;
+    }
 
     bool renderUniverse = true;
 
@@ -182,6 +192,8 @@ struct MxUniverseRenderer : MxRenderer {
     Color3 _specularColor{ 1.0f};
     Float _shininess = 150.0f;
     Vector3 _lightDir{1.0f, 1.0f, 2.0f};
+    
+    Vector3 _eye, _center, _up;
     
     /**
      * Only set a single combined matrix in the shader, this way,

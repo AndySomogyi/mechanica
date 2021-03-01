@@ -43,6 +43,9 @@ PyObject* cast(const Magnum::Matrix3 &m);
     
 template<>
 Magnum::Vector3 cast(PyObject *obj);
+
+template<>
+Magnum::Vector2 cast(PyObject *obj);
     
 template<>
 Magnum::Vector3i cast(PyObject *obj);

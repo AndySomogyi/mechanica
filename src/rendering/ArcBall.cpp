@@ -164,6 +164,11 @@ void ArcBall::zoom(const Float delta) {
     _targetZooming += delta;
 }
 
+void ArcBall::zoomTo(const Float distance) {
+    _targetZooming = distance;
+}
+
+
 bool ArcBall::updateTransformation() {
     const Vector3 diffViewCenter = _targetPosition - _currentPosition;
     const Quaternion diffRotation = _targetQRotation - _currentQRotation;
@@ -214,12 +219,24 @@ Vector2 ArcBall::screenCoordToNDC(const Vector2i& mousePos) const {
             1.0f - 2.0f*mousePos.y()/ _windowSize.y()};
 }
 
-void ArcBall::rotate(const Vector3 &eulerAngles)
-{
+
+void ArcBall::rotateByEulerAngles(const Vector3& eulerAngles) {
     Magnum::Quaternion qx = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[0]), Magnum::Vector3::xAxis());
     Magnum::Quaternion qy = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[1]), Magnum::Vector3::yAxis());
     Magnum::Quaternion qz = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[2]), Magnum::Vector3::zAxis());
     _targetQRotation = _targetQRotation * qx * qy * qz;
+    
 }
+
+void ArcBall::rotateToEulerAngles(const Vector3& eulerAngles) {
+    Magnum::Quaternion qx = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[0]), Magnum::Vector3::xAxis());
+    Magnum::Quaternion qy = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[1]), Magnum::Vector3::yAxis());
+    Magnum::Quaternion qz = Magnum::Quaternion::rotation(Magnum::Rad(eulerAngles[2]), Magnum::Vector3::zAxis());
+    _targetQRotation =  qx * qy * qz;
+    
+}
+ 
+
+
 
 }}

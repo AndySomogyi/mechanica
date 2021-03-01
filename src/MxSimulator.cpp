@@ -110,24 +110,7 @@ PyObject *MxSystem_ContextRelease(PyObject *self) {
     }
 }
 
-PyObject *MxSystem_CameraRotate(PyObject *self, PyObject *args, PyObject *kwargs) {
-    try {
-        MxSimulator *sim = MxSimulator::Get();
-        
-        MxUniverseRenderer *renderer = sim->app->getRenderer();
-        
-        Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
-        
-        Magnum::Vector3 eulerAngles = mx::arg<Magnum::Vector3>("euler_angles", 0, args, kwargs);
-        
-        ab->rotate(eulerAngles);
-        
-        Py_RETURN_NONE;
-    }
-    catch(const std::exception &e) {
-        C_RETURN_EXP(e);
-    }
-}
+
 
 MxSimulator::Config::Config():
             _title{"Mechanica Application"},
@@ -929,7 +912,6 @@ static PyMethodDef simulator_methods[] = {
     { "context_has_current", (PyCFunction)MxSystem_ContextHasCurrent, METH_STATIC| METH_NOARGS, NULL },
     { "context_make_current", (PyCFunction)MxSystem_ContextMakeCurrent, METH_STATIC| METH_NOARGS, NULL },
     { "context_release", (PyCFunction)MxSystem_ContextRelease, METH_STATIC| METH_NOARGS, NULL },
-    { "camera_rotate", (PyCFunction)MxSystem_CameraRotate, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "_input_hook", (PyCFunction)ipythonInputHook, METH_STATIC | METH_FASTCALL, NULL },
     { NULL, NULL, 0, NULL }
 };
