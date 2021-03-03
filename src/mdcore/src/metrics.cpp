@@ -10,6 +10,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
 #include "MxConvert.hpp"
+#include "MxNumpy.h"
 #include "space.h"
 #include "space_cell.h"
 #include "runner.h"
@@ -839,5 +840,91 @@ HRESULT enum_thing(const Magnum::Vector3 &_origin,
     /* all is well that ends ok */
     return runner_err_ok;
 }
+
+static void fill_object_array_with_particle_lists(PyArrayObject *arr, int init_size)
+{
+    npy_intp i,n;
+    n = PyArray_SIZE(arr);
+    
+    assert(PyArray_DESCR(arr)->type_num == NPY_OBJECT);
+    
+    PyObject **optr;
+    optr = (PyObject **)(PyArray_DATA(arr));
+
+    for (i = 0; i < n; i++) {
+        PyObject *obj = (PyObject*)MxParticleList_New(init_size);
+        *optr++ = obj;
+    }
+}
+
+
+/**
+ * Creates an numpy ndarray of ParticleList objects.
+ */
+PyObject* MxParticle_Grid(const Magnum::Vector3i &shape, const std::set<short int> *typeIds) {
+    
+    if(shape[0] <= 0 || shape[1] <= 0 || shape[2] <= 0) {
+        throw std::domain_error("shape must have positive, non-zero values for all dimensions");
+    }
+    
+    npy_intp npy_shape[] = {shape[0], shape[1], shape[2]};
+    
+    PyArrayObject *result = (PyArrayObject*)PyArray_SimpleNew(3, npy_shape,  NPY_OBJECT);
+    
+    fill_object_array_with_particle_lists(result, _Engine.s.nr_parts / (shape[0] * shape[1] * shape[2]));
+    
+    Magnum::Vector3 dim = {(float)_Engine.s.dim[0], (float)_Engine.s.dim[1], (float)_Engine.s.dim[2]};
+    
+    Magnum::Vector3 scale = {shape[0] / dim[0], shape[1] / dim[1], shape[2] / dim[2]};
+    
+    
+    for(int ii = 0; ii < _Engine.s.nr_parts; ++ii) {
+        MxParticle *part = _Engine.s.partlist[ii];
+        
+        if(part) {
+            Magnum::Vector3 pos = part->global_position();
+            // relative position of part in universe, scaled from 0-1, then
+            // scaled to index in array
+            int i = std::floor(pos[0] * scale[0]);
+            int j = std::floor(pos[1] * scale[1]);
+            int k = std::floor(pos[2] * scale[2]);
+            
+            assert(i >= 0 && i <= shape[0]);
+            assert(j >= 0 && j <= shape[1]);
+            assert(k >= 0 && k <= shape[2]);
+            
+            PyObject** ptr = (PyObject**)PyArray_GETPTR3(result, i, j, k);
+            
+            MxParticleList *list = (MxParticleList*)(*ptr);
+            
+            list->insert(part->id);
+        }
+    }
+    
+    for(int ii = 0; ii < _Engine.s.largeparts.count; ++ii) {
+        
+        MxParticle *part = &_Engine.s.largeparts.parts[ii];
+        
+        Magnum::Vector3 pos = part->global_position();
+        // relative position of part in universe, scaled from 0-1, then
+        // scaled to index in array
+        int i = std::floor(pos[0] * scale[0]);
+        int j = std::floor(pos[1] * scale[1]);
+        int k = std::floor(pos[2] * scale[2]);
+        
+        assert(i >= 0 && i <= shape[0]);
+        assert(j >= 0 && j <= shape[1]);
+        assert(k >= 0 && k <= shape[2]);
+        
+        PyObject** ptr = (PyObject**)PyArray_GETPTR3(result, i, j, k);
+        
+        MxParticleList *list = (MxParticleList*)(*ptr);
+        
+        list->insert(part->id);
+    }
+    
+    return (PyObject*)result;
+}
+
 
 

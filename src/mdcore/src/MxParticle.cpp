@@ -1744,7 +1744,7 @@ PyObject* MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs) {
     
     
     if(particle_init((MxParticleHandle*)pyPart, args, kwargs) < 0) {
-        Log(LOG_DEBUG) << "bad stuff";
+        Log(LOG_ERROR) << "failed calling particle_init";
         return NULL;
     }
     
@@ -1978,6 +1978,8 @@ static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyOb
 int particle_init(MxParticleHandle *self, PyObject *args, PyObject *kwds) {
     
     try {
+        Log(LOG_TRACE);
+        
         MxParticleType *type = (MxParticleType*)self->ob_type;
         
         // make a random initial position
@@ -2047,12 +2049,12 @@ int particle_init_ex(MxParticleHandle *self,  const Magnum::Vector3 &position,
     int result = engine_addpart (&_Engine, &part, pos, &p);
     
     if(result < 0) {
-        PyErr_SetString(PyExc_Exception, engine_err_msg[-engine_err]);
-        return result;
+        std::string err = "error engine_addpart, ";
+        err += engine_err_msg[-engine_err];
+        return C_ERR(result,err.c_str());
     }
     
     self->id = p->id;
-    
     
     if(clusterId >= 0) {
         MxParticle *cluster = _Engine.s.partlist[clusterId];
@@ -2086,7 +2088,7 @@ MxParticleHandle* MxParticle_NewEx(PyObject *type,
     
 
     if(particle_init_ex((MxParticleHandle*)pyPart, pos, velocity, clusterId) < 0) {
-        Log(LOG_DEBUG) << "bad stuff";
+        Log(LOG_ERROR) << "failed calling particle_init_ex";
         return NULL;
     }
 

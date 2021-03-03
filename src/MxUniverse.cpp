@@ -161,6 +161,18 @@ static PyObject *universe_particles(PyObject *self) {
     UNIVERSE_FINALLY(NULL);
 }
 
+static PyObject *universe_grid(PyObject *mod, PyObject *args, PyObject *kwargs) {
+    try {
+        Magnum::Vector3i shape = mx::arg<Magnum::Vector3i>("shape", 0, args, kwargs);
+        
+        return MxParticle_Grid(shape, NULL);
+    }
+    catch(const std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+
 static PyMethodDef universe_methods[] = {
     { "bind", (PyCFunction)universe_bind, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "bind_pairwise", (PyCFunction)universe_bind_pairwise, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
@@ -171,6 +183,7 @@ static PyMethodDef universe_methods[] = {
     { "reset", (PyCFunction)universe_reset, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "particles", (PyCFunction)universe_particles, METH_STATIC | METH_NOARGS, NULL },
     { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "grid", (PyCFunction)universe_grid, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

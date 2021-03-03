@@ -23,6 +23,7 @@ Contents:
    quick_start
    examples
    concepts
+   accessing
    boundary
    clusters
    cleavage

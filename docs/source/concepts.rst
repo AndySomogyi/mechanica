@@ -135,22 +135,6 @@ call the `spherical_positions()` method on the list::
 
 
 
-Finding Neighbors
------------------
-
-Each object spatial object is aware if it's neighbors, and we can get a list of
-all the neghbors of an object by calling the :any:`Particle.neighbors` method.
-
-The `neighbors` method accepts two optional arguments, `distance` and
-`types`. Distance is the distance away from the *surface* of the present
-particle to search for neibhbors, and types is a tuple of particle types to
-restrict the search to. For example, to search for all objects of type `A` and
-`B` a distance of 1 unit away from a particle `p`, we would::
-
-  >>> nbrs = p.neighbors(distance=1, types=(A, B))
-  >>> print(len(nbrs))
-  
-
 
 Controlling Temperature
 -----------------------
@@ -188,9 +172,6 @@ friction = Force.friction(…)
 # bind it to all objects of type SomeOtherParticle
 m.bind(friction, SomeOtherParticle)
 
-
-Accessing Particles
--------------------
  
 
  .. _binding:

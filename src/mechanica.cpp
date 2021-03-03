@@ -42,6 +42,7 @@
 #include <MxSecreteUptake.hpp>
 #include <DissapativeParticleDynamics.hpp>
 #include <MxBoundaryConditions.hpp>
+#include <metrics.h>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -140,6 +141,7 @@ static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
 
 
 
+
 static PyMethodDef methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
     { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
@@ -167,6 +169,7 @@ static PyMethodDef methods[] = {
     { "produce_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
     { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_VARARGS | METH_KEYWORDS, NULL },
+
     { NULL, NULL, 0, NULL }
 };
 

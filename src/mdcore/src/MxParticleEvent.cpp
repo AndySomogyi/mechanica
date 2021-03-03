@@ -253,14 +253,27 @@ HRESULT particletimeevent_pyfunction_invoke_largest(CTimeEvent *event, double ti
     PyTuple_SET_ITEM(args, 0, mp->_pyparticle);
     PyTuple_SET_ITEM(args, 1, t);
     
-    Log(LOG_TRACE) << "args: " << PyUnicode_AsUTF8AndSize(PyObject_Str(args), NULL) << std::endl
-                   << "method: " << PyUnicode_AsUTF8AndSize(PyObject_Str(event->method), NULL);
-    
+    Log(LOG_DEBUG) << "calling PyObject_CallObject(callable="
+                   << carbon::str((PyObject*)event->method)
+                   << ", args=" << carbon::str(args)
+                   << ")";
+                                                                                  
     // time expired, so invoke the event.
     PyObject *result = PyObject_CallObject((PyObject*)event->method, args);
     
-    Py_DecRef(result);
+    if(!result) {
+        std::string err = "Error PyObject_CallObject(callable=";
+        err += carbon::str((PyObject*)event->method);
+        err += ", args=";
+        err += carbon::str(args);
+        err += "), error: ";
+        err += carbon::pyerror_str();
+        return C_ERR(E_FAIL, err.c_str());
+    }
     
+    Log(LOG_DEBUG) << "PyObject_CallObject() -> "  << carbon::str(result);
+    
+    Py_DecRef(result);
     return S_OK;
 }
 

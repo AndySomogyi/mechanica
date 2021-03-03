@@ -2,8 +2,7 @@ Universe
 --------
 
 
-
-.. class:: Universe(object)
+.. class:: universe
 
    The universe is a top level singleton object, and is automatically
    initialized when the simulator loads. The universe is a representation of the
@@ -51,12 +50,12 @@ Universe
       temperature
 
 
-   .. attribute:: particles
+   .. staticmethod:: particles()
 
       List of all the particles in the universe. A particle can be removed from the
       universe using the standard python ``del`` syntax ::
       
-        del Universe.particles[23]
+        del universe.particles()[23]
 
       :type: list
 
@@ -88,7 +87,17 @@ Universe
 
       :param until: runs the timestep for this length of time, optional.
       :param dt: overrides the existing time step, and uses this value for time
-                 stepping, optional. 
+                 stepping, optional.
+
+   .. staticmethod:: grid(shape)
+
+      Gets a three-dimesional array of particle lists, of all the particles in
+      the system. Each
+
+      :param shape: (length 3 array), list of how many grids we want in the x,
+                    y, z directions. Minimum is [1, 1, 1], which will return a
+                    array with a single list of all particles. 
+
 
 
    .. staticmethod:: virial([origin], [radius], [types])

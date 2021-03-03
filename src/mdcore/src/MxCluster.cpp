@@ -631,7 +631,18 @@ PyObject *pctor_wrapper_func(PyObject *self, PyObject *args,
             PyObject *pypos = mx::cast(pos);
             PyDict_SetItemString(kwds, "position", pypos);
             PyObject *part = PyObject_Call((PyObject*)ptype, newArgs, kwds);
-            assert(part);
+            
+            if(!part) {
+                std::string err = "error calling PyObject_Call(callable=";
+                err += carbon::str((PyObject*)ptype);
+                err += ", args=";
+                err += carbon::str(newArgs);
+                err += ", kwargs: ";
+                err += carbon::str(kwds);
+                err += ")";
+                C_ERR(E_FAIL, err.c_str());
+                return NULL;
+            }
             Py_DECREF(part);
             Py_DECREF(pypos);
         }

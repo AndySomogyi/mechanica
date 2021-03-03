@@ -2654,9 +2654,9 @@ static PyObject *_morse(PyObject *_self, PyObject *_args, PyObject *_kwargs) {
     
     try {
         double d = mx::arg<double>("d", 0, _args, _kwargs, 1);
-        double a = mx::arg<double>("a", 1, _args, _kwargs, 1);
+        double a = mx::arg<double>("a", 1, _args, _kwargs, 6);
         double r0 = mx::arg<double>("r0", 2, _args, _kwargs, 0);
-        double min = mx::arg<double>("min", 3, _args, _kwargs, 0.05);
+        double min = mx::arg<double>("min", 3, _args, _kwargs, 0.0001);
         double max = mx::arg<double>("max", 4, _args, _kwargs, 3);
         double tol = mx::arg<double>("tol", 5, _args, _kwargs, 0.001);
         

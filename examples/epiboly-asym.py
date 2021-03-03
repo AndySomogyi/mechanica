@@ -27,7 +27,7 @@ class C(m.Particle):
     style={"color":"orange"}
 
 pc  = m.Potential.glj(e=10, m=3, max=5)
-pa   = m.Potential.glj(e=2, m=2, max=3.0)
+pa   = m.Potential.glj(e=2, m=4, max=3.0)
 pb   = m.Potential.glj(e=1, m=4, max=1)
 pab  = m.Potential.harmonic(k=10, r0=0, min=0.01, max=0.55)
 

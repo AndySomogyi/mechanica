@@ -107,4 +107,14 @@ CAPI_FUNC(HRESULT) MxParticle_Neighbors(struct MxParticle *part,
                                           int32_t **parts);
 
 
+/**
+ * Creates an numpy ndarray of ParticleList objects.
+ */
+CAPI_FUNC(PyObject*) MxParticle_Grid(const Magnum::Vector3i &shape,
+                                     const std::set<short int> *typeIds);
+
+
+
+
+
 #endif /* SRC_MDCORE_INCLUDE_METRICS_H_ */

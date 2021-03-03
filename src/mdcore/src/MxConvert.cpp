@@ -9,48 +9,6 @@
 #include "MxNumpy.h"
 #include <iostream>
 
-std::string pyerror_str()
-{
-    std::string result;
-    // get the error details
-    PyObject *pExcType = NULL , *pExcValue = NULL , *pExcTraceback = NULL ;
-    PyErr_Fetch( &pExcType , &pExcValue , &pExcTraceback ) ;
-    if ( pExcType != NULL )
-    {
-        PyObject* pRepr = PyObject_Repr( pExcType ) ;
-        
-        PyObject * str=PyUnicode_AsASCIIString(pRepr);
-        result += std::string("EXC type: ") + PyBytes_AsString(str);
-        Py_DECREF(str);
-        
-        Py_DecRef( pRepr ) ;
-        Py_DecRef( pExcType ) ;
-    }
-    if ( pExcValue != NULL )
-    {
-        PyObject* pRepr = PyObject_Repr( pExcValue ) ;
-
-        PyObject * str=PyUnicode_AsASCIIString(pRepr);
-        result += std::string("EXC value: ") + PyBytes_AsString(str);
-        Py_DECREF(str);
-        
-        Py_DecRef( pRepr ) ;
-        Py_DecRef( pExcValue ) ;
-    }
-    if ( pExcTraceback != NULL )
-    {
-        PyObject* pRepr = PyObject_Repr( pExcValue ) ;
-        
-        PyObject * str=PyUnicode_AsASCIIString(pRepr);
-        result += std::string("EXC traceback: ") + PyBytes_AsString(str);
-        Py_DECREF(str);
-        
-        Py_DecRef( pRepr ) ;
-        Py_DecRef( pExcTraceback ) ;
-    }
-    
-    return result;
-}
 
 namespace mx {
     
@@ -190,7 +148,7 @@ Magnum::Vector3 vector3_from_array(PyObject *obj) {
     }
     else {
         Py_DecRef((PyObject*)tmp);
-        throw std::domain_error("could not convert array to float array, " + pyerror_str());
+        throw std::domain_error("could not convert array to float array, " + carbon::pyerror_str());
         PyErr_Clear();
     }
     
@@ -212,7 +170,7 @@ Magnum::Vector2 vector2_from_array(PyObject *obj) {
     }
     else {
         Py_DecRef((PyObject*)tmp);
-        throw std::domain_error("could not convert array to float array, " + pyerror_str());
+        throw std::domain_error("could not convert array to float array, " + carbon::pyerror_str());
         PyErr_Clear();
     }
     
@@ -234,7 +192,7 @@ Magnum::Vector3i vector3i_from_array(PyObject *obj) {
     }
     else {
         Py_DecRef((PyObject*)tmp);
-        throw std::domain_error("could not convert array to int array, " + pyerror_str());
+        throw std::domain_error("could not convert array to int array, " + carbon::pyerror_str());
         PyErr_Clear();
     }
     
@@ -256,7 +214,7 @@ Magnum::Vector2i vector2i_from_array(PyObject *obj) {
     }
     else {
         Py_DecRef((PyObject*)tmp);
-        throw std::domain_error("could not convert array to int array, " + pyerror_str());
+        throw std::domain_error("could not convert array to int array, " + carbon::pyerror_str());
         PyErr_Clear();
     }
     

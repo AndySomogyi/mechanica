@@ -18,6 +18,15 @@ course).
 
 History
 =======
+Version Alpha 1.0.20.1
+----------------------
+* new `universe.grid` method to get particles binned on grid locations
+* improve error handling
+* change some examples to use Morse potential
+* doc updates
+* force calculation bug fixes
+
+
 Version Alpha 1.0.19.1
 ----------------------
 * new Morse potential

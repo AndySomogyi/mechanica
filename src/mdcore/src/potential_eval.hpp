@@ -108,13 +108,15 @@ MX_ALWAYS_INLINE bool potential_eval_ex(
 
     unsigned ind, k;
     FPTYPE x, ee, eff, *c, r, ro;
+    
+    static const float epsilon = std::numeric_limits<float>::epsilon();
 
     /* Get r for the right type. */
     r = FPTYPE_SQRT(r2);
+    ro = r < epsilon ? epsilon : r;
     
     // cutoff min value, eval at lowest func interpolation.
     r = r < p->a ? p->a : r;
-    ro = r;
     
     if(p->flags & POTENTIAL_SCALED) {
         r = r / (ri + rj);

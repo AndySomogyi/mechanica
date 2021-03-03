@@ -8,6 +8,10 @@ Particles and Clusters
    objects either extend the base Particle, or are collections of particles such
    as the :any:`Cluster`
 
+   .. staticmethod:: items()
+
+      Returns a list of all of the instances of this type. 
+
 
    .. attribute:: position
 
