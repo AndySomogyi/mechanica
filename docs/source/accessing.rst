@@ -3,6 +3,29 @@ Finding and Accessing Objects
 One of the more comming user activities is finding, accessing and interacting
 with system objects after we've created them.
 
+Most mechanica methods that return a list of particles actually return a
+specialized list called a :class:`ParticleList`. This is a special list that can
+only contain particle derived types and has number of convenience methods for
+dealign with spatial information.
+
+Suppose we want the average position, or average velocity for a list of
+particles, then we can simply::
+
+   >>> parts = A.items()
+   >>> type(parts)
+       ParticleList
+
+   >>> parts.positions()
+       Out[5]:
+       array([[10.97836208,  7.98962736, 16.90347672],
+          [ 9.46043396,  4.44753504, 17.40228081],
+          [13.12018967, 11.84001255,  6.71417236],
+          ...,
+          [13.93455601,  4.16581154,  4.48115969]])
+
+   >>> parts.positions().mean(axis=0)
+       Out[6]: array([ 9.9923632 , 10.01337742,  9.92124116])
+
 
 Each :any:`Particle` derived type has an :func:`Particle.items()` method on the
 type that returns all of the objects of that type::

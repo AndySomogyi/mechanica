@@ -62,6 +62,8 @@ This is the API Reference page for the module: :mod:`mechanica`
    
 .. include:: api_particle.rst
 
+.. include:: api_particlelist.rst
+
 .. include:: api_potential.rst
 
 .. include:: api_forces.rst
