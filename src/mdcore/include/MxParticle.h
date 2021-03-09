@@ -219,8 +219,24 @@ struct MxParticle  {
 
     inline void set_global_position(const Magnum::Vector3& pos);
     
+    /**
+     * performs a self-verify, in debug mode raises assertion if not valid
+     */
+    bool verify();
+    
     MxParticle();
 };
+
+/**
+ * iterates over all parts, does a verify
+ */
+HRESULT MxParticle_Verify();
+
+#ifndef NDEBUG
+#define VERIFY_PARTICLES() MxParticle_Verify()
+#else
+#define VERIFY_PARTICLES()
+#endif
 
 
 /**

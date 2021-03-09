@@ -863,6 +863,8 @@ static void fill_object_array_with_particle_lists(PyArrayObject *arr, int init_s
  */
 PyObject* MxParticle_Grid(const Magnum::Vector3i &shape, const std::set<short int> *typeIds) {
     
+    VERIFY_PARTICLES();
+    
     if(shape[0] <= 0 || shape[1] <= 0 || shape[2] <= 0) {
         throw std::domain_error("shape must have positive, non-zero values for all dimensions");
     }
@@ -877,11 +879,11 @@ PyObject* MxParticle_Grid(const Magnum::Vector3i &shape, const std::set<short in
     
     Magnum::Vector3 scale = {shape[0] / dim[0], shape[1] / dim[1], shape[2] / dim[2]};
     
-    
-    for(int ii = 0; ii < _Engine.s.nr_parts; ++ii) {
-        MxParticle *part = _Engine.s.partlist[ii];
-        
-        if(part) {
+    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
+        space_cell *cell = &_Engine.s.cells[cid];
+        for (int pid = 0 ; pid < cell->count ; pid++ ) {
+            MxParticle *part  = &cell->parts[pid];
+            
             Magnum::Vector3 pos = part->global_position();
             // relative position of part in universe, scaled from 0-1, then
             // scaled to index in array
@@ -901,9 +903,8 @@ PyObject* MxParticle_Grid(const Magnum::Vector3i &shape, const std::set<short in
         }
     }
     
-    for(int ii = 0; ii < _Engine.s.largeparts.count; ++ii) {
-        
-        MxParticle *part = &_Engine.s.largeparts.parts[ii];
+    for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
+        MxParticle *part  = &_Engine.s.largeparts.parts[pid];
         
         Magnum::Vector3 pos = part->global_position();
         // relative position of part in universe, scaled from 0-1, then

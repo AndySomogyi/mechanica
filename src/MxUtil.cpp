@@ -1768,5 +1768,29 @@ WallTime::WallTime() {
 WallTime::~WallTime() {
     _Engine.wall_time += (MxWallTime() - start);
 }
+
+
+PyObject *_MxTest(PyObject *mod, PyObject *args, PyObject *kwargs) {
+    try {
+        
+        float a = mx::arg<float>("a", 0, args, kwargs, 0);
+        float b = mx::arg<float>("b", 1, args, kwargs, 0);
+        
+        float gt = __builtin_isgreaterequal( a, b);
+        float lt = __builtin_isless(a, b);
+        
+        
+        std::cout << "gt: " << gt << ", lt: " << lt << std::endl;
+        
+        Py_RETURN_NONE;
+    }
+
+catch(const std::exception &e) {
+    C_EXP(e); return NULL;
+}
+
+
+    
+}
    
 

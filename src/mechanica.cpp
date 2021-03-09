@@ -118,11 +118,6 @@ static PyObject* MxBind(PyObject *m, PyObject *args, PyObject *kwargs) {
     }
 }
 
-static PyObject* MxTest(PyObject *m, PyObject *args, PyObject *kwargs) {
-    
-    Py_RETURN_NONE;
-}
-
 /**
  * top level virial tensor method
  */
@@ -134,13 +129,9 @@ static PyObject *bind_pairwise(PyObject *mod, PyObject *a, PyObject *k) {
     return MxPyUniverse_BindPairwise(a, k);
 }
 
-
 static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
     return MxUniverse_BindSphere(a, k);
 }
-
-
-
 
 static PyMethodDef methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -160,7 +151,6 @@ static PyMethodDef methods[] = {
     { "bind_pairwise", (PyCFunction)bind_pairwise, METH_VARARGS | METH_KEYWORDS, NULL },
     { "bind_sphere", (PyCFunction)bind_sphere, METH_VARARGS | METH_KEYWORDS, NULL },
     { "primes", (PyCFunction)primes, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "test", (PyCFunction)MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
     { "virial", (PyCFunction)virial, METH_VARARGS | METH_KEYWORDS, NULL },
     { "flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
     { "fick_flux", (PyCFunction)MxFluxes_Fick, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -169,11 +159,9 @@ static PyMethodDef methods[] = {
     { "produce_flux", (PyCFunction)MxFluxes_Secrete, METH_VARARGS | METH_KEYWORDS, NULL },
     { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_VARARGS | METH_KEYWORDS, NULL },
-
+    { "test", (PyCFunction)_MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
-
-
 
 static PyMethodDef version_methods[] = {
     { "cpuinfo", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },

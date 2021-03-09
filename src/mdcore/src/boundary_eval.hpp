@@ -27,7 +27,7 @@
 // where U_wall is wall velocity.
 
 
-MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
+MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const float* h, int* delta) {
     
     #define ENFORCE_FREESLIP_LOW(i)                              \
         p->position[i] = -p->position[i] * restitution;          \
@@ -110,8 +110,14 @@ MX_ALWAYS_INLINE bool boundary_update_pos_vel(MxParticle *p, space_cell *c) {
             ENFORCE_VELOCITY_HIGH(2, bc->top);
         }
     }
+    
+    if(enforced) {
+        for (int k = 0 ; k < 3 ; k++ ) {
+            delta[k] = __builtin_isgreaterequal( p->x[k] , h[k] ) - __builtin_isless( p->x[k] , 0.0 );
+        }
+    }
 
-    return enforced;
+    return delta[0] == 0 && delta[1] == 0 && delta[2] == 0;
 };
 
 

@@ -18,11 +18,9 @@
 #pragma clang diagnostic ignored "-Wwritable-strings"
 #include <iostream>
 
-
 #if MX_THREADING
 #include "MxTaskScheduler.hpp"
 #endif
-
 
 #ifdef WITH_MPI
 #include <mpi.h>
@@ -244,7 +242,7 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
         if ( ( delta[0] != 0 ) || ( delta[1] != 0 ) || ( delta[2] != 0 ) ) {
             
             // if we enforce boundary, reflect back into same cell
-            if(boundary_update_pos_vel(p, c)) {
+            if(apply_update_pos_vel(p, c, h, delta)) {
                 pid += 1;
             }
             // otherwise move to different cell
@@ -277,6 +275,8 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
         else {
             pid += 1;
         }
+        
+        assert(p->verify());
     }
 }
 
@@ -456,6 +456,8 @@ int engine_advance_forward_euler ( struct engine *e ) {
     /* Store the accumulated potential energy. */
     s->epot_nonbond += epot;
     s->epot += epot;
+    
+    VERIFY_PARTICLES();
 
     /* return quietly */
     return engine_err_ok;

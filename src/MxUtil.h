@@ -131,12 +131,13 @@ public:
     ~WallTime();
     double start;
 };
-    
-    
 
-
+/**
+ * random test function, callable by python.
+ */
+PyObject *_MxTest(PyObject *mod, PyObject *a, PyObject *k);
+    
 HRESULT _MxUtil_init(PyObject *m);
-
 
 
 #endif /* SRC_MXUTIL_H_ */

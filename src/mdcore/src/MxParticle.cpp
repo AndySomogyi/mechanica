@@ -1715,6 +1715,17 @@ HRESULT MxParticle::removepart(int32_t pid) {
     return S_OK;
 }
 
+bool MxParticle::verify() {
+    bool gte = x[0] >= 0 && x[1] >= 0 && x[2] >= 0;
+    bool lt = x[0] < _Engine.s.h[0] && x[1] < _Engine.s.h[1] &&x[2] < _Engine.s.h[2];
+    bool pindex = this == _Engine.s.partlist[this->id];
+    
+    assert("particle pos below zero" && gte);
+    assert("particle pos over cell size" && lt);
+    assert("particle not in correct partlist location" && pindex);
+    return gte && lt && pindex;
+}
+
 PyObject* MxParticle_New(PyObject *type, PyObject *args, PyObject *kwargs) {
     
     if(!PyType_Check(type)) {
@@ -2104,6 +2115,29 @@ MxParticleType* MxParticleType_FindFromName(const char* name) {
         }
     }
     return NULL;
+}
+
+
+HRESULT MxParticle_Verify() {
+    
+    std::cout << "verify" << std::endl;
+    
+    bool result = true;
+    
+    for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
+        space_cell *cell = &_Engine.s.cells[cid];
+        for (int pid = 0 ; pid < cell->count ; pid++ ) {
+            MxParticle *p  = &cell->parts[pid];
+            result = p->verify() && result;
+        }
+    }
+    
+    for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
+        MxParticle *p  = &_Engine.s.largeparts.parts[pid];
+        result = p->verify() && result;
+    }
+    
+    return result ? S_OK : E_FAIL;
 }
 
 
