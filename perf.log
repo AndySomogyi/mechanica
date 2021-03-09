@@ -30,3 +30,42 @@ performance_timers : {
 	 rendering: 12.9829
 	 time_steps: 3000
 }
+
+** Version 0.0.20:
+performance_timers : {
+	 name:dpd1.py
+	 fps: 305.21
+	 kinetic energy: 724.551
+	 step: 3.65658
+	 nonbond: 2.82146
+	 bonded: 0.00311069
+	 advance: 3.73873
+	 rendering: 7.80732
+	 total: 11.4639
+	 time_steps: 10900
+}
+
+performance_timers : {
+	 name:dpd2.py
+	 fps: 66.3755
+	 kinetic energy: 588.421
+	 step: 18.2433
+	 nonbond: 15.3398
+	 bonded: 0.00329727
+	 advance: 18.6345
+	 rendering: 34.4841
+	 total: 52.7273
+	 time_steps: 9600
+}
+performance_timers : {
+	 name:argon.py
+	 fps: 98.916
+	 kinetic energy: 3.04344e+07
+	 step: 12.9149
+	 nonbond: 9.37415
+	 bonded: 0.00329706
+	 advance: 13.15
+	 rendering: 22.4653
+	 total: 35.3802
+	 time_steps: 1900
+}
