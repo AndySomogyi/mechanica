@@ -23,6 +23,7 @@ Version Alpha 1.0.21.1
 * major bug fix in moving particles to different cells if cell has both periodic
   and bounce-back boundary conditions. 
 * additional particle verify functions
+* bug fix in virial calculation with DPD potentials
 
 Version Alpha 1.0.20.1
 ----------------------

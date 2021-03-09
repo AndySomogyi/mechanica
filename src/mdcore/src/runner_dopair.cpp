@@ -106,7 +106,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     FPTYPE shift[3], nshift, bias;
     FPTYPE *pif;
     int pid, count_i, count_j;
-    double epot = 0.0;
+    float epot = 0.0f;
     float number_density;
 #if defined(VECTORIZE)
     struct MxPotential *potq[VEC_SIZE];
@@ -339,7 +339,7 @@ __attribute__ ((flatten)) int runner_dopair ( struct runner *r ,
     return runner_err_ok;
 }
 
-static inline int particle_largecell_force(MxParticle *p, struct space_cell *c, double& epot) {
+static inline int particle_largecell_force(MxParticle *p, struct space_cell *c, float& epot) {
     FPTYPE w, r2, e, f, dx[4], pix[4];
     space_cell *large = &_Engine.s.largeparts;
     MxPotential *pot;
@@ -456,7 +456,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     int count = 0;
     int i, j;
     struct MxParticle *parts;
-    double epot = 0.0;
+    float epot = 0.0f;
     struct MxPotential *pot;
     MxFluxes *fluxes;
     // single body force and forces
@@ -709,7 +709,7 @@ __attribute__ ((flatten)) int runner_dopair_unsorted ( struct runner *r , struct
     int i, j, k, count_i, count_j;
     FPTYPE cutoff2, r2, w, shift[3];
     FPTYPE *pif;
-    double epot = 0.0;
+    float epot = 0.0f;
     struct engine *eng;
     struct MxParticle *part_i, *part_j, *parts_i, *parts_j;
     struct MxPotential *pot;

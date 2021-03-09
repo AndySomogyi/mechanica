@@ -12,6 +12,7 @@
 #include "MxPotential.h"
 #include "DissapativeParticleDynamics.hpp"
 #include "potential_eval.hpp"
+#include "smoothing_kernel.hpp"
 #include <random>
 
 
@@ -105,7 +106,7 @@ MX_ALWAYS_INLINE bool dpd_boundary_eval(DPDPotential *p, float gaussian,
 
 MX_ALWAYS_INLINE bool potential_eval_super_ex(const space_cell *cell,
                             MxPotential *pot, MxParticle *part_i, MxParticle *part_j,
-                            float *dx, float r2, float number_density, double *epot) {
+                            float *dx, float r2, float number_density, float *epot) {
     
     float e;
     bool result = false;

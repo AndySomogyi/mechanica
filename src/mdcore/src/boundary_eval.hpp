@@ -123,7 +123,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
 
 MX_ALWAYS_INLINE bool boundary_potential_eval_ex(const struct space_cell *cell,
                             MxPotential *pot, MxParticle *part, MxBoundaryCondition *bc,
-                            float *dx, float r2, double *epot) {
+                            float *dx, float r2, float *epot) {
     float e = 0;
     bool result = false;
     
@@ -167,7 +167,7 @@ MX_ALWAYS_INLINE bool boundary_potential_eval_ex(const struct space_cell *cell,
 //                            float *dx, float r2, float number_density, double *epot) {
 
 MX_ALWAYS_INLINE bool boundary_eval(
-    MxBoundaryConditions *bc, const struct space_cell *cell, MxParticle *part, double *epot ) {
+    MxBoundaryConditions *bc, const struct space_cell *cell, MxParticle *part, float *epot ) {
     
     MxPotential *pot;
     float r;

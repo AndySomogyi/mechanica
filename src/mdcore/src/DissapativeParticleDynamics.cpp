@@ -140,6 +140,7 @@ PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff)
     p->sigma = sigma;
     p->a = std::sqrt(std::numeric_limits<float>::epsilon());
     p->b = cutoff;
+    p->name = "Dissapative Particle Dynamics";
     return p;
 }
 
