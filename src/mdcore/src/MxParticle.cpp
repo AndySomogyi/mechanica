@@ -2119,11 +2119,9 @@ MxParticleType* MxParticleType_FindFromName(const char* name) {
 
 
 HRESULT MxParticle_Verify() {
-    
-    std::cout << "verify" << std::endl;
-    
+
     bool result = true;
-    
+
     for (int cid = 0 ; cid < _Engine.s.nr_cells ; cid++ ) {
         space_cell *cell = &_Engine.s.cells[cid];
         for (int pid = 0 ; pid < cell->count ; pid++ ) {
@@ -2131,12 +2129,12 @@ HRESULT MxParticle_Verify() {
             result = p->verify() && result;
         }
     }
-    
+
     for (int pid = 0 ; pid < _Engine.s.largeparts.count ; pid++ ) {
         MxParticle *p  = &_Engine.s.largeparts.parts[pid];
         result = p->verify() && result;
     }
-    
+
     return result ? S_OK : E_FAIL;
 }
 
