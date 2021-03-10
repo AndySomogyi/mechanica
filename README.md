@@ -18,6 +18,13 @@ course).
 
 History
 =======
+Version Alpha 1.0.22.1
+----------------------
+* lots of new bonds method, can iterate network connected by bonds
+* fix in bind, to make bond to instances
+* fix in parsing boundary conditions
+* new 'reset' boundary condition for species attached to objects. 
+
 Version Alpha 1.0.21.1
 ----------------------
 * major bug fix in moving particles to different cells if cell has both periodic
