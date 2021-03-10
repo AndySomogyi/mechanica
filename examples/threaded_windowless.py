@@ -1,7 +1,7 @@
 import mechanica as m
 import threading
 
-m.Simulator(windowless=True, window_size=[1024,1024])
+m.init(windowless=True, window_size=[1024,1024])
 
 print(m.system.gl_info())
 

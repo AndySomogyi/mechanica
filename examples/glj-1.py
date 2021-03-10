@@ -8,7 +8,7 @@ count = 3
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
-m.Simulator(dim=dim, cutoff=cutoff)
+m.init(dim=dim, cutoff=cutoff)
 
 class B(m.Particle):
     mass = 1

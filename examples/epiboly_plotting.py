@@ -24,7 +24,7 @@ dim=np.array([30., 30., 30.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff, integrator=m.FORWARD_EULER, dt=0.002)
+m.init(dim=dim, cutoff=cutoff, integrator=m.FORWARD_EULER, dt=0.002)
 
 clump_radius = 2
 

@@ -1,64 +1,64 @@
 import mechanica as m
 import numpy as np
 
-# total number of cells
-A_count = 5000
-B_count = 5000
-
 # potential cutoff distance
-cutoff = 3
+cutoff = 8
+
+count = 3000
 
 # dimensions of universe
 dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff)
+m.init(dim=dim, cutoff=cutoff)
 
-class A(m.Particle):
-    mass = 5
-    radius = 0.5
+class Bead(m.Particle):
+    mass = 0.4
+    radius = 0.2
     dynamics = m.Overdamped
 
+pot_bb = m.Potential.soft_sphere(kappa=0.2, epsilon=0.05, \
+                                 r0=0.2, eta=4, tol=0.01, min=0.01, max=0.5)
 
-class B(m.Particle):
-    mass = 5
-    radius = 0.5
-    dynamics = m.Overdamped
+# hamonic bond between particles
+pot_bond = m.Potential.harmonic(k=0.4, r0=0.2, max = 2)
 
-
-# create three potentials, for each kind of particle interaction
-pot_aa = m.Potential.soft_sphere(kappa=5, epsilon=0.25, r0=1, \
-                                 eta=2, tol = 0.05, min=0.01, max=3)
-
-pot_bb = m.Potential.soft_sphere(kappa=5, epsilon=0.25, r0=1, \
-                                 eta=2, tol = 0.05, min=0.01, max=3)
-
-pot_ab = m.Potential.soft_sphere(kappa=5, epsilon=0.0025, r0=1, \
-                                 eta=2, tol = 0.05, min=0.01, max=3)
-
+# angle bond potential
+pot_ang = m.Potential.harmonic_angle(k=0.2, theta0 = 0.85*np.pi, tol=0.1)
 
 # bind the potential with the *TYPES* of the particles
-m.Universe.bind(pot_aa, A, A)
-m.Universe.bind(pot_bb, B, B)
-m.Universe.bind(pot_ab, A, B)
+m.bind(pot_bb, Bead, Bead)
 
 # create a random force. In overdamped dynamcis, we neeed a random force to
 # enable the objects to move around, otherwise they tend to get trapped
 # in a potential
-
-rforce = m.forces.random(0, 5)
+rforce = m.forces.random(0, 0.1)
 
 # bind it just like any other force
-m.bind(rforce, A)
-m.bind(rforce, B)
+m.bind(rforce, Bead)
 
-# create particle instances, for a total A_count + B_count cells
-for p in np.random.random((A_count,3)) * 15 + 2.5:
-    A(p)
+# make a array of positions
+xx = np.arange(4., 16, 0.15)
 
-for p in np.random.random((B_count,3)) * 15 + 2.5:
-    B(p)
+p = None                              # previous bead
+bead = Bead([xx[0], 10., 10.0])       # current bead
 
-# run the simulator
+for i in range(1, xx.size):
+    n = Bead([xx[i], 10.0, 10.0])     # create a new bead particle
+    m.Bond(pot_bond, bead, n)             # create a bond between prev and current
+    if(i > 1):
+        m.Angle(pot_ang, p, bead, n) # make an angle bond between prev, cur, next
+    p = bead
+    bead = n
+
+
+print("p: ", p)
+(b1,b2) = p.bonds()
+
+print("bonds: ", b1, b2)
+
+a = b1[0]
+
+# run the simulator interactive
 m.Simulator.show()

@@ -16,6 +16,25 @@ static PyObject *potential_bind_ptype_ptype();
 
 
 HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool bound) {
+    
+    if(MxParticle_Check(a) && MxParticle_Check(b)) {
+        MxParticleHandle *a_part = ((MxParticleHandle *)a);
+        MxParticleHandle *b_part = ((MxParticleHandle *)b);
+
+        //MxBond_New(uint32_t flags,
+        //        int32_t i, int32_t j,
+        //        double half_life,
+        //        double bond_energy,
+        //        struct MxPotential* potential);
+
+        MxBondHandle_New(0, a_part->id, b_part->id,
+                std::numeric_limits<double>::max(),
+                std::numeric_limits<double>::max(),
+                p);
+
+        return S_OK;
+    }
+    
     MxParticleType *a_type = MxParticleType_Get(a);
     MxParticleType *b_type = MxParticleType_Get(b);
     if(a_type && b_type) {
@@ -43,23 +62,7 @@ HRESULT universe_bind_potential(MxPotential *p, PyObject *a, PyObject *b, bool b
         return S_OK;
     }
 
-    if(MxParticle_Check(a) && MxParticle_Check(b)) {
-        MxParticleHandle *a_part = ((MxParticleHandle *)a);
-        MxParticleHandle *b_part = ((MxParticleHandle *)b);
 
-        //MxBond_New(uint32_t flags,
-        //        int32_t i, int32_t j,
-        //        double half_life,
-        //        double bond_energy,
-        //        struct MxPotential* potential);
-
-        MxBondHandle_New(0, a_part->id, b_part->id,
-                std::numeric_limits<double>::max(),
-                std::numeric_limits<double>::max(),
-                p);
-
-        return S_OK;
-    }
 
     if(MxCuboidType_Check(a) && b_type) {
         return engine_add_cuboid_potential(&_Engine, p, b_type->id);

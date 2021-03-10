@@ -146,6 +146,8 @@ static PyObject* particle_distance(MxParticleHandle *_self, PyObject *args, PyOb
 
 static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
+static PyObject* particle_bonded_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
+
 static PyObject* particle_bonds(MxParticleHandle *_self, PyObject *args, PyObject *kwargs);
 
 static PyObject* particletype_items(MxParticleType *self);
@@ -708,6 +710,7 @@ static PyMethodDef particle_methods[] = {
         { "virial", (PyCFunction)particle_virial, METH_VARARGS | METH_KEYWORDS, NULL },
         { "become", (PyCFunction)particle_become, METH_VARARGS | METH_KEYWORDS, NULL },
         { "neighbors", (PyCFunction)particle_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
+        { "bonded_neighbors", (PyCFunction)particle_bonded_neighbors, METH_VARARGS | METH_KEYWORDS, NULL },
         { "distance", (PyCFunction)particle_distance, METH_VARARGS | METH_KEYWORDS, NULL },
         { "bonds", (PyCFunction)particle_bonds, METH_VARARGS | METH_KEYWORDS, NULL },
         { NULL, NULL, 0, NULL }
@@ -1932,6 +1935,30 @@ static PyObject* particle_neighbors(MxParticleHandle *_self, PyObject *args, PyO
         MxParticle_Neighbors(self, radius, &types, &nr_parts, &parts);
         
         return (PyObject*)MxParticleList_NewFromData(nr_parts, parts);
+    }
+    catch(std::exception &e) {
+        C_RETURN_EXP(e);
+    }
+}
+
+static PyObject* particle_bonded_neighbors(MxParticleHandle *_self, PyObject *args, PyObject *kwargs) {
+    try {
+        PARTICLE_SELF(_self);
+        
+        MxParticleList *list = MxParticleList_New(5);
+        
+        for(int i = 0; i < _Engine.nr_bonds; ++i) {
+            MxBond *b = &_Engine.bonds[i];
+            if(b->flags & BOND_ACTIVE) {
+                if(b->i == self->id) {
+                    list->insert(b->j);
+                }
+                else if(b->j == self->id) {
+                    list->insert(b->i);
+                }
+            }
+        }
+        return list;
     }
     catch(std::exception &e) {
         C_RETURN_EXP(e);

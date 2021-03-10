@@ -1,6 +1,6 @@
 import mechanica as m
 
-m.Simulator()
+m.init()
 
 class Bead(m.Particle):
     species = ['S1']

@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dim=[25., 25., 25.], cutoff=3, dt=0.005, bc=m.BOUNDARY_NONE)
+m.init(dim=[25., 25., 25.], cutoff=3, dt=0.005, bc=m.BOUNDARY_NONE)
 
 class Blue(m.Particle):
     mass = 10

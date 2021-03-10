@@ -8,7 +8,7 @@ cutoff = 1
 dim=[10., 10., 10.]
 
 # new simulator
-m.Simulator(dim=dim)
+m.init(dim=dim)
 
 class MyCell(m.Particle):
 

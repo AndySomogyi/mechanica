@@ -5,10 +5,10 @@ import numpy as np
 dim=np.array([30., 30., 30.])
 center = dim / 2
 
-m.Simulator(dim=dim,
-            cutoff=10,
-            integrator=m.FORWARD_EULER,
-            dt=0.0005)
+m.init(dim=dim,
+       cutoff=10,
+       integrator=m.FORWARD_EULER,
+       dt=0.0005)
 
 class C(m.Cluster):
     radius=3

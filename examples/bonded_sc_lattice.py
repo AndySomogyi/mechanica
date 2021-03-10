@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dt=0.1, dim=[15, 12, 10]) #, bc=m.FREESLIP_FULL)
+m.init(dt=0.1, dim=[15, 12, 10]) #, bc=m.FREESLIP_FULL)
 
 # lattice spacing
 a = 0.65

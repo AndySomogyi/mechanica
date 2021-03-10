@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as n
 
-m.Simulator()
+m.init()
 
 print(m.carbon.Species("S1"))
 

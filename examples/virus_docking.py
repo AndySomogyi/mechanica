@@ -11,7 +11,7 @@ dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff, cells=[4, 4, 4], integrator=m.RUNGE_KUTTA_4)
+m.init(dim=dim, cutoff=cutoff, cells=[4, 4, 4], integrator=m.RUNGE_KUTTA_4)
 
 class Big(m.Particle):
     mass = 500000

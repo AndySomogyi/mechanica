@@ -10,12 +10,12 @@ dist = 3.9
 
 offset = 6
 
-m.Simulator(dim=dim,
-            cutoff=7,
-            cells=[3,3,3],
-            integrator=m.FORWARD_EULER,
-            dt=0.01,
-            bc={'z':'potential', 'x' : 'potential', 'y' : 'potential'})
+m.init(dim=dim,
+       cutoff=7,
+       cells=[3,3,3],
+       integrator=m.FORWARD_EULER,
+       dt=0.01,
+       bc={'z':'potential', 'x' : 'potential', 'y' : 'potential'})
 
 class A(m.Particle):
     radius=1

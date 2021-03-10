@@ -6,11 +6,11 @@ import numpy as np
 # dimensions of universe
 dim=np.array([30., 30., 30.])
 
-m.Simulator(dim=dim,
-            cutoff=10,
-            integrator=m.FORWARD_EULER,
-            cells=[1, 1, 1],
-            dt=0.005)
+m.init(dim=dim,
+       cutoff=10,
+       integrator=m.FORWARD_EULER,
+       cells=[1, 1, 1],
+       dt=0.005)
 
 class A(m.Particle):
     radius=0.5

@@ -15,14 +15,14 @@ dim=np.array([50., 50., 100.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim,
-            cutoff=cutoff,
-            integrator=m.FORWARD_EULER,
-            bc=m.BOUNDARY_NONE,
-            dt=0.001,
-            max_distance=0.2,
-            threads=8,
-            cells=[5, 5, 5])
+m.init(dim=dim,
+       cutoff=cutoff,
+       integrator=m.FORWARD_EULER,
+       bc=m.BOUNDARY_NONE,
+       dt=0.001,
+       max_distance=0.2,
+       threads=8,
+       cells=[5, 5, 5])
 
 clump_radius = 8
 

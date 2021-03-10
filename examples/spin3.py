@@ -4,11 +4,11 @@ import numpy as np
 # dimensions of universe
 dim=np.array([30., 30., 30.])
 
-m.Simulator(dim=dim,
-            cutoff=10,
-            integrator=m.FORWARD_EULER,
-            cells=[3, 3, 3],
-            dt=0.001)
+m.init(dim=dim,
+       cutoff=10,
+       integrator=m.FORWARD_EULER,
+       cells=[3, 3, 3],
+       dt=0.001)
 
 class A(m.Particle):
     radius=1

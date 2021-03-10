@@ -1,6 +1,6 @@
 import mechanica as m
 
-m.Simulator(dim=[6.5, 6.5, 6.5], bc=m.FREESLIP_FULL)
+m.init(dim=[6.5, 6.5, 6.5], bc=m.FREESLIP_FULL)
 
 class A (m.Particle):
     radius = 0.1

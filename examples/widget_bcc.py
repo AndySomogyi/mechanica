@@ -1,7 +1,7 @@
 import mechanica as m
 from ipywidgets import widgets
 
-m.Simulator(windowless=True, window_size=[1024,1024])
+m.init(windowless=True, window_size=[1024,1024])
 
 class Na (m.Particle):
     radius = 0.4

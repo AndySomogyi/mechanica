@@ -8,7 +8,7 @@ cutoff = 1
 dim=[10., 10., 10.]
 
 # new simulator
-m.Simulator(dim=dim)
+m.init(dim=dim)
 
 # create a potential representing a 12-6 Lennard-Jones potential
 # A The first parameter of the Lennard-Jones potential.

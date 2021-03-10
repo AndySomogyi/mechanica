@@ -81,6 +81,10 @@ struct MxBondHandle : PyObject {
 
 CAPI_FUNC(MxBondHandle*) MxBondHandle_FromId(int id);
 
+MxBond *MxBond_Get(PyObject *o);
+
+bool MxBondHandle_Check(PyObject *o);
+
 /**
  * The type of each individual bond.
  * actually bond handle type.

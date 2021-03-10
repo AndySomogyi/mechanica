@@ -11,7 +11,7 @@ dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff, bc=m.BOUNDARY_NONE)
+m.init(dim=dim, cutoff=cutoff, bc=m.BOUNDARY_NONE)
 
 class Yolk(m.Particle):
     mass = 500000

@@ -6,11 +6,11 @@ dim=np.array([30., 30., 30.])
 
 dist = 3
 
-m.Simulator(dim=dim,
-            cutoff=7,
-            integrator=m.FORWARD_EULER,
-            cells=[3, 3, 3],
-            dt=0.01)
+m.init(dim=dim,
+       cutoff=7,
+       integrator=m.FORWARD_EULER,
+       cells=[3, 3, 3],
+       dt=0.01)
 
 class A(m.Particle):
     radius=0.5

@@ -700,6 +700,70 @@ PyObject *bond_bonds(PyObject *self) {
 }
 
 
+static Py_ssize_t bond_length(PyObject *o) {
+    return 2;
+}
+
+static PyObject *bond_item(PyObject *o, Py_ssize_t i) {
+ 
+    MxBond *self = MxBond_Get(o);
+    MxParticleHandle *result;
+    
+    if(i == 0) {
+        MxParticle *p = MxParticle_FromId(self->i);
+        result = p->py_particle();
+        Py_INCREF(result);
+        return result;
+
+    }
+    else if (i == 1) {
+        MxParticle *p = MxParticle_FromId(self->j);
+        result = p->py_particle();
+        Py_INCREF(result);
+        return result;
+    }
+    PyErr_SetString(PyExc_IndexError, "bond index out of range, index must be 0 or 1");
+    return NULL;
+}
+
+static int bond_ass_item(PyObject *o, Py_ssize_t i, PyObject *x) {
+    MxBond *self = MxBond_Get(o);
+    MxParticle *p = MxParticle_Get(x);
+    
+    if(!p) {c_error(E_FAIL, "can only assign particle to bonds"); return -1;}
+    
+    if(i == 0) {
+        self->i = p->id;
+        return 0;
+    }
+    else if (i == 1) {
+        self->j = p->id;
+        return 0;
+    }
+    PyErr_SetString(PyExc_IndexError, "bond index out of range, index must be 0 or 1");
+    return -1;
+}
+
+static int bond_contains(PyObject *o, PyObject *x) {
+    MxBond *self = MxBond_Get(o);
+    MxParticle *p = MxParticle_Get(x);
+    return self && p && (self->i == p->id || self->j == p->id);
+}
+
+static PySequenceMethods bond_sequence = {
+     .sq_length = bond_length,
+     .sq_concat = NULL,
+     .sq_repeat = NULL,
+     .sq_item = bond_item,
+     .was_sq_slice = NULL,
+     .sq_ass_item = bond_ass_item,
+     .was_sq_ass_slice = NULL,
+     .sq_contains = bond_contains,
+     .sq_inplace_concat = NULL,
+     .sq_inplace_repeat = NULL,
+};
+
+
 
 static PyMethodDef bond_methods[] = {
     { "destroy", (PyCFunction)bond_destroy, METH_VARARGS | METH_KEYWORDS, NULL },
@@ -722,7 +786,7 @@ PyTypeObject MxBondHandle_Type = {
     .tp_as_async =       0,
     .tp_repr =           (reprfunc)bond_str,
     .tp_as_number =      0,
-    .tp_as_sequence =    0,
+    .tp_as_sequence =    &bond_sequence,
     .tp_as_mapping =     0,
     .tp_hash =           0,
     .tp_call =           0,
@@ -948,8 +1012,7 @@ CAPI_FUNC(HRESULT) MxBond_Destroy(struct MxBond *b) {
 }
 
 
-PyObject* bond_destroy(MxBondHandle *self, PyObject *args,
-                                 PyObject *kwargs)
+PyObject* bond_destroy(MxBondHandle *self, PyObject *args, PyObject *kwargs)
 {
     Log(LOG_DEBUG);
     
@@ -1084,6 +1147,22 @@ bool pair_check(PyObject *pairs, short a_typeid, short b_typeid) {
                 return true;
             }
         }
+    }
+    return false;
+}
+
+
+MxBond *MxBond_Get(PyObject *o) {
+    if(MxBondHandle_Check(o)) {
+        MxBondHandle *h = (MxBondHandle*)o;
+        return h->get();
+    }
+    return NULL;
+}
+
+bool MxBondHandle_Check(PyObject *o) {
+    if(o) {
+        return PyObject_IsInstance(o, (PyObject*)&MxBondHandle_Type);
     }
     return false;
 }

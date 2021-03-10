@@ -172,6 +172,22 @@ static PyObject *universe_grid(PyObject *mod, PyObject *args, PyObject *kwargs) 
     }
 }
 
+static PyObject *universe_bonds(PyObject *mod, PyObject *args, PyObject *kwargs) {
+    UNIVERSE_TRY();
+    PyObject *bonds = PyList_New(0);
+    
+    int j = 0;
+    
+    for(int i = 0; i < _Engine.nr_bonds; ++i) {
+        MxBond *b = &_Engine.bonds[i];
+        if((b->flags & BOND_ACTIVE) ) {
+            PyList_Insert(bonds, j++, MxBondHandle_FromId(i));
+        }
+    }
+    return bonds;
+    UNIVERSE_FINALLY(NULL);
+}
+
 
 static PyMethodDef universe_methods[] = {
     { "bind", (PyCFunction)universe_bind, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
@@ -184,6 +200,7 @@ static PyMethodDef universe_methods[] = {
     { "particles", (PyCFunction)universe_particles, METH_STATIC | METH_NOARGS, NULL },
     { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "grid", (PyCFunction)universe_grid, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "bonds", (PyCFunction)universe_bonds, METH_VARARGS | METH_KEYWORDS, NULL },
     { NULL, NULL, 0, NULL }
 };
 

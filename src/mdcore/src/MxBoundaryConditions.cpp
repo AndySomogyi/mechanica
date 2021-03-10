@@ -514,10 +514,8 @@ HRESULT MxBoundaryConditions_Init(MxBoundaryConditions *bc, int *cells, PyObject
     PyObject_INIT(&(bc->front), &MxBoundaryCondition_Type);
     PyObject_INIT(&(bc->back), &MxBoundaryCondition_Type);
     
-    int s = 6 * engine::max_type * sizeof(MxPotential**);
-    
-    bc->potenntials = (MxPotential**)malloc(6 * engine::max_type * sizeof(MxPotential**));
-    bzero(bc->potenntials, 6 * engine::max_type * sizeof(MxPotential**));
+    bc->potenntials = (MxPotential**)malloc(6 * engine::max_type * sizeof(MxPotential*));
+    bzero(bc->potenntials, 6 * engine::max_type * sizeof(MxPotential*));
     
     bc->left.name = "left";     bc->left.restore = 1.f;     bc->left.potenntials =   &bc->potenntials[0 * engine::max_type];
     bc->right.name = "right";   bc->right.restore = 1.f;    bc->right.potenntials =  &bc->potenntials[1 * engine::max_type];
@@ -842,12 +840,7 @@ void apply_boundary_particle_crossing(struct MxParticle *p, const int *delta,
                                      const struct space_cell *src_cell, const struct space_cell *dest_cell) {
     
     const MxBoundaryConditions &bc = _Engine.boundary_conditions;
-    
-    int a = bc.periodic & space_periodic_x;
-    int b = src_cell->flags & cell_periodic_x;
-    int c = dest_cell->flags & cell_periodic_x;
-
-    
+        
     if(bc.periodic & space_periodic_x &&
        src_cell->flags & cell_periodic_x &&
        dest_cell->flags & cell_periodic_x) {

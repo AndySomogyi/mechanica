@@ -1,12 +1,12 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator(dt=0.1, dim=[15, 12, 10],
-            bc={'x':'no_slip',
-                'y':'periodic',
-                'bottom':'no_slip',
-                'top':{'velocity':[-0.1, 0, 0]}},
-            perfcounter_period=100)
+m.init(dt=0.1, dim=[15, 12, 10],
+       bc={'x':'no_slip',
+           'y':'periodic',
+           'bottom':'no_slip',
+           'top':{'velocity':[-0.1, 0, 0]}},
+       perfcounter_period=100)
 
 # lattice spacing
 a = 0.3

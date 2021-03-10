@@ -11,7 +11,7 @@ dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff)
+m.init(dim=dim, cutoff=cutoff)
 
 class Bead(m.Particle):
     mass = 1

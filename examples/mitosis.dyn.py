@@ -5,7 +5,7 @@ import numpy as np
 cutoff = 1
 
 # new simulator
-m.Simulator(dim=[20., 20., 20.])
+m.init(dim=[20., 20., 20.])
 
 pot = m.Potential.soft_sphere(kappa=10, epsilon=0.1,
     r0=0.6, eta=3, tol = 0.1, min=0.05, max=4)

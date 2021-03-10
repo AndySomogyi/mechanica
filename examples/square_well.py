@@ -11,7 +11,7 @@ dim=np.array([20., 20., 20.])
 center = dim / 2
 
 # new simulator
-m.Simulator(dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
+m.init(dim=dim, cutoff=cutoff, cells=[4, 4, 4], threads=8)
 
 class Nucleus(m.Particle):
     mass = 500000

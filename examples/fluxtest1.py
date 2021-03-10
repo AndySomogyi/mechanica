@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as n
 
-m.Simulator()
+m.init()
 
 class A(m.Particle):
     species = ['S1', 'S2', 'S3']

@@ -5,7 +5,7 @@ import numpy as np
 dim=[20., 20., 20.]
 
 # new simulator
-m.Simulator(dim=dim)
+m.init(dim=dim)
 
 # loop over arays for x/y coords
 for x in np.arange(0., 20., 2.):

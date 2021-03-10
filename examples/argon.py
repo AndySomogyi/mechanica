@@ -36,12 +36,4 @@ for pos in positions:
     Argon(pos)
 
 # run the simulator interactive
-m.Simulator.run()
-
-
-
-
-
-
-
-
+m.run()

@@ -50,10 +50,10 @@ p_actin = m.Potential.harmonic(k=40, r0=0.001, max = 5)
 # dimensions of universe
 dim=np.array([30., 30., 40.])
 
-m.Simulator(dim=dim,
-            cutoff=5,
-            integrator=m.FORWARD_EULER,
-            dt=0.001)
+m.init(dim=dim,
+       cutoff=5,
+       integrator=m.FORWARD_EULER,
+       dt=0.001)
 
 
 class Cell(m.Particle):

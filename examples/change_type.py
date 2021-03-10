@@ -1,7 +1,7 @@
 import mechanica as m
 import numpy as np
 
-m.Simulator()
+m.init()
 
 class A(m.Particle):
     radius=0.1

@@ -1,6 +1,6 @@
 import mechanica as m
 
-m.Simulator()
+m.init()
 
 
 class A (m.Particle):
