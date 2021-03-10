@@ -48,53 +48,7 @@ static std::mutex tot_energy_mutex;
 static int engine_advance_forward_euler ( struct engine *e );
 static int engine_advance_runge_kutta_4 ( struct engine *e );
 
-/**
- * old boundary code, keep here for now, in case issues with new stuff.
- */
-static bool boundary_update_pos_vel_old(MxParticle *p, space_cell *c) {
-    
-#define ENFORCE_BC(i)                                                   \
-    if(ppos[i] < 0) {                                                   \
-        p->position[i] += (0 - ppos[i])* (restitution + 1.0f);          \
-        p->velocity[i] *= -restitution;                                 \
-        enforced = true;                                                \
-    }                                                                   \
-    else if(ppos[i] > e->s.dim[i]) {                                    \
-        p->position[i] -= (ppos[i] - e->s.dim[i])*(restitution + 1.0f); \
-        p->velocity[i] *= -restitution;                                 \
-        enforced = true;                                                \
-    }                                                                   \
 
-    static const engine *e = &_Engine;
-    
-    
-    float restitution = 1.0;
-    /* Enforce particle position to be within the given boundary */
-    bool enforced = false;
-    
-    if(!(e->s.period & SPACE_FREESLIP_FULL)) {
-        return false;
-    }
-    
-    double *o = c->origin;
-    Magnum::Vector3 ppos = {
-        static_cast<float>(o[0]) + p->position[0],
-        static_cast<float>(o[1]) + p->position[1],
-        static_cast<float>(o[2]) + p->position[2]
-    };
-    
-    if(e->s.period & SPACE_FREESLIP_X) {
-        ENFORCE_BC(0);
-    }
-    if(e->s.period & SPACE_FREESLIP_Y) {
-        ENFORCE_BC(1);
-    }
-    if(e->s.period & SPACE_FREESLIP_Z) {
-        ENFORCE_BC(2);
-    }
-    
-    return enforced;
-};
 
 static int _toofast_error(MxParticle *p, int line, const char* func) {
     //CErr_Set(HRESULT code, const char* msg, int line, const char* file, const char* func);
@@ -245,7 +199,7 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
             if(apply_update_pos_vel(p, c, h, delta)) {
                 pid += 1;
             }
-            // otherwise move to different cell
+            // otherwise queue move to different cell
             else {
                 for ( k = 0 ; k < 3 ; k++ ) {
                     p->x[k] -= delta[k] * h[k];
@@ -255,6 +209,10 @@ static inline void cell_advance_forward_euler(const float dt, const float h[3], 
                                                    (c->loc[0] + delta[0] + s->cdim[0]) % s->cdim[0] ,
                                                    (c->loc[1] + delta[1] + s->cdim[1]) % s->cdim[1] ,
                                                    (c->loc[2] + delta[2] + s->cdim[2]) % s->cdim[2] ) ] );
+                
+                // update any state variables on the object accordign to the boundary conditions
+                // since we might be moving across periodic boundaries.
+                apply_boundary_particle_crossing(p, delta, s->celllist[ p->id ], c_dest);
                 
                 space_mutex.lock();
                 space_cell_add_incomming( c_dest , p );

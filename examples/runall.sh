@@ -3,6 +3,7 @@ python=$1
 
 echo $python
 
+$($python flux_periodic1.py)
 $($python boundary_uptake_secrete.py)
 $($python argon.py)
 $($python colormaps.py)

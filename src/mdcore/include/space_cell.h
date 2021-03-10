@@ -45,25 +45,41 @@
 /** Cell flags */
 
 enum CellFlags {
-    cell_flag_none    = 0,
-    cell_flag_ghost   = 1 << 0,
-    cell_flag_wait    = 1 << 1,
-    cell_flag_waited  = 1 << 2,
-    cell_flag_marked  = 1 << 3,
-    cell_flag_large   = 1 << 4,
+    cell_flag_none         = 0,
+    cell_flag_ghost        = 1 << 0,
+    cell_flag_wait         = 1 << 1,
+    cell_flag_waited       = 1 << 2,
+    cell_flag_marked       = 1 << 3,
+    cell_flag_large        = 1 << 4,
     
-    cell_boundary_top      = 1 << 5,
-    cell_boundary_bottom   = 1 << 6,
-    cell_boundary_left     = 1 << 7,
-    cell_boundary_right    = 1 << 8,
-    cell_boundary_front    = 1 << 9,
-    cell_boundary_back     = 1 << 10,
-    cell_boundary_any      = cell_boundary_top |
-                             cell_boundary_bottom |
-                             cell_boundary_left |
-                             cell_boundary_right |
-                             cell_boundary_front |
-                             cell_boundary_back
+    cell_active_top        = 1 << 5,
+    cell_active_bottom     = 1 << 6,
+    cell_active_left       = 1 << 7,
+    cell_active_right      = 1 << 8,
+    cell_active_front      = 1 << 9,
+    cell_active_back       = 1 << 10,
+    
+    cell_periodic_top      = 1 << 11,
+    cell_periodic_bottom   = 1 << 12,
+    cell_periodic_left     = 1 << 13,
+    cell_periodic_right    = 1 << 14,
+    cell_periodic_front    = 1 << 15,
+    cell_periodic_back     = 1 << 16,
+    
+    cell_periodic_x        = cell_periodic_left | cell_periodic_right,
+    cell_periodic_y        = cell_periodic_front | cell_periodic_back,
+    cell_periodic_z        = cell_periodic_top | cell_periodic_bottom,
+    
+    cell_active_x          = cell_active_left | cell_active_right,
+    cell_active_y          = cell_active_front | cell_active_back,
+    cell_active_z          = cell_active_top | cell_active_bottom,
+    
+    cell_active_any        = cell_active_top |
+                             cell_active_bottom |
+                             cell_active_left |
+                             cell_active_right |
+                             cell_active_front |
+                             cell_active_back
 };
 
 

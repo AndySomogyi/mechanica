@@ -9,6 +9,7 @@
 #include "MxConvert.hpp"
 #include "space.h"
 #include "engine.h"
+#include "CStateVector.hpp"
 
 #include <algorithm>
 #include <string>
@@ -371,6 +372,10 @@ static unsigned bc_kind_from_pystring(PyObject *o) {
             result = BOUNDARY_POTENTIAL | BOUNDARY_FREESLIP;
         }
         
+        else if (s.compare("RESET") == 0 ) {
+            result = BOUNDARY_RESETTING;
+        }
+        
         else {
             std::string msg = "invalid choice of value for boundary condition, \"";
             msg += mx::cast<std::string>(o);
@@ -382,27 +387,41 @@ static unsigned bc_kind_from_pystring(PyObject *o) {
     return result;
 }
 
+// check if object is string or list of strings.
+// check if valid type, and return, if string and invalid string, throw exception.
+static unsigned bc_kind_from_object(PyObject *o) {
+    
+    int result = 0;
+    
+    if(carbon::check<carbon::sequence>(o)) {
+        carbon::sequence seq = carbon::cast<carbon::sequence>(o);
+        
+        for(int i = 0; i < seq.size(); ++i) {
+            result = result | bc_kind_from_pystring(seq.get(i));
+        }
+    }
+    
+    else if(carbon::check<std::string>(o)) {
+        result = bc_kind_from_pystring(o);
+    }
+    
+    return result;
+}
+
 static unsigned init_bc_direction(MxBoundaryCondition *low_bl, MxBoundaryCondition *high_bl, PyObject *o) {
-    if(mx::check<std::string>(o)) {
-        int kind = bc_kind_from_pystring(o);
-        
-        if(kind == BOUNDARY_NO_SLIP) {
-            low_bl->kind = high_bl->kind = BOUNDARY_VELOCITY;
-            low_bl->velocity = high_bl->velocity = Magnum::Vector3{0.f, 0.f, 0.f};
-        }
-        else {
-            low_bl->kind = (BoundaryConditionKind)kind;
-            high_bl->kind = (BoundaryConditionKind)kind;
-        }
-        
-        return kind;
+
+    unsigned kind = bc_kind_from_object(o);
+    
+    if(kind == BOUNDARY_NO_SLIP) {
+        low_bl->kind = high_bl->kind = BOUNDARY_VELOCITY;
+        low_bl->velocity = high_bl->velocity = Magnum::Vector3{0.f, 0.f, 0.f};
     }
     else {
-        std::string msg = "invalid boundary initialization type (";
-        msg += o->ob_type->tp_name;
-        msg += "), only string and dictionary types are supported";
-        throw std::invalid_argument(msg);
+        low_bl->kind = (BoundaryConditionKind)kind;
+        high_bl->kind = (BoundaryConditionKind)kind;
     }
+    
+    return kind;
 }
 
 // init a bc from a dict, dict is already known to be a dictionary
@@ -817,4 +836,56 @@ void MxBoundaryConditions::set_potential(struct MxParticleType *ptype,
     back.set_potential(ptype, pot);
     bottom.set_potential(ptype, pot);
     top.set_potential(ptype, pot);
+}
+
+void apply_boundary_particle_crossing(struct MxParticle *p, const int *delta,
+                                     const struct space_cell *src_cell, const struct space_cell *dest_cell) {
+    
+    const MxBoundaryConditions &bc = _Engine.boundary_conditions;
+    
+    int a = bc.periodic & space_periodic_x;
+    int b = src_cell->flags & cell_periodic_x;
+    int c = dest_cell->flags & cell_periodic_x;
+
+    
+    if(bc.periodic & space_periodic_x &&
+       src_cell->flags & cell_periodic_x &&
+       dest_cell->flags & cell_periodic_x) {
+        if(dest_cell->flags &  cell_periodic_left && bc.left.kind & BOUNDARY_RESETTING ) {
+            if(p->state_vector) {
+                p->state_vector->reset();
+            }
+            
+        }
+        
+        if(dest_cell->flags &  cell_periodic_right && bc.right.kind & BOUNDARY_RESETTING ) {
+            
+        }
+    }
+    
+    else if(_Engine.boundary_conditions.periodic & space_periodic_y &&
+            src_cell->flags & cell_periodic_y &&
+            dest_cell->flags & cell_periodic_y) {
+        if(dest_cell->flags &  cell_periodic_front && bc.front.kind & BOUNDARY_RESETTING ) {
+            
+        }
+        
+        if(dest_cell->flags &  cell_periodic_back && bc.back.kind & BOUNDARY_RESETTING ) {
+            
+        }
+
+    }
+    
+    else if(_Engine.boundary_conditions.periodic & space_periodic_z &&
+            src_cell->flags & cell_periodic_z &&
+            dest_cell->flags & cell_periodic_z) {
+        if(dest_cell->flags &  cell_periodic_top && bc.top.kind & BOUNDARY_RESETTING ) {
+            
+        }
+        
+        if(dest_cell->flags &  cell_periodic_bottom && bc.bottom.kind & BOUNDARY_RESETTING ) {
+            
+        }
+
+    }
 }

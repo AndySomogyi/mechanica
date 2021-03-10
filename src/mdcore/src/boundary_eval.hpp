@@ -57,7 +57,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
     /* Enforce particle position to be within the given boundary */
     bool enforced = false;
 
-    if(c->flags & cell_boundary_left && p->x[0] <= 0) {
+    if(c->flags & cell_active_left && p->x[0] <= 0) {
         if(bc->left.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_LOW(0);
         }
@@ -66,7 +66,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
         }
     }
 
-    if(c->flags & cell_boundary_right && p->x[0] >= c->dim[0]) {
+    if(c->flags & cell_active_right && p->x[0] >= c->dim[0]) {
         if(bc->right.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_HIGH(0);
         }
@@ -75,7 +75,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
         }
     }
 
-    if(c->flags & cell_boundary_front && p->x[1] <= 0) {
+    if(c->flags & cell_active_front && p->x[1] <= 0) {
         if(bc->front.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_LOW(1);
         }
@@ -84,7 +84,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
         }
     }
 
-    if(c->flags & cell_boundary_back && p->x[1] >= c->dim[1]) {
+    if(c->flags & cell_active_back && p->x[1] >= c->dim[1]) {
         if(bc->back.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_HIGH(1);
         }
@@ -93,7 +93,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
         }
     }
 
-    if(c->flags & cell_boundary_bottom && p->x[2] <= 0) {
+    if(c->flags & cell_active_bottom && p->x[2] <= 0) {
         if(bc->bottom.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_LOW(2);
         }
@@ -102,7 +102,7 @@ MX_ALWAYS_INLINE bool apply_update_pos_vel(MxParticle *p, space_cell *c, const f
         }
     }
 
-    if(c->flags & cell_boundary_top && p->x[2] >= c->dim[2]) {
+    if(c->flags & cell_active_top && p->x[2] >= c->dim[2]) {
         if(bc->top.kind & BOUNDARY_FREESLIP) {
             ENFORCE_FREESLIP_HIGH(2);
         }
@@ -175,42 +175,42 @@ MX_ALWAYS_INLINE bool boundary_eval(
     
     float dx[3] = {0.f, 0.f, 0.f};
         
-    if((cell->flags & cell_boundary_left) &&
+    if((cell->flags & cell_active_left) &&
        (pot = bc->left.potenntials[part->typeId]) &&
        ((r = part->x[0]) <= pot->b)) {
         dx[0] = r;
         result |= boundary_potential_eval_ex(cell, pot, part, &bc->left, dx, r*r, epot);
     }
     
-    if((cell->flags & cell_boundary_right) &&
+    if((cell->flags & cell_active_right) &&
        (pot = bc->right.potenntials[part->typeId]) &&
        ((r = cell->dim[0] - part->x[0]) <= pot->b)) {
         dx[0] = -r;
         result |= boundary_potential_eval_ex(cell, pot, part, &bc->right, dx, r*r, epot);
     }
     
-    if((cell->flags & cell_boundary_front) &&
+    if((cell->flags & cell_active_front) &&
        (pot = bc->front.potenntials[part->typeId]) &&
        ((r = part->x[1]) <= pot->b)) {
         dx[1] = r;
         result |= boundary_potential_eval_ex(cell, pot, part, &bc->front, dx, r*r, epot);
     }
     
-    if((cell->flags & cell_boundary_back) &&
+    if((cell->flags & cell_active_back) &&
        (pot = bc->back.potenntials[part->typeId]) &&
        ((r = cell->dim[1] - part->x[1]) <= pot->b)) {
         dx[1] = -r;
         result |= boundary_potential_eval_ex(cell, pot, part, &bc->back, dx, r*r, epot);
     }
     
-    if((cell->flags & cell_boundary_bottom) &&
+    if((cell->flags & cell_active_bottom) &&
        (pot = bc->bottom.potenntials[part->typeId]) &&
        ((r = part->x[2]) <= pot->b)) {
         dx[2] = r;
         result |= boundary_potential_eval_ex(cell, pot, part, &bc->bottom, dx, r*r, epot);
     }
     
-    if((cell->flags & cell_boundary_top) &&
+    if((cell->flags & cell_active_top) &&
        (pot = bc->top.potenntials[part->typeId]) &&
        ((r = cell->dim[2] - part->x[2]) <= pot->b)) {
         dx[2] = -r;

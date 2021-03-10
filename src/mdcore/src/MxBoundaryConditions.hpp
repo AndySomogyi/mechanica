@@ -18,6 +18,7 @@ enum BoundaryConditionKind {
     BOUNDARY_FREESLIP       = 1 << 2,
     BOUNDARY_POTENTIAL      = 1 << 3,
     BOUNDARY_NO_SLIP        = 1 << 4, // really just velocity with zero velocity
+    BOUNDARY_RESETTING      = 1 << 5, // reset the chemical cargo when particles cross boundaries. 
     BOUNDARY_ACTIVE         = BOUNDARY_FREESLIP | BOUNDARY_VELOCITY | BOUNDARY_POTENTIAL
 };
 
@@ -82,6 +83,13 @@ struct MxBoundaryConditions: PyObject {
 int MxBoundaryCondition_Check(const PyObject *obj);
 
 int MxBoundaryConditions_Check(const PyObject *obj);
+
+/**
+ * a particle moved from one cell to another, this checks if its a periodic
+ * crossing, and adjusts any particle state values if the boundaries say so.
+ */
+void apply_boundary_particle_crossing(struct MxParticle *p, const int *delta,
+                                     const struct space_cell *source_cell, const struct space_cell *dest_cell);
 
 /**
  * initialize a boundary condition with either a number that's a bitmask of the

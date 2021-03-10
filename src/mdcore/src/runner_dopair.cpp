@@ -481,7 +481,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     
     const unsigned cell_flags = c->flags;
     
-    const bool boundary = cell_flags & cell_boundary_any;
+    const bool boundary = cell_flags & cell_active_any;
         
     //print_thread();
     

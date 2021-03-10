@@ -469,12 +469,12 @@ std::ostream& operator<<(std::ostream& os, const space_cell* c) {
     os << "\t origin: [" << c->origin[0] << ", " << c->origin[1] << ", " << c->origin[2] << "]," << std::endl;
     os << "\t dim: [" << c->dim[0] << ", " << c->dim[1] << ", " << c->dim[2] << "]," << std::endl;
     os << "\t boundary: {" << std::endl;
-    os << "\t\t left: "   << (bool)(c->flags & cell_boundary_left) << "," << std::endl;
-    os << "\t\t right: "  << (bool)(c->flags & cell_boundary_right) << "," <<  std::endl;
-    os << "\t\t front: "  << (bool)(c->flags & cell_boundary_front) << "," << std::endl;
-    os << "\t\t back: "   << (bool)(c->flags & cell_boundary_back) << "," << std::endl;
-    os << "\t\t top: "    << (bool)(c->flags & cell_boundary_top) << "," << std::endl;
-    os << "\t\t bottom: " << (bool)(c->flags & cell_boundary_bottom) << "," << std::endl;
+    os << "\t\t left: "   << (bool)(c->flags & cell_active_left) << "," << std::endl;
+    os << "\t\t right: "  << (bool)(c->flags & cell_active_right) << "," <<  std::endl;
+    os << "\t\t front: "  << (bool)(c->flags & cell_active_front) << "," << std::endl;
+    os << "\t\t back: "   << (bool)(c->flags & cell_active_back) << "," << std::endl;
+    os << "\t\t top: "    << (bool)(c->flags & cell_active_top) << "," << std::endl;
+    os << "\t\t bottom: " << (bool)(c->flags & cell_active_bottom) << "," << std::endl;
     os << "\t}" << std::endl;
     os << "}" << std::endl;
     return os;

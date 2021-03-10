@@ -699,29 +699,49 @@ int space_init (struct space *s , const double *origin , const double *dim ,
                     return error(space_err_cell);
                 
                 if(l[0] == 0 && bc->left.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_left;
+                    c->flags |= cell_active_left;
                 }
                 else if(l[0] + 1 == s->cdim[0] && bc->right.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_right;
+                    c->flags |= cell_active_right;
                 }
                 
                 if(l[1] == 0 && bc->front.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_front;
+                    c->flags |= cell_active_front;
                     frc++;
                 }
                 else if(l[1] + 1 == s->cdim[1] && bc->back.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_back;
+                    c->flags |= cell_active_back;
                     bac++;
                 }
                 
                 if(l[2] == 0 && bc->bottom.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_bottom;
+                    c->flags |= cell_active_bottom;
                     boc++;
                 }
                 else if(l[2] + 1 == s->cdim[2] && bc->top.kind & BOUNDARY_ACTIVE) {
-                    c->flags |= cell_boundary_top;
+                    c->flags |= cell_active_top;
                     toc++;
+                }
                 
+                if(l[0] == 0 && bc->left.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_left;
+                }
+                else if(l[0] + 1 == s->cdim[0] && bc->right.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_right;
+                }
+                
+                if(l[1] == 0 && bc->front.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_front;
+                }
+                else if(l[1] + 1 == s->cdim[1] && bc->back.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_back;
+                }
+                
+                if(l[2] == 0 && bc->bottom.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_bottom;
+                }
+                else if(l[2] + 1 == s->cdim[2] && bc->top.kind & BOUNDARY_PERIODIC) {
+                    c->flags |= cell_periodic_top;
                 }
             }
         }
