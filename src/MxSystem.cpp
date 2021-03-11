@@ -8,12 +8,12 @@
 #include <MxSystem.h>
 #include <MxUtil.h>
 #include <MxSimulator.h>
+#include <rendering/MxWindowlessApplication.h>
 #include <rendering/MxGlInfo.h>
 #include <rendering/MxWindowless.h>
 #include <rendering/MxApplication.h>
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/MxGlfwApplication.h>
-#include <rendering/MxWindowlessApplication.h>
 #include <MxConvert.hpp>
 
 
