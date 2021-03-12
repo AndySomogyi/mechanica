@@ -113,7 +113,48 @@ have the physical parcels of space (agents) moving around, but they also carry
 with them a chemical cargo. We have advection (movment of the physical parcels),
 and diffusion (movment of chemical cargo between agents).
 
+The reset boundary conditions enables us to model driven, advective flow through
+a domain, where we reset the chemical cargo at the domain boundaries. This is
+usefull if we model flow where we have chemical sources or sinks in the
+simulation domain, and do not want any secreted material to re-enter the
+domain. In effect, this enables us to model an section of domain with driven
+flow, where the chemical state of the entering flow is always the same.
 
+We enable reset peridic boundaries by setting the boundary condition value to a
+*list* of the keywords "periodic" and "reset", i.e.::
+
+    m.init(dt=0.1, dim=[15, 5, 5], cutoff = 3,
+         bc={'x':('periodic','reset')})
+
+
+The reset style boundary condition enables the fluid parcels to pass through
+periodic boundary conditions normally, howerver it re-sets any attached chemical
+cargo to the their initially specified values.
+
+A complete example of reset boundary conditons is here with two particles. Here
+we have two particles, and we can see that the chemical cargo of the moving
+particle gets reset every time it passes through the periodic domain boundary::
+
+  import mechanica as m
+
+  m.init(dt=0.1, dim=[15, 5, 5], cutoff = 3,
+     bc={'x':('periodic','reset')})
+
+  class A(m.Particle):
+     species = ['S1', 'S2', 'S3']
+     style = {"colormap" : {"species" : "S1",
+                           "map" : "rainbow",
+                           "range" : "auto"}}
+
+  m.flux(A, A, "S1", 2)
+
+  a1 = A(m.universe.center - [0, 1, 0])
+  a2 = A(m.universe.center + [-5, 1, 0], velocity=[0.5, 0, 0])
+
+  a1.species.S1 = 3
+  a2.species.S1 = 0
+
+  m.run()
 
 
 .. video:: _static/flux_periodic.mp4
