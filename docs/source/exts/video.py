@@ -26,7 +26,8 @@ class Video(Directive):
         "width": directives.unchanged,
         "height": directives.unchanged,
         "autoplay": directives.flag,
-        "nocontrols": directives.flag
+        "nocontrols": directives.flag,
+        "loop": directives.flag
     }
 
     def run(self):
@@ -35,6 +36,7 @@ class Video(Directive):
         height = get_option(self.options, "height", "")
         autoplay = get_option(self.options, "autoplay", False)
         nocontrols = get_option(self.options, "nocontrols", False)
+        loop = get_option(self.options, "loop", False)
         
         return [video(
             path=self.arguments[0],
@@ -42,14 +44,15 @@ class Video(Directive):
             width=width,
             height=height, 
             autoplay=autoplay, 
-            nocontrols=nocontrols
+            nocontrols=nocontrols,
+            loop=loop
             )]
 
 def visit_video_node(self, node):
     extension = os.path.splitext(node["path"])[1][1:]
 
     html_block = '''
-    <video {width} {height} {nocontrols} {autoplay}>
+    <video {width} {height} {nocontrols} {loop} {autoplay}>
     <source src="{path}" type="video/{filetype}">
     {alt}
     </video>
@@ -60,7 +63,8 @@ def visit_video_node(self, node):
         filetype=extension,
         alt=node["alt"],
         autoplay="autoplay" if node["autoplay"] else "",
-        nocontrols="" if node["nocontrols"] else "controls"
+        nocontrols="" if node["nocontrols"] else "controls",
+        loop="loop" if node["loop"] else ""
         )
     self.body.append(html_block)
 

@@ -121,6 +121,7 @@ and diffusion (movment of chemical cargo between agents).
    :height: 300
    :autoplay:
    :nocontrols:
+   :loop:
 
 
 
