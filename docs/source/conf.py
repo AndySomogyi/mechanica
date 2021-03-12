@@ -47,13 +47,17 @@ def getver():
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 # 'sphinx.ext.autodoc',
+
+sys.path.append(os.path.abspath('exts'))
+
 extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
     'sphinxcontrib.bibtex',
     'sphinx.ext.ifconfig',
     'sphinxemoji.sphinxemoji',
-    'sphinx.ext.autosectionlabel'
+    'sphinx.ext.autosectionlabel',
+    'video'
 ]
 
 

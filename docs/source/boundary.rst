@@ -102,7 +102,33 @@ that agent will be repulsed by the boundary whenever it is near it.
 
 Potential boundary condtions default to ``'free_slip'``, but we can also create
 other kinds of potentials, such as say a ``'velocity'`` and bind a potential to
-that. 
+that.
+
+Reset
+-----
+
+The *reset* boundary condition is a special form of a periodic boundary
+condition. The basic idea is we have two separate movment processes going on: we
+have the physical parcels of space (agents) moving around, but they also carry
+with them a chemical cargo. We have advection (movment of the physical parcels),
+and diffusion (movment of chemical cargo between agents).
+
+
+
+
+.. video:: _static/flux_periodic.mp4
+   :width: 500
+   :height: 300
+   :autoplay:
+   :nocontrols:
+
+
+
+
+
+   
+
+
   
 
 
