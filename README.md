@@ -20,6 +20,12 @@ History
 =======
 Version Alpha 1.0.22.1
 ----------------------
+* bug fix in DPD potential between fluid and large objects
+* new scaled DPD potential that enables fluid interaction between objects of
+  varying size. 
+
+Version Alpha 1.0.22.1
+----------------------
 * lots of new bonds method, can iterate network connected by bonds
 * fix in bind, to make bond to instances
 * fix in parsing boundary conditions
@@ -54,7 +60,7 @@ Version Alpha 1.0.18.1
 ----------------------
 * generalized passive, consumer and producer fluxes
 * better OpenGL info reporting, `gl_info()`, `egl_info()`
-* enable boundary conditions on chemical speices, bug fix parsing init
+* enable boundary conditions on chemical species, bug fix parsing init
   conditions
 * use species boundary value to enable source / sinks
 * source / sinks in example
@@ -75,8 +81,8 @@ Version Alpha 1.0.16.2
 
 Version Alpha 1.0.16.1
 ----------------------
-* finally, completly expunged pybind11! pybind11 is finally GONE!
-* context managment methods for multi-threaded headless rendering. 
+* finally, completely expunged pybind11! pybind11 is finally GONE!
+* context management methods for multi-threaded headless rendering. 
 * universe.reset() method, clears objects
 * set window title to script name
 * add 'positions()', 'velocities()' and 'forces()' methods to particle list. 
@@ -114,17 +120,17 @@ Version Alpha 1.0.15.4
 * lattice initializer
 * add bonds to lattice initliazer
 * performance logging
-* updates to dissapative particle dynamics forces
+* updates to dissipative particle dynamics forces
 * enable adding DPD force to boundaries. 
-* generlized single body force (external force)
+* generalized single body force (external force)
 * fluid dynamics examples
 * visco-elastic materials, with bond breaking
 * single-body time-dependent force definitions in python
 
 Version Alpha 1.0.15.2
 ----------------------
-* initial dissapative particle dynamics
-* doc constant force, dpd
+* initial dissipative particle dynamics
+* doc constant force, DPD
 
 Version Alpha 1.0.15.1
 ----------------------
@@ -132,7 +138,7 @@ Version Alpha 1.0.15.1
 
 Version Alpha 0.0.14.1
 ----------------------
-* added convenience methods to get spherical and cartesian coords from lists
+* added convenience methods to get spherical and Cartesian coords from lists
 * updated example models
 * update docs
 * added plot function in examples to plot polar angle velocity. 
@@ -182,16 +188,16 @@ Version Alpha 0.0.12
 Version Alpha 0.0.11
 --------------------
 * new linear potential
-* triagulated surface mesh generation for spheres, triangulate sphere
+* triangulated surface mesh generation for spheres, triangulate sphere
   surfaces with particles and bonds, returns the set. 
 * banded spherical mesh generation
 * bug fixes in making particle list from python list
 * points works with spherical geometry
 * internal refactoring and updates
-* Dynamic Bonds! can dynamically create and destory bonds
+* Dynamic Bonds! can dynamically create and destroy bonds
 * lots of changes to deal with variable bond numbers
-* rendering updates for dyanmic bonds
-* particle init refactor
+* rendering updates for dynamic bonds
+* particle init re-factor
 * added metrics (pressure, center of mass, etc...) to particle lists
 * add properties and methods to Python bond API
 * bond energy calcs avail in python

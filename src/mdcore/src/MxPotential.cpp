@@ -2743,8 +2743,9 @@ static PyObject *_potential_dpd(PyObject *_self, PyObject *_args, PyObject *_kwa
     float gamma = mx::arg<double>("gamma", 1, _args, _kwargs, 1.0);
     float sigma = mx::arg<double>("sigma", 2, _args, _kwargs, 1.0);
     float cutoff = mx::arg<double>("cutoff", 3, _args, _kwargs, 1.0);
+    bool shifted = mx::arg<bool>("shifted", 4, _args, _kwargs, false);
     
-    return DPDPotential_New(alpha, gamma, sigma, cutoff);
+    return DPDPotential_New(alpha, gamma, sigma, cutoff, shifted);
 };
 
 

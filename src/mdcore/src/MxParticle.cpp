@@ -1719,9 +1719,18 @@ HRESULT MxParticle::removepart(int32_t pid) {
 }
 
 bool MxParticle::verify() {
-    bool gte = x[0] >= 0 && x[1] >= 0 && x[2] >= 0;
-    // TODO, make less than
-    bool lt = x[0] <= _Engine.s.h[0] && x[1] <= _Engine.s.h[1] &&x[2] <= _Engine.s.h[2];
+    bool gte, lt;
+    
+    if(this->flags & PARTICLE_LARGE) {
+        gte = x[0] >= 0 && x[1] >= 0 && x[2] >= 0;
+        lt = x[0] <= _Engine.s.dim[0] && x[1] <= _Engine.s.dim[1] &&x[2] <= _Engine.s.dim[2];
+    }
+    else {
+        gte = x[0] >= 0 && x[1] >= 0 && x[2] >= 0;
+        // TODO, make less than
+        lt = x[0] <= _Engine.s.h[0] && x[1] <= _Engine.s.h[1] &&x[2] <= _Engine.s.h[2];
+    }
+    
     bool pindex = this == _Engine.s.partlist[this->id];
     
     assert("particle pos below zero" && gte);

@@ -25,7 +25,7 @@ struct DPDPotential : public MxPotential {
     float sigma;
 };
 
-PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff);
+PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff, bool shifted);
 
 
 HRESULT _DPDPotential_Init(PyObject *m);

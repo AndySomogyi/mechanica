@@ -131,7 +131,7 @@ PyTypeObject DPDPotential_Type = {
 };
 
 
-PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff) {
+PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff, bool shifted) {
     DPDPotential *p = (DPDPotential*)potential_alloc(&DPDPotential_Type);
     
     p->kind = POTENTIAL_KIND_DPD;
@@ -141,6 +141,9 @@ PyObject * DPDPotential_New(float alpha, float gamma, float sigma, float cutoff)
     p->a = std::sqrt(std::numeric_limits<float>::epsilon());
     p->b = cutoff;
     p->name = "Dissapative Particle Dynamics";
+    if(shifted) {
+        p->flags |= POTENTIAL_SHIFTED;
+    }
     return p;
 }
 

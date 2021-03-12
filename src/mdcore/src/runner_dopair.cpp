@@ -414,7 +414,6 @@ static inline int particle_largecell_force(MxParticle *p, struct space_cell *c, 
             
             /* re-set the counter. */
             icount = 0;
-            
         }
 #else
         /* evaluate the interaction */
@@ -422,13 +421,8 @@ static inline int particle_largecell_force(MxParticle *p, struct space_cell *c, 
         potential_eval_expl( pot , r2 , &e , &f );
 #else
         /* update the forces if part in range */
-        if (potential_eval_ex(pot, p->radius, part_j->radius, r2 , &e , &f )) {
-            for ( k = 0 ; k < 3 ; k++ ) {
-                w = f * dx[k];
-                pif[k] -= w;
-                // TODO large parts frozen for now
-                //part_j->f[k] += w;
-            }
+        float number_density = W(r2, _Engine.s.cutoff);
+        if(potential_eval_super_ex(c, pot, p, part_j, dx,  r2, number_density, &e)) {
             /* tabulate the energy */
             epot += e;
         }

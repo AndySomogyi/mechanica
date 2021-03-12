@@ -23,7 +23,11 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian,
     
     static const float delta = 1.f / std::sqrt(_Engine.dt);
     
-    float cutoff = p->b;
+    float ri = pi->radius;
+    float rj = pj->radius;
+    bool shifted = p->flags & POTENTIAL_SHIFTED;
+    
+    float cutoff = shifted ? (p->b + ri + rj) : p->b;
     
     if(r2 > cutoff * cutoff) {
         return false;
@@ -38,8 +42,10 @@ MX_ALWAYS_INLINE bool dpd_eval(DPDPotential *p, float gaussian,
     
     Magnum::Vector3 v = pi->velocity - pj->velocity;
     
+    float shifted_r = shifted ? r - ri - rj : r;
+    
     // conservative force
-    float omega_c = (1 - r / cutoff);
+    float omega_c = shifted_r < 0.f ?  1.f : (1 - shifted_r / cutoff);
     
     float fc = p->alpha * omega_c;
     
