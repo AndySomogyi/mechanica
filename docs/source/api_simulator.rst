@@ -29,33 +29,27 @@ Simulator
 
    .. staticmethod:: run()
 
-      Starts the operating system messaging event loop for application. This is
-      typically used from scripts, as console input will no longer work. The run
-      method will continue to run until all of the windows are closed, or the
-      ``quit`` method is called. By default, ``run`` will automatically start
-      the universe time propagation.
+      alias to top level :func:`mechanica.run` function.
+
       
 
    .. staticmethod:: irun()
 
-      Runs the simulator in interactive mode, in that in interactive mode, the
-      console is still active and users can continue to issue commands via the
-      ipython console. By default, ``irun`` will automatically start the
-      universe time propagation.
+      alias to top level :func:`mechanica.irun` function.
+
+      
       
 
    .. staticmethod:: close()
 
-      Closes the main window, but the application / simulation will continue to
-      run. 
+      alias to top level :func:`mechanica.close` function.
 
 
    .. staticmethod:: show()
 
-      Shows any windows that were specified in the config. This works just like
-      MatPlotLib's ``show`` method. The ``show`` method does not start the
-      universe time propagation unlike ``run`` and ``irun``.
+      alias to top level :func:`mechanica.show` function.
 
+      
 .. class:: Simulator.Config()
 
    An object that has all the arguments to the simulator, 

@@ -24,6 +24,7 @@
 #include <MxPy.h>
 #include <CStateVector.hpp>
 #include "Magnum/Math/Matrix4.h"
+#include <CSpeciesList.hpp>
 
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
@@ -38,7 +39,7 @@ MxUniverse Universe = {
 
 
 
-static HRESULT universe_bind_force(MxForce *f, PyObject *a);
+static HRESULT universe_bind_force(MxForce *force, PyObject *args, PyObject *kwargs);
 
 static PyObject *universe_virial(PyObject *self, PyObject *_args, PyObject *_kwargs);
 
@@ -451,6 +452,10 @@ HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
                                      PyTuple_GetItem(args, 2),
                                      bound);
     }
+    
+    if(args && PyTuple_Size(args) >= 2 && MxForce_Check(PyTuple_GetItem(args, 0))) {
+        return universe_bind_force((MxForce*)PyTuple_GetItem(args, 0), args, kwargs);
+    }
 
     if(args && PyTuple_Size(args) == 3) {
         return MxUniverse_BindThing2(PyTuple_GetItem(args, 0),
@@ -458,14 +463,7 @@ HRESULT MxUniverse_Bind(PyObject *args, PyObject *kwargs, PyObject **out)
                                      PyTuple_GetItem(args, 2));
     }
 
-    if(args && PyTuple_Size(args) == 2) {
-        return MxUniverse_BindThing1(PyTuple_GetItem(args, 0),
-                                     PyTuple_GetItem(args, 1));
-    }
-
-
-
-    return mx_error(E_FAIL, "bind only implemented for 2 or 3 arguments: bind(thing, a, b)");
+    return mx_error(E_FAIL, "bind only implemented for 2 or 3 arguments: bind(thing, a, b, ...)");
 }
 
 
@@ -487,20 +485,32 @@ CAPI_FUNC(HRESULT) MxUniverse_BindThing2(PyObject *thing, PyObject *a,
     return mx_error(E_NOTIMPL, "binding currently implmented for potentials to things");
 }
 
-CAPI_FUNC(HRESULT) MxUniverse_BindThing1(PyObject *thing, PyObject *a) {
-    if(PyObject_IsInstance(thing, (PyObject*)&MxForce_Type)) {
-        return universe_bind_force((MxForce*)thing, a);
+
+static HRESULT universe_bind_force(MxForce *force, PyObject *args, PyObject *kwargs) {
+    
+    if(PyTuple_Size(args) < 2) {
+        return C_ERR(E_FAIL, "binding a force requires at least two arguments, only one given");
     }
-    return mx_error(E_NOTIMPL, "binding currently implmented for potentials to things");
-}
-
-
-
-
-static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
-    MxParticleType *a_type = MxParticleType_Get(a);
-    if(a_type) {
-        if(engine_addforce1(&_Engine, f, a_type->id) != engine_err_ok) {
+    
+    PyObject *arg1 = PyTuple_GetItem(args, 1);
+    MxParticleType *a_type = MxParticleType_Get(arg1);
+    if(!a_type) {
+        std::string msg = "could not convert second argument of type ";
+        msg += arg1->ob_type->tp_name;
+        msg += " to a particle type";
+        return C_ERR(E_FAIL, msg.c_str());
+    }
+    
+    PyObject *coupling = NULL;
+    if(PyTuple_Size(args) == 3) {
+        coupling = PyTuple_GetItem(args, 2);
+    }
+    else if(kwargs) {
+        coupling = PyDict_GetItemString(kwargs, "coupling_symbol");
+    }
+    
+    if(coupling == NULL) {
+        if(engine_add_singlebody_force(&_Engine, force, a_type->id, -1) != engine_err_ok) {
             std::string msg = "failed to add force to engine: error";
             msg += std::to_string(engine_err);
             msg += ", ";
@@ -509,7 +519,32 @@ static HRESULT universe_bind_force(MxForce *f, PyObject *a) {
         }
         return S_OK;
     }
-    return mx_error(E_FAIL, "can only add force to particle types");
+    
+    if(a_type->species) {
+        int index = a_type->species->index_of(coupling);
+        if(index < 0) {
+            std::string msg = "could not bind force, the particle type ";
+            msg += a_type->name;
+            msg += " has a chemical species state vector, but it does not have the symbol ";
+            msg += carbon::str(coupling);
+            return C_ERR(E_FAIL, msg.c_str());
+        }
+        
+        if(engine_add_singlebody_force(&_Engine, force, a_type->id, index) != engine_err_ok) {
+            std::string msg = "failed to add force to engine: error";
+            msg += std::to_string(engine_err);
+            msg += ", ";
+            msg += engine_err_msg[-engine_err];
+            return mx_error(E_FAIL, msg.c_str());
+        }
+        return S_OK;
+    }
+    else {
+        std::string msg = "could not add force, given a coupling symbol, but the particle type ";
+        msg += a_type->name;
+        msg += " does not have a chemical species vector";
+        return C_ERR(E_FAIL, msg.c_str());
+    }
 }
 
 

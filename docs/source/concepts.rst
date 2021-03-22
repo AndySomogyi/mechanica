@@ -4,18 +4,18 @@ Concepts
 Running a Simulation
 --------------------
 
-In most cases, running simulation is as simple as initializing the
-:class:`Simulator`, building the physical model, and calling either the
-:meth:`Simulator.run` or :meth:`Simulator.irun` methods to run the
+In most cases, running simulation is as simple as initializing the simulator
+with the :any:`init` function,  building the physical model, and calling either the
+:any:`run` or :any:`irun` methods to run the
 simulation. However sometimes users might want more control. 
 
 A running simulation has two key components: interacting with the operating
 system, and listening for user input, and time stepping the simulation (model)
-itself. Whenever the :meth:`Simulator.run` or :meth:`Simulator.irun` are
+itself. Whenever the :func:`run` or :func:`irun` are
 invoked, they automatically start time-stepping the simulation. Users can
 however explicitly control the time-stepping of the model directly. To display
 the window, and start the operating system message loop, you can call the
-:meth:`Simulator.show` method. This works just like the MatPlotLib show, in that
+:func:`show` method. This works just like the MatPlotLib show, in that
 it displays the windows, but does not time step the simulation. The
 :meth:`Universe.start`, :meth:`Universe.step`, :meth:`Universe.stop` methods
 start the universe time evolution, perform a single time step, and stop the time
@@ -34,7 +34,7 @@ For convince, all the the running / showing / closing methods are aliased as
 top-level methods, i.e.::
 
   >>> import mechanica as m  # import the package
-  >>> m.Simulator()          # initialize the simulator
+  >>> m.init()               # initialize the simulator
   >>> # create the model here
   >>> ...
   >>> m.irun()               # run in interactive mode (only for ipython console)

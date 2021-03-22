@@ -19,6 +19,40 @@ This is the API Reference page for the module: :mod:`mechanica`
    Config object. You can initialize the simulator via a config :class:`.Config`
    object , or via keyword arguments. The keywords have the same name as fields
    on the config.
+
+
+        
+
+.. function:: run()
+
+   Starts the operating system messaging event loop for application. This is
+   typically used from scripts, as console input will no longer work. The run
+   method will continue to run until all of the windows are closed, or the
+   ``quit`` method is called. By default, ``run`` will automatically start
+   the universe time propagation.
+      
+
+.. function:: irun()
+
+   Runs the simulator in interactive mode, in that in interactive mode, the
+   console is still active and users can continue to issue commands via the
+   ipython console. By default, ``irun`` will automatically start the
+   universe time propagation.
+      
+
+.. function:: close()
+
+   Closes the main window, but the application / simulation will continue to
+   run. 
+
+
+.. function:: show()
+
+   Shows any windows that were specified in the config. This works just like
+   MatPlotLib's ``show`` method. The ``show`` method does not start the
+   universe time propagation unlike ``run`` and ``irun``.
+
+
    
    
    :Keyword Arguments:

@@ -12,10 +12,20 @@
 #include <iostream>
 #include <MxPy.h>
 #include <random>
+#include <CStateVector.hpp>
 
 static PyObject *berenderson_create(float tau);
 static PyObject *random_create(float std, float mean, float durration);
 static PyObject *friction_create(float coef, float mean, float std, float durration);
+
+static float scaling_constant(MxParticle *part, int stateVectorIndex) {
+    if(part->state_vector && stateVectorIndex >= 0) {
+        return part->state_vector->fvec[stateVectorIndex];
+    }
+    else {
+        return 1.f;
+    }
+}
 
 
 static int constantforce_init(MxConstantForce *self, PyObject *_args, PyObject *_kwds);
@@ -317,7 +327,7 @@ struct Friction : MxForce {
  *
  * f_b = p / tau * ((T_0 / T) - 1)
  */
-static void berendsen_force(struct Berendsen* t, struct MxParticle *p, FPTYPE*f) {
+static void berendsen_force(struct Berendsen* t, struct MxParticle *p, int stateVectorIndex, FPTYPE*f) {
     MxParticleType *type = (MxParticleType*)&engine::types[p->typeId];
 
     float scale = t->itau * ((type->target_energy / type->kinetic_energy) - 1.0);
@@ -326,10 +336,11 @@ static void berendsen_force(struct Berendsen* t, struct MxParticle *p, FPTYPE*f)
     f[2] += scale * p->v[2];
 }
 
-static void constant_force(struct MxConstantForce* cf, struct MxParticle *p, FPTYPE*f) {
-    f[0] += cf->force[0];
-    f[1] += cf->force[1];
-    f[2] += cf->force[2];
+static void constant_force(struct MxConstantForce* cf, struct MxParticle *p, int stateVectorIndex, FPTYPE*f) {
+    float scale = scaling_constant(p, stateVectorIndex);
+    f[0] += cf->force[0] * scale;
+    f[1] += cf->force[1] * scale;
+    f[2] += cf->force[2] * scale;
 }
 
 
@@ -338,7 +349,7 @@ static void constant_force(struct MxConstantForce* cf, struct MxParticle *p, FPT
  *
  * f_b = p / tau * ((T_0 / T) - 1)
  */
-static void friction_force(struct Friction* t, struct MxParticle *p, FPTYPE*f) {
+static void friction_force(struct Friction* t, struct MxParticle *p, int stateVectorIndex, FPTYPE*f) {
     MxParticleType *type = (MxParticleType*)&engine::types[p->typeId];
     
     if((_Engine.integrator_flags & INTEGRATOR_UPDATE_PERSISTENTFORCE) &&
@@ -356,7 +367,7 @@ static void friction_force(struct Friction* t, struct MxParticle *p, FPTYPE*f) {
     f[2] += scale * p->v[2] + p->persistent_force[2];
 }
 
-static void gaussian_force(struct Gaussian* t, struct MxParticle *p, FPTYPE*f) {
+static void gaussian_force(struct Gaussian* t, struct MxParticle *p, int stateVectorIndex, FPTYPE*f) {
     MxParticleType *type = (MxParticleType*)&engine::types[p->typeId];
     // values near the mean are the most likely
     // standard deviation affects the dispersion of generated values from the mean
@@ -484,6 +495,10 @@ void MxConstantForce::setValue(PyObject *obj)
 
 int MxConstantForce_Check(PyObject *o) {
     return PyObject_IsInstance(o, (PyObject*)&MxConstantForce_Type);
+}
+
+int MxForce_Check(PyObject *o) {
+    return PyObject_IsInstance(o, (PyObject*)&MxForce_Type);
 }
 
 /**

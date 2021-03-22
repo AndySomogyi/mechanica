@@ -20,6 +20,11 @@ History
 =======
 Version Alpha 1.0.22.1
 ----------------------
+* new coupling parameter between single body forces and chemical species on
+  objects. 
+
+Version Alpha 1.0.22.1
+----------------------
 * bug fix in DPD potential between fluid and large objects
 * new scaled DPD potential that enables fluid interaction between objects of
   varying size. 

@@ -454,7 +454,8 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
     struct MxPotential *pot;
     MxFluxes *fluxes;
     // single body force and forces
-    MxForce *psb, **psbs;
+    MxForceSingleBinding *psb;
+    MxForceSingleBinding *psbs;
     struct engine *eng;
     FPTYPE cutoff, cutoff2, r2;
     FPTYPE *pif;
@@ -516,9 +517,9 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
         pif = &( part_i->f[0] );
 
         // calculate single body force if any
-        psb = psbs[part_i->typeId];
+        psb = &psbs[part_i->typeId];
         if(psb) {
-            psb->func(psb, part_i, part_i->f);
+            psb->force->func(psb->force, part_i, psb->stateVectorIndex, part_i->f);
         }
         
         // force between particle and large particles

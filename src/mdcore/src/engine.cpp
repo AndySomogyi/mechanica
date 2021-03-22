@@ -960,7 +960,8 @@ int engine_addpot ( struct engine *e , struct MxPotential *p , int i , int j ) {
 	return engine_err_ok;
 }
 
-CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i ) {
+CAPI_FUNC(int) engine_add_singlebody_force (struct engine *e, struct MxForce *p,
+                                            int i, int stateVectorId) {
     /* check for nonsense. */
     if ( e == NULL )
         return error(engine_err_null);
@@ -968,7 +969,8 @@ CAPI_FUNC(int) engine_addforce1 ( struct engine *e , struct MxForce *p , int i )
         return error(engine_err_range);
 
     /* store the force. */
-    e->p_singlebody[i] = p;
+    e->p_singlebody[i].force = p;
+    e->p_singlebody[i].stateVectorIndex = stateVectorId;
     Py_INCREF(p);
 
     if(MxConstantForce_Check(p)) {
@@ -1647,9 +1649,9 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
     e->nr_dihedralpots = 0;
 
     // init singlebody forces
-    if ( ( e->p_singlebody = (MxForce **)malloc( sizeof(MxForce *) * e->max_type ) ) == NULL )
+    if ( ( e->p_singlebody = (MxForceSingleBinding*)malloc( sizeof(MxForceSingleBinding) * e->max_type ) ) == NULL )
             return error(engine_err_malloc);
-    bzero(e->p_singlebody, sizeof(struct MxForce *) * e->max_type );
+    bzero(e->p_singlebody, sizeof(struct MxForceSingleBinding) * e->max_type );
 
     /* Make sortlists? */
     if ( flags & engine_flag_verlet_pseudo ) {
@@ -1736,26 +1738,6 @@ double engine_kinetic_energy(struct engine *e)
 double engine_temperature(struct engine *e)
 {
     return 0;
-}
-
-int engine_singlebody_set(struct engine *e, struct MxForce *f, int type_id)
-{
-    if (type_id >= e->max_type) {
-        return error(engine_err_range);
-    }
-
-    if(e->p_singlebody[type_id]) {
-        Py_DECREF(e->p_singlebody[type_id]);
-        e->p_singlebody[type_id] = NULL;
-    }
-
-    if(f) {
-        e->p_singlebody[type_id] = f;
-        Py_INCREF(f);
-    }
-
-    /* all is well... */
-    return engine_err_ok;
 }
 
 int engine_addpart(struct engine *e, struct MxParticle *p, double *x,

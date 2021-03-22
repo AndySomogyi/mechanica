@@ -23,12 +23,21 @@ enum MXFORCE_KIND {
 /**
  * single body force function.
  */
-typedef void (*MxForce_OneBodyPtr)(struct MxForce*, struct MxParticle *, FPTYPE*f);
+typedef void (*MxForce_OneBodyPtr)(struct MxForce*, struct MxParticle *, int stateVectorId, FPTYPE*f);
 
 
 struct MxForce : PyObject
 {
     MxForce_OneBodyPtr func;
+};
+
+/**
+ * a binding of a force to a particle type, where we use a coupling constant from the
+ * state vector as a scaling.
+ */
+struct MxForceSingleBinding {
+    MxForce *force;
+    int stateVectorIndex;
 };
 
 /**
@@ -68,6 +77,13 @@ struct MxConstantForce : MxForce {
  * @returns TRUE if a symbol, FALSE otherwise.
  */
 CAPI_FUNC(int) MxConstantForce_Check(PyObject *o);
+
+
+/**
+ * Determines if this object is a constant force type.
+ * @returns TRUE if a symbol, FALSE otherwise.
+ */
+CAPI_FUNC(int) MxForce_Check(PyObject *o);
 
 
 
