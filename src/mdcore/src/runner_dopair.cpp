@@ -518,7 +518,7 @@ __attribute__ ((flatten)) int runner_doself ( struct runner *r , struct space_ce
 
         // calculate single body force if any
         psb = &psbs[part_i->typeId];
-        if(psb) {
+        if(psb->force) {
             psb->force->func(psb->force, part_i, psb->stateVectorIndex, part_i->f);
         }
         
