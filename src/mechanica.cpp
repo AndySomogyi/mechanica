@@ -133,15 +133,6 @@ static PyObject *bind_sphere(PyObject *mod, PyObject *a, PyObject *k) {
     return MxUniverse_BindSphere(a, k);
 }
 
-static PyObject *cmdline(PyObject *mod, PyObject *a) {
-    PyObject *pid = NULL;
-    if(a && PyTuple_Size(a) > 0) {
-        pid = PyTuple_GetItem(a, 0);
-        
-    }
-    return C_CmdLineArgsForPid(pid);
-}
-
 static PyMethodDef methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_VARARGS | METH_KEYWORDS, NULL },
     { "pollEvents", (PyCFunction)MxPyUI_PollEvents, METH_NOARGS, NULL },
@@ -169,7 +160,6 @@ static PyMethodDef methods[] = {
     { "consume_flux", (PyCFunction)MxFluxes_Uptake, METH_VARARGS | METH_KEYWORDS, NULL },
     { "reset_species", (PyCFunction)MxUniverse_ResetSpecies, METH_VARARGS | METH_KEYWORDS, NULL },
     { "test", (PyCFunction)_MxTest, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "cmdline", (PyCFunction)cmdline, METH_VARARGS, NULL },
     { NULL, NULL, 0, NULL }
 };
 
