@@ -489,6 +489,7 @@ file(COPY setup.py DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY __init__.py DESTINATION ${MX_PYPKG_DIR})
 file(COPY mechanica.py DESTINATION ${MX_PYPKG_DIR})
 file(COPY lattice.py DESTINATION ${MX_PYPKG_DIR})
+file(COPY jwidget.py DESTINATION ${MX_PYPKG_DIR})
 
 
 target_link_libraries(mechanica_shared

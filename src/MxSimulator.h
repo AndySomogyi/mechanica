@@ -676,7 +676,5 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs);
 
 CAPI_FUNC(int) universe_init(const MxUniverseConfig &conf);
 
-CAPI_FUNC(bool) Mx_IsIpython();
-
 
 #endif /* SRC_MXSIMULATOR_H_ */

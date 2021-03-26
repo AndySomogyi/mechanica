@@ -19,6 +19,7 @@
 #include <sstream>
 #include <MxUniverse.h>
 #include <MxConvert.hpp>
+#include <MxSystem.h>
 
 #include <MxPy.h>
 
@@ -454,7 +455,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
 
 
     Log(LOG_DEBUG) << "checking for ipython";
-    if (Mx_IsIpython()) {
+    if (C_TerminalInteractiveShell()) {
 
         if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
             // ipython message loop, this exits right away
@@ -556,6 +557,19 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
         Log(LOG_INFORMATION);
 
         Simulator = sim;
+        
+        if(C_ZMQInteractiveShell()) {
+            Log(LOG_INFORMATION) << "in jupyter notebook, calling widget init";
+            PyObject *widgetInit = MxSystem_JWidget_Init(args, kwargs);
+            if(!widgetInit) {
+                Log(LOG_ERROR) << "could not create jupyter widget";
+                return NULL;
+            }
+            else {
+                Py_DECREF(widgetInit);
+            }
+        }
+        
         Py_RETURN_NONE;
     }
     catch(const std::exception &e) {
@@ -732,7 +746,7 @@ CAPI_FUNC(HRESULT) MxSimulator_Show()
 
     Log(LOG_TRACE) << "checking for ipython";
     
-    if (Mx_IsIpython()) {
+    if (C_TerminalInteractiveShell()) {
 
         if (!MxUniverse_Flag(MxUniverse_Flags::MX_IPYTHON_MSGLOOP)) {
             // ipython message loop, this exits right away
@@ -827,17 +841,7 @@ CAPI_FUNC(HRESULT) MxSimulator_Destroy()
 }
 
 
-CAPI_FUNC(bool) Mx_IsIpython() {
-    PyObject* ipy = CIPython_Get();
-    bool result = false;
 
-    if (ipy && strcmp("TerminalInteractiveShell", ipy->ob_type->tp_name) == 0) {
-        result = true;
-    }
-
-    Py_XDECREF(ipy);
-    return result;
-}
 
 
 /**

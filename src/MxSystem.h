@@ -62,6 +62,11 @@ void MxSystem_CameraRotateByEulerAngle(const Magnum::Vector3& anglesDelta);
 void MxSystem_ViewReshape(const Magnum::Vector2i& windowSize);
 
 
+PyObject *MxSystem_JWidget_Init(PyObject *args, PyObject *kwargs);
+
+PyObject *MxSystem_JWidget_Run(PyObject *args, PyObject *kwargs);
+
+
 
 HRESULT _MxSystem_init(PyObject *m);
 

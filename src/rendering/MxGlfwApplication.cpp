@@ -495,7 +495,7 @@ HRESULT MxGlfwApplication::show()
     
     showWindow();
     
-    if (!Mx_IsIpython()) {
+    if (!C_TerminalInteractiveShell()) {
         return messageLoop(-1);
     }
     

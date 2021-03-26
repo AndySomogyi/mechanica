@@ -196,6 +196,106 @@ PyObject *system_view_reshape(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+PyObject *is_terminal_interactive(PyObject *o) {
+    if(C_TerminalInteractiveShell()) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
+}
+
+PyObject *is_jupyter_notebook(PyObject *o) {
+    if(C_ZMQInteractiveShell()) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
+}
+
+
+PyObject *MxSystem_JWidget_Init(PyObject *args, PyObject *kwargs) {
+    
+    PyObject* moduleString = PyUnicode_FromString((char*)"mechanica.jwidget");
+    
+    if(!moduleString) {
+        return NULL;
+    }
+    
+    #if defined(__has_feature)
+    #  if __has_feature(thread_sanitizer)
+        std::cout << "thread sanitizer, returning NULL" << std::endl;
+        return NULL;
+    #  endif
+    #endif
+    
+    PyObject* module = PyImport_Import(moduleString);
+    if(!module) {
+        C_ERR(E_FAIL, "could not import mechanica.jwidget package");
+        return NULL;
+    }
+    
+    // Then getting a reference to your function :
+
+    PyObject* init = PyObject_GetAttrString(module,(char*)"init");
+    
+    if(!init) {
+        C_ERR(E_FAIL, "mechanica.jwidget package does not have an init function");
+        return NULL;
+    }
+
+    PyObject* result = PyObject_Call(init, args, kwargs);
+    
+    Py_DECREF(moduleString);
+    Py_DECREF(module);
+    Py_DECREF(init);
+    
+    if(!result) {
+        Log(LOG_ERROR) << "error calling mechanica.jwidget.init: " << carbon::pyerror_str();
+    }
+    
+    return result;
+}
+
+PyObject *MxSystem_JWidget_Run(PyObject *args, PyObject *kwargs) {
+    PyObject* moduleString = PyUnicode_FromString((char*)"mechanica.jwidget");
+    
+    if(!moduleString) {
+        return NULL;
+    }
+    
+    #if defined(__has_feature)
+    #  if __has_feature(thread_sanitizer)
+        std::cout << "thread sanitizer, returning NULL" << std::endl;
+        return NULL;
+    #  endif
+    #endif
+    
+    PyObject* module = PyImport_Import(moduleString);
+    if(!module) {
+        C_ERR(E_FAIL, "could not import mechanica.jwidget package");
+        return NULL;
+    }
+    
+    // Then getting a reference to your function :
+
+    PyObject* run = PyObject_GetAttrString(module,(char*)"run");
+    
+    if(!run) {
+        C_ERR(E_FAIL, "mechanica.jwidget package does not have an run function");
+        return NULL;
+    }
+
+    PyObject* result = PyObject_Call(run, args, kwargs);
+    
+    Py_DECREF(moduleString);
+    Py_DECREF(module);
+    Py_DECREF(run);
+    
+    return result;
+    
+}
 
 static PyMethodDef system_methods[] = {
     { "cpu_info", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
@@ -220,6 +320,8 @@ static PyMethodDef system_methods[] = {
     { "camera_rotate_to_euler_angle", (PyCFunction)system_camera_rotate_to_euler_angle, METH_VARARGS | METH_KEYWORDS, NULL},
     { "camera_rotate_by_euler_angle", (PyCFunction)system_camera_rotate_by_euler_angle, METH_VARARGS | METH_KEYWORDS, NULL},
     { "view_reshape", (PyCFunction)system_view_reshape, METH_VARARGS | METH_KEYWORDS, NULL},
+    { "is_terminal_interactive", (PyCFunction)is_terminal_interactive, METH_VARARGS | METH_KEYWORDS, NULL},
+    { "is_jupyter_notebook", (PyCFunction)is_jupyter_notebook, METH_VARARGS | METH_KEYWORDS, NULL},
     { NULL, NULL, 0, NULL }
 };
 
