@@ -196,6 +196,8 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
 
     PyObject *o;
 
+    Log(LOG_TRACE) << carbon::str(kwargs);
+
     if((o = PyDict_GetItemString(kwargs, "dim"))) {
         conf.universeConfig.dim = mx::cast<Magnum::Vector3>(o);
     }
@@ -247,6 +249,7 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
         conf.setWindowless(mx::cast<bool>(o));
     }
     else if(C_ZMQInteractiveShell()) {
+      Log(LOG_INFORMATION) << "in zmq shell, setting windowless to true";
         conf.setWindowless(true);
     }
 
@@ -527,9 +530,8 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
         universe_init(conf.universeConfig);
 
         if(conf.windowless()) {
+	    Log(LOG_INFORMATION) <<  "creating Windowless app" ;
             ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
-
-            Log(LOG_INFORMATION) <<  "creating Windowless app" ;;
 
             MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
 
@@ -541,11 +543,13 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
             else {
                 sim->app = windowlessApp;
             }
+
+	    Log(LOG_TRACE) << "sucessfully created windowless app";
         }
         else {
             ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
 
-            Log(LOG_INFORMATION) <<  "creating GLFW app" ;;
+            Log(LOG_INFORMATION) <<  "creating GLFW app" ;
 
             MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
 

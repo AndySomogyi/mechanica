@@ -962,11 +962,11 @@ int space_init (struct space *s , const double *origin , const double *dim ,
     // so has zero offset for loc.
     l[0] = l[1] = l[1] = 0;
     
-    if(LOG_TRACE <= CLogger::getLevel()) {
-        for(int i = 0; i < s->nr_tasks; ++i) {
-            Log(LOG_TRACE) << "task: " << i << ": " << &s->tasks[i];
-        }
-    }
+    //if(LOG_TRACE <= CLogger::getLevel()) {
+    //    for(int i = 0; i < s->nr_tasks; ++i) {
+    //        Log(LOG_TRACE) << "task: " << i << ": " << &s->tasks[i];
+    //    }
+    //}
     
     if ( space_cell_init( &s->largeparts, l, s->origin, s->h ) < 0 )
         return error(space_err_cell);
