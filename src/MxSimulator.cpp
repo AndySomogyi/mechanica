@@ -245,9 +245,9 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
 
     if((o = PyDict_GetItemString(kwargs, "windowless"))) {
         conf.setWindowless(mx::cast<bool>(o));
-        if(conf.windowless()) {
-            conf.setWindowSize({1024,1024});
-        }
+    }
+    else if(C_ZMQInteractiveShell()) {
+        conf.setWindowless(true);
     }
 
     if((o = PyDict_GetItemString(kwargs, "window_size"))) {

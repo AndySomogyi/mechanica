@@ -18,19 +18,19 @@ course).
 
 History
 =======
-Version Alpha 1.0.23.1
+Version Alpha 1.0.25.2
 ----------------------
 * functions to detect if we are running in interactive terminal or
   jupyter notebook
 * stubbed out new jupyter widget file.
 * call jupyter widget init / run if we are running in jupyter notebook server. 
 
-Version Alpha 1.0.23.1
+Version Alpha 1.0.24.1
 ----------------------
 * new coupling parameter between single body forces and chemical species on
   objects. 
 
-Version Alpha 1.0.22.1
+Version Alpha 1.0.23.1
 ----------------------
 * bug fix in DPD potential between fluid and large objects
 * new scaled DPD potential that enables fluid interaction between objects of
