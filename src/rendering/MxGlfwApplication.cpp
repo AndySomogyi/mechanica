@@ -509,7 +509,7 @@ HRESULT MxGlfwApplication::showWindow()
     glfwShowWindow(window());
 
 #ifdef _WIN32
-    if (!Mx_IsIpython()) {
+    if (!C_TerminalInteractiveShell()) {
         ForceForgoundWindow1(window());
     }
 #endif

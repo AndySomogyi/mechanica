@@ -288,7 +288,11 @@ PyObject *MxSystem_JWidget_Run(PyObject *args, PyObject *kwargs) {
     }
 
     PyObject* result = PyObject_Call(run, args, kwargs);
-    
+
+    if (!result) {
+        Log(LOG_ERROR) << "error calling mechanica.jwidget.run: " << carbon::pyerror_str();
+    }
+
     Py_DECREF(moduleString);
     Py_DECREF(module);
     Py_DECREF(run);

@@ -440,7 +440,7 @@ CAPI_FUNC(HRESULT) MxSimulator_Run(double et)
 {
     SIMULATOR_CHECK();
 
-    Log(LOG_INFORMATION) <<  "simulator run(" << et << ")" ;;
+    Log(LOG_INFORMATION) <<  "simulator run(" << et << ")" ;
 
     return Simulator->app->run(et);
 }
@@ -881,6 +881,29 @@ static PyObject *post_empty_event(PyObject *self, PyObject *args, PyObject *kwar
 
 static PyObject *simulator_run(PyObject *self, PyObject *args, PyObject *kwargs) {
     SIM_TRY();
+
+    if (C_ZMQInteractiveShell()) {
+        PyObject* result = MxSystem_JWidget_Run(args, kwargs);
+        if (!result) {
+            Log(LOG_ERROR) << "failed to call mechanica.jwidget.run";
+            return NULL;
+        }
+
+        if (result == Py_True) {
+            Py_DECREF(result);
+            Py_RETURN_NONE;
+        }
+        else if (result == Py_False) {
+            Log(LOG_INFORMATION) << "returned false from  mechanica.jwidget.run, performing normal simulation";
+        }
+        else {
+            Log(LOG_WARNING) << "unexpected result from mechanica.jwidget.run , performing normal simulation"; 
+        }
+
+        Py_DECREF(result);
+    }
+
+
     double et = mx::arg<double>("et", 0, args, kwargs, -1);
     SIM_CHECK(MxSimulator_Run(et));
     SIM_FINALLY(NULL);

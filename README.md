@@ -18,7 +18,14 @@ course).
 
 History
 =======
-Version Alpha 1.0.22.1
+Version Alpha 1.0.23.1
+----------------------
+* functions to detect if we are running in interactive terminal or
+  jupyter notebook
+* stubbed out new jupyter widget file.
+* call jupyter widget init / run if we are running in jupyter notebook server. 
+
+Version Alpha 1.0.23.1
 ----------------------
 * new coupling parameter between single body forces and chemical species on
   objects. 
