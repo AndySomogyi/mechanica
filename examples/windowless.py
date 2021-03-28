@@ -1,6 +1,8 @@
 import mechanica as m
 
-m.init(windowless=True, window_size=[1024,1024])
+m.init(windowless=True,
+       window_size=[1024,1024],
+       clip_planes = [([2, 2, 2], [1, 1, 0]), ([5, 5, 5], [-1, -1, 0])])
 
 print(m.system.gl_info())
 
