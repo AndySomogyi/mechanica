@@ -18,6 +18,12 @@ course).
 
 History
 =======
+
+Version Alpha 1.0.26.0
+----------------------
+* Clipping Planes! users can specify arbitrary clipping planes with nice Python API. 
+* Forked Magnum Phong shader, we now have complete control over the shader. 
+
 Version Alpha 1.0.25.2
 ----------------------
 * functions to detect if we are running in interactive terminal or
