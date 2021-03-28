@@ -1,8 +1,8 @@
 /*
     This file is part of Magnum.
 
-    Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017
-              Vladimír Vondruš <mosra@centrum.cz>
+    Copyright © 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019,
+                2020, 2021 Vladimír Vondruš <mosra@centrum.cz>
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
@@ -23,6 +23,20 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+/* Kept consistent with Generic.h (tested in ShadersGenericTest) */
+
 #define POSITION_ATTRIBUTE_LOCATION 0
 #define TEXTURECOORDINATES_ATTRIBUTE_LOCATION 1
-#define NORMAL_ATTRIBUTE_LOCATION 2
+#define COLOR_ATTRIBUTE_LOCATION 2
+#define TANGENT_ATTRIBUTE_LOCATION 3
+#define BITANGENT_ATTRIBUTE_LOCATION 4 /* also ObjectId */
+#define OBJECT_ID_ATTRIBUTE_LOCATION 4 /* also Bitangent */
+#define NORMAL_ATTRIBUTE_LOCATION 5
+
+#define TRANSFORMATION_MATRIX_ATTRIBUTE_LOCATION 8
+#define NORMAL_MATRIX_ATTRIBUTE_LOCATION 12
+#define TEXTURE_OFFSET_ATTRIBUTE_LOCATION 15
+
+/* Outputs */
+#define COLOR_OUTPUT_ATTRIBUTE_LOCATION 0
+#define OBJECT_ID_OUTPUT_ATTRIBUTE_LOCATION 1

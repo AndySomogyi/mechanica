@@ -21,12 +21,12 @@ filename=shaders/MxMeshShaderProgram.frag
 alias=MxMeshShaderProgram.frag
 
 [file]
-filename=shaders/Phong.vert
-alias=Phong.vert
+filename=shaders/MxPhong.vert
+alias=MxPhong.vert
 
 [file]
-filename=shaders/Phong.frag
-alias=Phong.frag
+filename=shaders/MxPhong.frag
+alias=MxPhong.frag
 
 [file]
 filename=shaders/VertexColor.frag

@@ -14,6 +14,7 @@
 #include <rendering/MxApplication.h>
 #include <rendering/MxUniverseRenderer.h>
 #include <rendering/MxGlfwApplication.h>
+#include <rendering/MxClipPlane.hpp>
 #include <MxConvert.hpp>
 
 
@@ -484,6 +485,10 @@ HRESULT _MxSystem_init(PyObject* m) {
 
     if(!system_module) {
         return c_error(E_FAIL, "could not create system module");
+    }
+    
+    if(PyModule_AddObject(system_module, "clip_planes", MxClipPlanes_Get())) {
+        return c_error(E_FAIL, "could not add clip_planes to system module");
     }
 
     if(PyModule_AddObject(m, "system", system_module) != 0) {

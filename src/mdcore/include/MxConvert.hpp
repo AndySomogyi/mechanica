@@ -12,8 +12,8 @@
 #include <CConvert.hpp>
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Vector3.h>
+#include <Magnum/Math/Vector4.h>
 #include <Magnum/Math/Matrix3.h>
-
 
 namespace mx {
 
@@ -37,12 +37,18 @@ T cast(PyObject *o);
     
 template<>
 PyObject* cast(const Magnum::Vector3 &v);
+
+template<>
+PyObject* cast(const Magnum::Vector4 &v);
     
 template<>
 PyObject* cast(const Magnum::Matrix3 &m);
     
 template<>
 Magnum::Vector3 cast(PyObject *obj);
+
+template<>
+Magnum::Vector4 cast(PyObject *obj);
 
 template<>
 Magnum::Vector2 cast(PyObject *obj);

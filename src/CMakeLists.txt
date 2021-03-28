@@ -108,7 +108,11 @@ set(SRC
 
   rendering/MxEglInfo.cpp
 
+  rendering/MxClipPlane.cpp
+
   shaders/ParticleSphereShader.cpp
+
+  shaders/MxPhong.cpp
 
   ${AST_SRC}
 #  ${X3D_SRC}
@@ -193,9 +197,13 @@ set(HEADERS
 
   rendering/MxGlInfo.h
 
+  rendering/MxClipPlane.hpp
+
   rendering/colormaps/colormaps.h
 
   shaders/ParticleSphereShader.h
+
+  shaders/MxPhong.h
   )
 
 

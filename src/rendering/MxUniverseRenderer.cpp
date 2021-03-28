@@ -49,6 +49,8 @@
 #include <Magnum/Primitives/Cube.h>
 #include <Magnum/Primitives/Icosphere.h>
 
+#include <Magnum/Math/Vector4.h>
+
 
 #include <rendering/WireframeObjects.h>
 #include <rendering/NOMStyle.hpp>
@@ -57,17 +59,46 @@
 
 #include <assert.h>
 #include <iostream>
+#include <stdexcept>
 
 
 
 using namespace Magnum::Math::Literals;
 
-MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
+MxUniverseRenderer::MxUniverseRenderer(const MxSimulator::Config &conf, MxWindow *win):
     window{win}
 {
-    GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
+    //GL::Renderer::enable(GL::Renderer::Feature::FaceCulling);
     GL::Renderer::enable(GL::Renderer::Feature::DepthTest);
-
+    
+    if(conf.clipPlanes.size() > 0) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance0);
+    }
+    if(conf.clipPlanes.size() > 1) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance1);
+    }
+    if(conf.clipPlanes.size() > 2) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance2);
+    }
+    if(conf.clipPlanes.size() > 3) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance3);
+    }
+    if(conf.clipPlanes.size() > 4) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance4);
+    }
+    if(conf.clipPlanes.size() > 5) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance5);
+    }
+    if(conf.clipPlanes.size() > 6) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance6);
+    }
+    if(conf.clipPlanes.size() > 7) {
+        GL::Renderer::enable(GL::Renderer::Feature::ClipDistance7);
+    }
+    if(conf.clipPlanes.size() > 8) {
+        throw std::invalid_argument("only up to 8 clip planes supported");
+    }
+    
     GL::Renderer::setDepthFunction(GL::Renderer::StencilFunction::Less);
     
     GL::Renderer::setClearColor(Color3{0.35f});
@@ -118,9 +149,12 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
     setModelViewTransform(Matrix4::translation(-center));
     
     // set up the sphere rendering...
-    sphereShader = Shaders::Phong{
-        Shaders::Phong::Flag::VertexColor|
-        Shaders::Phong::Flag::InstancedTransformation, 1};
+    sphereShader = Shaders::MxPhong {
+        Shaders::MxPhong::Flag::VertexColor |
+        Shaders::MxPhong::Flag::InstancedTransformation,
+        1,                                                // light count
+        (unsigned)conf.clipPlanes.size()                  // clip plane count
+    };
     
     sphereInstanceBuffer = GL::Buffer{};
 
@@ -172,6 +206,11 @@ MxUniverseRenderer::MxUniverseRenderer(MxWindow *win):
         .setAmbientColor({0.4, 0.4, 0.4, 1})
         .setDiffuseColor({1, 1, 1, 0})
         .setSpecularColor({0.2, 0.2, 0.2, 0});
+    
+    _clipPlanes = conf.clipPlanes;
+    for(int i = 0; i < conf.clipPlanes.size(); ++i) {
+        sphereShader.setclipPlaneEquation(i, conf.clipPlanes[i]);
+    }
     
     // we resize instances all the time.
     sphereMesh.setInstanceCount(0);
@@ -649,8 +688,22 @@ void MxUniverseRenderer::mouseScrollEvent(Platform::GlfwApplication::MouseScroll
 }
 
 
+int MxUniverseRenderer::clipPlaneCount() const {
+    return sphereShader.clipPlaneCount();
+}
 
+void MxUniverseRenderer::setClipPlaneEquation(unsigned id, const Magnum::Vector4& pe) {
+    if(id > sphereShader.clipPlaneCount()) {
+        throw std::invalid_argument("invalid id for clip plane");
+    }
+    
+    sphereShader.setclipPlaneEquation(id, pe);
+    _clipPlanes[id] = pe;
+}
 
+const Magnum::Vector4& MxUniverseRenderer::getClipPlaneEquation(unsigned id) {
+    return _clipPlanes[id];
+}
 
 
 //void FluidSimApp::mouseScrollEvent(MouseScrollEvent& event) {

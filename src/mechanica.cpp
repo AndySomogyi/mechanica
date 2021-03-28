@@ -43,6 +43,7 @@
 #include <DissapativeParticleDynamics.hpp>
 #include <MxBoundaryConditions.hpp>
 #include <metrics.h>
+#include <rendering/MxClipPlane.hpp>
 
 #include "Vertex.hpp"
 #include "Edge.hpp"
@@ -306,6 +307,10 @@ static PyObject * moduleinit(void)
     // needs to be before other stuff like particles that depend on style.
     _NOMStyle_init(m);
     MxModel_init(m);
+    
+    // has to go before system, system puts one of this in the module.
+    _MxClipPlane_Init(m);
+    
     _MxSystem_init(m);
     MxPropagator_init(m);
 
@@ -347,7 +352,7 @@ static PyObject * moduleinit(void)
     _DPDPotential_Init(m);
     
     _MxBoundaryConditions_Init(m);
-
+    
     mechanicaModule = m;
 
     return m;

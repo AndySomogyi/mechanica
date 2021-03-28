@@ -15,6 +15,7 @@
 #include "rendering/MxUniverseRenderer.h"
 #include <rendering/MxGlfwApplication.h>
 #include <rendering/MxWindowlessApplication.h>
+#include <rendering/MxClipPlane.hpp>
 #include <map>
 #include <sstream>
 #include <MxUniverse.h>
@@ -265,6 +266,10 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     
     if((o = PyDict_GetItemString(kwargs, "logger_level"))) {
         CLogger::setLevel(mx::cast<int>(o));
+    }
+    
+    if((o = PyDict_GetItemString(kwargs, "clip_planes"))) {
+        conf.clipPlanes = MxClipPlanes_ParseConfig(o);
     }
 }
 
@@ -545,16 +550,21 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
         else {
             ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
 
-            Log(LOG_INFORMATION) <<  "creating GLFW app" ;;
+            Log(LOG_INFORMATION) <<  "creating GLFW app" ;
 
             MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
+            
+            if(FAILED(glfwApp->createContext(conf))) {
+                delete glfwApp;
 
-            glfwApp->createContext(conf);
-
-            sim->app = glfwApp;
+                throw std::domain_error("could not create  gl context");
+            }
+            else {
+                sim->app = glfwApp;
+            }
         }
 
-        Log(LOG_INFORMATION);
+        Log(LOG_INFORMATION) << "sucessfully created application";
 
         Simulator = sim;
         
@@ -1028,6 +1038,11 @@ PyTypeObject MxSimulator_Type = {
     .tp_version_tag =    0,
     .tp_finalize =       0,
 };
+
+
+struct MxUniverseRenderer *MxSimulator::getRenderer() {
+    return app->getRenderer();
+}
 
 HRESULT _MxSimulator_init(PyObject* m) {
 

@@ -305,6 +305,9 @@ struct CAPI_EXPORT MxSimulator {
         int argc = 0;
 
         char** argv = NULL;
+        
+        
+        std::vector<Magnum::Vector4> clipPlanes;
 
     private:
         std::string _title;
@@ -314,6 +317,8 @@ struct CAPI_EXPORT MxSimulator {
         Vector2 _dpiScaling;
         bool _windowless;
     };
+    
+    struct MxUniverseRenderer *getRenderer();
 
 
     int32_t kind;

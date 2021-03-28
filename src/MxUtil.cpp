@@ -1769,20 +1769,23 @@ WallTime::~WallTime() {
     _Engine.wall_time += (MxWallTime() - start);
 }
 
+#include <Magnum/Math/Distance.h>
 
 PyObject *_MxTest(PyObject *mod, PyObject *args, PyObject *kwargs) {
     try {
         
-        float a = mx::arg<float>("a", 0, args, kwargs, 0);
-        float b = mx::arg<float>("b", 1, args, kwargs, 0);
+        auto a = mx::arg<Magnum::Vector3>("a", 0, args, kwargs);
+        auto b = mx::arg<Magnum::Vector3>("b", 1, args, kwargs);
+        auto c = mx::arg<Magnum::Vector3>("c", 2, args, kwargs);
         
-        float gt = __builtin_isgreaterequal( a, b);
-        float lt = __builtin_isless(a, b);
+        Magnum::Vector4 plane = Magnum::Math::planeEquation(a,b);
         
+        float dist = Magnum::Math::Distance::pointPlaneScaled(c, plane);
         
-        std::cout << "gt: " << gt << ", lt: " << lt << std::endl;
+        PyObject *ret = PyTuple_Pack(2, mx::cast(plane), mx::cast(dist));
         
-        Py_RETURN_NONE;
+        return ret;
+        
     }
 
 catch(const std::exception &e) {

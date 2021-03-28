@@ -186,7 +186,7 @@ HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
         glfwFocusWindow(this->window());
     }
 
-    _ren = new MxUniverseRenderer{_win};
+    _ren = new MxUniverseRenderer{conf, _win};
 
     return b ? S_OK : E_FAIL;
 }

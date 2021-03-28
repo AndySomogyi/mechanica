@@ -7,6 +7,7 @@
 
 #include "MxConvert.hpp"
 #include "MxNumpy.h"
+
 #include <iostream>
 
 
@@ -36,6 +37,25 @@ PyObject* cast(const Magnum::Vector3 &v) {
     
     return (PyObject*)array;
 }
+
+
+template<>
+PyObject* cast(const Magnum::Vector4 &v) {
+    // PyArray_SimpleNewFromData(int nd, npy_intp const* dims, int typenum, void* data)
+    npy_intp dims = 4;
+    float *data = const_cast<float *>(v.data());
+    PyArrayObject* array = (PyArrayObject*)PyArray_SimpleNew(1, &dims, NPY_FLOAT);
+    
+    float *adata = (float*)PyArray_DATA(array);
+    
+    for(int i = 0; i < 4; ++i) {
+        adata[i] = data[i];
+    }
+    
+    return (PyObject*)array;
+}
+
+
     
 template<>
 PyObject* cast(const Magnum::Matrix3 &m) {
@@ -53,7 +73,7 @@ PyObject* cast(const Magnum::Matrix3 &m) {
     return (PyObject*)array;
 }
     
-Magnum::Vector3 vector3_from_list(PyObject *obj) {
+static Magnum::Vector3 vector3_from_list(PyObject *obj) {
     Magnum::Vector3 result = {};
     
     if(PyList_Size(obj) != 3) {
@@ -73,7 +93,28 @@ Magnum::Vector3 vector3_from_list(PyObject *obj) {
     return result;
 }
 
-Magnum::Vector2 vector2_from_list(PyObject *obj) {
+static Magnum::Vector4 vector4_from_list(PyObject *obj) {
+    Magnum::Vector4 result = {};
+    
+    if(PyList_Size(obj) != 4) {
+        throw std::domain_error("error, must be length 3 list to convert to vector3");
+    }
+    
+    for(int i = 0; i < 4; ++i) {
+        PyObject *item = PyList_GetItem(obj, i);
+        if(PyNumber_Check(item)) {
+            result[i] = PyFloat_AsDouble(item);
+        }
+        else {
+            throw std::domain_error("error, can not convert list item to number");
+        }
+    }
+    
+    return result;
+}
+
+
+static Magnum::Vector2 vector2_from_list(PyObject *obj) {
     Magnum::Vector2 result = {};
     
     if(PyList_Size(obj) != 2) {
@@ -93,7 +134,7 @@ Magnum::Vector2 vector2_from_list(PyObject *obj) {
     return result;
 }
     
-Magnum::Vector3i vector3i_from_list(PyObject *obj) {
+static Magnum::Vector3i vector3i_from_list(PyObject *obj) {
     Magnum::Vector3i result = {};
     
     if(PyList_Size(obj) != 3) {
@@ -113,7 +154,7 @@ Magnum::Vector3i vector3i_from_list(PyObject *obj) {
     return result;
 }
     
-Magnum::Vector2i vector2i_from_list(PyObject *obj) {
+static Magnum::Vector2i vector2i_from_list(PyObject *obj) {
     Magnum::Vector2i result = {};
     
     if(PyList_Size(obj) != 2) {
@@ -134,7 +175,7 @@ Magnum::Vector2i vector2i_from_list(PyObject *obj) {
 }
 
     
-Magnum::Vector3 vector3_from_array(PyObject *obj) {
+static Magnum::Vector3 vector3_from_array(PyObject *obj) {
     Magnum::Vector3 result = {};
     
     npy_intp dims[1] = {3};
@@ -156,7 +197,30 @@ Magnum::Vector3 vector3_from_array(PyObject *obj) {
     return result;
 }
 
-Magnum::Vector2 vector2_from_array(PyObject *obj) {
+
+static Magnum::Vector4 vector4_from_array(PyObject *obj) {
+    Magnum::Vector4 result = {};
+    
+    npy_intp dims[1] = {4};
+    PyArrayObject* tmp = (PyArrayObject*)PyArray_SimpleNew(1, dims, NPY_FLOAT);
+    
+    if( PyArray_CopyInto(tmp, (PyArrayObject*)obj) == 0) {
+        float *data = (float*)PyArray_GETPTR1(tmp, 0);
+        for(int i = 0; i < 4; ++i) {
+            result[i] = data[i];
+        }
+    }
+    else {
+        Py_DecRef((PyObject*)tmp);
+        throw std::domain_error("could not convert array to float array, " + carbon::pyerror_str());
+        PyErr_Clear();
+    }
+    
+    Py_DecRef((PyObject*)tmp);
+    return result;
+}
+
+static Magnum::Vector2 vector2_from_array(PyObject *obj) {
     Magnum::Vector2 result = {};
     
     npy_intp dims[1] = {2};
@@ -178,7 +242,7 @@ Magnum::Vector2 vector2_from_array(PyObject *obj) {
     return result;
 }
     
-Magnum::Vector3i vector3i_from_array(PyObject *obj) {
+static Magnum::Vector3i vector3i_from_array(PyObject *obj) {
     Magnum::Vector3i result = {};
     
     npy_intp dims[1] = {3};
@@ -200,7 +264,7 @@ Magnum::Vector3i vector3i_from_array(PyObject *obj) {
     return result;
 }
     
-Magnum::Vector2i vector2i_from_array(PyObject *obj) {
+static Magnum::Vector2i vector2i_from_array(PyObject *obj) {
     Magnum::Vector2i result = {};
     
     npy_intp dims[1] = {2};
@@ -234,6 +298,18 @@ Magnum::Vector3 cast(PyObject *obj) {
     
     if(PyArray_Check(obj)) {
         return vector3_from_array(obj);
+    }
+    throw std::domain_error("can not convert non-list to vector");
+}
+
+template<>
+Magnum::Vector4 cast(PyObject *obj) {
+    if(PyList_Check(obj)) {
+        return vector4_from_list(obj);
+    }
+    
+    if(PyArray_Check(obj)) {
+        return vector4_from_array(obj);
     }
     throw std::domain_error("can not convert non-list to vector");
 }

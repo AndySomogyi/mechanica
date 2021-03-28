@@ -33,6 +33,8 @@
 #include <rendering/MxGlfwWindow.h>
 #include <shaders/ParticleSphereShader.h>
 
+#include <shaders/MxPhong.h>
+
 #include <Corrade/Containers/Pointer.h>
 
 #include <Corrade/Containers/Pointer.h>
@@ -79,7 +81,7 @@ struct MxUniverseRenderer : MxRenderer {
 
 
     // TODO, implement the event system instead of hard coding window events.
-    MxUniverseRenderer(MxWindow *win);
+    MxUniverseRenderer(const MxSimulator::Config &conf, MxWindow *win);
 
     template<typename T>
     MxUniverseRenderer& draw(T& camera, const Vector2i& viewportSize);
@@ -175,7 +177,12 @@ struct MxUniverseRenderer : MxRenderer {
     void viewportEvent(const int w, const int h);
 
     void draw();
-
+    
+    int clipPlaneCount() const;
+    
+    void setClipPlaneEquation(unsigned id, const Magnum::Vector4& pe);
+    
+    const Magnum::Vector4& getClipPlaneEquation(unsigned id);
 
     void viewportEvent(Platform::GlfwApplication::ViewportEvent& event);
     void keyPressEvent(Platform::GlfwApplication::KeyEvent& event);
@@ -194,6 +201,8 @@ struct MxUniverseRenderer : MxRenderer {
     Vector3 _lightDir{1.0f, 1.0f, 2.0f};
     
     Vector3 _eye, _center, _up;
+    
+    std::vector<Magnum::Vector4> _clipPlanes;
     
     /**
      * Only set a single combined matrix in the shader, this way,
@@ -223,7 +232,7 @@ struct MxUniverseRenderer : MxRenderer {
     
     /* Spheres rendering */
     
-    Shaders::Phong sphereShader{NoCreate};
+    Shaders::MxPhong sphereShader{NoCreate};
     
     Shaders::Flat3D flatShader{NoCreate};
     

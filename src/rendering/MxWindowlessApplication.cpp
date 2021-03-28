@@ -138,7 +138,7 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
     window = new MxWindowlessWindow(this);
 
     // renderer accesses the framebuffer from the window handle we pass in.
-    renderer = new MxUniverseRenderer(window);
+    renderer = new MxUniverseRenderer(conf, window);
 
     return S_OK;
 }
