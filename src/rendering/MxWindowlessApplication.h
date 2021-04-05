@@ -66,9 +66,6 @@ public:
     HRESULT createContext(const MxSimulator::Config &conf) override;
 
 
-
-
-
     /**
      * This function processes only those events that are already in the event
      * queue and then returns immediately. Processing events will cause the window

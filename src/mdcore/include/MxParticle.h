@@ -493,6 +493,18 @@ CAPI_FUNC(HRESULT) MxParticle_Become(MxParticle *part, MxParticleType *type);
  */
 CAPI_DATA(unsigned int) *MxParticle_Colors;
 
+
+/**
+ * free any un-used types, clear the types of the engine.
+ */
+HRESULT MxParticle_Finalize();
+
+/**
+ * Checks if the particle types are registered with the runtime, if so, does nothign,
+ * but re-creates them if not there.
+ */
+HRESULT MxParticle_Initialize();
+
 /**
  * internal function to initalize the particle and particle types
  */

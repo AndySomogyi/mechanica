@@ -32,6 +32,7 @@ set (_PUBLIC_HEADERS
   mx_config.h
   mx_runtime.h
   NOMStyle.h
+  MxSystem.h
   ${AST_HEADERS}
   ${X3D_HEADERS}
   )

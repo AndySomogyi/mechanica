@@ -426,7 +426,9 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
 }
 
 MxUniverseRenderer::~MxUniverseRenderer() {
-    std::cout << MX_FUNCTION << std::endl;
+    Log(LOG_INFORMATION);
+    
+    delete _arcball;
 }
 
 PyTypeObject MxUniverseRenderer_Type = {

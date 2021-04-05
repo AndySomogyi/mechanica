@@ -337,6 +337,9 @@ struct CAPI_EXPORT MxSimulator {
      * gets the global simulator object, throws exception if fail.
      */
     static MxSimulator *Get();
+    
+    
+    ~MxSimulator();
 };
 
 
@@ -434,7 +437,11 @@ CAPI_FUNC(HRESULT) MxSimulator_Show();
 
 CAPI_FUNC(HRESULT) MxSimulator_Close();
 
-CAPI_FUNC(HRESULT) MxSimulator_Destroy();
+/**
+ * shutdown the simulator, destory any simulator objects and try to shutdown gl,
+ * clears the engine and all model state
+ */
+CAPI_FUNC(HRESULT) MxSimulator_Terminate();
 
 CAPI_FUNC(HRESULT) MxSimulator_Redraw();
 

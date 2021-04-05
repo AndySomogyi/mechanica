@@ -20,7 +20,7 @@
 #include <sstream>
 #include <MxUniverse.h>
 #include <MxConvert.hpp>
-#include <MxSystem.h>
+#include "MxSystem.hpp"
 
 #include <MxPy.h>
 
@@ -425,6 +425,15 @@ int universe_init (const MxUniverseConfig &conf ) {
     return 0;
 }
 
+static HRESULT universe_terminate() {
+    Log(LOG_INFORMATION);
+    HRESULT result = engine_finalize(&_Engine);
+    bzero(&_Engine, sizeof(engine));
+    
+    MxParticle_Finalize();
+    return result;
+}
+
 
 
 static std::vector<Vector3> fillCubeRandom(const Vector3 &corner1, const Vector3 &corner2, int nParticles) {
@@ -484,7 +493,7 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
     }
 }
 
-Magnum::Debug *magnum_debug;
+Magnum::Debug *magnum_debug = NULL;
 
 PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 
@@ -494,7 +503,7 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
     try {
 
         if(Simulator) {
-            throw std::domain_error( "Error, Simulator is already initialized" );
+            MxSimulator_Terminate();
         }
         
         magnum_debug = new Magnum::Debug{nullptr};
@@ -848,14 +857,22 @@ CAPI_FUNC(HRESULT) MxSimulator_Close()
     return Simulator->app->close();
 }
 
-CAPI_FUNC(HRESULT) MxSimulator_Destroy()
+CAPI_FUNC(HRESULT) MxSimulator_Terminate()
 {
     SIMULATOR_CHECK();
-    return Simulator->app->destroy();
+    delete Simulator;
+    Simulator = NULL;
+    HRESULT result = universe_terminate();
+    delete magnum_debug;
+    magnum_debug = NULL;
+    return result;
 }
 
 
-
+MxSimulator::~MxSimulator() {
+    Log(LOG_INFORMATION);
+    delete this->app;
+}
 
 
 /**
@@ -941,8 +958,14 @@ static PyObject *simulator_close(PyObject *self) {
     SIM_FINALLY(NULL);
 }
 
+static PyObject *simulator_terminate(PyObject *self) {
+    MxSimulator_Terminate();
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef simulator_methods[] = {
     { "init", (PyCFunction)MxSimulator_Init, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
+    { "terminate", (PyCFunction)simulator_terminate, METH_STATIC| METH_NOARGS, NULL },
     { "poll_events", (PyCFunction)simulator_poll_events, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "wait_events", (PyCFunction)simulator_wait_events, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },
     { "post_empty_event", (PyCFunction)post_empty_event, METH_STATIC| METH_VARARGS | METH_KEYWORDS, NULL },

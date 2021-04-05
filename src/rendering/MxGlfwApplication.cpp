@@ -553,3 +553,10 @@ bool MxGlfwApplication::contextRelease()
 {
     return false;
 }
+
+
+MxGlfwApplication::~MxGlfwApplication()  {
+    Log(LOG_INFORMATION);
+    
+    delete _ren;
+}

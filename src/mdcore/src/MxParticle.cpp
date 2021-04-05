@@ -45,6 +45,8 @@
 #include <CStateVector.hpp>
 #include <bond.h>
 
+#include <MxSystem.h>
+
 #include <sstream>
 #include <cstring>
 #include <cmath>
@@ -52,14 +54,26 @@
 #include "fptype.h"
 #include <iostream>
 
+// TODO: this is a total fucking hack, need to clean this up!!!
+struct SavedParticleTypes {
+    int nr_types;
+    MxParticleType *types;
+    
+    int totalRefCount() {
+        int count = 0;
+        for(int i = 0; i < nr_types; ++i) {
+            PyObject* ob = (PyObject*)&types[i];
+            count += ob->ob_refcnt;
+        }
+    }
+
+};
+
+static std::vector<SavedParticleTypes> savedParticleTypes;
 
 MxParticle::MxParticle() {
     bzero(this, sizeof(MxParticle));
 }
-
-struct Foo {
-    int x; int y; int z;
-};
 
 static unsigned colors [] = {
     0xCCCCCC,
@@ -1351,6 +1365,47 @@ CAPI_FUNC(MxParticleType*) MxParticle_GetType()
 CAPI_FUNC(MxParticleType*) MxCluster_GetType()
 {
     return &engine::types[1];
+}
+
+HRESULT MxParticle_Finalize() {
+    
+    if(engine::nr_types) {
+        SavedParticleTypes saved = {engine::nr_types, engine::types};
+        savedParticleTypes.push_back(saved);
+        
+        engine::nr_types = 0;
+        engine::types = NULL;
+    }
+    
+    PyObject *module = Mx_Module();
+    
+    PyObject *dict = PyModule_GetDict(module);
+    
+    PyObject *o = PyDict_GetItemString(dict, "ParticleType");
+    if(o) {
+        PyDict_DelItemString(dict, "ParticleType");
+    }
+    
+    return S_OK;
+}
+
+/**
+ * Checks if the particle types are registered with the runtime, if so, does nothign,
+ * but re-creates them if not there.
+ */
+HRESULT MxParticle_Initialize() {
+    
+    PyObject *m = Mx_Module();
+    
+    PyObject *dict = PyModule_GetDict(m);
+    
+    PyObject *o = PyDict_GetItemString(dict, "ParticleType");
+    if(o) {
+        // already initialized.
+        return S_OK;
+    }
+    
+    return _MxParticle_init(m);
 }
 
 HRESULT engine_particle_base_init(PyObject *m)

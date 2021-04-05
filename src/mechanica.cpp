@@ -13,7 +13,7 @@
 #include "mechanica_private.h"
 
 #include "MxModel.h"
-#include "MxSystem.h"
+#include "MxSystem.hpp"
 #include "MxPropagator.h"
 #include <rendering/MxUI.h>
 #include "rendering/MxTestView.h"
@@ -248,7 +248,7 @@ static PyObject *version_create() {
 
 static PyObject *mechanicaModule = NULL;
 
-CAPI_FUNC(PyObject*) Mx_GetModule() {
+CAPI_FUNC(PyObject*) Mx_Module() {
     return mechanicaModule;
 }
 

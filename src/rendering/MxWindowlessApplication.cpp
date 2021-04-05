@@ -94,11 +94,6 @@ struct MxWindowlessWindow : MxWindow
     };
 };
 
-MxWindowlessApplication::~MxWindowlessApplication()
-{
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-}
-
 MxWindowlessApplication::MxWindowlessApplication(const Arguments &args) :
     WindowlessApplication{args, Magnum::NoCreate},
     renderBuffer{Magnum::NoCreate},
@@ -259,3 +254,10 @@ bool MxWindowlessApplication::contextRelease()
     
     return context.release();
 }
+
+
+MxWindowlessApplication::~MxWindowlessApplication()  {
+    Log(LOG_INFORMATION);
+    
+}
+

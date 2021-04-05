@@ -35,6 +35,9 @@ public:
      * creates the app, but does not create the context.
      */
     MxGlfwApplication(const Arguments &args);
+            
+            
+    ~MxGlfwApplication() override;
 
 
     HRESULT createContext(const MxSimulator::Config &conf) override;

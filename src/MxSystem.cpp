@@ -5,7 +5,7 @@
  *      Author: andy
  */
 
-#include <MxSystem.h>
+#include "MxSystem.hpp"
 #include <MxUtil.h>
 #include <MxSimulator.h>
 #include <rendering/MxWindowlessApplication.h>

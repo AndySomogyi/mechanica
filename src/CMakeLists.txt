@@ -131,7 +131,7 @@ set(HEADERS
   MxSimulator.h
 
   MxModel.h
-  MxSystem.h
+  MxSystem.hpp
   MxPropagator.h
 
   MxCompositeParticle.h

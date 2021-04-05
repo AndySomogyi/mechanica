@@ -1520,6 +1520,11 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         double cutoff , PyObject *boundaryConditions , int max_type , unsigned int flags ) {
 
     int cid;
+    HRESULT err;
+    
+    if(FAILED(err = MxParticle_Initialize())) {
+        return err;
+    }
     
     // TODO: total hack
     init_types = engine::nr_types;
@@ -1529,8 +1534,7 @@ int engine_init ( struct engine *e , const double *origin , const double *dim , 
         return error(engine_err_null);
 
     // set up boundary conditions, adjust cell count if needed
-    HRESULT err = MxBoundaryConditions_Init(&(e->boundary_conditions), cells, boundaryConditions);
-    if(FAILED(err)) {
+    if(FAILED(err = MxBoundaryConditions_Init(&(e->boundary_conditions), cells, boundaryConditions))) {
         return err;
     }
 
