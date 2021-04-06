@@ -1,6 +1,11 @@
 # need 3.13 for FindPython support
 cmake_minimum_required (VERSION 3.13)
 
+
+set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+set (CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO)
+
+
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     CACHE STRING "")

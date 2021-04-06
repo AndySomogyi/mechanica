@@ -11,9 +11,10 @@
 #include "mdcore_config.h"
 #include <cmath>
 
-#include <immintrin.h>
+#include <fptype.h>
 
 
+#if defined(__x86_64__) || defined(_M_X64)
 // faster than  1.0f/std::sqrt, but with little accuracy.
 MX_ALWAYS_INLINE float qsqrt(const float f)
 {
@@ -21,6 +22,17 @@ MX_ALWAYS_INLINE float qsqrt(const float f)
     temp = _mm_rsqrt_ss(temp);
     return 1.0 / _mm_cvtss_f32(temp);
 }
+#endif
+
+#if defined(__ARM_NEON)
+MX_ALWAYS_INLINE float qsqrt(const float f)
+{
+    return 1.0f/std::sqrt(f);
+}
+#endif
+
+
+
 
 MX_ALWAYS_INLINE float w_cubic_spline(float r2, float h) {
     float r = qsqrt(r2);

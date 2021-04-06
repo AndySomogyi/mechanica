@@ -18,6 +18,10 @@ course).
 
 History
 =======
+Version Alpha 1.0.26.0
+----------------------
+* Added massivly experimental support for ARM on M1 processor. Note, we have no
+  way of testing this. 
 
 Version Alpha 1.0.26.0
 ----------------------

@@ -52,9 +52,15 @@
 
 #undef VECTORIZE
 
+#if defined(__x86_64__) || defined(_M_X64)
+#include <emmintrin.h> //for Intel __m128i datatype
+#include <immintrin.h> //for Intel __m256i datatype
+#endif
 
-/* Get headers for intrinsic functions. */
-#include <immintrin.h>
+#if defined(__ARM_NEON)
+#include <arm_neon.h> //For ARM uint64x2_t datatype
+#endif
+
 
 
 /** Macro to easily define vector types. */

@@ -1083,6 +1083,7 @@ float sphere_1body(EnergyMinimizer* p, Magnum::Vector3 *p1,
     return std::abs(f);
 }
 
+#if defined(__x86_64__) || defined(_M_X64)
 
 // Yes, Windows has the __cpuid and __cpuidx macros in the #include <intrin.h>
 // header file, but it seg-faults when we try to call them from clang.
@@ -1492,82 +1493,6 @@ public:
     }
 };
 
-// Initialize static member data
-//const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
-
-PyObject *MxCompileFlagsDict(PyObject *o) {
-    PyObject *dict = PyDict_New();
-    
-    // Defining Lambda function and
-    // Capturing Local variables by Value
-    auto add_item = [dict] (const char* key, bool value) {
-        PyDict_SetItemString(dict, key, PyBool_FromLong(value));
-    };
-
-#ifdef _DEBUG
-    add_item("_DEBUG", true);
-#else
-    add_item("_DEBUG", 0);
-#endif 
-
-    add_item("MX_OPENMP", MX_OPENMP);
-    add_item("MX_OPENMP_BONDS", MX_OPENMP_BONDS);
-    add_item("MX_OPENMP_INTEGRATOR", MX_OPENMP_INTEGRATOR);
-    add_item("MX_VECTORIZE_FLUX", MX_VECTORIZE_FLUX);
-    add_item("MX_VECTORIZE_FORCE", MX_VECTORIZE_FORCE);
-    add_item("MX_SSE42", MX_SSE42);
-    add_item("MX_AVX", MX_AVX);
-    add_item("MX_AVX2", MX_AVX2);
-    
-#ifdef MX_THREADING
-    add_item("MX_THREADING", true);
-    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(mx::ThreadPool::hardwareThreadSize()));
-#else
-    add_item("MX_THREADING", false);
-    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(0));
-#endif
-    
-    PyDict_SetItemString(dict, "MX_SIMD_SIZE", PyLong_FromLong(MX_SIMD_SIZE));
-
-#ifdef __SSE__
-    add_item("__SSE__", __SSE__);
-#else
-    add_item("__SSE__", 0);
-#endif
-    
-#ifdef __SSE2__
-    add_item("__SSE2__", __SSE2__);
-#else
-    add_item("__SSE2__", 0);
-#endif
-    
-#ifdef __SSE3__
-    add_item("__SSE3__", __SSE3__);
-#else
-    add_item("__SSE3__", 0);
-#endif
-    
-#ifdef __SSE4_2__
-    add_item("__SSE4_2__", __SSE4_2__);
-#else
-    add_item("__SSE4_2__", 0);
-#endif
-    
-#ifdef __AVX__
-    add_item("__AVX__", __AVX__);
-#else
-    add_item("__AVX__", 0);
-#endif
-    
-#ifdef __AVX2__
-    add_item("__AVX2__", __AVX2__);
-#else
-    add_item("__AVX2__", 0);
-#endif
-    
-    return dict;
-}
-          
 PyObject *MxInstructionSetFeatruesDict(PyObject *o) {
      
      PyObject *dict = PyDict_New();
@@ -1710,7 +1635,102 @@ PyObject *MxInstructionSetFeatruesDict(PyObject *o) {
      return result;
  }
 
-             
+         
+
+
+#else // #if defined(__x86_64__) || defined(_M_X64)
+
+PyObject *MxInstructionSetFeatruesDict(PyObject *o) {
+     
+    Log(LOG_WARNING) << "Instruction Set Features only supported in Intel";
+    PyUnicode_FromString("Instruction Set Features only supported in Intel");
+}
+
+uint64_t MxInstructionSetFeatures() {
+    Log(LOG_WARNING) << "Instruction Set Features only supported in Intel";
+    return 0;
+}
+
+
+#endif // #if defined(__x86_64__) || defined(_M_X64)
+
+// Initialize static member data
+//const InstructionSet::InstructionSet_Internal InstructionSet::CPU_Rep;
+
+PyObject *MxCompileFlagsDict(PyObject *o) {
+    PyObject *dict = PyDict_New();
+    
+    // Defining Lambda function and
+    // Capturing Local variables by Value
+    auto add_item = [dict] (const char* key, bool value) {
+        PyDict_SetItemString(dict, key, PyBool_FromLong(value));
+    };
+
+#ifdef _DEBUG
+    add_item("_DEBUG", true);
+#else
+    add_item("_DEBUG", 0);
+#endif 
+
+    add_item("MX_OPENMP", MX_OPENMP);
+    add_item("MX_OPENMP_BONDS", MX_OPENMP_BONDS);
+    add_item("MX_OPENMP_INTEGRATOR", MX_OPENMP_INTEGRATOR);
+    add_item("MX_VECTORIZE_FLUX", MX_VECTORIZE_FLUX);
+    add_item("MX_VECTORIZE_FORCE", MX_VECTORIZE_FORCE);
+    add_item("MX_SSE42", MX_SSE42);
+    add_item("MX_AVX", MX_AVX);
+    add_item("MX_AVX2", MX_AVX2);
+    
+#ifdef MX_THREADING
+    add_item("MX_THREADING", true);
+    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(mx::ThreadPool::hardwareThreadSize()));
+#else
+    add_item("MX_THREADING", false);
+    PyDict_SetItemString(dict, "MX_THREADPOOL_SIZE", PyLong_FromLong(0));
+#endif
+    
+    PyDict_SetItemString(dict, "MX_SIMD_SIZE", PyLong_FromLong(MX_SIMD_SIZE));
+
+#ifdef __SSE__
+    add_item("__SSE__", __SSE__);
+#else
+    add_item("__SSE__", 0);
+#endif
+    
+#ifdef __SSE2__
+    add_item("__SSE2__", __SSE2__);
+#else
+    add_item("__SSE2__", 0);
+#endif
+    
+#ifdef __SSE3__
+    add_item("__SSE3__", __SSE3__);
+#else
+    add_item("__SSE3__", 0);
+#endif
+    
+#ifdef __SSE4_2__
+    add_item("__SSE4_2__", __SSE4_2__);
+#else
+    add_item("__SSE4_2__", 0);
+#endif
+    
+#ifdef __AVX__
+    add_item("__AVX__", __AVX__);
+#else
+    add_item("__AVX__", 0);
+#endif
+    
+#ifdef __AVX2__
+    add_item("__AVX2__", __AVX2__);
+#else
+    add_item("__AVX2__", 0);
+#endif
+    
+    return dict;
+}
+          
+    
 
 //  Windows
 #ifdef _WIN32
