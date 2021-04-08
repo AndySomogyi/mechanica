@@ -2,8 +2,24 @@
 cmake_minimum_required (VERSION 3.13)
 
 
-set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-set (CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO)
+if(APPLE)
+
+  message("CMAKE_OSX_DEPLOYMENT_TARGET: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+
+  if("${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_GREATER_EQUAL "10.15")
+
+    message("MacOS newer than 10.15, building universal binary")
+
+    set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+    set (CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO)
+
+  else()
+
+    message("MacOS older than 10.15, not building universal binary")
+
+  endif()
+
+endif()
 
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
