@@ -17,6 +17,20 @@
 #define getcwd(buffer, maxlen) _getcwd(buffer, maxlen)
 #endif
 
+#if defined(__ARM_NEON)
+wchar_t * Py_GetPath(void) {
+    return NULL;
+}
+
+void Py_SetPath(const wchar_t *) {
+}
+
+int Py_BytesMain(int argc, char **argv) {
+    return 0;
+}
+#endif
+
+
 void print_cwd() {
     
     char* buffer = getcwd( NULL, 0 );

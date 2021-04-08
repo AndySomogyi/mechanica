@@ -37,6 +37,17 @@
 #include <tuple>
 #include <carbon.h>
 
+using namespace Magnum;
+using namespace Magnum::Trade;
+using namespace Corrade;
+using namespace Corrade::Utility;
+
+
+#if defined(__x86_64__) || defined(_M_X64)
+
+
+
+
 /* On Windows we need to circumvent conflicting definition of INT32 in
    <windows.h> (included from OpenGL headers). Problem with libjpeg-tubo only,
    libjpeg solves that already somehow. */
@@ -45,10 +56,7 @@
 #endif
 #include <jpeglib.h>
 
-using namespace Magnum;
-using namespace Magnum::Trade;
-using namespace Corrade;
-using namespace Corrade::Utility;
+
 
 // Converts RGBA to RGB (removing the alpha values) to prepare to send data to
 // libjpeg. This converts one row of data in rgba with the given width in
@@ -186,6 +194,16 @@ Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2
     std::copy(destinationManager.output.begin(), destinationManager.output.end(), fileData.data());
     return fileData;
 }
+
+#else
+
+Corrade::Containers::Array<char> convertImageDataToJpeg(const Magnum::ImageView2D& image, int jpegQuality) {
+    Log(LOG_ERROR) << "jpeg not supported on ARM";
+    
+    return Corrade::Containers::Array<char>();
+}
+
+#endif
 
 
 Corrade::Containers::Array<char> convertImageDataToTGA(const Magnum::ImageView2D& image) {

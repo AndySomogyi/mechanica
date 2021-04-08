@@ -18,7 +18,12 @@ course).
 
 History
 =======
-Version Alpha 1.0.26.0
+Version Alpha 1.0.28.0
+----------------------
+* switch to Python 3.9 on Mac. 
+* disable jpeg on ARM
+
+Version Alpha 1.0.27.0
 ----------------------
 * Added massivly experimental support for ARM on M1 processor. Note, we have no
   way of testing this. 
