@@ -112,10 +112,39 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
     // default Magnum WindowlessApplication config, does not have any options
     Configuration windowlessConf;
 
+    Log(LOG_INFORMATION) << "trying to create windowless context";
+
     if(!WindowlessApplication::tryCreateContext(windowlessConf)) {
         return c_error(E_FAIL, "could not create windowless context");
     }
+    
+    Magnum::Platform::WindowlessApplication &app = *this;
+    Magnum::Platform::WindowlessGLContext &glContext = access_private::_glContext(app);
+    Containers::Pointer<Platform::GLContext> &context = access_private::_context(app);
+    
+    
+    
+#if defined(MX_APPLE)
+    const char* cname = "CGL Context";
+#elif defined(MX_LINUX)
+    const char* cname = "EGL Context";
+#elif defined(MX_WINDOWS)
+    const char* cname = "WGL Context";
+#else
+#error "NO GL Supported"
+#endif
 
+
+    Log(LOG_NOTICE) << "created windowless context, " << cname << glContext.glContext();
+    
+    Log(LOG_NOTICE) << "GL Version: " << context->versionString();
+    Log(LOG_NOTICE) << "GL Vendor: " << context->vendorString();
+    Log(LOG_NOTICE) << "GL Renderer: " << context->rendererString();
+    
+    for(auto s : context->extensionStrings()) {
+        Log(LOG_NOTICE) << "GL Extension: " << s;
+    }
+    
     Vector2i size = conf.windowSize();
 
     // create the render buffers here, after we have a context,
@@ -229,33 +258,39 @@ Magnum::GL::AbstractFramebuffer& MxWindowlessApplication::framebuffer() {
 
 bool MxWindowlessApplication::contextMakeCurrent()
 {
+    Log(LOG_TRACE);
+    
     Magnum::Platform::WindowlessApplication &app = *this;
-    
+
     Magnum::Platform::WindowlessGLContext &glContext = access_private::_glContext(app);
-    
+
     Containers::Pointer<Platform::GLContext> &context = access_private::_context(app);
-    
+
     if(glContext.makeCurrent()) {
         Platform::GLContext *p = context.get();
         Magnum::GL::Context::makeCurrent(p);
         return true;
     }
-    
+
     return false;
 }
 
 bool MxWindowlessApplication::contextHasCurrent()
 {
+    Log(LOG_TRACE);
+    
     return Magnum::GL::Context::hasCurrent();
 }
 
 bool MxWindowlessApplication::contextRelease()
 {
+    Log(LOG_TRACE);
+    
     Magnum::Platform::WindowlessApplication &app = *this;
-    
+
     Magnum::Platform::WindowlessGLContext &context = access_private::_glContext(app);
-    
+
     Magnum::GL::Context::makeCurrent(nullptr);
-    
+
     return context.release();
 }
