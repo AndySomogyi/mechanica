@@ -558,23 +558,20 @@ void MxUniverseRenderer::onFramebufferSizeChange(int x, int y)
 }
 
 void MxUniverseRenderer::draw() {
+    
+    Log(LOG_TRACE);
+    
     window->framebuffer().clear(GL::FramebufferClear::Color | GL::FramebufferClear::Depth);
 
-    /* Call arcball update in every frame. This will do nothing if the camera
-           has not been changed. */
-    bool camChanged = _arcball->updateTransformation();
-
+    // Call arcball update in every frame. This will do nothing if the camera
+    //   has not been changed. computes new transform.
+    _arcball->updateTransformation();
 
     /* Trigger drawable object to update the particles to the GPU */
     setDirty();
     
     /* Draw particles */
     draw(_arcball, window->framebuffer().viewport().size());
-
-    // TODO: don't think this is right, should signal a dirty...
-    if(camChanged) {
-        MxSimulator_Redraw();
-    }
 }
 
 /*

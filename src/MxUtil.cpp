@@ -1644,6 +1644,7 @@ PyObject *MxInstructionSetFeatruesDict(PyObject *o) {
      
     Log(LOG_WARNING) << "Instruction Set Features only supported in Intel";
     PyUnicode_FromString("Instruction Set Features only supported in Intel");
+    Py_RETURN_NONE;
 }
 
 uint64_t MxInstructionSetFeatures() {

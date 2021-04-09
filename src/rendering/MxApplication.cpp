@@ -95,17 +95,34 @@ PyObject* MxTestImage(PyObject *module, PyObject* self, PyObject* args) {
 
 PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* args) {
     
+    char *data = NULL;
+    size_t size = 0;
+    
+    Log(LOG_TRACE);
+    
+    if(!Magnum::GL::Context::hasCurrent()) {
+        PyErr_SetString(PyExc_RuntimeError, "No current OpenGL context");
+        return NULL;
+    }
+    
     MxSimulator *sim = MxSimulator_Get();
     
-    Magnum::GL::AbstractFramebuffer &framebuffer = sim->app->framebuffer();
+    //Py_BEGIN_ALLOW_THREADS
     
     sim->app->redraw();
     
+    //Py_END_ALLOW_THREADS
+    
+    Magnum::GL::AbstractFramebuffer &framebuffer = sim->app->framebuffer();
+
     Image2D image = framebuffer.read(framebuffer.viewport(), PixelFormat::RGBA8Unorm);
     
     auto jpegData = convertImageDataToJpeg(image);
     
-    return PyBytes_FromStringAndSize(jpegData.data(), jpegData.size());
+    data = jpegData.data();
+    size = jpegData.size();
+    
+    return PyBytes_FromStringAndSize(data, size);
 }
 
 HRESULT MxApplication::simulationStep() {

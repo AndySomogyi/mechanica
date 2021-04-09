@@ -561,8 +561,6 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
         return E_FAIL;
     }
 
-    MxSimulator_Redraw();
-
     if(_Engine.timer_output_period > 0 && _Engine.time % _Engine.timer_output_period == 0 ) {
         print_performance_counters();
     }

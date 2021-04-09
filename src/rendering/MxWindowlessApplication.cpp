@@ -221,13 +221,20 @@ HRESULT MxWindowlessApplication::setWindowAttribute(MxWindowAttributes attr,
 
 HRESULT MxWindowlessApplication::redraw()
 {
-    //frameBuffer.attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderBuffer)
-    frameBuffer
-        .clear(GL::FramebufferClear::Color)
-        .bind();
+    Log(LOG_TRACE);
+    
+    // TODO: need to re-evaluate drawing, should not have to check...
+    // drawing code on the wrong thread should not call re-draw, only the renderer should
+    
+    if(Magnum::GL::Context::hasCurrent()) {
+        //frameBuffer.attachRenderbuffer(GL::Framebuffer::ColorAttachment{0}, renderBuffer)
+        frameBuffer
+            .clear(GL::FramebufferClear::Color)
+            .bind();
 
-    /* Draw particles */
-    renderer->draw();
+        /* Draw particles */
+        renderer->draw();
+    }
 
     return S_OK;
 }

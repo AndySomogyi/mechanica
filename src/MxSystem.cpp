@@ -365,6 +365,8 @@ void MxSystem_CameraReset()
 
 void MxSystem_CameraRotateMouse(const Magnum::Vector2i &mousePos)
 {
+    Log(LOG_TRACE);
+    
     MxSimulator *sim = MxSimulator::Get();
     
     MxUniverseRenderer *renderer = sim->app->getRenderer();
@@ -372,10 +374,14 @@ void MxSystem_CameraRotateMouse(const Magnum::Vector2i &mousePos)
     Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
     
     ab->rotate(mousePos);
+    
+    ab->updateTransformation();
 }
 
 void MxSystem_CameraTranslateMouse(const Magnum::Vector2i &mousePos)
 {
+    Log(LOG_TRACE);
+    
     MxSimulator *sim = MxSimulator::Get();
     
     MxUniverseRenderer *renderer = sim->app->getRenderer();
@@ -383,6 +389,8 @@ void MxSystem_CameraTranslateMouse(const Magnum::Vector2i &mousePos)
     Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
     
     ab->translate(mousePos);
+    
+    ab->updateTransformation();
 }
 
 void MxSystem_CameraTranslateDelta(const Magnum::Vector2 &translationNDC)
@@ -405,6 +413,8 @@ void MxSystem_CameraZoomBy(float delta)
     Magnum::Mechanica::ArcBall *ab = renderer->_arcball;
     
     ab->zoom(delta);
+    
+    ab->updateTransformation();
 }
 
 void MxSystem_CameraZoomTo(float delta)
