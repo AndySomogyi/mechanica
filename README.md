@@ -18,6 +18,11 @@ course).
 
 History
 =======
+Version Alpha 1.0.29.0
+----------------------
+* bug fixes in multi-threaded rendering from Python
+* bug fixes in jupyter widget
+
 Version Alpha 1.0.28.0
 ----------------------
 * switch to Python 3.9 on Mac. 
