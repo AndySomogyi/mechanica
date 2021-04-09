@@ -180,14 +180,14 @@ MxPhong::MxPhong(Flags flags, unsigned lightCount, unsigned clipPlaneCount):
         .addSource(rs.get("MxPhong.frag"));
           
                      
-     if(CLogger::getLevel() >= LOG_INFORMATION) {
+     if(CLogger::getLevel() >= LOG_DEBUG) {
          std::stringstream ss;
          
          for(auto s : vert.sources()) {
              ss << s << std::endl;
          }
          
-         Log(LOG_INFORMATION) << "creating vertex shader: " << std::endl << ss.str();
+         Log(LOG_DEBUG) << "creating vertex shader: " << std::endl << ss.str();
          
          ss.clear();
          
@@ -196,7 +196,7 @@ MxPhong::MxPhong(Flags flags, unsigned lightCount, unsigned clipPlaneCount):
              ss << s << std::endl;
          }
          
-         Log(LOG_INFORMATION) << "creating fragment shader: " << std::endl << ss.str();
+         Log(LOG_DEBUG) << "creating fragment shader: " << std::endl << ss.str();
      }
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(GL::Shader::compile({vert, frag}));

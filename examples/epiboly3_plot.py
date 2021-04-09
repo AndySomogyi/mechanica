@@ -125,4 +125,4 @@ Cell.style.visible = True
 
 
 # display the model (space bar starts / pauses the simulation)
-#m.show()
+m.show()

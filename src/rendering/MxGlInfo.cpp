@@ -54,7 +54,10 @@
 using namespace Magnum;
 
 
-std::string gl_info(const Magnum::Utility::Arguments &args) {
+
+
+
+std::string gl_info() {
 
 
 
@@ -63,9 +66,12 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
 
     os << "";
     os << "  +---------------------------------------------------------+";
-    os << "  |   Information about Magnum engine OpenGL capabilities   |";
+    os << "  |   Information about OpenGL capabilities   |";
     os << "  +---------------------------------------------------------+";
     os << "";
+    
+    
+
 
     #ifdef MAGNUM_WINDOWLESSEGLAPPLICATION_MAIN
     os << "Used application: Platform::WindowlessEglApplication" << std::endl;
@@ -170,35 +176,32 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
        place */
     
     if(!GL::Context::hasCurrent()) {
+        os << "N OpenGL Context";
         return os.str();
     }
 
     GL::Context& c = GL::Context::current();
-
-    os << "";
-
-    #ifndef MAGNUM_TARGET_GLES
-    os << "Core profile:" << (c.isCoreProfile() ? "yes" : "no");
-    #endif
-    #ifndef MAGNUM_TARGET_WEBGL
-    //os << "Context flags:" << c.flags();
-    #endif
-    //os << "Detected driver:" << c.detectedDriver();
-
-    os << "Supported GLSL versions:";
-    os << "   " << Utility::String::joinWithoutEmptyParts(c.shadingLanguageVersionStrings(), ", ");
-
-    if(args.isSet("extension-strings")) {
-        os << "Extension strings:" << std::endl;
-        for(auto s : c.extensionStrings()) {
-            os <<  s << ", ";
+    
+    os << "vendor: " << c.vendorString();
+    
+    os << "version: " <<  c.versionString();
+    
+    os << "renderer: " <<  c.rendererString();
+    
+    os << "shading_language_version: " <<  c.shadingLanguageVersionString();
+    
+    {
+        std::vector<std::string> extensions = c.extensionStrings();
+        
+        os << "extensions: ";
+        
+        for (int i = 0; i < extensions.size(); ++i) {
+            os << "\t  (" << i << ") " << extensions[i];
         }
-        return os.str();
     }
 
-    if(args.isSet("short")) return os.str();
-
     os << "";
+
 
     /* Get first future (not supported) version */
     std::vector<GL::Version> versions{
@@ -223,11 +226,11 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
         #endif
         GL::Version::None
     };
+    
     std::size_t future = 0;
 
-    if(!args.isSet("all-extensions"))
-        while(versions[future] != GL::Version::None && c.isVersionSupported(versions[future]))
-            ++future;
+    while(versions[future] != GL::Version::None && c.isVersionSupported(versions[future]))
+        ++future;
 
     /* Display supported OpenGL extensions from unsupported versions */
     for(std::size_t i = future; i != versions.size(); ++i) {
@@ -252,7 +255,6 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
         Debug() << "";
     }
 
-    if(!args.isSet("limits")) return os.str();
 
     /* Limits and implementation-defined values */
     #define _h(val) Debug() << "\n " << GL::Extensions::val::string() + std::string(":");
@@ -654,25 +656,12 @@ std::string gl_info(const Magnum::Utility::Arguments &args) {
     return os.str();
 }
 
+
+
+
 PyObject *Mx_GlInfo(PyObject *args, PyObject *kwds) {
 
-    Magnum::Utility::Arguments arg;
-
-    arg.addBooleanOption('s', "short").setHelp("short", "display just essential info and exit")
-        .addBooleanOption("extension-strings").setHelp("extension-strings", "list all extension strings provided by the driver (implies --short)")
-        .addBooleanOption("all-extensions").setHelp("all-extensions", "display extensions also for fully supported versions")
-        .addBooleanOption("limits").setHelp("limits", "display also limits and implementation-defined values")
-        .addSkippedPrefix("magnum", "engine-specific options")
-        .setGlobalHelp("Displays information about Magnum engine and OpenGL capabilities.");
-
-    int argc = 0;
-    char **argv = nullptr;
-
-    arg.parse(argc, argv);
-
-    std::string str = gl_info(arg);
-
-    //return PyUnicode_FromString(str.c_str());
+    std::string str = gl_info();
     
     if(Magnum::GL::Context::hasCurrent()) {
         Magnum::GL::Context& context = Magnum::GL::Context::current();

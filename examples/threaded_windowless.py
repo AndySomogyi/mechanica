@@ -1,6 +1,8 @@
 import mechanica as m
 import threading
 
+m.Logger.set_level(m.Logger.LOG_INFORMATION)
+
 m.init(windowless=True, window_size=[1024,1024])
 
 print(m.system.gl_info())

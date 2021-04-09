@@ -17,6 +17,8 @@
 #include <Magnum/GL/Context.h>
 #include <Magnum/GL/Version.h>
 
+#include "MxGlInfo.h"
+
 #include <iostream>
 
 #include "access_private.hpp"
@@ -134,16 +136,9 @@ HRESULT MxWindowlessApplication::createContext(const MxSimulator::Config &conf) 
 #error "NO GL Supported"
 #endif
 
-
-    Log(LOG_NOTICE) << "created windowless context, " << cname << glContext.glContext();
+    Log(LOG_INFORMATION) << "created windowless context, " << cname << glContext.glContext();
+    Log(LOG_INFORMATION) << "GL Info: " << gl_info();
     
-    Log(LOG_NOTICE) << "GL Version: " << context->versionString();
-    Log(LOG_NOTICE) << "GL Vendor: " << context->vendorString();
-    Log(LOG_NOTICE) << "GL Renderer: " << context->rendererString();
-    
-    for(auto s : context->extensionStrings()) {
-        Log(LOG_NOTICE) << "GL Extension: " << s;
-    }
     
     Vector2i size = conf.windowSize();
 
