@@ -326,7 +326,7 @@ static PyMethodDef system_methods[] = {
     { "camera_rotate_by_euler_angle", (PyCFunction)system_camera_rotate_by_euler_angle, METH_VARARGS | METH_KEYWORDS, NULL},
     { "view_reshape", (PyCFunction)system_view_reshape, METH_VARARGS | METH_KEYWORDS, NULL},
     { "is_terminal_interactive", (PyCFunction)is_terminal_interactive, METH_VARARGS | METH_KEYWORDS, NULL},
-    { "is_jupyter_notebook", (PyCFunction)is_jupyter_notebook, METH_VARARGS | METH_KEYWORDS, NULL},
+    { "is_jupyter_notebook", (PyCFunction)is_jupyter_notebook, METH_NOARGS, NULL},
     { NULL, NULL, 0, NULL }
 };
 
