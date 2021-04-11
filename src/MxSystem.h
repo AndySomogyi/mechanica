@@ -66,7 +66,7 @@ PyObject *MxSystem_JWidget_Init(PyObject *args, PyObject *kwargs);
 
 PyObject *MxSystem_JWidget_Run(PyObject *args, PyObject *kwargs);
 
-
+HRESULT MxLoggerCallback(CLogEvent, std::ostream *);
 
 HRESULT _MxSystem_init(PyObject *m);
 

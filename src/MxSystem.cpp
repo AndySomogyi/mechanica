@@ -474,8 +474,6 @@ void MxSystem_ViewReshape(const Magnum::Vector2i &windowSize)
     ab->reshape(windowSize);
 }
 
-
-
 void MxSystem_CameraInitMouse(const Magnum::Vector2i& mousePos)
 {
     MxSimulator *sim = MxSimulator::Get();
@@ -487,6 +485,35 @@ void MxSystem_CameraInitMouse(const Magnum::Vector2i& mousePos)
     ab->initTransformation(mousePos);
     
     MxSimulator_Redraw();
+}
+
+static Magnum::Debug *magnum_debug = NULL;
+static Magnum::Warning *magnum_warning = NULL;
+static Magnum::Error *magnum_error = NULL;
+
+HRESULT MxLoggerCallback(CLogEvent, std::ostream *os) {
+    Log(LOG_TRACE);
+    
+    delete magnum_debug; magnum_debug = NULL;
+    delete magnum_warning; magnum_warning = NULL;
+    delete magnum_error; magnum_error = NULL;
+    
+    if(CLogger::getLevel() >= LOG_ERROR) {
+        Log(LOG_DEBUG) << "setting Magnum::Error to Mechanica log output";
+        magnum_error = new Magnum::Error(os);
+    }
+    
+    if(CLogger::getLevel() >= LOG_WARNING) {
+        Log(LOG_DEBUG) << "setting Magnum::Warning to Mechanica log output";
+        magnum_warning = new Magnum::Warning(os);
+    }
+    
+    if(CLogger::getLevel() >= LOG_DEBUG) {
+        Log(LOG_DEBUG) << "setting Magnum::Debug to Mechanica log output";
+        magnum_debug = new Magnum::Debug(os);
+    }
+    
+    return S_OK;
 }
 
 HRESULT _MxSystem_init(PyObject* m) {
@@ -504,6 +531,8 @@ HRESULT _MxSystem_init(PyObject* m) {
     if(PyModule_AddObject(m, "system", system_module) != 0) {
         return c_error(E_FAIL, "could not add system module to mechanica");
     }
+    
+    CLogger::setCallback(MxLoggerCallback);
 
     //if(PyModule_AddObject(m, "version", version_create()) != 0) {
     //    std::cout << "error creating version info module" << std::endl;

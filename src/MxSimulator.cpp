@@ -480,8 +480,6 @@ CAPI_FUNC(HRESULT) MxSimulator_InteractiveRun()
     }
 }
 
-Magnum::Debug *magnum_debug;
-
 PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     std::thread::id id = std::this_thread::get_id();
@@ -493,8 +491,6 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
             throw std::domain_error( "Error, Simulator is already initialized" );
         }
         
-        magnum_debug = new Magnum::Debug{nullptr};
-
         MxSimulator *sim = new MxSimulator();
 
         // get the argv,
