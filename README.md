@@ -18,6 +18,12 @@ course).
 
 History
 =======
+Version Alpha 1.0.30.0
+----------------------
+* imporved logging, file logging
+* bug fixes in determining if jupyter is running
+* more logging info
+
 Version Alpha 1.0.29.0
 ----------------------
 * bug fixes in multi-threaded rendering from Python

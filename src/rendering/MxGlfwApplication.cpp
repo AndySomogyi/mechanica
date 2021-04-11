@@ -66,6 +66,7 @@ static Platform::GlfwApplication::Configuration confconf(const MxSimulator::Conf
 MxGlfwApplication::MxGlfwApplication(const Arguments &args) :
         Platform::GlfwApplication{args, NoCreate}
 {
+    Log(LOG_TRACE);
 }
 
 
@@ -165,6 +166,8 @@ static MxGlfwApplication::Configuration magConf(const MxSimulator::Config &sc) {
 
 HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
 {
+    Log(LOG_DEBUG);
+    
     const Vector2 dpiScaling = this->dpiScaling({});
     Configuration c = magConf(conf);
     c.setSize(conf.windowSize(), dpiScaling);
@@ -174,9 +177,11 @@ HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
 
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
     
+    Log(LOG_TRACE) << "calling tryCreate(c)";
     bool b = tryCreate(c);
 
     if(!b) {
+        Log(LOG_DEBUG) << "tryCreate failed";
         return E_FAIL;
     }
 
@@ -188,7 +193,7 @@ HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
 
     _ren = new MxUniverseRenderer{conf, _win};
 
-    return b ? S_OK : E_FAIL;
+    return S_OK;
 }
 
 MxGlfwWindow* MxGlfwApplication::getWindow()

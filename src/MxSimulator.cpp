@@ -249,10 +249,6 @@ static void parse_kwargs(PyObject *kwargs, MxSimulator::Config &conf) {
     if((o = PyDict_GetItemString(kwargs, "windowless"))) {
         conf.setWindowless(mx::cast<bool>(o));
     }
-    else if(C_ZMQInteractiveShell()) {
-      Log(LOG_INFORMATION) << "in zmq shell, setting windowless to true";
-        conf.setWindowless(true);
-    }
 
     if((o = PyDict_GetItemString(kwargs, "window_size"))) {
         Magnum::Vector2i windowSize = mx::cast<Magnum::Vector2i>(o);
@@ -524,18 +520,33 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
             Universe.name = name;
             conf.setTitle(name);
         }
+        
+        // find out if we are in jupyter, set default state of config,
+        // not sure if this makes more sense in config constructor or here...
+        if(C_ZMQInteractiveShell()) {
+            Log(LOG_INFORMATION) << "in zmq shell, setting windowless default to true";
+            conf.setWindowless(true);
+        }
+        else {
+            Log(LOG_INFORMATION) << "not zmq shell, setting windowless default to false";
+            conf.setWindowless(false);
+        }
 
         if(kwargs && PyDict_Size(kwargs) > 0) {
             parse_kwargs(kwargs, conf);
         }
-
+        
+        if(!conf.windowless() && C_ZMQInteractiveShell()) {
+            Log(LOG_WARNING) << "requested window mode in Jupyter notebook, will fail badly if there is no X-server";
+        }
 
         // init the engine first
         /* Initialize scene particles */
         universe_init(conf.universeConfig);
 
         if(conf.windowless()) {
-	    Log(LOG_INFORMATION) <<  "creating Windowless app" ;
+            Log(LOG_INFORMATION) <<  "creating Windowless app" ;
+            
             ArgumentsWrapper<MxWindowlessApplication::Arguments> margs(argv);
 
             MxWindowlessApplication *windowlessApp = new MxWindowlessApplication(*margs.pArgs);
@@ -552,15 +563,15 @@ PyObject *MxSimulator_Init(PyObject *self, PyObject *args, PyObject *kwargs) {
 	    Log(LOG_TRACE) << "sucessfully created windowless app";
         }
         else {
-            ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
-
             Log(LOG_INFORMATION) <<  "creating GLFW app" ;
+            
+            ArgumentsWrapper<MxGlfwApplication::Arguments> margs(argv);
 
             MxGlfwApplication *glfwApp = new MxGlfwApplication(*margs.pArgs);
             
             if(FAILED(glfwApp->createContext(conf))) {
+                Log(LOG_DEBUG) << "deleting failed glfwApp";
                 delete glfwApp;
-
                 throw std::domain_error("could not create  gl context");
             }
             else {
