@@ -149,7 +149,7 @@ static void PrintConfigs(std::stringstream& ss, EGLDisplay d)
 }
 
 
-static void PrintExtensions(std::stringstream& ss, EGLDisplay d)
+static const char* PrintExtensions(std::stringstream& ss, EGLDisplay d)
 {
    const char *extensions, *p, *end, *next;
    int column;
@@ -159,7 +159,7 @@ static void PrintExtensions(std::stringstream& ss, EGLDisplay d)
 
    extensions = eglQueryString(d, EGL_EXTENSIONS);
    if (!extensions)
-      return;
+      return NULL;
 
    column = 0;
    end = extensions + strlen(extensions);
@@ -187,6 +187,8 @@ static void PrintExtensions(std::stringstream& ss, EGLDisplay d)
 
    if (column > 0)
      ss << "\n";
+
+   return extensions;
 }
 
 static int doOneDisplay(std::stringstream &ss, EGLDisplay d, const char *name)
@@ -218,12 +220,59 @@ std::string print_eglinfo()
 {
    std::stringstream ss;
    int ret;
+   const char *clientext;
 
-   PrintExtensions(ss, EGL_NO_DISPLAY);
+   //PrintExtensions(ss, EGL_NO_DISPLAY);
+   //ss << "\n";
+
+   //ret = doOneDisplay(ss, eglGetDisplay(EGL_DEFAULT_DISPLAY), "Default display");
+
+   //return ss.str();
+
+
+   clientext = PrintExtensions(ss, EGL_NO_DISPLAY);
    ss << "\n";
 
-   ret = doOneDisplay(ss, eglGetDisplay(EGL_DEFAULT_DISPLAY), "Default display");
-
+   if (strstr(clientext, "EGL_EXT_platform_base")) {
+     PFNEGLGETPLATFORMDISPLAYEXTPROC getPlatformDisplay =
+       (PFNEGLGETPLATFORMDISPLAYEXTPROC)
+       eglGetProcAddress("eglGetPlatformDisplayEXT");
+     if (strstr(clientext, "EGL_KHR_platform_android"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_ANDROID_KHR,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "Android platform");
+     
+     if (strstr(clientext, "EGL_MESA_platform_gbm") ||
+	 strstr(clientext, "EGL_KHR_platform_gbm"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_GBM_MESA,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "GBM platform");
+     
+     if (strstr(clientext, "EGL_EXT_platform_wayland") ||
+	 strstr(clientext, "EGL_KHR_platform_wayland"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_WAYLAND_EXT,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "Wayland platform");
+     
+     if (strstr(clientext, "EGL_EXT_platform_x11") ||
+	 strstr(clientext, "EGL_KHR_platform_x11"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_X11_EXT,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "X11 platform");
+     
+     if (strstr(clientext, "EGL_MESA_platform_surfaceless"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "Surfaceless platform");
+     if (strstr(clientext, "EGL_EXT_platform_device"))
+       ret += doOneDisplay(ss, getPlatformDisplay(EGL_PLATFORM_DEVICE_EXT,
+					      EGL_DEFAULT_DISPLAY,
+					      NULL), "Device platform");
+   }
+   else {
+     ret = doOneDisplay(ss, eglGetDisplay(EGL_DEFAULT_DISPLAY), "Default display");
+   }
+   
    return ss.str();
 }
 
