@@ -16,6 +16,7 @@
 #include <rendering/MxGlfwApplication.h>
 #include <rendering/MxClipPlane.hpp>
 #include <MxConvert.hpp>
+#include <sstream>
 
 
 static PyObject *_gl_info(PyObject *mod, PyObject *args, PyObject *kwds) {
@@ -302,6 +303,10 @@ PyObject *MxSystem_JWidget_Run(PyObject *args, PyObject *kwargs) {
     
 }
 
+static PyObject *performace_counters(PyObject *self) {
+    return mx::cast(MxPerformanceCounters());
+}
+
 static PyMethodDef system_methods[] = {
     { "cpu_info", (PyCFunction)MxInstructionSetFeatruesDict, METH_NOARGS, NULL },
     //{ "compile_flags", (PyCFunction)MxCompileFlagsDict, METH_NOARGS, NULL },
@@ -327,6 +332,7 @@ static PyMethodDef system_methods[] = {
     { "view_reshape", (PyCFunction)system_view_reshape, METH_VARARGS | METH_KEYWORDS, NULL},
     { "is_terminal_interactive", (PyCFunction)is_terminal_interactive, METH_VARARGS | METH_KEYWORDS, NULL},
     { "is_jupyter_notebook", (PyCFunction)is_jupyter_notebook, METH_NOARGS, NULL},
+    { "performace_counters", (PyCFunction)performace_counters, METH_NOARGS, NULL},
     { NULL, NULL, 0, NULL }
 };
 
@@ -487,6 +493,37 @@ void MxSystem_CameraInitMouse(const Magnum::Vector2i& mousePos)
     MxSimulator_Redraw();
 }
 
+void MxPrintPerformanceCounters() {
+    CLoggingBuffer log(LOG_NOTICE, NULL, NULL, -1);
+    log.stream() << MxPerformanceCounters();
+}
+
+static double ms(ticks tks)
+{
+    return (double)tks / (_Engine.time * CLOCKS_PER_SEC);
+}
+
+std::string MxPerformanceCounters() {
+    std::stringstream ss;
+    
+    ss << "performance_timers : { " << std::endl;
+    ss << "\t name: " << Universe.name << "," << std::endl;
+    ss << "\t wall_time: " << MxWallTime() << "," << std::endl;
+    ss << "\t cpu_time: " << MxCPUTime() << "," << std::endl;
+    ss << "\t fps: " << _Engine.time / _Engine.wall_time << "," << std::endl;
+    ss << "\t kinetic energy: " << engine_kinetic_energy(&_Engine) << "," << std::endl;
+    ss << "\t step: " << ms(_Engine.timers[engine_timer_step]) << "," << std::endl;
+    ss << "\t nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << "," << std::endl;
+    ss << "\t bonded: " << ms(_Engine.timers[engine_timer_bonded]) << "," << std::endl;
+    ss << "\t advance: " << ms(_Engine.timers[engine_timer_advance]) << "," << std::endl;
+    ss << "\t rendering: " << ms(_Engine.timers[engine_timer_render]) << "," << std::endl;
+    ss << "\t total: " << ms(_Engine.timers[engine_timer_render] + _Engine.timers[engine_timer_step]) << "," << std::endl;
+    ss << "\t time_steps: " << _Engine.time  << std::endl;
+    ss << "}" << std::endl;
+    
+    return ss.str();
+}
+
 static Magnum::Debug *magnum_debug = NULL;
 static Magnum::Warning *magnum_warning = NULL;
 static Magnum::Error *magnum_error = NULL;
@@ -502,15 +539,24 @@ HRESULT MxLoggerCallback(CLogEvent, std::ostream *os) {
         Log(LOG_DEBUG) << "setting Magnum::Error to Mechanica log output";
         magnum_error = new Magnum::Error(os);
     }
+    else {
+        magnum_error = new Magnum::Error(NULL);
+    }
     
     if(CLogger::getLevel() >= LOG_WARNING) {
         Log(LOG_DEBUG) << "setting Magnum::Warning to Mechanica log output";
         magnum_warning = new Magnum::Warning(os);
     }
+    else {
+        magnum_warning = new Magnum::Warning(NULL);
+    }
     
     if(CLogger::getLevel() >= LOG_DEBUG) {
         Log(LOG_DEBUG) << "setting Magnum::Debug to Mechanica log output";
         magnum_debug = new Magnum::Debug(os);
+    }
+    else {
+        magnum_debug = new Magnum::Debug(NULL);
     }
     
     return S_OK;

@@ -18,12 +18,14 @@ course).
 
 History
 =======
-Version Alpha 1.0.30.2
+Version Alpha 1.0.30.3
 ----------------------
 * imporved logging, file logging
 * bug fixes in determining if jupyter is running
 * more logging info
 * better error handling
+* log performance counters
+* expose performance counter in Python
 
 Version Alpha 1.0.29.0
 ----------------------

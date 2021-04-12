@@ -25,18 +25,16 @@
 #include <CStateVector.hpp>
 #include "Magnum/Math/Matrix4.h"
 #include <CSpeciesList.hpp>
+#include <MxSystem.h>
 
 
 #define PY_CHECK(hr) {if(!SUCCEEDED(hr)) { throw py::error_already_set();}}
-
-static void print_performance_counters();
 
 using Magnum::Vector3;
 
 MxUniverse Universe = {
     .isRunning = false
 };
-
 
 
 static HRESULT universe_bind_force(MxForce *force, PyObject *args, PyObject *kwargs);
@@ -562,7 +560,7 @@ CAPI_FUNC(HRESULT) MxUniverse_Step(double until, double dt) {
     }
 
     if(_Engine.timer_output_period > 0 && _Engine.time % _Engine.timer_output_period == 0 ) {
-        print_performance_counters();
+        MxPrintPerformanceCounters();
     }
 
     return S_OK;
@@ -587,28 +585,6 @@ CAPI_FUNC(HRESULT) MxUniverse_SetFlag(MxUniverse_Flags flag, int value)
     }
 
     return MxSimulator_Redraw();
-}
-
-
-double ms(ticks tks)
-{
-    return (double)tks / (_Engine.time * CLOCKS_PER_SEC);
-}
-
-
-void print_performance_counters() {
-    std::cout << "performance_timers : { " << std::endl;
-    std::cout << "\t name:" << Universe.name << std::endl;
-    std::cout << "\t fps: " << _Engine.time / _Engine.wall_time << std::endl;
-    std::cout << "\t kinetic energy: " << engine_kinetic_energy(&_Engine) << std::endl;
-    std::cout << "\t step: " << ms(_Engine.timers[engine_timer_step]) << std::endl;
-    std::cout << "\t nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << std::endl;
-    std::cout << "\t bonded: " << ms(_Engine.timers[engine_timer_bonded]) << std::endl;
-    std::cout << "\t advance: " << ms(_Engine.timers[engine_timer_advance]) << std::endl;
-    std::cout << "\t rendering: " << ms(_Engine.timers[engine_timer_render]) << std::endl;
-    std::cout << "\t total: " << ms(_Engine.timers[engine_timer_render] + _Engine.timers[engine_timer_step]) << std::endl;
-    std::cout << "\t time_steps: " << _Engine.time  << std::endl;
-    std::cout << "}" << std::endl;
 }
 
 
