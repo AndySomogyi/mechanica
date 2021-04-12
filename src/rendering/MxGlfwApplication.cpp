@@ -62,9 +62,31 @@ static Platform::GlfwApplication::Configuration confconf(const MxSimulator::Conf
     return res;
 }
 
+/**
+ * checks if Glfw can be initialized, throws an exception.
+ *
+ * This intercepts Magnum's GlfwApplication's very very nasty behavior exit(0)
+ * if glfw cant be initialized.
+ */
+
+static const MxGlfwApplication::Arguments& glfwChecker(const MxGlfwApplication::Arguments &args) {
+
+    if(!glfwInit()) {
+        std::string err = "Could not initialize GLFW: ";
+
+        const char* description = NULL;
+        int code = glfwGetError(&description);
+
+        err += "error code: " + std::to_string(code) + ", " + description;
+
+        throw std::runtime_error(err);
+    }
+
+    return args;
+}
 
 MxGlfwApplication::MxGlfwApplication(const Arguments &args) :
-        Platform::GlfwApplication{args, NoCreate}
+        Platform::GlfwApplication{glfwChecker(args), NoCreate}
 {
     Log(LOG_TRACE);
 }
@@ -167,7 +189,7 @@ static MxGlfwApplication::Configuration magConf(const MxSimulator::Config &sc) {
 HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
 {
     Log(LOG_DEBUG);
-    
+
     const Vector2 dpiScaling = this->dpiScaling({});
     Configuration c = magConf(conf);
     c.setSize(conf.windowSize(), dpiScaling);
@@ -176,7 +198,7 @@ HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
     glConf.setSampleCount(dpiScaling.max() < 2.0f ? 8 : 2);
 
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-    
+
     Log(LOG_TRACE) << "calling tryCreate(c)";
     bool b = tryCreate(c);
 
@@ -186,7 +208,7 @@ HRESULT MxGlfwApplication::createContext(const MxSimulator::Config &conf)
     }
 
     _win = new MxGlfwWindow(this->window());
-    
+
     if(conf.windowFlags() & MxSimulator::WindowFlags::Focused) {
         glfwFocusWindow(this->window());
     }
@@ -218,20 +240,20 @@ HRESULT MxGlfwApplication::messageLoop(double et)
 {
     double initTime = _Engine.time * _Engine.dt;
     double endTime = std::numeric_limits<double>::infinity();
-    
+
     if(et >= 0) {
         endTime = initTime + et;
     }
-    
+
     Log(LOG_DEBUG) << "MxGlfwApplication::messageLoop(" << et
                    << ") {now_time: " << initTime << ", end_time: " << endTime <<  "}" ;
-    
+
     // process initial messages.
     GlfwApplication::mainLoopIteration();
 
     // show the window
     showWindow();
-    
+
     // need to post an empty message for some reason.
     // if you start the app, the simulation loop won't start
     // until the moust moves or some event happens, so send a
@@ -244,14 +266,14 @@ HRESULT MxGlfwApplication::messageLoop(double et)
     HWND hwnd = glfwGetWin32Window(wnd);
     SetForegroundWindow(hwnd);
 #endif
-    
+
     HRESULT hr;
 
     // run while it's visible, process window messages
     while(_Engine.time * _Engine.dt < endTime &&
           GlfwApplication::mainLoopIteration() &&
           glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
-        
+
         // keep processing messages until window closes.
         if(engine_err == 0 && MxUniverse_Flag(MX_RUNNING)) {
             if(!SUCCEEDED((hr = simulationStep()))) {
@@ -271,7 +293,7 @@ HRESULT MxGlfwApplication::mainLoopIteration(double timeout) {
         if(FAILED((hr = simulationStep()))) {
             // window close message
             close();
-            
+
             // process messages until window closes
             while(GlfwApplication::window() &&
                   glfwGetWindowAttrib(GlfwApplication::window(), GLFW_VISIBLE)) {
@@ -303,11 +325,11 @@ void MxGlfwApplication::viewportEvent(ViewportEvent &event)
 void MxGlfwApplication::keyPressEvent(KeyEvent &event)
 {
     MxKeyEvent_Invoke(event);
-    
+
     if(event.isAccepted()) {
         return;
     }
-    
+
     bool handled = false;
     switch(event.key()) {
         case Platform::GlfwApplication::KeyEvent::Key::Space: {
@@ -321,7 +343,7 @@ void MxGlfwApplication::keyPressEvent(KeyEvent &event)
         default:
             break;
     }
-    
+
     if(handled) {
         event.setAccepted();
     }
@@ -379,9 +401,9 @@ HRESULT MxGlfwApplication::destroy()
 HRESULT MxGlfwApplication::close()
 {
     Log(LOG_DEBUG);
-    
+
     glfwHideWindow(window());
-    
+
     return S_OK;
 }
 
@@ -497,20 +519,20 @@ void ForceForgoundWindow2(GLFWwindow* wnd)
 HRESULT MxGlfwApplication::show()
 {
     Log(LOG_DEBUG);
-    
+
     showWindow();
-    
+
     if (!C_TerminalInteractiveShell()) {
         return messageLoop(-1);
     }
-    
+
     return S_OK;
 }
 
 HRESULT MxGlfwApplication::showWindow()
 {
     Log(LOG_DEBUG);
-    
+
     glfwShowWindow(window());
 
 #ifdef _WIN32
@@ -526,14 +548,14 @@ bool MxGlfwApplication::contextMakeCurrent()
 {
     // tell open go to make the context current.
     glfwMakeContextCurrent(_win->_window);
-    
+
     // tell Magnum to set it's context
     Magnum::Platform::GlfwApplication &app = *this;
-    
+
     Containers::Pointer<Platform::GLContext> &context = access_private::_context(app);
-    
+
     Platform::GLContext *p = context.get();
-    
+
     Magnum::GL::Context::makeCurrent(p);
 
     return true;
@@ -543,14 +565,14 @@ bool MxGlfwApplication::contextHasCurrent()
 {
     bool hasGlfw = glfwGetCurrentContext() != NULL;
     bool hasMagnum = Magnum::GL::Context::hasCurrent();
-    
+
     if(!(hasGlfw ^ hasMagnum)) {
         std::string msg = "GLFW and Magnum OpenGL contexts not synchronized, glfw context: ";
         msg += std::to_string(hasGlfw);
         msg += ", magnum context: " + std::to_string(hasMagnum);
         throw std::runtime_error(msg);
     }
-    
+
     return hasGlfw && hasMagnum;
 }
 
