@@ -27,6 +27,8 @@
 #include <rendering/MxImageConverters.h>
 #include <Magnum/Math/Color.h>
 
+#include <MxUtil.h>
+
 using namespace Magnum;
 
 #include <iostream>
@@ -94,6 +96,9 @@ PyObject* MxTestImage(PyObject *module, PyObject* self, PyObject* args) {
 
 
 PyObject* MxFramebufferImageData(PyObject *module, PyObject* self, PyObject* args) {
+    
+    PerformanceTimer t1(engine_timer_image_data);
+    PerformanceTimer t2(engine_timer_render_total);
     
     char *data = NULL;
     size_t size = 0;

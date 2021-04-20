@@ -1772,7 +1772,7 @@ double MxWallTime() {
         //  Handle error
         return 0;
     }
-    return (double)time.tv_sec + (double)time.tv_usec * .000001;
+    return (double)time.tv_sec + (double)time.tv_usec * (1.0/1000000);
 }
 double MxCPUTime(){
     return (double)clock() / CLOCKS_PER_SEC;
@@ -1789,6 +1789,16 @@ WallTime::WallTime() {
 WallTime::~WallTime() {
     _Engine.wall_time += (MxWallTime() - start);
 }
+
+PerformanceTimer::PerformanceTimer(unsigned id) {
+    _start = getticks();
+    _id = id;
+}
+
+PerformanceTimer::~PerformanceTimer() {
+    _Engine.timers[_id] += getticks() - _start;
+}
+
 
 #include <Magnum/Math/Distance.h>
 

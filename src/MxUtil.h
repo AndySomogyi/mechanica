@@ -13,6 +13,7 @@
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Color.h>
 #include <Magnum/Math/Vector3.h>
+#include <cycle.h>
 
 
 #ifdef _WIN32
@@ -130,6 +131,14 @@ public:
     WallTime();
     ~WallTime();
     double start;
+};
+    
+class PerformanceTimer {
+public:
+    PerformanceTimer(unsigned id);
+    ~PerformanceTimer();
+    ticks _start;
+    unsigned _id;
 };
 
 /**

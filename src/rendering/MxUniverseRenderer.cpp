@@ -277,8 +277,9 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     
     WallTime wt;
     
-    ticks tic = getticks();
-
+    PerformanceTimer t1(engine_timer_render);
+    PerformanceTimer t2(engine_timer_render_total);
+    
     _dirty = false;
 
     sphereMesh.setInstanceCount(_Engine.s.nr_visible_parts);
@@ -419,8 +420,6 @@ MxUniverseRenderer& MxUniverseRenderer::draw(T& camera,
     sphereShader.draw(sphereMesh);
     sphereShader.draw(largeSphereMesh);
     sphereShader.draw(cuboidMesh);
-    
-    _Engine.timers[engine_timer_render] += getticks() - tic;
     
     return *this;
 }

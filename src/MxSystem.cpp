@@ -510,7 +510,7 @@ std::string MxPerformanceCounters() {
     ss << "\t name: " << Universe.name << "," << std::endl;
     ss << "\t wall_time: " << MxWallTime() << "," << std::endl;
     ss << "\t cpu_time: " << MxCPUTime() << "," << std::endl;
-    ss << "\t fps: " << _Engine.time / _Engine.wall_time << "," << std::endl;
+    ss << "\t fps: " << engine_steps_per_second() << "," << std::endl;
     ss << "\t kinetic energy: " << engine_kinetic_energy(&_Engine) << "," << std::endl;
     ss << "\t step: " << ms(_Engine.timers[engine_timer_step]) << "," << std::endl;
     ss << "\t nonbond: " << ms(_Engine.timers[engine_timer_nonbond]) << "," << std::endl;

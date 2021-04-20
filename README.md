@@ -20,6 +20,10 @@ History
 =======
 Version Alpha 1.0.30.3
 ----------------------
+* fixed bugs in performance timers
+
+Version Alpha 1.0.30.3
+----------------------
 * imporved logging, file logging
 * bug fixes in determining if jupyter is running
 * more logging info

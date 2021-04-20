@@ -128,6 +128,8 @@ enum {
 	engine_timer_cuda_unload,
 	engine_timer_cuda_dopairs,
     engine_timer_render,
+    engine_timer_image_data,
+    engine_timer_render_total,
     engine_timer_total,
 	engine_timer_last
 };
@@ -652,6 +654,10 @@ int engine_force(struct engine *e);
  * the engine_next_partid is used to determine the next id.)
  */
 CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid);
+
+// keep track of how frequently step is called, get average
+// steps per second, averaged over past 10 steps.
+CAPI_FUNC(double) engine_steps_per_second();
 
 
 CAPI_FUNC(void) engine_dump();

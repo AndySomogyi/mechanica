@@ -93,6 +93,26 @@ MxParticleType *engine::types = NULL;
 
 static int init_types = 0;
 
+static const unsigned steps_per_second_buffer_size = 10;
+static double steps_per_second_buffer[steps_per_second_buffer_size] = {0.0};
+static double steps_per_second_last = 0;
+static unsigned steps_per_second_buffer_i = 0;
+
+static void update_steps_per_second() {
+    unsigned next = (steps_per_second_buffer_i + 1) % steps_per_second_buffer_size;
+    double time = MxWallTime();
+    steps_per_second_buffer[steps_per_second_buffer_i] = time - steps_per_second_last;
+    steps_per_second_last = time;
+    steps_per_second_buffer_i = next;
+}
+
+double engine_steps_per_second() {
+    double time = 0;
+    for(int i = 0; i < steps_per_second_buffer_size-1; i++) {
+        time += steps_per_second_buffer[i];
+    }
+    return steps_per_second_buffer_size / time;
+}
 
 /* the error macro. */
 #define error(id)				( engine_err = errs_register( id , engine_err_msg[-(id)] , __LINE__ , __FUNCTION__ , __FILE__ ) )
@@ -1176,60 +1196,23 @@ int engine_nonbond_eval ( struct engine *e ) {
  * are updated and the particles are re-sorted in the #space.
  */
 int engine_step ( struct engine *e ) {
-    
     WallTime wt;
-
-    ticks tic = getticks(), tic_step = tic;
-
+    PerformanceTimer t(engine_timer_step);
+    update_steps_per_second();
+    
 	/* increase the time stepper */
 	e->time += 1;
 
 	engine_advance(e);
 
-
-    e->timers[engine_timer_advance] += getticks() - tic;
-
     /* Shake the particle positions? */
     if ( e->nr_rigids > 0 ) {
-
-#ifdef WITH_MPI
-		/* If we have to do some communication first... */
-		if ( e->particle_flags & engine_flag_mpi ) {
-
-			/* Sort the constraints. */
-			tic = getticks();
-			if ( engine_rigid_sort( e ) != 0 )
-				return error(engine_err);
-			e->timers[engine_timer_rigid] += getticks() - tic;
-
-			/* Start the clock. */
-			tic = getticks();
-
-			if ( e->particle_flags & engine_flag_async ) {
-				if ( engine_exchange_rigid_async( e ) != 0 )
-					return error(engine_err);
-			}
-			else {
-				if ( engine_exchange_rigid( e ) != 0 )
-					return error(engine_err);
-			}
-
-			/* Store the timing. */
-			e->timers[engine_timer_exchange2] += getticks() - tic;
-
-		}
-#endif
+        PerformanceTimer tr(engine_timer_rigid);
 
 		/* Resolve the constraints. */
-		tic = getticks();
 		if ( engine_rigid_eval( e ) != 0 )
 			return error(engine_err);
-		e->timers[engine_timer_rigid] += getticks() - tic;
-
 	}
-
-	/* Stop the clock. */
-	e->timers[engine_timer_step] += getticks() - tic_step;
 
     // notify time listeners
     if(!SUCCEEDED(CMulticastTimeEvent_Invoke(e->on_time, e->time * e->dt))) {
@@ -1791,6 +1774,8 @@ int engine_next_partid(struct engine *e)
 CAPI_FUNC(HRESULT) engine_del_particle(struct engine *e, int pid)
 {
     Log(LOG_DEBUG) << "time: " << e->time * e->dt << ", deleting particle id: " << pid;
+    
+    PerformanceTimer t(engine_timer_advance);
 
     if(pid < 0 || pid >= e->s.size_parts) {
         return c_error(E_FAIL, "pid out of range");
@@ -1863,7 +1848,6 @@ int engine_reset ( struct engine *e  ) {
     return engine_err_ok;
 }
 
-    
   
     
     
