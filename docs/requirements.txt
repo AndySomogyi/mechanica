@@ -9,7 +9,7 @@ decorator==4.3.0
 docutils==0.14
 idna==2.7
 imagesize==1.1.0
-ipython==7.0.1
+ipython==7.16.3
 ipython-genutils==0.2.0
 jedi==0.13.1
 Jinja2==2.11.3
